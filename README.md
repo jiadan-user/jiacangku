@@ -1,28 +1,47 @@
 # QA Agent 编排层
 
-`QA_Agent` 是一个本地编排层，用来把下面三个现有 skill 串成一条完整链路：
+`QA_Agent` 是一个纯编排调度层，把三个独立 skill 串成完整的测试链路：
 
-- `senior-qa-brain`
-- `playwright-test-generator`
-- `ok_autotest_ui_skill`
+- `senior-qa-brain` — 分析 Figma + 生成测试用例
+- `playwright-test-generator` — 录制浏览器交互 + 生成 Python 测试脚本
+- `ok_autotest_ui_skill` — 执行回归测试 + 生成报告
 
-它负责状态管理、产物沉淀、查重映射、脚本规范化、提升守卫，以及回归执行计划。
+**编排层不做具体测试工作。** 每个 skill 的执行交给 AI 读取对应 SKILL.md 后自行完成。
 
-## 当前可用性
+## 架构
 
-这套项目现在已经切到“项目内一体化集成”模式。核心 skill、回归项目和知识库都已经收进当前仓库，默认不再依赖你桌面的外部绝对路径。
+```mermaid
+flowchart TD
+    Input["用户输入"] --> Split{"编排层: 影响拆分"}
+    
+    Split -->|"有Figma/PRD"| NewReq["新需求模式"]
+    Split -->|"只有模块+改动描述"| Regression["纯回归模式"]
+    Split -->|"两者都有"| Mixed["混合模式"]
+    
+    NewReq --> SQB["阶段1: AI读取 senior-qa-brain SKILL.md 执行"]
+    SQB --> PTG["阶段2: AI读取 playwright-test-generator SKILL.md 执行"]
+    PTG --> Bridge["编排层: 查重映射 + 提升守卫 + 脚本入库"]
+    Bridge --> OKU["阶段3: AI读取 ok_autotest_ui_skill SKILL.md 执行回归"]
+    
+    Regression --> OKU
+    
+    Mixed --> NewFirst["先跑新需求: 阶段1 → 阶段2 → 入库"]
+    NewFirst --> OKU
+    
+    OKU --> Judge{"回归全绿?"}
+    Judge -->|"是"| Final["最终报告 + 上线建议"]
+    Judge -->|"否"| Loop["缺陷回环"]
+```
 
-- 它已经可以直接执行 `计划 / 运行 / 状态 / 恢复 / 提升` 这几类命令。
-- 它会在缺少外部产物时自动阻塞，并在 `.qa_agent/runs/<运行ID>/` 下生成下一步说明。
-- 真正的回归执行，默认调用项目内的 `bundled/skills/ok_autotest_ui_skill/scripts/ok_test.py`。
-- 新需求分析提示词、录制生成提示词、回归规范文档都已经跟着项目一起走。
-- 文本知识库默认读取项目内的 `bundled/knowledge_base/`。
+## 三种变更模式
 
-换句话说：
+| 模式 | 用户输入 | 走哪些阶段 |
+|------|---------|-----------|
+| **新需求** | Figma链接 和/或 PRD | 阶段1 → 阶段2 → 衔接 → 阶段3 |
+| **纯回归** | 模块名 + 站点 + 改动描述 | 直接阶段3 |
+| **混合** | Figma/PRD + 改动描述 | 先新需求支线，再阶段3（新旧一起回归） |
 
-- 同事拉下这个项目后，不需要再额外配置你机器上的那些桌面路径。
-- 真正还需要准备的是运行环境依赖，例如 Python venv、Playwright 浏览器和回归项目 requirements。
-- 如果缺少分析报告、原始用例、UI Probe 补充说明或证明产物，`QA_Agent` 仍然会阻塞在对应阶段，这是流程设计，不是路径问题。
+AI 自动识别变更模式，拿不准时会通过对话确认。
 
 ## 快速开始
 
@@ -33,79 +52,74 @@ source .venv/bin/activate
 python -m qa_agent.cli --help
 ```
 
-如果后续要从你本机的独立 skill 仓库继续同步最新内容，可以执行：
-
-```bash
-bash scripts/sync_bundled_assets.sh
-```
-
-也可以用环境变量覆盖同步源：
-
-```bash
-SENIOR_QA_SOURCE=/path/to/senior-qa-brain \
-PLAYWRIGHT_SOURCE=/path/to/playwright-test-generator \
-OK_UI_SOURCE=/path/to/ok_autotest_ui_skill \
-KNOWLEDGE_BASE_SOURCE=/path/to/knowledge_base \
-bash scripts/sync_bundled_assets.sh
-```
-
-## 架构
-
-```mermaid
-flowchart TD
-    A["输入: Figma + PRD/PDF + git diff + 模块/站点"] --> B["QA Conductor / 需求接入"]
-    B --> C["影响拆分"]
-    C -->|回归改动| R1["回归选择器构建"]
-    C -->|新需求| N1["senior-qa-brain: 01 Figma分析"]
-    C -->|混合| M1["并行启动: 回归支线 + 新需求支线"]
-
-    N1 --> N2["senior-qa-brain: 02 分析报告"]
-    N2 --> N3["senior-qa-brain: 03 PRD Diff"]
-    N3 --> N4["人工确认门禁"]
-    N4 --> N5["senior-qa-brain: 04 Markdown用例生成"]
-    N5 --> N6["UI Probe 增强: 实测入口/选择器/真实行为"]
-    N6 --> N7["查重与映射"]
-    N7 --> N8["批次规划 <= 5 条用例"]
-    N8 --> N9["playwright-test-generator: CLI录制 + 实时验证"]
-    N9 --> N10["证明产物归档"]
-    N10 --> N11["代码生成"]
-    N11 --> N12["脚本规范化"]
-    N12 --> N13["提升守卫"]
-    N13 --> N14["提升到 ok_autotest_ui_skill 回归池"]
-
-    R1 --> R2["module-map + 文本用例 + 现有脚本 选集合"]
-    R2 --> R3["ok_autotest_ui_skill 回归预演"]
-
-    N14 --> R3
-    M1 --> R3
-    R3 --> R4["ok_autotest_ui_skill 真实回归"]
-    R4 --> G1["视觉门禁: 运行截图 vs Figma 评分"]
-    G1 --> G2["UI 门禁: 用例断言 100%"]
-    G2 --> G3["API 门禁: 接口断言 100% 或 N/A"]
-    G3 --> D{"全部通过?"}
-    D -->|是| Z["最终报告 + 上线建议"]
-    D -->|否| F["缺陷回环 / 精准回跳"]
-    F --> N6
-    F --> N9
-    F --> N11
-    F --> R2
-```
-
 ## 命令
 
+### 新需求
+
 ```bash
-qa-agent 计划 --figma链接 <url> --站点 sg --模块 zhaopin --功能 "job_preferences"
-qa-agent 运行 --运行ID <运行ID>
-qa-agent 状态 --运行ID <运行ID>
-qa-agent 恢复 --运行ID <运行ID>
-qa-agent 提升 --运行ID <运行ID>
+# 创建计划
+qa-agent plan --figma-url <Figma链接> --site sg --module login --feature "visual_optimization"
+
+# 也支持中文
+qa-agent 计划 --figma链接 <Figma链接> --站点 sg --模块 login --功能 "visual_optimization"
 ```
 
-英文命令和英文参数仍然保留，主要是为了兼容脚本化调用。
+### 纯回归
+
+```bash
+qa-agent plan --module wallet --site ae --change-description "修改了提现金额校验逻辑"
+```
+
+### 混合
+
+```bash
+qa-agent plan --figma-url <Figma链接> --module login --site sg --change-description "同时改了旧的注册流程"
+```
+
+### 推进流程
+
+```bash
+# 推进到下一阶段
+qa-agent advance --run-id <运行ID>
+
+# 标记当前阶段完成并推进（skill 执行完后调用）
+qa-agent complete --run-id <运行ID> --phase <阶段名>
+
+# 查看状态
+qa-agent status --run-id <运行ID>
+```
+
+## 典型工作流（新需求）
+
+```
+1. qa-agent plan --figma-url ... --site sg --module login
+   → 输出: [运行ID] 新需求 | 已计划
+
+2. qa-agent advance --run-id <ID>
+   → 输出: 请按 senior-qa-brain/SKILL.md 执行
+   → 你按 SKILL.md 分析 Figma、生成报告、确认、生成用例
+
+3. qa-agent complete --run-id <ID> --phase senior-qa-brain
+   → 输出: 请按 playwright-test-generator/SKILL.md 执行
+   → 你按 SKILL.md 分批录制、验证、生成脚本
+
+4. qa-agent complete --run-id <ID> --phase playwright-test-generator
+   → 输出: 请完成查重映射、提升守卫和脚本入库
+
+5. qa-agent complete --run-id <ID> --phase "衔接（查重+守卫+入库）"
+   → 输出: 请按 ok_autotest_ui_skill/SKILL.md 执行回归
+
+6. qa-agent complete --run-id <ID> --phase ok_autotest_ui_skill
+   → 输出: 最终报告已生成
+```
+
+## 编排规则
+
+完整的编排契约定义在 [AGENTS.md](AGENTS.md)。
 
 ## 状态目录
 
-所有状态都保存在 `.qa_agent/` 下：
+所有状态保存在 `.qa_agent/` 下：
 
 - `.qa_agent/project-memory.json`
 - `.qa_agent/notepad.md`
@@ -113,8 +127,9 @@ qa-agent 提升 --运行ID <运行ID>
 
 ## 说明
 
-- 外部 AI / 浏览器阶段会被视为显式阻塞阶段，并生成可恢复的产物。
-- 脚本提升遵循最新规范：
-  - `bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/docs/test-case-authoring-spec.md`
-  - `bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/docs/test-case-review-checklist.md`
-- 配置默认走项目内相对路径，定义在 [config/skills.yaml](/Users/a58/Desktop/QA_Agent/config/skills.yaml)。
+- 编排层只做阶段流转，不替代 skill 的内部逻辑
+- 每个 skill 的执行方式由其 SKILL.md 定义
+- 查重映射和提升守卫是编排层的"阶段间衔接"逻辑
+- 提升守卫的标准参考：
+  - `ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/docs/test-case-authoring-spec.md`
+  - `ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/docs/test-case-review-checklist.md`
