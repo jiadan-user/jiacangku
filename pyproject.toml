@@ -1,0 +1,19 @@
+[project]
+name = "qa-agent"
+version = "0.1.0"
+description = "用于串联 senior-qa-brain、playwright-test-generator 与 ok_autotest_ui_skill 的 AI 测试编排层。"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "PyYAML>=6.0",
+]
+
+[project.scripts]
+qa-agent = "qa_agent.cli:main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["qa_agent", "qa_agent.adapters", "qa_agent.integrations"]

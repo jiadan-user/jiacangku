@@ -1,0 +1,198 @@
+modules:
+  publish_job:
+    display_name: "Publish Job"
+    features:
+      publish_job_smoke:
+        display_name: "Publish Job Smoke"
+        scenarios:
+          - scenario_id: publish_job_smoke_p0
+            name: "发布职位冒烟 P0"
+            priority: p0
+            automated: true
+            is_baseline: true
+            selectors:
+              feature_ids: [publish_job_smoke]
+              priorities: [p0]
+          - scenario_id: publish_job_smoke_p1
+            name: "发布职位冒烟扩展"
+            priority: p1
+            automated: true
+            is_baseline: false
+            selectors:
+              feature_ids: [publish_job_smoke]
+              priorities: [p1]
+      publish_job_core_flow:
+        display_name: "Publish Job Core Flow"
+        scenarios:
+          - scenario_id: publish_job_core_flow_p0
+            name: "三步发布核心流"
+            priority: p0
+            automated: true
+            is_baseline: true
+            selectors:
+              feature_ids: [publish_job_core_flow]
+      publish_job_step1_validation:
+        display_name: "Publish Job Step1 Validation"
+        scenarios:
+          - scenario_id: publish_job_step1_validation_core
+            name: "Step1 基础校验"
+            priority: p0
+            automated: true
+            is_baseline: true
+            selectors:
+              feature_ids: [publish_job_step1_validation]
+      publish_job_step1_extended:
+        display_name: "Publish Job Step1 Extended"
+        scenarios:
+          - scenario_id: publish_job_step1_extended_checks
+            name: "Step1 扩展边界校验"
+            priority: p1
+            automated: true
+            is_baseline: false
+            selectors:
+              feature_ids: [publish_job_step1_extended]
+      publish_job_step2_validation:
+        display_name: "Publish Job Step2 Validation"
+        scenarios:
+          - scenario_id: publish_job_step2_validation_core
+            name: "Step2 核心校验"
+            priority: p0
+            automated: true
+            is_baseline: true
+            selectors:
+              feature_ids: [publish_job_step2_validation]
+      publish_job_step3_navigation:
+        display_name: "Publish Job Step3 Navigation"
+        scenarios:
+          - scenario_id: publish_job_step3_navigation
+            name: "Step3 导航与草稿"
+            priority: p1
+            automated: true
+            is_baseline: false
+            selectors:
+              feature_ids: [publish_job_step3_navigation]
+      publish_job_security_ui:
+        display_name: "Publish Job Security UI"
+        scenarios:
+          - scenario_id: publish_job_security_ui
+            name: "安全与 UI 体验"
+            priority: p1
+            automated: true
+            is_baseline: false
+            selectors:
+              feature_ids: [publish_job_security_ui]
+      publish_job_i18n_compatibility:
+        display_name: "Publish Job I18n Compatibility"
+        scenarios:
+          - scenario_id: publish_job_i18n_compatibility
+            name: "国际化与兼容性"
+            priority: p1
+            automated: true
+            is_baseline: false
+            selectors:
+              feature_ids: [publish_job_i18n_compatibility]
+      publish_job_supplemental:
+        display_name: "Publish Job Supplemental"
+        scenarios:
+          - scenario_id: publish_job_supplemental
+            name: "补充校验集合"
+            priority: p1
+            automated: true
+            is_baseline: false
+            selectors:
+              feature_ids: [publish_job_supplemental]
+
+  car:
+    display_name: "Car Publish"
+    features:
+      car_publish:
+        display_name: "Car Publish"
+        scenarios:
+          - scenario_id: car_publish_p0
+            name: "车发布 P0 核心回归"
+            priority: p0
+            automated: true
+            is_baseline: true
+            selectors:
+              feature_ids: [car_publish]
+              priorities: [p0]
+          - scenario_id: car_publish_p1
+            name: "车发布 P1 功能校验"
+            priority: p1
+            automated: true
+            is_baseline: false
+            selectors:
+              feature_ids: [car_publish]
+              priorities: [p1]
+          - scenario_id: car_publish_p2
+            name: "车发布 P2 体验校验"
+            priority: p2
+            automated: true
+            is_baseline: false
+            selectors:
+              feature_ids: [car_publish]
+              priorities: [p2]
+
+  car_list:
+    display_name: "Car List"
+    features:
+      car_list_sort:
+        display_name: "Sort"
+        scenarios:
+          - scenario_id: car_list_sort_p0
+            name: "列表排序 P0"
+            priority: p0
+            automated: true
+            is_baseline: true
+            selectors:
+              feature_ids: [car_list_sort]
+      car_list_filter_location:
+        display_name: "Filter Location"
+        scenarios:
+          - scenario_id: car_list_filter_location_p0
+            name: "位置筛选 P0"
+            priority: p0
+            automated: true
+            is_baseline: true
+            selectors:
+              feature_ids: [car_list_filter_location]
+      car_list_nav_search:
+        display_name: "Nav Search"
+        scenarios:
+          - scenario_id: car_list_nav_search_p0
+            name: "导航搜索 P0"
+            priority: p0
+            automated: true
+            is_baseline: true
+            selectors:
+              feature_ids: [car_list_nav_search]
+      car_list_reset_tags_list:
+        display_name: "Reset Tags"
+        scenarios:
+          - scenario_id: car_list_reset_tags_list_p0
+            name: "重置标签 P0"
+            priority: p0
+            automated: true
+            is_baseline: true
+            selectors:
+              feature_ids: [car_list_reset_tags_list]
+      car_list_price_mileage_brand:
+        display_name: "Price Mileage Brand"
+        scenarios:
+          - scenario_id: car_list_price_mileage_brand_p1
+            name: "价格里程品牌扩展"
+            priority: p1
+            automated: true
+            is_baseline: false
+            selectors:
+              feature_ids: [car_list_price_mileage_brand]
+      car_list_session_nav:
+        display_name: "Session Nav"
+        scenarios:
+          - scenario_id: car_list_session_nav_p1
+            name: "会话与跳转扩展"
+            priority: p1
+            automated: true
+            is_baseline: false
+            selectors:
+              feature_ids: [car_list_session_nav]

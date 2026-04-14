@@ -1,0 +1,193 @@
+directories:
+  "test_cases/ SEO/":
+    module_id: seo
+    aliases: [seo, news, settings]
+    owner: qa-ui
+  test_cases/ai/:
+    module_id: ai
+    aliases: [ai, ai_publish, ai_chat]
+    owner: qa-ui
+  test_cases/airwallex_recharge/:
+    module_id: airwallex_recharge
+    aliases: [airwallex_recharge, recharge]
+    owner: qa-ui
+  test_cases/car_list/:
+    module_id: car_list
+    aliases: [car_list, explore_list]
+    owner: qa-ui
+  test_cases/chat-ai/:
+    module_id: chat_ai
+    aliases: [chat_ai, chat-ai, chat]
+    owner: qa-ui
+  test_cases/explore/:
+    module_id: explore
+    aliases: [explore, post_explore]
+    owner: qa-ui
+  test_cases/kyc/:
+    module_id: kyc
+    aliases: [kyc]
+    owner: qa-ui
+  test_cases/marketplace_order/:
+    module_id: marketplace_order
+    aliases: [marketplace_order, order]
+    owner: qa-ui
+  test_cases/marketplace_post/:
+    module_id: marketplace_post
+    aliases: [marketplace_post, marketplace, post]
+    owner: qa-ui
+  test_cases/property_basics/:
+    module_id: property_basics
+    aliases: [property_basics, property_buy, property_rent]
+    owner: qa-ui
+  test_cases/property_detail/:
+    module_id: property_detail
+    aliases: [property_detail]
+    owner: qa-ui
+  test_cases/property_list/:
+    module_id: property_list
+    aliases: [property_list]
+    owner: qa-ui
+  test_cases/property_map/:
+    module_id: property_map
+    aliases: [property_map]
+    owner: qa-ui
+  test_cases/publish_job/:
+    module_id: publish_job
+    aliases: [publish_job, job_publish]
+    owner: qa-ui
+  test_cases/search_input/:
+    module_id: search_input
+    aliases: [search_input, search]
+    owner: qa-ui
+  test_cases/test_car/:
+    module_id: car
+    aliases: [car]
+    owner: qa-ui
+  test_cases/test_tiyan/:
+    module_id: tiyan
+    aliases: [tiyan, experience, location_panel]
+    owner: qa-ui
+  test_cases/vidflow/:
+    module_id: vidflow
+    aliases: [vidflow]
+    owner: qa-ui
+  test_cases/wallet/:
+    module_id: wallet
+    aliases: [wallet]
+    owner: qa-ui
+  test_cases/zhaopin/:
+    module_id: zhaopin
+    aliases: [zhaopin, jobs]
+    owner: qa-ui
+  test_cases/体验/:
+    module_id: tiyan
+    aliases: [tiyan, experience]
+    owner: qa-ui
+paths:
+  test_cases/publish_job/test_publish_job_smoke.py:
+    module_id: publish_job
+    feature_id: publish_job_smoke
+    aliases: [job_publish, publish_job, smoke]
+    baseline_set: publish_job_core
+    risk_level: medium
+    owner: qa-ui
+  test_cases/publish_job/test_publish_job_core_flow.py:
+    module_id: publish_job
+    feature_id: publish_job_core_flow
+    aliases: [job_publish, publish_job, core_flow]
+    baseline_set: publish_job_core
+    risk_level: high
+    owner: qa-ui
+  test_cases/publish_job/test_publish_job_step1_validation.py:
+    module_id: publish_job
+    feature_id: publish_job_step1_validation
+    aliases: [job_publish, publish_job, step1]
+    baseline_set: publish_job_core
+    owner: qa-ui
+  test_cases/publish_job/test_publish_job_step1_extended.py:
+    module_id: publish_job
+    feature_id: publish_job_step1_extended
+    aliases: [job_publish, publish_job, step1]
+    owner: qa-ui
+  test_cases/publish_job/test_publish_job_step2_validation.py:
+    module_id: publish_job
+    feature_id: publish_job_step2_validation
+    aliases: [job_publish, publish_job, step2]
+    baseline_set: publish_job_core
+    owner: qa-ui
+  test_cases/publish_job/test_publish_job_step3_and_navigation.py:
+    module_id: publish_job
+    feature_id: publish_job_step3_navigation
+    aliases: [job_publish, publish_job, step3]
+    owner: qa-ui
+  test_cases/publish_job/test_publish_job_security_and_ui.py:
+    module_id: publish_job
+    feature_id: publish_job_security_ui
+    aliases: [job_publish, publish_job, security]
+    owner: qa-ui
+  test_cases/publish_job/test_publish_job_i18n_and_compatibility.py:
+    module_id: publish_job
+    feature_id: publish_job_i18n_compatibility
+    aliases: [job_publish, publish_job, i18n]
+    owner: qa-ui
+  test_cases/publish_job/test_publish_job_supplemental.py:
+    module_id: publish_job
+    feature_id: publish_job_supplemental
+    aliases: [job_publish, publish_job, supplemental]
+    owner: qa-ui
+  test_cases/car_list/test_explore_list_sort.py:
+    module_id: car_list
+    feature_id: car_list_sort
+    aliases: [explore_list, car_list, sort]
+    baseline_set: car_list_core
+    owner: qa-ui
+  test_cases/car_list/test_explore_list_filter_location.py:
+    module_id: car_list
+    feature_id: car_list_filter_location
+    aliases: [explore_list, car_list, filter]
+    baseline_set: car_list_core
+    owner: qa-ui
+  test_cases/car_list/test_explore_list_nav_search.py:
+    module_id: car_list
+    feature_id: car_list_nav_search
+    aliases: [explore_list, car_list, search]
+    baseline_set: car_list_core
+    owner: qa-ui
+  test_cases/car_list/test_explore_list_reset_tags_list.py:
+    module_id: car_list
+    feature_id: car_list_reset_tags_list
+    aliases: [explore_list, car_list, reset]
+    baseline_set: car_list_core
+    owner: qa-ui
+  test_cases/car_list/test_explore_list_price_mileage_brand.py:
+    module_id: car_list
+    feature_id: car_list_price_mileage_brand
+    aliases: [explore_list, car_list, price, mileage, brand]
+    owner: qa-ui
+  test_cases/car_list/test_explore_list_session_nav.py:
+    module_id: car_list
+    feature_id: car_list_session_nav
+    aliases: [explore_list, car_list, session]
+    owner: qa-ui
+  test_cases/test_car/test_ae_car_publish.py:
+    module_id: car
+    feature_id: car_publish
+    aliases: [car, car_publish, ae_car_publish]
+    baseline_set: car_publish_core
+    risk_level: high
+    owner: qa-ui
+cases:
+  test_cases/wallet/test_wallet_bank_account_binding.py::test_01_bound_bank_account_should_display_last_four_digits_and_unbind_entry:
+    skill_excluded: true
+  test_cases/wallet/test_wallet_bank_account_binding.py::test_02_click_bank_account_menu_should_show_unbind_option:
+    skill_excluded: true
+  test_cases/wallet/test_wallet_bank_account_binding.py::test_click_unbind_should_show_confirmation_dialog:
+    skill_excluded: true
+  test_cases/wallet/test_wallet_withdrawal.py::test_helper_clear_withdrawal_in_progress:
+    skill_excluded: true
+  test_cases/wallet/test_wallet_withdrawal.py::test_withdraw_button_enabled_when_balance_sufficient:
+    skill_excluded: true
+  test_cases/wallet/test_wallet_withdrawal.py::test_withdraw_button_shows_in_progress_message:
+    skill_excluded: true
+  test_cases/wallet/test_wallet_withdrawal.py::test_withdraw_form_displays_all_required_info:
+    skill_excluded: true

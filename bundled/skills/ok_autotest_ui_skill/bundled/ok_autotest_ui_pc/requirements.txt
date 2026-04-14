@@ -1,0 +1,24 @@
+# 核心测试框架（支持 Python 3.12+）
+pytest==8.3.4
+pytest-html==4.1.1
+pytest-xdist==3.6.1
+pytest-rerunfailures==14.0
+
+# Playwright（支持 Python 3.12+）
+playwright==1.48.0
+
+# Allure 报告（支持 Python 3.12+）
+allure-pytest==2.13.5
+
+# 数据处理
+PyYAML==6.0.2
+
+# 日志
+loguru==0.7.2
+
+# Redis（钱包测试用例需要）
+redis==5.0.1
+psycopg2-binary
+requests
+
+nest_asyncio==1.6.0

@@ -1,0 +1,17 @@
+features: {}
+
+cases:
+  case_id_wallet_unbind_01:
+    - case_id: case_id_wallet_wallet_016
+  case_id_wallet_unbind_02:
+    - case_id: case_id_wallet_wallet_016
+  case_id_wallet_unbind_03:
+    - case_id: case_id_wallet_wallet_016
+  case_id_wallet_unbind_cancel_methods:
+    - case_id: case_id_wallet_wallet_016
+  case_id_wallet_unbind_pending:
+    - case_id: case_id_wallet_wallet_016
+  case_id_wallet_unbind_07:
+    - case_id: case_id_wallet_wallet_016
+
+nodeids: {}

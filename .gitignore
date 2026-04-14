@@ -1,0 +1,8 @@
+.qa_agent/
+.venv/
+__pycache__/
+*.pyc
+bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/reports/allure-report/
+bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/reports/allure-results/
+bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/reports/screenshots/
+bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/reports/ok_test_runs/

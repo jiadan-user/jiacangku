@@ -1,0 +1,18 @@
+batches:
+  max_cases_per_batch: 5
+  first_batch_requires_happy_path: true
+  first_batch_requires_negative_path: true
+
+gates:
+  visual_score_min: 90
+  ui_pass_rate_min: 100
+  api_pass_rate_min: 100
+  max_fix_rounds: 3
+  max_wait_timeout_ms: 300
+
+promotion:
+  auto_stage_for_validation: true
+  keep_staging_files: false
+  require_doctor: true
+  require_collect_only: true
+  require_dry_run: true

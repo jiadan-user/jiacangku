@@ -1,0 +1,120 @@
+# QA Agent 编排层
+
+`QA_Agent` 是一个本地编排层，用来把下面三个现有 skill 串成一条完整链路：
+
+- `senior-qa-brain`
+- `playwright-test-generator`
+- `ok_autotest_ui_skill`
+
+它负责状态管理、产物沉淀、查重映射、脚本规范化、提升守卫，以及回归执行计划。
+
+## 当前可用性
+
+这套项目现在已经切到“项目内一体化集成”模式。核心 skill、回归项目和知识库都已经收进当前仓库，默认不再依赖你桌面的外部绝对路径。
+
+- 它已经可以直接执行 `计划 / 运行 / 状态 / 恢复 / 提升` 这几类命令。
+- 它会在缺少外部产物时自动阻塞，并在 `.qa_agent/runs/<运行ID>/` 下生成下一步说明。
+- 真正的回归执行，默认调用项目内的 `bundled/skills/ok_autotest_ui_skill/scripts/ok_test.py`。
+- 新需求分析提示词、录制生成提示词、回归规范文档都已经跟着项目一起走。
+- 文本知识库默认读取项目内的 `bundled/knowledge_base/`。
+
+换句话说：
+
+- 同事拉下这个项目后，不需要再额外配置你机器上的那些桌面路径。
+- 真正还需要准备的是运行环境依赖，例如 Python venv、Playwright 浏览器和回归项目 requirements。
+- 如果缺少分析报告、原始用例、UI Probe 补充说明或证明产物，`QA_Agent` 仍然会阻塞在对应阶段，这是流程设计，不是路径问题。
+
+## 快速开始
+
+```bash
+cd /Users/a58/Desktop/QA_Agent
+bash scripts/bootstrap_env.sh
+source .venv/bin/activate
+python -m qa_agent.cli --help
+```
+
+如果后续要从你本机的独立 skill 仓库继续同步最新内容，可以执行：
+
+```bash
+bash scripts/sync_bundled_assets.sh
+```
+
+也可以用环境变量覆盖同步源：
+
+```bash
+SENIOR_QA_SOURCE=/path/to/senior-qa-brain \
+PLAYWRIGHT_SOURCE=/path/to/playwright-test-generator \
+OK_UI_SOURCE=/path/to/ok_autotest_ui_skill \
+KNOWLEDGE_BASE_SOURCE=/path/to/knowledge_base \
+bash scripts/sync_bundled_assets.sh
+```
+
+## 架构
+
+```mermaid
+flowchart TD
+    A["输入: Figma + PRD/PDF + git diff + 模块/站点"] --> B["QA Conductor / 需求接入"]
+    B --> C["影响拆分"]
+    C -->|回归改动| R1["回归选择器构建"]
+    C -->|新需求| N1["senior-qa-brain: 01 Figma分析"]
+    C -->|混合| M1["并行启动: 回归支线 + 新需求支线"]
+
+    N1 --> N2["senior-qa-brain: 02 分析报告"]
+    N2 --> N3["senior-qa-brain: 03 PRD Diff"]
+    N3 --> N4["人工确认门禁"]
+    N4 --> N5["senior-qa-brain: 04 Markdown用例生成"]
+    N5 --> N6["UI Probe 增强: 实测入口/选择器/真实行为"]
+    N6 --> N7["查重与映射"]
+    N7 --> N8["批次规划 <= 5 条用例"]
+    N8 --> N9["playwright-test-generator: CLI录制 + 实时验证"]
+    N9 --> N10["证明产物归档"]
+    N10 --> N11["代码生成"]
+    N11 --> N12["脚本规范化"]
+    N12 --> N13["提升守卫"]
+    N13 --> N14["提升到 ok_autotest_ui_skill 回归池"]
+
+    R1 --> R2["module-map + 文本用例 + 现有脚本 选集合"]
+    R2 --> R3["ok_autotest_ui_skill 回归预演"]
+
+    N14 --> R3
+    M1 --> R3
+    R3 --> R4["ok_autotest_ui_skill 真实回归"]
+    R4 --> G1["视觉门禁: 运行截图 vs Figma 评分"]
+    G1 --> G2["UI 门禁: 用例断言 100%"]
+    G2 --> G3["API 门禁: 接口断言 100% 或 N/A"]
+    G3 --> D{"全部通过?"}
+    D -->|是| Z["最终报告 + 上线建议"]
+    D -->|否| F["缺陷回环 / 精准回跳"]
+    F --> N6
+    F --> N9
+    F --> N11
+    F --> R2
+```
+
+## 命令
+
+```bash
+qa-agent 计划 --figma链接 <url> --站点 sg --模块 zhaopin --功能 "job_preferences"
+qa-agent 运行 --运行ID <运行ID>
+qa-agent 状态 --运行ID <运行ID>
+qa-agent 恢复 --运行ID <运行ID>
+qa-agent 提升 --运行ID <运行ID>
+```
+
+英文命令和英文参数仍然保留，主要是为了兼容脚本化调用。
+
+## 状态目录
+
+所有状态都保存在 `.qa_agent/` 下：
+
+- `.qa_agent/project-memory.json`
+- `.qa_agent/notepad.md`
+- `.qa_agent/runs/<运行ID>/`
+
+## 说明
+
+- 外部 AI / 浏览器阶段会被视为显式阻塞阶段，并生成可恢复的产物。
+- 脚本提升遵循最新规范：
+  - `bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/docs/test-case-authoring-spec.md`
+  - `bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/docs/test-case-review-checklist.md`
+- 配置默认走项目内相对路径，定义在 [config/skills.yaml](/Users/a58/Desktop/QA_Agent/config/skills.yaml)。

@@ -1,0 +1,24 @@
+defaults:
+  browser:
+    headless: true
+
+modules:
+  publish_job:
+    base_url: "https://uspub.58v5.cn"
+    publish_url: "https://uspub.58v5.cn/biz/en/publish/job?categoryId=4000"
+    accounts:
+      default:
+        username: "replace-with-local-username"
+        password: "replace-with-local-password"
+
+  car_publish:
+    site: "ae"
+    base_url: "https://ae.58v5.cn"
+    test_account:
+      username: "replace-with-local-username"
+      password: "replace-with-local-password"
+    test_images_path: "/absolute/path/to/car-images"
+
+  car_list:
+    browser:
+      headless: true

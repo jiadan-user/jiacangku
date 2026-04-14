@@ -1,0 +1,2 @@
+[console_scripts]
+qa-agent = qa_agent.cli:main

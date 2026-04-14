@@ -1,0 +1,17 @@
+paths:
+  senior_qa_brain_root: bundled/skills/senior-qa-brain
+  playwright_test_generator_root: bundled/skills/playwright-test-generator
+  ok_ui_skill_root: bundled/skills/ok_autotest_ui_skill
+  knowledge_base_root: bundled/knowledge_base
+  regression_project_root: bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc
+
+commands:
+  ok_ui_skill:
+    script: bundled/skills/ok_autotest_ui_skill/scripts/ok_test.py
+    venv_python: bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/venv/bin/python
+
+docs:
+  authoring_spec: bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/docs/test-case-authoring-spec.md
+  review_checklist: bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/docs/test-case-review-checklist.md
+  compatibility_script_spec: bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/docs/test-case-authoring-spec.md
+  module_map: bundled/skills/ok_autotest_ui_skill/references/module-map.md
