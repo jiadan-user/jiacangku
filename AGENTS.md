@@ -22,9 +22,9 @@
 
 | 用户提供了什么 | 变更模式 | 走哪些阶段 |
 |---------------|---------|-----------|
-| Figma 链接 和/或 PRD | **新需求** | 阶段1 → 阶段2 → 衔接 → 阶段3 |
-| 只有模块名 + 站点 + 改动描述 | **纯回归** | 直接阶段3 |
-| 两者都有 | **混合** | 先跑新需求支线（阶段1→2→入库），再跑阶段3 |
+| Figma 链接 和/或 PRD | **新需求** | 阶段1 → 阶段2 → 影响分析 → 旧脚本更新循环 → 阶段3 |
+| 只有模块名 + 站点 + 改动描述 | **纯回归** | 影响分析 → 旧脚本更新循环 → 阶段3 |
+| 两者都有 | **混合** | 先跑新需求支线，再做影响分析与旧脚本更新循环，最后阶段3 |
 
 判断逻辑：
 - 如果用户消息中包含 Figma 链接或需求文档 → 包含新需求
@@ -72,29 +72,37 @@
 
 ---
 
-## 衔接步骤：查重映射 + 提升守卫 + 入库（仅新需求/混合）
+## 影响分析与旧脚本更新（所有模式都走）
 
-这是编排层自己做的，不属于任何 skill。在阶段2完成后、阶段3之前执行。
+这是编排层自己做的，不属于任何 skill。目标是识别旧覆盖、生成更新任务，并在进入阶段3前把旧脚本更新到可回归状态。
 
-### 查重映射
-- 将阶段2生成的脚本和 `ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/` 下已有脚本做对比
-- 如果生成的脚本覆盖的用例已经有自动化脚本，标记为重复并跳过
+### 影响分析与重叠裁决
+- 扫描 `ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/` 下已有脚本
+- 生成 `impact_candidates.json`、`overlap_report.md`
+- 将新脚本候选和可能受影响的旧脚本候选合并成回归候选集
 
-### 提升守卫
-- 对照以下两份文档检查生成的脚本是否合规：
+### 旧脚本更新循环
+- 根据影响分析结果生成 `legacy_update_tasks.json`
+- 在“旧脚本更新执行”阶段内按批次循环处理 `pending/retry` 任务
+- 每轮处理后更新 `legacy_update_gate.json`
+- 直到：
+  - 所有 blocking 任务完成 → 进入阶段3
+  - 或任务升级为 `manual-review` → 停在当前阶段等待人工介入
+
+### 提升守卫与自动合并
+- 候选更新版本必须通过以下守卫后才能自动覆盖原脚本：
   - `ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/docs/test-case-authoring-spec.md`
   - `ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/docs/test-case-review-checklist.md`
-
-### 脚本入库
-- 将通过守卫的脚本复制到 `ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/<module>/`
+- `pytest --collect-only`
+- `run --dry-run`
 
 ---
 
 ## 阶段3：ok_autotest_ui_skill（所有模式都走）
 
 **触发**：
-- 新需求/混合：衔接步骤完成后
-- 纯回归：用户告知模块+改动描述后直接进入
+- 新需求/混合：阶段2完成且旧脚本更新循环清零后
+- 纯回归：影响分析和旧脚本更新循环完成后
 
 **执行**：
 1. 读取 `bundled/skills/ok_autotest_ui_skill/SKILL.md`
@@ -136,7 +144,8 @@
 [阶段1 senior-qa-brain] 正在分析 Figma 设计稿...
 [阶段1 senior-qa-brain] 分析报告已生成，请确认是否准确。
 [阶段2 playwright-test-generator] 批次1/3：正在录制 TC001-TC005...
-[衔接] 5个脚本通过提升守卫，已入库到 test_cases/login/
+[影响分析] 发现 3 个旧脚本候选受影响，已生成更新任务。
+[旧脚本更新执行] 第2轮完成，剩余 1 个任务待处理，继续 advance 进入下一轮。
 [阶段3 ok_autotest_ui_skill] 回归全绿(7/7)，建议上线。
 ```
 

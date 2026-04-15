@@ -60,6 +60,8 @@ def _format_brief(state_data: dict) -> str:
         return f"{header} | 已完成\n  → 最终报告: {report}" if report else f"{header} | 已完成"
     if status == RunStatus.PLANNED.value:
         return f"{header} | 已计划，使用 advance 开始执行"
+    if reason:
+        return f"{header}\n  → {reason}"
     return header
 
 

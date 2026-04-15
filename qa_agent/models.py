@@ -22,6 +22,8 @@ class Phase(str, Enum):
     SENIOR_QA_BRAIN = "senior-qa-brain"
     PLAYWRIGHT_GENERATOR = "playwright-test-generator"
     BRIDGE = "衔接（查重+守卫+入库）"
+    IMPACT_ANALYSIS = "影响分析与重叠裁决"
+    LEGACY_UPDATE = "旧脚本更新执行"
     OK_UI_REGRESSION = "ok_autotest_ui_skill"
     FINAL_REPORT = "最终报告"
 
@@ -39,6 +41,21 @@ class RunStatus(str, Enum):
     RUNNING = "执行中"
     BLOCKED = "已阻塞"
     COMPLETED = "已完成"
+
+
+class CaseStatus(str, Enum):
+    NEW_CANDIDATE = "new-candidate"
+    EXISTING_AUTOMATED = "existing-automated"
+    REGEN_REQUIRED = "regen-required"
+    NON_AUTOMATABLE = "non-automatable"
+
+
+class LegacyUpdateTaskStatus(str, Enum):
+    PENDING = "pending"
+    RUNNING = "running"
+    RETRY = "retry"
+    COMPLETED = "completed"
+    MANUAL_REVIEW = "manual-review"
 
 
 @dataclass
@@ -95,6 +112,65 @@ class ValidationResult:
     name: str
     message: str
     details: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class ImpactCandidate:
+    source_type: str
+    target: str
+    module: str = ""
+    site: str = ""
+    feature_key: str = ""
+    selector_hint: str = ""
+    reason: str = ""
+    related_case_id: str = ""
+    related_nodeid: str = ""
+    details: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class OverlapDecision:
+    new_target: str
+    existing_target: str
+    decision: str
+    reason: str = ""
+    related_case_id: str = ""
+    related_nodeid: str = ""
+
+
+@dataclass
+class LegacyUpdateTask:
+    task_id: str
+    target_script: str
+    target_case_id: str = ""
+    target_nodeid: str = ""
+    impact_type: str = "coverage_overlap"
+    recommended_action: str = "manual-review"
+    status: str = LegacyUpdateTaskStatus.PENDING.value
+    reason: str = ""
+    blocking: bool = True
+    attempts: int = 0
+    max_attempts: int = 3
+    details: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class LegacyUpdateGate:
+    round_index: int = 0
+    total_count: int = 0
+    pending_count: int = 0
+    retry_count: int = 0
+    completed_count: int = 0
+    manual_review_count: int = 0
+    all_completed: bool = False
+    has_manual_review: bool = False
+
+
+@dataclass
+class LegacyUpdateRoundOutcome:
+    tasks: list[LegacyUpdateTask]
+    gate: LegacyUpdateGate
+    results: list[dict[str, Any]] = field(default_factory=list)
 
 
 def to_data(value: Any) -> Any:

@@ -20,10 +20,11 @@ flowchart TD
     
     NewReq --> SQB["阶段1: AI读取 senior-qa-brain SKILL.md 执行"]
     SQB --> PTG["阶段2: AI读取 playwright-test-generator SKILL.md 执行"]
-    PTG --> Bridge["编排层: 查重映射 + 提升守卫 + 脚本入库"]
-    Bridge --> OKU["阶段3: AI读取 ok_autotest_ui_skill SKILL.md 执行回归"]
+    PTG --> Impact["编排层: 影响分析与重叠裁决"]
+    Impact --> Legacy["编排层: 旧脚本更新执行（循环）"]
+    Legacy --> OKU["阶段3: AI读取 ok_autotest_ui_skill SKILL.md 执行回归"]
     
-    Regression --> OKU
+    Regression --> Impact
     
     Mixed --> NewFirst["先跑新需求: 阶段1 → 阶段2 → 入库"]
     NewFirst --> OKU
@@ -37,9 +38,9 @@ flowchart TD
 
 | 模式 | 用户输入 | 走哪些阶段 |
 |------|---------|-----------|
-| **新需求** | Figma链接 和/或 PRD | 阶段1 → 阶段2 → 衔接 → 阶段3 |
-| **纯回归** | 模块名 + 站点 + 改动描述 | 直接阶段3 |
-| **混合** | Figma/PRD + 改动描述 | 先新需求支线，再阶段3（新旧一起回归） |
+| **新需求** | Figma链接 和/或 PRD | 阶段1 → 阶段2 → 影响分析 → 旧脚本更新循环 → 阶段3 |
+| **纯回归** | 模块名 + 站点 + 改动描述 | 影响分析 → 旧脚本更新循环 → 阶段3 |
+| **混合** | Figma/PRD + 改动描述 | 先新需求支线，再做影响分析与旧脚本更新循环，最后阶段3 |
 
 AI 自动识别变更模式，拿不准时会通过对话确认。
 
@@ -104,10 +105,10 @@ qa-agent status --run-id <运行ID>
    → 你按 SKILL.md 分批录制、验证、生成脚本
 
 4. qa-agent complete --run-id <ID> --phase playwright-test-generator
-   → 输出: 请完成查重映射、提升守卫和脚本入库
+   → 输出: 自动进入影响分析与旧脚本更新循环
 
-5. qa-agent complete --run-id <ID> --phase "衔接（查重+守卫+入库）"
-   → 输出: 请按 ok_autotest_ui_skill/SKILL.md 执行回归
+5. qa-agent advance --run-id <ID>
+   → 输出: 旧脚本更新第 N 轮结果；若未清零则继续 advance
 
 6. qa-agent complete --run-id <ID> --phase ok_autotest_ui_skill
    → 输出: 最终报告已生成
@@ -129,7 +130,7 @@ qa-agent status --run-id <运行ID>
 
 - 编排层只做阶段流转，不替代 skill 的内部逻辑
 - 每个 skill 的执行方式由其 SKILL.md 定义
-- 查重映射和提升守卫是编排层的"阶段间衔接"逻辑
+- 影响分析、旧脚本更新循环和提升守卫是编排层的"阶段间衔接"逻辑
 - 提升守卫的标准参考：
   - `ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/docs/test-case-authoring-spec.md`
   - `ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/docs/test-case-review-checklist.md`
