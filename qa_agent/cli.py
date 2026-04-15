@@ -40,7 +40,7 @@ def _add_input_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--module", "--模块", dest="module")
     parser.add_argument("--feature", "--功能", dest="feature")
     parser.add_argument("--change-description", "--改动描述", dest="change_description")
-    parser.add_argument("--change-mode", "--变更模式", dest="change_mode", default="auto")
+    parser.add_argument("--change-mode", "--变更模式", dest="change_mode")
 
 
 def _format_brief(state_data: dict) -> str:
@@ -74,6 +74,14 @@ def main() -> int:
     cmd = args.command
     if cmd in ("plan", "计划"):
         inputs = {k: v for k, v in vars(args).items() if k != "command" and v not in (None, [], "")}
+        if not args.change_mode:
+            print(
+                "参数错误: 必须显式选择变更模式：\n"
+                "  A 新需求模式  -> --change-mode 新需求\n"
+                "  B 纯回归模式  -> --change-mode 纯回归\n"
+                "  C 混合模式    -> --change-mode 混合"
+            )
+            return 1
         has_figma = bool(inputs.get("figma_url"))
         has_prd = bool(inputs.get("prd_refs"))
         has_desc = bool(inputs.get("change_description"))

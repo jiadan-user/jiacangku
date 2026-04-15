@@ -1,8 +1,8 @@
 """
 QA Agent 编排层 - 纯状态机。
 
-只管阶段流转，不执行任何 skill 的内部逻辑。
-每个阶段：标记当前该用哪个 skill / 执行编排适配器 → 提示用户 → 等待产物 → 下一步。
+只管阶段流转，不执行 skill 的内部推理流程；编排层自带的阶段只做候选识别、
+影响回归验证、任务编排和产物落盘。
 """
 from __future__ import annotations
 
@@ -11,12 +11,16 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
+from qa_agent.adapters.impact_verification import ImpactVerificationExecutor
 from qa_agent.adapters.legacy_update import LegacyUpdateExecutor, make_task_id
 from qa_agent.config import AppConfig
 from qa_agent.io import read_json, read_text, write_json, write_text
 from qa_agent.models import (
+    AttributionCategory,
     ChangeMode,
     ImpactCandidate,
+    ImpactRunStatus,
+    ImpactVerificationRecord,
     LegacyUpdateGate,
     LegacyUpdateTask,
     LegacyUpdateTaskStatus,
@@ -35,6 +39,7 @@ SKILL_PATHS = {
     Phase.SENIOR_QA_BRAIN: "bundled/skills/senior-qa-brain/SKILL.md",
     Phase.PLAYWRIGHT_GENERATOR: "bundled/skills/playwright-test-generator/SKILL.md",
     Phase.OK_UI_REGRESSION: "bundled/skills/ok_autotest_ui_skill/SKILL.md",
+    Phase.KNOWLEDGE_BASE_UPDATE: "bundled/skills/knowledge-base-manager/SKILL.md",
 }
 
 NEW_FEATURE_PHASES = [
@@ -43,31 +48,41 @@ NEW_FEATURE_PHASES = [
     Phase.SENIOR_QA_BRAIN,
     Phase.PLAYWRIGHT_GENERATOR,
     Phase.IMPACT_ANALYSIS,
+    Phase.IMPACT_VERIFICATION,
     Phase.LEGACY_UPDATE,
     Phase.OK_UI_REGRESSION,
     Phase.FINAL_REPORT,
+    Phase.KNOWLEDGE_BASE_UPDATE,
 ]
 
 REGRESSION_PHASES = [
     Phase.INTAKE,
     Phase.IMPACT_SPLIT,
     Phase.IMPACT_ANALYSIS,
+    Phase.IMPACT_VERIFICATION,
     Phase.LEGACY_UPDATE,
     Phase.OK_UI_REGRESSION,
     Phase.FINAL_REPORT,
+    Phase.KNOWLEDGE_BASE_UPDATE,
 ]
 
 MIXED_PHASES = NEW_FEATURE_PHASES
 
 
 class QAConductor:
-    def __init__(self, config: AppConfig, legacy_update_executor: LegacyUpdateExecutor | None = None) -> None:
+    def __init__(
+        self,
+        config: AppConfig,
+        legacy_update_executor: LegacyUpdateExecutor | None = None,
+        impact_verification_executor: ImpactVerificationExecutor | None = None,
+    ) -> None:
         self.config = config
         self.store = RunStore(config.qa_state_root)
         self.legacy_update_executor = legacy_update_executor or LegacyUpdateExecutor(config)
+        self.impact_verification_executor = impact_verification_executor or ImpactVerificationExecutor(config)
 
     def plan(self, inputs: dict[str, Any]) -> RunState:
-        mode = self._resolve_mode(inputs)
+        mode = self._coerce_mode(inputs.get("change_mode"))
         state = self.store.create_run(mode)
         state = self._phase_intake(state, inputs)
         state = self._phase_impact_split(state, mode)
@@ -80,7 +95,6 @@ class QAConductor:
         return to_data(state)
 
     def advance(self, run_id: str, inputs: dict[str, Any] | None = None) -> RunState:
-        """推进到下一个待执行阶段；自动穿过已完成的编排阶段。"""
         inputs = inputs or {}
         state = self.store.load(run_id)
         phases = self._phases_for_mode(state.change_mode)
@@ -96,36 +110,69 @@ class QAConductor:
             self.store.save(state)
             return state
 
+        if all(
+            state.phase_statuses.get(phase.value) in (PhaseStatus.COMPLETED.value, PhaseStatus.SKIPPED.value)
+            for phase in phases
+        ):
+            state.status = RunStatus.COMPLETED.value
+            state.blocked_reason = ""
         self.store.save(state)
         return state
+
+    def complete_phase(self, run_id: str, phase_name: str, artifacts: dict[str, str] | None = None) -> RunState:
+        state = self.store.load(run_id)
+        if artifacts:
+            state.artifacts.update(artifacts)
+        if phase_name == Phase.IMPACT_VERIFICATION.value:
+            state = self._confirm_impact_verification(state)
+        state.phase_statuses[phase_name] = PhaseStatus.COMPLETED.value
+        state.current_phase = phase_name
+        state.blocked_reason = ""
+        state.status = RunStatus.RUNNING.value
+        self.store.save(state)
+        return self.advance(run_id)
 
     def _execute_phase(self, state: RunState, phase: Phase, inputs: dict[str, Any]) -> RunState:
         if phase == Phase.INTAKE:
             return self._phase_intake(state, inputs)
         if phase == Phase.IMPACT_SPLIT:
-            return self._phase_impact_split(state, self._resolve_mode(inputs))
-        if phase in (Phase.SENIOR_QA_BRAIN, Phase.PLAYWRIGHT_GENERATOR, Phase.OK_UI_REGRESSION):
+            return self._phase_impact_split(state, state.change_mode)
+        if phase in (
+            Phase.SENIOR_QA_BRAIN,
+            Phase.PLAYWRIGHT_GENERATOR,
+            Phase.OK_UI_REGRESSION,
+            Phase.KNOWLEDGE_BASE_UPDATE,
+        ):
             return self._phase_skill(state, phase, inputs)
         if phase == Phase.IMPACT_ANALYSIS:
             return self._phase_impact_analysis(state)
+        if phase == Phase.IMPACT_VERIFICATION:
+            return self._phase_impact_verification(state)
         if phase == Phase.LEGACY_UPDATE:
             return self._phase_legacy_update(state)
         if phase == Phase.FINAL_REPORT:
             return self._phase_final_report(state)
         return state
 
-    def _resolve_mode(self, inputs: dict[str, Any]) -> str:
-        explicit = inputs.get("change_mode")
-        if explicit and explicit != "auto":
-            return explicit
-        has_figma = bool(inputs.get("figma_url"))
-        has_prd = bool(inputs.get("prd_refs"))
-        has_change_desc = bool(inputs.get("change_description"))
-        if (has_figma or has_prd) and has_change_desc:
-            return ChangeMode.MIXED.value
-        if has_figma or has_prd:
-            return ChangeMode.NEW_FEATURE.value
-        return ChangeMode.REGRESSION.value
+    def _coerce_mode(self, value: str | None) -> str:
+        aliases = {
+            ChangeMode.NEW_FEATURE.value: ChangeMode.NEW_FEATURE.value,
+            ChangeMode.REGRESSION.value: ChangeMode.REGRESSION.value,
+            ChangeMode.MIXED.value: ChangeMode.MIXED.value,
+            "a": ChangeMode.NEW_FEATURE.value,
+            "b": ChangeMode.REGRESSION.value,
+            "c": ChangeMode.MIXED.value,
+            "新需求模式": ChangeMode.NEW_FEATURE.value,
+            "纯回归模式": ChangeMode.REGRESSION.value,
+            "混合模式": ChangeMode.MIXED.value,
+        }
+        normalized = (value or "").strip()
+        if normalized in aliases:
+            return aliases[normalized]
+        raise ValueError(
+            "必须显式选择变更模式：A 新需求模式（--change-mode 新需求）、"
+            "B 纯回归模式（--change-mode 纯回归）、C 混合模式（--change-mode 混合）"
+        )
 
     def _phases_for_mode(self, mode: str) -> list[Phase]:
         if mode == ChangeMode.REGRESSION.value:
@@ -159,20 +206,9 @@ class QAConductor:
         self._mark(state, Phase.IMPACT_SPLIT, PhaseStatus.RUNNING)
         state.change_mode = mode
         phases = self._phases_for_mode(mode)
-        state.phase_statuses = {p.value: PhaseStatus.PENDING.value for p in phases}
+        state.phase_statuses = {phase.value: PhaseStatus.PENDING.value for phase in phases}
         state.phase_statuses[Phase.INTAKE.value] = PhaseStatus.COMPLETED.value
         state.phase_statuses[Phase.IMPACT_SPLIT.value] = PhaseStatus.COMPLETED.value
-
-        skip_in_regression = {
-            Phase.SENIOR_QA_BRAIN,
-            Phase.PLAYWRIGHT_GENERATOR,
-            Phase.BRIDGE,
-        }
-        if mode == ChangeMode.REGRESSION.value:
-            for phase in skip_in_regression:
-                if phase.value in state.phase_statuses:
-                    state.phase_statuses[phase.value] = PhaseStatus.SKIPPED.value
-
         write_json(
             self.store.artifact_path(state.run_id, "impact_split.json"),
             {"change_mode": mode, "phases": [phase.value for phase in phases]},
@@ -181,20 +217,24 @@ class QAConductor:
         return state
 
     def _phase_skill(self, state: RunState, phase: Phase, inputs: dict[str, Any]) -> RunState:
-        """skill 阶段：标记当前该用哪个 skill，记录 SKILL.md 路径。"""
+        del inputs
         self._mark(state, phase, PhaseStatus.RUNNING)
         skill_path = SKILL_PATHS[phase]
-        state.artifacts[f"{phase.value}_skill_path"] = str(self.config.project_root / skill_path)
+        absolute_skill_path = self.config.project_root / skill_path
+        state.artifacts[f"{phase.value}_skill_path"] = str(absolute_skill_path)
 
-        instruction = self._build_instruction(state, phase)
         instruction_path = self.store.artifact_path(state.run_id, f"{phase.value}_instruction.md")
-        write_text(instruction_path, instruction)
+        write_text(instruction_path, self._build_instruction(state, phase))
         state.artifacts[f"{phase.value}_instruction"] = str(instruction_path)
 
         self._mark(state, phase, PhaseStatus.BLOCKED)
-        state.blocked_reason = f"请按 {skill_path} 执行，完成后用 advance 继续"
+        if not absolute_skill_path.exists():
+            state.blocked_reason = f"缺少 {skill_path}，请先同步内嵌资源后再继续"
+        elif phase == Phase.KNOWLEDGE_BASE_UPDATE:
+            state.blocked_reason = f"请按 {skill_path} 先生成 KB 预览、等待确认、再写入，完成后用 complete 继续"
+        else:
+            state.blocked_reason = f"请按 {skill_path} 执行，完成后用 complete 继续"
         state.status = RunStatus.BLOCKED.value
-        self.store.save(state)
         return state
 
     def _phase_impact_analysis(self, state: RunState) -> RunState:
@@ -205,35 +245,98 @@ class QAConductor:
             impact_payload["new_cases"],
             impact_payload["existing_cases"],
         )
-        legacy_tasks = self._load_seed_tasks(state)
-        if not legacy_tasks:
-            legacy_tasks = self._build_legacy_tasks(packet, overlap_decisions)
-        gate = self._build_gate(legacy_tasks, round_index=0)
-        selector_plan = self._build_selector_plan(packet, impact_payload, legacy_tasks)
 
         impact_path = self.store.artifact_path(state.run_id, "impact_candidates.json")
         overlap_path = self.store.artifact_path(state.run_id, "overlap_report.md")
-        tasks_path = self.store.artifact_path(state.run_id, "legacy_update_tasks.json")
-        gate_path = self.store.artifact_path(state.run_id, "legacy_update_gate.json")
-        selector_path = self.store.artifact_path(state.run_id, "regression_selector_plan.json")
-
         write_json(impact_path, impact_payload)
         write_text(overlap_path, self._render_overlap_report(packet, overlap_decisions))
-        write_json(tasks_path, [asdict(task) for task in legacy_tasks])
-        write_json(gate_path, asdict(gate))
-        write_json(selector_path, selector_plan)
+
+        state.artifacts["impact_candidates"] = str(impact_path)
+        state.artifacts["overlap_report"] = str(overlap_path)
+        state.blocked_reason = ""
+        self._mark(state, Phase.IMPACT_ANALYSIS, PhaseStatus.COMPLETED)
+        return state
+
+    def _phase_impact_verification(self, state: RunState) -> RunState:
+        if (
+            state.phase_statuses.get(Phase.IMPACT_VERIFICATION.value) == PhaseStatus.BLOCKED.value
+            and state.artifacts.get("change_attribution_report")
+        ):
+            state.current_phase = Phase.IMPACT_VERIFICATION.value
+            state.status = RunStatus.BLOCKED.value
+            state.blocked_reason = "请先确认变更归因报告，确认后再 complete 当前阶段"
+            return state
+
+        self._mark(state, Phase.IMPACT_VERIFICATION, PhaseStatus.RUNNING)
+        packet = self._requirement_packet(state)
+        packet["change_mode"] = state.change_mode
+        impact_payload = read_json(state.artifacts.get("impact_candidates", ""), default={}) or {}
+        outcome = self.impact_verification_executor.verify(
+            run_dir=self.store.run_dir(state.run_id),
+            packet=packet,
+            impact_payload=impact_payload,
+        )
+
+        selector_path = self.store.artifact_path(state.run_id, "impact_run_selector_plan.json")
+        run_results_path = self.store.artifact_path(state.run_id, "impact_run_results.json")
+        attribution_result_path = self.store.artifact_path(state.run_id, "change_attribution_result.json")
+        attribution_report_path = self.store.artifact_path(state.run_id, "change_attribution_report.md")
+
+        write_json(selector_path, outcome.selector_plan)
+        write_json(run_results_path, [asdict(record) for record in outcome.records])
+        write_json(attribution_result_path, [asdict(record) for record in outcome.records])
+        write_text(attribution_report_path, self._render_change_attribution_report(packet, outcome.records))
 
         state.artifacts.update(
             {
-                "impact_candidates": str(impact_path),
-                "overlap_report": str(overlap_path),
+                "impact_run_selector_plan": str(selector_path),
+                "impact_run_results": str(run_results_path),
+                "change_attribution_result": str(attribution_result_path),
+                "change_attribution_report": str(attribution_report_path),
+            }
+        )
+        self._mark(state, Phase.IMPACT_VERIFICATION, PhaseStatus.BLOCKED)
+        state.status = RunStatus.BLOCKED.value
+        state.blocked_reason = "受影响用例已执行并生成归因报告，等待你确认后再继续"
+        return state
+
+    def _confirm_impact_verification(self, state: RunState) -> RunState:
+        packet = self._requirement_packet(state)
+        impact_payload = read_json(state.artifacts.get("impact_candidates", ""), default={}) or {}
+        attribution_records = self._load_attribution_records(state)
+        tasks = self._load_seed_tasks(state) or self._build_confirmed_legacy_tasks(packet, attribution_records)
+        gate = self._build_gate(tasks, round_index=0)
+        selector_plan = self._build_selector_plan(packet, impact_payload, tasks)
+
+        tasks_path = self.store.artifact_path(state.run_id, "legacy_update_tasks.json")
+        gate_path = self.store.artifact_path(state.run_id, "legacy_update_gate.json")
+        selector_path = self.store.artifact_path(state.run_id, "regression_selector_plan.json")
+        confirmation_path = self.store.artifact_path(state.run_id, "change_attribution_confirmation.json")
+
+        write_json(tasks_path, [asdict(task) for task in tasks])
+        write_json(gate_path, asdict(gate))
+        write_json(selector_path, selector_plan)
+        write_json(
+            confirmation_path,
+            {
+                "confirmed": True,
+                "tasks_generated": len(tasks),
+                "latest_change_cases": [
+                    record.related_nodeid or record.target
+                    for record in attribution_records
+                    if record.category == AttributionCategory.LATEST_CHANGE.value
+                ],
+            },
+        )
+
+        state.artifacts.update(
+            {
                 "legacy_update_tasks": str(tasks_path),
                 "legacy_update_gate": str(gate_path),
                 "regression_selector_plan": str(selector_path),
+                "change_attribution_confirmation": str(confirmation_path),
             }
         )
-        state.blocked_reason = ""
-        self._mark(state, Phase.IMPACT_ANALYSIS, PhaseStatus.COMPLETED)
         return state
 
     def _phase_legacy_update(self, state: RunState) -> RunState:
@@ -267,9 +370,7 @@ class QAConductor:
         state.artifacts["legacy_update_tasks"] = str(tasks_path)
         state.artifacts["legacy_update_gate"] = str(gate_path)
         state.artifacts[f"legacy_update_results_round_{round_index:02d}"] = str(results_path)
-        state.artifacts["regression_selector_plan"] = str(
-            self._refresh_selector_plan(state, outcome.tasks)
-        )
+        state.artifacts["regression_selector_plan"] = str(self._refresh_selector_plan(state, outcome.tasks))
 
         if outcome.gate.all_completed:
             state.blocked_reason = ""
@@ -281,7 +382,7 @@ class QAConductor:
             state.status = RunStatus.BLOCKED.value
             state.blocked_reason = (
                 f"旧脚本更新第{round_index}轮后仍有 manual-review 任务，"
-                f"需先处理当前阶段再继续"
+                "需先处理当前阶段再继续"
             )
             return state
 
@@ -299,9 +400,19 @@ class QAConductor:
             f"# QA Agent 最终报告 - {state.run_id}",
             "",
             f"- 变更模式: {state.change_mode}",
+            f"- 当前阶段: {state.current_phase}",
             "",
-            "## 产物清单",
+            "## 核心产物",
         ]
+        for key in [
+            "impact_candidates",
+            "change_attribution_report",
+            "legacy_update_gate",
+            "regression_selector_plan",
+        ]:
+            if state.artifacts.get(key):
+                lines.append(f"- {key}: {state.artifacts[key]}")
+        lines.extend(["", "## 完整产物清单"])
         for key, value in sorted(state.artifacts.items()):
             lines.append(f"- {key}: {value}")
         lines.extend(["", "## 阶段状态"])
@@ -312,7 +423,8 @@ class QAConductor:
         write_text(path, "\n".join(lines) + "\n")
         state.artifacts["final_report"] = str(path)
         self._mark(state, Phase.FINAL_REPORT, PhaseStatus.COMPLETED)
-        state.status = RunStatus.COMPLETED.value
+        state.status = RunStatus.RUNNING.value
+        state.blocked_reason = ""
         return state
 
     def _build_instruction(self, state: RunState, phase: Phase) -> str:
@@ -331,31 +443,34 @@ class QAConductor:
                 parts.append(f"- Figma: {packet['figma_url']}")
             for ref in packet.get("prd_refs", []):
                 parts.append(f"- 需求文档: {ref}")
-            parts.extend([
-                "",
-                "## 要求",
-                "- 按 SKILL.md 流程逐步执行，不要跳步",
-                "- 生成分析报告后等待用户确认",
-                "- 确认后生成 Markdown 测试用例",
-            ])
+            parts.extend(
+                [
+                    "",
+                    "## 要求",
+                    "- 按 SKILL.md 流程逐步执行，不要跳步",
+                    "- 生成分析报告后等待用户确认",
+                    "- 确认后生成 Markdown 测试用例",
+                ]
+            )
             return "\n".join(parts)
 
         if phase == Phase.PLAYWRIGHT_GENERATOR:
-            parts = [
-                f"# 阶段: {phase.value}",
-                "",
-                f"请读取 `{skill_path}` 并按其定义的 5 阶段流程执行。",
-                "",
-                "## 输入",
-                "- 测试用例文档: 阶段1(senior-qa-brain)生成的 Markdown 用例",
-                "",
-                "## 要求",
-                "- 按 SKILL.md 的 5 个阶段严格顺序执行",
-                "- 每个阶段开始前先读取 SKILL.md 指定的 references 文件",
-                "- 每批最多 5 条用例",
-                "- 阶段3代码生成时读取 test-case-authoring-spec.md 及模板",
-            ]
-            return "\n".join(parts)
+            return "\n".join(
+                [
+                    f"# 阶段: {phase.value}",
+                    "",
+                    f"请读取 `{skill_path}` 并按其定义的 5 阶段流程执行。",
+                    "",
+                    "## 输入",
+                    "- 测试用例文档: 阶段1(senior-qa-brain)生成的 Markdown 用例",
+                    "",
+                    "## 要求",
+                    "- 按 SKILL.md 的 5 个阶段严格顺序执行",
+                    "- 每个阶段开始前先读取 SKILL.md 指定的 references 文件",
+                    "- 每批最多 5 条用例",
+                    "- 生成的脚本暂不直接入库，先交由影响回归阶段验证",
+                ]
+            )
 
         if phase == Phase.OK_UI_REGRESSION:
             module = (packet.get("candidate_modules") or [""])[0]
@@ -375,14 +490,36 @@ class QAConductor:
                 parts.append(f"- 改动描述: {desc}")
             if selector_plan:
                 parts.append(f"- selector 计划: {selector_plan}")
-            parts.extend([
-                "",
-                "## 要求",
-                "- 优先消费 regression_selector_plan.json",
-                "- 先 dry-run 预览，等用户确认后再真实执行",
-                "- 若 selector_plan 缺少必要信息，再退回 module-map.md 做补充",
-            ])
+            parts.extend(
+                [
+                    "",
+                    "## 要求",
+                    "- 优先消费 regression_selector_plan.json",
+                    "- 先 dry-run 预览，等用户确认后再真实执行",
+                    "- 若 selector_plan 缺少必要信息，再退回 module-map.md 做补充",
+                ]
+            )
             return "\n".join(parts)
+
+        if phase == Phase.KNOWLEDGE_BASE_UPDATE:
+            return "\n".join(
+                [
+                    f"# 阶段: {phase.value}",
+                    "",
+                    f"请读取 `{skill_path}` 并按其“预览 -> 确认 -> 写入”流程执行。",
+                    "",
+                    "## 输入",
+                    f"- 最终报告: {state.artifacts.get('final_report', '')}",
+                    f"- 影响分析: {state.artifacts.get('impact_candidates', '')}",
+                    f"- 归因报告: {state.artifacts.get('change_attribution_report', '')}",
+                    f"- 回归 selector 计划: {state.artifacts.get('regression_selector_plan', '')}",
+                    "",
+                    "## 要求",
+                    "- 先输出 knowledge base 更新预览，再等待确认",
+                    "- 写入完成后回传 preview/result 产物路径",
+                    "- 若 vendored skill 缺失或预览失败，不要跳过本阶段",
+                ]
+            )
 
         return f"# 阶段: {phase.value}\n\n请读取 `{skill_path}` 并执行。"
 
@@ -392,17 +529,6 @@ class QAConductor:
         if status == PhaseStatus.RUNNING:
             state.status = RunStatus.RUNNING.value
         state.touch()
-
-    def complete_phase(self, run_id: str, phase_name: str, artifacts: dict[str, str] | None = None) -> RunState:
-        """手动标记某个阶段完成并附加产物，然后推进。"""
-        state = self.store.load(run_id)
-        if artifacts:
-            state.artifacts.update(artifacts)
-        state.phase_statuses[phase_name] = PhaseStatus.COMPLETED.value
-        state.blocked_reason = ""
-        state.status = RunStatus.RUNNING.value
-        self.store.save(state)
-        return self.advance(run_id)
 
     def _requirement_packet(self, state: RunState) -> dict[str, Any]:
         return read_json(state.artifacts.get("requirement_packet", ""), default={}) or {}
@@ -482,8 +608,8 @@ class QAConductor:
                 continue
             case_refs = self._extract_case_refs(script_path, text)
             if case_refs:
-                matches.extend(
-                    [
+                for case_ref in case_refs:
+                    matches.append(
                         ImpactCandidate(
                             source_type="existing-script",
                             target=str(script_path),
@@ -495,9 +621,7 @@ class QAConductor:
                             related_nodeid=case_ref["nodeid"],
                             details={"test_name": case_ref["test_name"]},
                         )
-                        for case_ref in case_refs
-                    ]
-                )
+                    )
             else:
                 matches.append(
                     ImpactCandidate(
@@ -559,7 +683,7 @@ class QAConductor:
                         new_target=new_target,
                         existing_target=existing_target,
                         decision="overlap",
-                        reason="新旧脚本命中同名脚本或相同 case_id，需并跑裁决",
+                        reason="新旧脚本命中同名脚本或相同 case_id，需先执行影响回归再裁决",
                         related_case_id=existing_case_id,
                         related_nodeid=existing_case.get("related_nodeid", ""),
                     )
@@ -584,32 +708,121 @@ class QAConductor:
             tasks.append(LegacyUpdateTask(**item))
         return tasks
 
-    def _build_legacy_tasks(
+    def _load_attribution_records(self, state: RunState) -> list[ImpactVerificationRecord]:
+        payload = read_json(state.artifacts.get("change_attribution_result", ""), default=[]) or []
+        records: list[ImpactVerificationRecord] = []
+        for item in payload:
+            if isinstance(item, ImpactVerificationRecord):
+                records.append(item)
+            else:
+                records.append(ImpactVerificationRecord(**item))
+        return records
+
+    def _build_confirmed_legacy_tasks(
         self,
         packet: dict[str, Any],
-        overlap_decisions: list[OverlapDecision],
+        records: list[ImpactVerificationRecord],
     ) -> list[LegacyUpdateTask]:
         tasks: list[LegacyUpdateTask] = []
-        default_action = "update-assertion" if packet.get("change_description") else "re-record"
         max_rounds = int(self.config.thresholds.get("gates", {}).get("max_fix_rounds", 3))
-        for decision in overlap_decisions:
+        module = (packet.get("candidate_modules") or [""])[0]
+        site = packet.get("site", "")
+        for record in records:
+            if record.source_type == "new-script" and record.run_status == ImpactRunStatus.PASSED.value:
+                promotion_task = self._build_new_script_promotion_task(packet, record, max_rounds)
+                if promotion_task:
+                    tasks.append(promotion_task)
+                continue
+
+            if record.source_type == "new-script" and record.category == AttributionCategory.LATEST_CHANGE.value:
+                tasks.append(
+                    LegacyUpdateTask(
+                        task_id=make_task_id("legacy"),
+                        target_script=record.target,
+                        target_case_id=record.related_case_id,
+                        target_nodeid=record.related_nodeid,
+                        impact_type="new-script-failed",
+                        recommended_action="manual-review",
+                        reason="新脚本影响回归失败，需人工确认后决定重录或修正",
+                        max_attempts=max_rounds,
+                        details={"module": module, "site": site, "source_type": record.source_type},
+                    )
+                )
+                continue
+
+            if record.category != AttributionCategory.LATEST_CHANGE.value:
+                continue
+
             tasks.append(
                 LegacyUpdateTask(
                     task_id=make_task_id("legacy"),
-                    target_script=decision.existing_target,
-                    target_case_id=decision.related_case_id,
-                    target_nodeid=decision.related_nodeid,
-                    impact_type=decision.decision,
-                    recommended_action=default_action,
-                    reason=decision.reason,
+                    target_script=record.target,
+                    target_case_id=record.related_case_id,
+                    target_nodeid=record.related_nodeid,
+                    impact_type="change-attribution",
+                    recommended_action=self._recommended_action(record),
+                    reason=record.reason or "影响回归判定为本次变更引起",
                     max_attempts=max_rounds,
                     details={
-                        "module": (packet.get("candidate_modules") or [""])[0],
-                        "site": packet.get("site", ""),
+                        "module": module,
+                        "site": site,
+                        "source_type": record.source_type,
                     },
                 )
             )
         return tasks
+
+    def _build_new_script_promotion_task(
+        self,
+        packet: dict[str, Any],
+        record: ImpactVerificationRecord,
+        max_rounds: int,
+    ) -> LegacyUpdateTask | None:
+        source_path = Path(record.staged_target or record.target)
+        if not source_path.exists():
+            return None
+        regression_root = Path(self.config.skills.get("paths", {}).get("regression_project_root", ""))
+        try:
+            source_path.resolve().relative_to(regression_root.resolve())
+            return None
+        except ValueError:
+            pass
+        target_path = self._infer_promotion_target(packet, source_path)
+        return LegacyUpdateTask(
+            task_id=make_task_id("legacy"),
+            target_script=str(target_path),
+            target_case_id=record.related_case_id,
+            target_nodeid=record.related_nodeid,
+            impact_type="new-script-promotion",
+            recommended_action="promote-new-script",
+            reason="新脚本影响回归已通过，等待人工确认后 promotion 到正式回归目录",
+            max_attempts=max_rounds,
+            details={
+                "module": (packet.get("candidate_modules") or [""])[0],
+                "site": packet.get("site", ""),
+                "replacement_source_path": str(source_path),
+                "source_type": record.source_type,
+            },
+        )
+
+    def _infer_promotion_target(self, packet: dict[str, Any], source_path: Path) -> Path:
+        regression_root = Path(self.config.skills.get("paths", {}).get("regression_project_root", ""))
+        module = (packet.get("candidate_modules") or ["misc"])[0] or "misc"
+        parts = source_path.parts
+        if "test_cases" in parts:
+            suffix = Path(*parts[parts.index("test_cases") + 1 :])
+            return regression_root / "test_cases" / suffix
+        return regression_root / "test_cases" / module / source_path.name
+
+    def _recommended_action(self, record: ImpactVerificationRecord) -> str:
+        searchable = normalize_text(" ".join([record.summary, record.stdout_excerpt, record.stderr_excerpt]))
+        if any(token in searchable for token in ["selector", "locator", "not found", "strict mode violation"]):
+            return "update-selector"
+        if any(token in searchable for token in ["assert", "expected", "actual", "mismatch"]):
+            return "update-assertion"
+        if "split" in searchable:
+            return "split-case"
+        return "re-record"
 
     def _build_gate(self, tasks: list[LegacyUpdateTask], round_index: int) -> LegacyUpdateGate:
         pending_count = sum(task.status == LegacyUpdateTaskStatus.PENDING.value for task in tasks)
@@ -628,11 +841,7 @@ class QAConductor:
             has_manual_review=manual_review_count > 0,
         )
 
-    def _render_overlap_report(
-        self,
-        packet: dict[str, Any],
-        overlap_decisions: list[OverlapDecision],
-    ) -> str:
+    def _render_overlap_report(self, packet: dict[str, Any], overlap_decisions: list[OverlapDecision]) -> str:
         module = (packet.get("candidate_modules") or [""])[0]
         lines = [
             "# 重叠裁决报告",
@@ -642,21 +851,66 @@ class QAConductor:
             "",
         ]
         if not overlap_decisions:
-            lines.append("本轮未检测到需要自动生成旧脚本更新任务的重叠项。")
+            lines.append("本轮未检测到明确重叠项，后续以影响回归结果为准。")
             return "\n".join(lines) + "\n"
 
-        lines.extend(
-            [
-                "| 新脚本 | 旧脚本 | 裁决 | 说明 |",
-                "| --- | --- | --- | --- |",
-            ]
-        )
+        lines.extend(["| 新脚本 | 旧脚本 | 裁决 | 说明 |", "| --- | --- | --- | --- |"])
         for decision in overlap_decisions:
             lines.append(
                 f"| `{decision.new_target}` | `{decision.existing_target}` | "
                 f"`{decision.decision}` | {decision.reason} |"
             )
         return "\n".join(lines) + "\n"
+
+    def _render_change_attribution_report(
+        self,
+        packet: dict[str, Any],
+        records: list[ImpactVerificationRecord],
+    ) -> str:
+        counts = {
+            AttributionCategory.PASSED.value: 0,
+            AttributionCategory.LATEST_CHANGE.value: 0,
+            AttributionCategory.PREEXISTING.value: 0,
+            AttributionCategory.ENVIRONMENT.value: 0,
+            AttributionCategory.UNCERTAIN.value: 0,
+        }
+        for record in records:
+            counts[record.category] = counts.get(record.category, 0) + 1
+
+        lines = [
+            "# 变更归因报告",
+            "",
+            f"- 模块: {(packet.get('candidate_modules') or [''])[0]}",
+            f"- 站点: {packet.get('site', '')}",
+            f"- 功能: {packet.get('feature_name', '')}",
+            "",
+            "## 汇总",
+            f"- passed: {counts[AttributionCategory.PASSED.value]}",
+            f"- likely_caused_by_latest_change: {counts[AttributionCategory.LATEST_CHANGE.value]}",
+            f"- likely_preexisting_or_unrelated: {counts[AttributionCategory.PREEXISTING.value]}",
+            f"- environment_or_data_issue: {counts[AttributionCategory.ENVIRONMENT.value]}",
+            f"- uncertain: {counts[AttributionCategory.UNCERTAIN.value]}",
+            "",
+            "## 明细",
+        ]
+
+        if not records:
+            lines.append("- 本轮没有识别到可执行的受影响用例，等待人工确认后决定是否直接进入回归。")
+            return "\n".join(lines) + "\n"
+
+        for record in records:
+            case_ref = record.related_nodeid or record.related_case_id or record.target
+            lines.extend(
+                [
+                    f"### {case_ref}",
+                    f"- 失败现象: {record.summary}",
+                    f"- 判断类别: `{record.category}`",
+                    f"- 判断理由: {record.reason}",
+                    f"- 下一步建议: {record.next_action}",
+                    "",
+                ]
+            )
+        return "\n".join(lines).rstrip() + "\n"
 
     def _build_selector_plan(
         self,
@@ -675,10 +929,7 @@ class QAConductor:
             "candidate_paths": sorted(path for path in candidate_paths if path),
             "case_ids": sorted({task.target_case_id for task in tasks if task.target_case_id}),
             "nodeids": sorted({task.target_nodeid for task in tasks if task.target_nodeid}),
-            "selectors": [
-                {"kind": "path", "value": path}
-                for path in sorted(path for path in candidate_paths if path)
-            ],
+            "selectors": [{"kind": "path", "value": path} for path in sorted(path for path in candidate_paths if path)],
         }
 
     def _refresh_selector_plan(self, state: RunState, tasks: list[LegacyUpdateTask]) -> Path:

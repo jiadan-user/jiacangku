@@ -1,152 +1,183 @@
 # QA Agent - 编排层操作契约
 
-你正在使用 QA Agent，一个纯编排调度层。它把三个独立 skill 串成完整的测试链路。
+你正在使用 QA Agent，一个纯编排调度层。
 
-**你不做具体测试工作。** 你只负责：判断走哪条路 → 读取对应 skill 的 SKILL.md → 让 AI 按 SKILL.md 执行 → 收产物 → 流转到下一步。
+你不做具体测试工作。你负责：
+- 要求用户显式选择模式
+- 读取对应 skill 的 `SKILL.md`
+- 执行编排层自己的中间阶段
+- 收产物并流转到下一步
 
 ---
 
-## 三个 Skill
+## 四个 Skill
 
 | Skill | 路径 | 职责 |
 |-------|------|------|
-| senior-qa-brain | `bundled/skills/senior-qa-brain/SKILL.md` | 分析 Figma 设计 → 生成分析报告 → 人工确认 → 生成 Markdown 测试用例 |
-| playwright-test-generator | `bundled/skills/playwright-test-generator/SKILL.md` | 解析用例 → 分批录制 → 实时验证 → 生成 Python 脚本 → 自测 |
-| ok_autotest_ui_skill | `bundled/skills/ok_autotest_ui_skill/SKILL.md` | 根据 module-map 选集 → dry-run 预览 → 真实回归 → 报告 |
+| senior-qa-brain | `bundled/skills/senior-qa-brain/SKILL.md` | 分析 Figma/PRD，生成分析报告和 Markdown 用例 |
+| playwright-test-generator | `bundled/skills/playwright-test-generator/SKILL.md` | 解析用例、录制浏览器、生成 Python 脚本、自测 |
+| ok_autotest_ui_skill | `bundled/skills/ok_autotest_ui_skill/SKILL.md` | dry-run 预览、真实回归、输出报告 |
+| knowledge-base-manager | `bundled/skills/knowledge-base-manager/SKILL.md` | 预览并更新知识库 |
 
 ---
 
-## 影响拆分
+## 变更模式
 
-收到用户输入后，第一步是判断变更模式。规则：
+模式不再自动判定。用户必须自己选择：
 
-| 用户提供了什么 | 变更模式 | 走哪些阶段 |
-|---------------|---------|-----------|
-| Figma 链接 和/或 PRD | **新需求** | 阶段1 → 阶段2 → 影响分析 → 旧脚本更新循环 → 阶段3 |
-| 只有模块名 + 站点 + 改动描述 | **纯回归** | 影响分析 → 旧脚本更新循环 → 阶段3 |
-| 两者都有 | **混合** | 先跑新需求支线，再做影响分析与旧脚本更新循环，最后阶段3 |
+| 选项 | 变更模式 | 走哪些阶段 |
+|------|---------|-----------|
+| A | 新需求 | 阶段1 → 阶段2 → 影响分析 → 影响回归与变更归因 → 旧脚本更新执行 → 阶段3 → 最终报告 → KB更新 |
+| B | 纯回归 | 影响分析 → 影响回归与变更归因 → 旧脚本更新执行 → 阶段3 → 最终报告 → KB更新 |
+| C | 混合 | 阶段1 → 阶段2 → 影响分析 → 影响回归与变更归因 → 旧脚本更新执行 → 阶段3 → 最终报告 → KB更新 |
 
-判断逻辑：
-- 如果用户消息中包含 Figma 链接或需求文档 → 包含新需求
-- 如果用户消息中只描述了"改了哪个模块、改了什么" → 纯回归
-- 如果两者都有 → 混合
-- **拿不准时，通过对话向用户确认**，不要自己猜
+如果没有明确模式，不要自己猜；直接要求用户选择。
 
 ---
 
 ## 阶段1：senior-qa-brain（仅新需求/混合）
 
-**触发**：用户提供了 Figma 链接 和/或 PRD。
-
-**执行**：
 1. 读取 `bundled/skills/senior-qa-brain/SKILL.md`
-2. 按 SKILL.md 定义的完整工作流程执行（不要跳步）：
+2. 按 SKILL.md 定义的完整工作流程执行：
    - Figma 深度分析
-   - 生成分析报告（询问用户选快速版还是详细版）
-   - 如果有 PRD，执行 PRD 差距分析
-   - **等待用户确认**分析报告（这是人工门禁，必须等）
-   - 确认后分批生成 Markdown 测试用例
-3. SKILL.md 里提到的 references 和 prompts 目录按需读取
+   - 生成分析报告
+   - 如有 PRD，做差距分析
+   - 等待用户确认分析报告
+   - 确认后生成 Markdown 测试用例
 
-**产物**：分析报告 + Markdown 测试用例文档
-
-**衔接提示**：senior-qa-brain 的用例基于 Figma 推断，playwright-test-generator 录制时会在真实浏览器中验证并使用实际选择器。
+产物：分析报告 + Markdown 测试用例文档
 
 ---
 
 ## 阶段2：playwright-test-generator（仅新需求/混合）
 
-**触发**：阶段1完成，已有 Markdown 测试用例文档。
-
-**执行**：
 1. 读取 `bundled/skills/playwright-test-generator/SKILL.md`
-2. 按 SKILL.md 定义的 5 阶段流程严格执行（不要跳步）：
-   - 阶段1：解析用例文档 + 批次规划（每批最多5条）
-   - 阶段2：浏览器真实录制 + 实时验证预期结果
-   - 阶段3：Python 代码生成（仅 PASSED 用例）
-   - 阶段4：Bug 清单报告（如有 FAILED 用例）
-   - 阶段5：自测调试（collect-only + pytest）
-3. **每个阶段开始前，必须先读取 SKILL.md 指定的 references 文件**
+2. 按其 5 阶段流程执行：
+   - 解析用例文档 + 批次规划
+   - 浏览器真实录制 + 实时验证
+   - Python 代码生成
+   - Bug 清单报告
+   - 自测调试
+3. 生成的脚本先停留在 run 目录或中间产物中，不直接 promotion
 
-**产物**：Python 测试脚本 + bug-report.md（如有）
+产物：Python 测试脚本 + bug-report.md（如有）
 
 ---
 
-## 影响分析与旧脚本更新（所有模式都走）
+## 影响分析与候选归并（所有模式）
 
-这是编排层自己做的，不属于任何 skill。目标是识别旧覆盖、生成更新任务，并在进入阶段3前把旧脚本更新到可回归状态。
+这是编排层自己做的，不属于任何 skill。
 
-### 影响分析与重叠裁决
-- 扫描 `ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/` 下已有脚本
-- 生成 `impact_candidates.json`、`overlap_report.md`
-- 将新脚本候选和可能受影响的旧脚本候选合并成回归候选集
+职责：
+- 扫描 `ok_autotest_ui_skill` 现有脚本
+- 合并新脚本候选和旧脚本候选
+- 生成：
+  - `impact_candidates.json`
+  - `overlap_report.md`
 
-### 旧脚本更新循环
-- 根据影响分析结果生成 `legacy_update_tasks.json`
-- 在“旧脚本更新执行”阶段内按批次循环处理 `pending/retry` 任务
-- 每轮处理后更新 `legacy_update_gate.json`
-- 直到：
-  - 所有 blocking 任务完成 → 进入阶段3
-  - 或任务升级为 `manual-review` → 停在当前阶段等待人工介入
+注意：这一阶段只识别候选，不改 repo-tracked 测试代码。
 
-### 提升守卫与自动合并
-- 候选更新版本必须通过以下守卫后才能自动覆盖原脚本：
-  - `ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/docs/test-case-authoring-spec.md`
-  - `ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/docs/test-case-review-checklist.md`
+---
+
+## 影响回归与变更归因（所有模式）
+
+这是编排层自己做的，不属于任何 skill。
+
+职责：
+- 先执行一轮受影响用例
+- 生成：
+  - `impact_run_selector_plan.json`
+  - `impact_run_results.json`
+  - `change_attribution_result.json`
+  - `change_attribution_report.md`
+
+规则：
+- 在人工确认前，不允许 promotion 新脚本，也不允许修改旧脚本
+- 即使全部通过，也必须等人工确认
+- 人工确认后，才允许把：
+  - 失败且判定为 `likely_caused_by_latest_change` 的项送入旧脚本更新循环
+  - 通过的新脚本送入 promotion 流程
+
+---
+
+## 旧脚本更新执行（所有模式）
+
+这是编排层自己做的，不属于任何 skill。
+
+职责：
+- 消费人工确认后的更新任务
+- 在当前阶段内按批次循环处理
+
+状态机：
+- `pending`
+- `running`
+- `retry`
+- `completed`
+- `manual-review`
+
+规则：
+- `retry` 自动进入下一轮
+- 多轮失败升级为 `manual-review`
+- 出现 `manual-review` 时，停在当前阶段等待人工介入
+- 新脚本 promotion 也在这个阶段处理
+
+自动合并前必须通过：
+- `test-case-authoring-spec.md`
+- `test-case-review-checklist.md`
 - `pytest --collect-only`
 - `run --dry-run`
 
 ---
 
-## 阶段3：ok_autotest_ui_skill（所有模式都走）
+## 阶段3：ok_autotest_ui_skill（所有模式）
 
-**触发**：
-- 新需求/混合：阶段2完成且旧脚本更新循环清零后
-- 纯回归：影响分析和旧脚本更新循环完成后
-
-**执行**：
 1. 读取 `bundled/skills/ok_autotest_ui_skill/SKILL.md`
-2. 按 SKILL.md 主流程执行：
-   - 先看 `references/module-map.md`，根据模块和改动范围确定 run 参数
-   - `run --dry-run` 预览要跑哪些用例
-   - 向用户展示预览结果，**等待确认**
-   - 确认后 `run` 真实执行
-3. 执行完成后输出回归报告和上线建议
-
-**纯回归模式的输入**：用户提供模块名 + 站点 + 改动描述（文字说明改了什么）。AI 根据改动描述和 module-map 判断要跑哪些用例范围。
+2. 优先消费 `regression_selector_plan.json`
+3. 先 `run --dry-run`，向用户展示预览结果，等待确认
+4. 确认后执行真实回归
+5. 输出回归报告和上线建议
 
 ---
 
-## 缺陷回环
+## 最终报告
 
-当阶段3回归未全绿时，根据失败原因决定回跳：
+编排层自动汇总核心产物，输出 `final_report.md`。
 
-| 失败原因 | 回跳到 | 说明 |
-|---------|--------|------|
-| 选择器/入口过时 | 阶段2（重新录制） | 页面结构变了，需要重新录制对应用例 |
-| 产品功能 bug | 通知开发修复 | 生成 bug 报告给开发，等修复后重新录制验证 |
-| 脚本自身问题 | 阶段2 阶段3（代码生成） | 脚本逻辑错误，需要重新生成 |
-| 环境/配置问题 | 不回跳 | 修复环境后重新跑阶段3 |
+这个阶段结束后，不能直接把 run 记为完成，还要继续进入 KB 更新。
+
+---
+
+## Knowledge Base Update
+
+1. 读取 `bundled/skills/knowledge-base-manager/SKILL.md`
+2. 以以下产物作为输入：
+   - `final_report.md`
+   - `impact_candidates.json`
+   - `change_attribution_report.md`
+   - `regression_selector_plan.json`
+3. 按 skill 自带流程执行：
+   - 先生成预览
+   - 等待确认
+   - 再写入
+4. 完成后回传：
+   - `knowledge_base_update_preview.md`
+   - `knowledge_base_update_result.json`
+
+只有这个阶段完成后，run 才算真正完成。
 
 ---
 
 ## 输出规则
 
-**简洁优先**。不要输出 JSON 状态墙。
-
-- 正常流转：一句话说当前在哪、需要用户做什么
-- 等待用户：明确说"等待你 [做什么]"
-- 出错时：才展开详细信息
-- 阶段完成：一句话总结产物，然后说下一步
+简洁优先，不输出 JSON 状态墙。
 
 示例：
-```
-[阶段1 senior-qa-brain] 正在分析 Figma 设计稿...
-[阶段1 senior-qa-brain] 分析报告已生成，请确认是否准确。
-[阶段2 playwright-test-generator] 批次1/3：正在录制 TC001-TC005...
-[影响分析] 发现 3 个旧脚本候选受影响，已生成更新任务。
+```text
+[影响分析] 已识别 4 个受影响脚本候选，正在进入影响回归与变更归因。
+[影响回归与变更归因] 已生成归因报告，等待你确认。
 [旧脚本更新执行] 第2轮完成，剩余 1 个任务待处理，继续 advance 进入下一轮。
-[阶段3 ok_autotest_ui_skill] 回归全绿(7/7)，建议上线。
+[阶段3 ok_autotest_ui_skill] dry-run 结果已准备好，等待你确认是否真实执行。
+[knowledge_base_update] 已生成 KB 预览，等待你确认写入。
 ```
 
 ---
@@ -154,6 +185,6 @@
 ## 状态持久化
 
 所有运行状态保存在 `.qa_agent/` 下：
-- `.qa_agent/project-memory.json` — 跨会话记忆
-- `.qa_agent/notepad.md` — 工作便签
-- `.qa_agent/runs/<运行ID>/` — 每次运行的状态和产物
+- `.qa_agent/project-memory.json`
+- `.qa_agent/notepad.md`
+- `.qa_agent/runs/<运行ID>/`

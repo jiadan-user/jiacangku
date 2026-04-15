@@ -156,6 +156,7 @@ class LegacyUpdateExecutor:
         validations = [asdict(item) for item in self.validator.validate(candidate_path, task)]
         validation_ok = all(item["ok"] for item in validations) if validations else True
         if validation_ok:
+            target_path.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(candidate_path, target_path)
             task.status = LegacyUpdateTaskStatus.COMPLETED.value
             results.append(self._result(task, True, candidate_path, "候选版本通过验收并已自动合并", validations))
@@ -173,7 +174,7 @@ class LegacyUpdateExecutor:
     ) -> tuple[bool, str]:
         if task.recommended_action in {"update-assertion", "update-selector"}:
             return self._patch_candidate(task, target_path, candidate_path)
-        if task.recommended_action in {"re-record", "split-case"}:
+        if task.recommended_action in {"re-record", "split-case", "promote-new-script"}:
             return self._replace_candidate(task, target_path, candidate_path, workspace)
         return False, f"不支持的更新动作: {task.recommended_action}"
 

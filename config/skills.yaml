@@ -3,6 +3,9 @@ paths:
   playwright_test_generator_root: bundled/skills/playwright-test-generator
   ok_ui_skill_root: bundled/skills/ok_autotest_ui_skill
   knowledge_base_root: bundled/knowledge_base
+  knowledge_base_manager_root: bundled/skills/knowledge-base-manager
+  knowledge_base_manifest: bundled/knowledge_base/.bundle-manifest.json
+  knowledge_base_manager_manifest: bundled/skills/knowledge-base-manager/.bundle-manifest.json
   regression_project_root: bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc
 
 commands:

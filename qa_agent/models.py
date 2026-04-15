@@ -21,11 +21,12 @@ class Phase(str, Enum):
     IMPACT_SPLIT = "影响拆分"
     SENIOR_QA_BRAIN = "senior-qa-brain"
     PLAYWRIGHT_GENERATOR = "playwright-test-generator"
-    BRIDGE = "衔接（查重+守卫+入库）"
     IMPACT_ANALYSIS = "影响分析与重叠裁决"
+    IMPACT_VERIFICATION = "影响回归与变更归因"
     LEGACY_UPDATE = "旧脚本更新执行"
     OK_UI_REGRESSION = "ok_autotest_ui_skill"
     FINAL_REPORT = "最终报告"
+    KNOWLEDGE_BASE_UPDATE = "knowledge_base_update"
 
 
 class PhaseStatus(str, Enum):
@@ -48,6 +49,20 @@ class CaseStatus(str, Enum):
     EXISTING_AUTOMATED = "existing-automated"
     REGEN_REQUIRED = "regen-required"
     NON_AUTOMATABLE = "non-automatable"
+
+
+class ImpactRunStatus(str, Enum):
+    PASSED = "passed"
+    FAILED = "failed"
+    SKIPPED = "skipped"
+
+
+class AttributionCategory(str, Enum):
+    PASSED = "passed"
+    LATEST_CHANGE = "likely_caused_by_latest_change"
+    PREEXISTING = "likely_preexisting_or_unrelated"
+    ENVIRONMENT = "environment_or_data_issue"
+    UNCERTAIN = "uncertain"
 
 
 class LegacyUpdateTaskStatus(str, Enum):
@@ -126,6 +141,34 @@ class ImpactCandidate:
     related_case_id: str = ""
     related_nodeid: str = ""
     details: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class ImpactVerificationRecord:
+    source_type: str
+    target: str
+    staged_target: str = ""
+    module: str = ""
+    site: str = ""
+    feature_key: str = ""
+    related_case_id: str = ""
+    related_nodeid: str = ""
+    run_status: str = ImpactRunStatus.SKIPPED.value
+    command: list[str] = field(default_factory=list)
+    returncode: int | None = None
+    summary: str = ""
+    stdout_excerpt: str = ""
+    stderr_excerpt: str = ""
+    category: str = AttributionCategory.UNCERTAIN.value
+    reason: str = ""
+    next_action: str = ""
+    details: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class ImpactVerificationOutcome:
+    selector_plan: dict[str, Any]
+    records: list[ImpactVerificationRecord] = field(default_factory=list)
 
 
 @dataclass

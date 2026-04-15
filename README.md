@@ -1,48 +1,46 @@
 # QA Agent 编排层
 
-`QA_Agent` 是一个纯编排调度层，把三个独立 skill 串成完整的测试链路：
+`QA_Agent` 是一个纯编排调度层，把四段能力串成完整测试链路：
 
-- `senior-qa-brain` — 分析 Figma + 生成测试用例
-- `playwright-test-generator` — 录制浏览器交互 + 生成 Python 测试脚本
-- `ok_autotest_ui_skill` — 执行回归测试 + 生成报告
+- `senior-qa-brain`：分析 Figma / PRD，产出分析报告和 Markdown 用例
+- `playwright-test-generator`：录制浏览器交互，生成 Python 测试脚本
+- `ok_autotest_ui_skill`：执行 UI 回归并输出回归报告
+- `knowledge-base-manager`：在最终阶段预览并更新知识库
 
-**编排层不做具体测试工作。** 每个 skill 的执行交给 AI 读取对应 SKILL.md 后自行完成。
+编排层不替代 skill 内部逻辑；它负责状态流转、影响分析、先跑先判、旧脚本更新循环和产物落盘。
 
 ## 架构
 
 ```mermaid
 flowchart TD
-    Input["用户输入"] --> Split{"编排层: 影响拆分"}
-    
-    Split -->|"有Figma/PRD"| NewReq["新需求模式"]
-    Split -->|"只有模块+改动描述"| Regression["纯回归模式"]
-    Split -->|"两者都有"| Mixed["混合模式"]
-    
-    NewReq --> SQB["阶段1: AI读取 senior-qa-brain SKILL.md 执行"]
-    SQB --> PTG["阶段2: AI读取 playwright-test-generator SKILL.md 执行"]
-    PTG --> Impact["编排层: 影响分析与重叠裁决"]
-    Impact --> Legacy["编排层: 旧脚本更新执行（循环）"]
-    Legacy --> OKU["阶段3: AI读取 ok_autotest_ui_skill SKILL.md 执行回归"]
-    
-    Regression --> Impact
-    
-    Mixed --> NewFirst["先跑新需求: 阶段1 → 阶段2 → 入库"]
-    NewFirst --> OKU
-    
-    OKU --> Judge{"回归全绿?"}
-    Judge -->|"是"| Final["最终报告 + 上线建议"]
-    Judge -->|"否"| Loop["缺陷回环"]
+    Input["用户输入"] --> ModePick["用户显式选择模式"]
+
+    ModePick --> Split{"执行路径"}
+    Split -->|"新需求"| SQB["senior-qa-brain"]
+    SQB --> PTG["playwright-test-generator"]
+    PTG --> Impact["影响分析与候选归并"]
+
+    Split -->|"纯回归"| Impact
+    Split -->|"混合"| SQB
+
+    Impact --> Verify["影响回归与变更归因"]
+    Verify --> Confirm["人工确认归因报告"]
+    Confirm --> Legacy["旧脚本更新循环 + 新脚本 promotion"]
+    Confirm --> OKU["ok_autotest_ui_skill"]
+    Legacy --> OKU
+    OKU --> Final["最终报告 + 上线建议"]
+    Final --> KB["knowledge-base-manager"]
 ```
 
-## 三种变更模式
+## 变更模式
 
-| 模式 | 用户输入 | 走哪些阶段 |
-|------|---------|-----------|
-| **新需求** | Figma链接 和/或 PRD | 阶段1 → 阶段2 → 影响分析 → 旧脚本更新循环 → 阶段3 |
-| **纯回归** | 模块名 + 站点 + 改动描述 | 影响分析 → 旧脚本更新循环 → 阶段3 |
-| **混合** | Figma/PRD + 改动描述 | 先新需求支线，再做影响分析与旧脚本更新循环，最后阶段3 |
+模式不再自动判定，用户必须显式选择：
 
-AI 自动识别变更模式，拿不准时会通过对话确认。
+| 模式 | CLI 参数 | 阶段 |
+|------|---------|------|
+| 新需求 | `--change-mode 新需求` | `senior-qa-brain -> playwright-test-generator -> impact -> verify -> legacy -> ok_ui -> final -> kb` |
+| 纯回归 | `--change-mode 纯回归` | `impact -> verify -> legacy -> ok_ui -> final -> kb` |
+| 混合 | `--change-mode 混合` | `senior-qa-brain -> playwright-test-generator -> impact -> verify -> legacy -> ok_ui -> final -> kb` |
 
 ## 快速开始
 
@@ -55,82 +53,44 @@ python -m qa_agent.cli --help
 
 ## 命令
 
-### 新需求
-
 ```bash
-# 创建计划
-qa-agent plan --figma-url <Figma链接> --site sg --module login --feature "visual_optimization"
+qa-agent plan --change-mode 新需求 --figma-url <Figma链接> --site ae --module car --feature 列表
+qa-agent plan --change-mode 纯回归 --site ae --module car --change-description "列表卡片样式调整"
+qa-agent plan --change-mode 混合 --figma-url <Figma链接> --site ae --module car --change-description "列表卡片样式调整"
 
-# 也支持中文
-qa-agent 计划 --figma链接 <Figma链接> --站点 sg --模块 login --功能 "visual_optimization"
-```
-
-### 纯回归
-
-```bash
-qa-agent plan --module wallet --site ae --change-description "修改了提现金额校验逻辑"
-```
-
-### 混合
-
-```bash
-qa-agent plan --figma-url <Figma链接> --module login --site sg --change-description "同时改了旧的注册流程"
-```
-
-### 推进流程
-
-```bash
-# 推进到下一阶段
 qa-agent advance --run-id <运行ID>
-
-# 标记当前阶段完成并推进（skill 执行完后调用）
 qa-agent complete --run-id <运行ID> --phase <阶段名>
-
-# 查看状态
 qa-agent status --run-id <运行ID>
 ```
 
-## 典型工作流（新需求）
+`IMPACT_VERIFICATION` 阶段完成后，需要显式执行：
 
-```
-1. qa-agent plan --figma-url ... --site sg --module login
-   → 输出: [运行ID] 新需求 | 已计划
-
-2. qa-agent advance --run-id <ID>
-   → 输出: 请按 senior-qa-brain/SKILL.md 执行
-   → 你按 SKILL.md 分析 Figma、生成报告、确认、生成用例
-
-3. qa-agent complete --run-id <ID> --phase senior-qa-brain
-   → 输出: 请按 playwright-test-generator/SKILL.md 执行
-   → 你按 SKILL.md 分批录制、验证、生成脚本
-
-4. qa-agent complete --run-id <ID> --phase playwright-test-generator
-   → 输出: 自动进入影响分析与旧脚本更新循环
-
-5. qa-agent advance --run-id <ID>
-   → 输出: 旧脚本更新第 N 轮结果；若未清零则继续 advance
-
-6. qa-agent complete --run-id <ID> --phase ok_autotest_ui_skill
-   → 输出: 最终报告已生成
+```bash
+qa-agent complete --run-id <运行ID> --phase 影响回归与变更归因
 ```
 
-## 编排规则
+`KNOWLEDGE_BASE_UPDATE` 阶段完成后，run 才会进入 `已完成`。
 
-完整的编排契约定义在 [AGENTS.md](AGENTS.md)。
+## 编排要点
+
+- 识别出受影响用例后，先执行一轮影响回归，再生成简洁归因报告
+- 人工确认前，不允许修改 repo-tracked 测试代码
+- 旧脚本更新和新脚本 promotion 都在 `旧脚本更新执行` 阶段内循环处理
+- `ok_autotest_ui_skill` 只消费确认后的 `regression_selector_plan.json`
+- 最终阶段固定触发 `knowledge-base-manager`
+
+## Vendored 资产
+
+- `bundled/knowledge_base/`：知识库内容快照
+- `bundled/skills/knowledge-base-manager/`：knowledge base skill 快照
+- 两者都由 `scripts/sync_bundled_assets.sh` 同步
+- 同步时会先校验 `/Users/a58/Desktop/knowledge_base` 是否位于 `main`、是否干净、是否追平远端 `origin/main`
+- 同步完成后会生成 `.bundle-manifest.json`
 
 ## 状态目录
-
-所有状态保存在 `.qa_agent/` 下：
 
 - `.qa_agent/project-memory.json`
 - `.qa_agent/notepad.md`
 - `.qa_agent/runs/<运行ID>/`
 
-## 说明
-
-- 编排层只做阶段流转，不替代 skill 的内部逻辑
-- 每个 skill 的执行方式由其 SKILL.md 定义
-- 影响分析、旧脚本更新循环和提升守卫是编排层的"阶段间衔接"逻辑
-- 提升守卫的标准参考：
-  - `ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/docs/test-case-authoring-spec.md`
-  - `ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/docs/test-case-review-checklist.md`
+完整编排契约见 [AGENTS.md](/Users/a58/Desktop/QA_Agent/AGENTS.md)。
