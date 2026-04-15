@@ -17,7 +17,16 @@ class RunStore:
     def _ensure_project_memory(self) -> None:
         memory_path = self.state_root / "project-memory.json"
         if not memory_path.exists():
-            write_json(memory_path, {"模块约定": {}, "站点默认值": {}})
+            write_json(
+                memory_path,
+                {
+                    "module_conventions": {},
+                    "case_id_conventions": {},
+                    "site_defaults": {},
+                    "template_preferences": {},
+                    "visual_threshold": 90,
+                },
+            )
         notepad_path = self.state_root / "notepad.md"
         if not notepad_path.exists():
             write_text(notepad_path, "# QA Agent 工作便签\n\n")

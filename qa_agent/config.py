@@ -12,6 +12,7 @@ class AppConfig:
     project_root: Path
     skills: dict[str, Any]
     thresholds: dict[str, Any]
+    knowledge_base_routing: dict[str, Any]
 
     @property
     def qa_state_root(self) -> Path:
@@ -35,5 +36,12 @@ def load_config(project_root: str | Path) -> AppConfig:
     root = Path(project_root).resolve()
     skills = read_yaml(root / "config" / "skills.yaml", default={}) or {}
     thresholds = read_yaml(root / "config" / "thresholds.yaml", default={}) or {}
+    knowledge_base_routing = read_yaml(root / "config" / "knowledge_base_routing.yaml", default={}) or {}
     skills = _resolve_nested_paths(skills, root)
-    return AppConfig(project_root=root, skills=skills, thresholds=thresholds)
+    knowledge_base_routing = _resolve_nested_paths(knowledge_base_routing, root)
+    return AppConfig(
+        project_root=root,
+        skills=skills,
+        thresholds=thresholds,
+        knowledge_base_routing=knowledge_base_routing,
+    )

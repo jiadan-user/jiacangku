@@ -73,6 +73,12 @@ class LegacyUpdateTaskStatus(str, Enum):
     MANUAL_REVIEW = "manual-review"
 
 
+class PlaywrightOutcomeType(str, Enum):
+    SCRIPT_GENERATED = "script_generated"
+    BUG_RECORDED = "bug_recorded"
+    MANUAL_REVIEW = "manual_review"
+
+
 @dataclass
 class RequirementPacket:
     change_mode: str
@@ -100,6 +106,61 @@ class RunState:
 
     def touch(self) -> None:
         self.updated_at = utc_now_iso()
+
+
+@dataclass
+class TextCaseManifestEntry:
+    tc_id: str
+    title: str
+    priority: str
+    test_type: str
+    ui_automatable: bool
+    ui_automation_label: str = ""
+    preconditions: list[str] = field(default_factory=list)
+    steps: list[str] = field(default_factory=list)
+    expected_results: list[str] = field(default_factory=list)
+    source_doc: str = ""
+
+
+@dataclass
+class TextCaseManifest:
+    module: str
+    site: str
+    feature_name: str
+    source_doc: str
+    kb_text_case_draft_path: str
+    environment: dict[str, str] = field(default_factory=dict)
+    cases: list[TextCaseManifestEntry] = field(default_factory=list)
+
+
+@dataclass
+class PlaywrightCaseOutcome:
+    tc_id: str
+    outcome: str
+    script_path: str = ""
+    bug_report_path: str = ""
+    manual_review_reason: str = ""
+    collect_only_passed: bool = False
+    pytest_passed: bool = False
+    details: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class PhaseGateResult:
+    phase: str
+    ok: bool
+    summary: str = ""
+    blocking_reasons: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+    details: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class UserConfirmationRecord:
+    phase: str
+    confirmed_at: str = field(default_factory=utc_now_iso)
+    summary: str = ""
+    details: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass

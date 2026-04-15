@@ -22,10 +22,17 @@ def build_parser() -> argparse.ArgumentParser:
     advance = sub.add_parser("advance", aliases=["推进", "继续"], help="推进到下一阶段")
     advance.add_argument("--run-id", "--运行ID", dest="run_id", required=True)
 
-    complete = sub.add_parser("complete", aliases=["完成阶段"], help="标记当前阶段完成并推进")
+    complete = sub.add_parser("complete", aliases=["完成阶段"], help="提交当前阶段产物并触发门禁验收")
     complete.add_argument("--run-id", "--运行ID", dest="run_id", required=True)
     complete.add_argument("--phase", "--阶段", dest="phase", required=True, help="要标记完成的阶段名")
-    complete.add_argument("--artifact", "--产物", dest="artifacts", action="append", default=[], help="附加产物 key=path 格式，可多次")
+    complete.add_argument(
+        "--artifact",
+        "--产物",
+        dest="artifacts",
+        action="append",
+        default=[],
+        help="附加产物 key=path 格式，可多次；阶段1/2/3/KB 都会按产物做门禁校验",
+    )
 
     status = sub.add_parser("status", aliases=["状态"], help="查看运行状态")
     status.add_argument("--run-id", "--运行ID", dest="run_id", required=True)

@@ -26,10 +26,16 @@ from qa_agent.models import (
     LegacyUpdateTaskStatus,
     OverlapDecision,
     Phase,
+    PhaseGateResult,
     PhaseStatus,
+    PlaywrightCaseOutcome,
+    PlaywrightOutcomeType,
     RequirementPacket,
     RunState,
     RunStatus,
+    TextCaseManifest,
+    TextCaseManifestEntry,
+    UserConfirmationRecord,
     to_data,
 )
 from qa_agent.state import RunStore
@@ -123,8 +129,22 @@ class QAConductor:
         state = self.store.load(run_id)
         if artifacts:
             state.artifacts.update(artifacts)
-        if phase_name == Phase.IMPACT_VERIFICATION.value:
+        phase = self._phase_from_name(phase_name)
+        if phase == Phase.SENIOR_QA_BRAIN:
+            state = self._complete_senior_qa_brain(state)
+        elif phase == Phase.PLAYWRIGHT_GENERATOR:
+            state = self._complete_playwright_generator(state)
+        elif phase == Phase.IMPACT_VERIFICATION:
             state = self._confirm_impact_verification(state)
+        elif phase == Phase.OK_UI_REGRESSION:
+            state = self._complete_ok_ui_regression(state)
+        elif phase == Phase.KNOWLEDGE_BASE_UPDATE:
+            state = self._complete_knowledge_base_update(state)
+
+        if state.phase_statuses.get(phase.value) == PhaseStatus.BLOCKED.value and state.blocked_reason:
+            self.store.save(state)
+            return state
+
         state.phase_statuses[phase_name] = PhaseStatus.COMPLETED.value
         state.current_phase = phase_name
         state.blocked_reason = ""
@@ -173,6 +193,12 @@ class QAConductor:
             "必须显式选择变更模式：A 新需求模式（--change-mode 新需求）、"
             "B 纯回归模式（--change-mode 纯回归）、C 混合模式（--change-mode 混合）"
         )
+
+    def _phase_from_name(self, phase_name: str) -> Phase:
+        try:
+            return Phase(phase_name)
+        except ValueError as exc:
+            raise ValueError(f"未知阶段: {phase_name}") from exc
 
     def _phases_for_mode(self, mode: str) -> list[Phase]:
         if mode == ChangeMode.REGRESSION.value:
@@ -337,7 +363,431 @@ class QAConductor:
                 "change_attribution_confirmation": str(confirmation_path),
             }
         )
+        self._append_confirmation(
+            state,
+            UserConfirmationRecord(
+                phase=Phase.IMPACT_VERIFICATION.value,
+                summary="已确认变更归因报告，可继续进入旧脚本更新与新脚本 promotion 阶段",
+                details={"tasks_generated": len(tasks)},
+            ),
+        )
+        state.blocked_reason = ""
         return state
+
+    def _complete_senior_qa_brain(self, state: RunState) -> RunState:
+        gate = self._validate_phase1_outputs(state)
+        self._store_gate_result(state, "phase1_gate_result", gate)
+        if not gate.ok:
+            return self._block_with_gate(state, Phase.SENIOR_QA_BRAIN, gate)
+        self._append_confirmation(
+            state,
+            UserConfirmationRecord(
+                phase=Phase.SENIOR_QA_BRAIN.value,
+                summary="已确认分析报告并归档文本用例草稿",
+                details={"kb_text_case_draft_path": state.artifacts.get("kb_text_case_draft_path", "")},
+            ),
+        )
+        state.blocked_reason = ""
+        return state
+
+    def _complete_playwright_generator(self, state: RunState) -> RunState:
+        gate = self._validate_phase2_outputs(state)
+        self._store_gate_result(state, "phase2_gate_result", gate)
+        if not gate.ok:
+            return self._block_with_gate(state, Phase.PLAYWRIGHT_GENERATOR, gate)
+        self._append_confirmation(
+            state,
+            UserConfirmationRecord(
+                phase=Phase.PLAYWRIGHT_GENERATOR.value,
+                summary="已验收 playwright 自动化转译结果",
+                details={
+                    "playwright_case_outcomes": state.artifacts.get("playwright_case_outcomes", ""),
+                    "generated_scripts_manifest": state.artifacts.get("generated_scripts_manifest", ""),
+                },
+            ),
+        )
+        state.blocked_reason = ""
+        return state
+
+    def _complete_ok_ui_regression(self, state: RunState) -> RunState:
+        gate = self._validate_phase3_outputs(state)
+        self._store_gate_result(state, "phase3_gate_result", gate)
+        if not gate.ok:
+            return self._block_with_gate(state, Phase.OK_UI_REGRESSION, gate)
+        self._append_confirmation(
+            state,
+            UserConfirmationRecord(
+                phase=Phase.OK_UI_REGRESSION.value,
+                summary="已确认 dry-run 与真实回归结果，可生成最终报告并继续更新知识库",
+                details={
+                    "ok_ui_dry_run_preview": state.artifacts.get("ok_ui_dry_run_preview", ""),
+                    "ok_ui_execution_report": self._artifact_value(
+                        state,
+                        "ok_ui_execution_report",
+                        "ok_ui_report",
+                    ),
+                },
+            ),
+        )
+        state.blocked_reason = ""
+        return state
+
+    def _complete_knowledge_base_update(self, state: RunState) -> RunState:
+        gate = self._validate_knowledge_base_outputs(state)
+        self._store_gate_result(state, "knowledge_base_gate_result", gate)
+        if not gate.ok:
+            return self._block_with_gate(state, Phase.KNOWLEDGE_BASE_UPDATE, gate)
+        self._append_confirmation(
+            state,
+            UserConfirmationRecord(
+                phase=Phase.KNOWLEDGE_BASE_UPDATE.value,
+                summary="已确认 knowledge base 预览并完成写入",
+                details={
+                    "knowledge_base_update_preview": state.artifacts.get("knowledge_base_update_preview", ""),
+                    "knowledge_base_update_result": state.artifacts.get("knowledge_base_update_result", ""),
+                },
+            ),
+        )
+        state.blocked_reason = ""
+        return state
+
+    def _validate_phase1_outputs(self, state: RunState) -> PhaseGateResult:
+        packet = self._requirement_packet(state)
+        report_path = self._artifact_value(state, "analysis_report")
+        textcases_path = self._artifact_value(state, "textcases", "testcases")
+        reasons: list[str] = []
+        warnings: list[str] = []
+
+        report_text = read_text(report_path)
+        textcases_text = read_text(textcases_path)
+        if not report_text:
+            reasons.append("缺少 analysis_report，或分析报告内容为空。")
+        if not textcases_text:
+            reasons.append("缺少 textcases，或测试用例文档内容为空。")
+
+        environment = self._parse_environment_config(textcases_text) if textcases_text else {}
+        if not environment:
+            reasons.append("测试用例文档缺少“测试环境配置”表格。")
+
+        cases = self._parse_text_case_entries(textcases_text, textcases_path) if textcases_text else []
+        if not cases:
+            reasons.append("测试用例文档中未解析到任何用例。")
+
+        for case in cases:
+            missing = []
+            if not case.tc_id:
+                missing.append("TC编号")
+            if not case.preconditions:
+                missing.append("前置条件")
+            if not case.steps:
+                missing.append("执行步骤")
+            if not case.expected_results:
+                missing.append("预期结果")
+            if not case.priority:
+                missing.append("优先级")
+            if not case.test_type:
+                missing.append("测试类型")
+            if not case.ui_automation_label:
+                missing.append("UI自动化")
+            if missing:
+                reasons.append(f"{case.tc_id or case.title or '未命名用例'} 缺少字段: {', '.join(missing)}。")
+
+        bucket = self._knowledge_base_bucket(packet)
+        if not bucket:
+            reasons.append(
+                f"模块 `{(packet.get('candidate_modules') or [''])[0]}` 缺少知识库文本用例路由，"
+                "请先在 config/knowledge_base_routing.yaml 中补齐。"
+            )
+
+        kb_path = ""
+        if not reasons:
+            target_path = self._knowledge_base_draft_path(packet, textcases_path, bucket)
+            write_text(target_path, textcases_text)
+            manifest = TextCaseManifest(
+                module=(packet.get("candidate_modules") or [""])[0],
+                site=packet.get("site", ""),
+                feature_name=packet.get("feature_name", ""),
+                source_doc=textcases_path,
+                kb_text_case_draft_path=str(target_path),
+                environment=environment,
+                cases=cases,
+            )
+            manifest_path = self.store.artifact_path(state.run_id, "text_case_manifest.json")
+            write_json(manifest_path, to_data(manifest))
+            state.artifacts["text_case_manifest"] = str(manifest_path)
+            state.artifacts["kb_text_case_draft_path"] = str(target_path)
+            kb_path = str(target_path)
+        else:
+            warnings.append("阶段1未通过门禁前，不会写入 knowledge base 文本用例草稿。")
+
+        return PhaseGateResult(
+            phase=Phase.SENIOR_QA_BRAIN.value,
+            ok=not reasons,
+            summary=(
+                f"阶段1门禁通过，共解析 {len(cases)} 条用例，并已归档到 {kb_path}"
+                if not reasons
+                else "阶段1门禁未通过，需补齐分析报告/测试用例结构。"
+            ),
+            blocking_reasons=reasons,
+            warnings=warnings,
+            details={
+                "analysis_report": report_path,
+                "textcases": textcases_path,
+                "case_count": len(cases),
+                "ui_automatable_count": sum(case.ui_automatable for case in cases),
+                "environment_keys": sorted(environment.keys()),
+                "kb_text_case_draft_path": kb_path,
+            },
+        )
+
+    def _validate_phase2_outputs(self, state: RunState) -> PhaseGateResult:
+        manifest_payload = read_json(state.artifacts.get("text_case_manifest", ""), default={}) or {}
+        reasons: list[str] = []
+        warnings: list[str] = []
+        if not manifest_payload:
+            reasons.append("缺少 text_case_manifest.json，无法校验阶段2逐条闭环。")
+
+        outcomes_path = self._artifact_value(state, "playwright_case_outcomes", "case_outcomes")
+        outcome_payload = read_json(outcomes_path, default=[]) or []
+        if not outcome_payload:
+            reasons.append("缺少 playwright_case_outcomes.json，无法确认每条可自动化用例的唯一结局。")
+
+        automatable_cases = [
+            item["tc_id"]
+            for item in manifest_payload.get("cases", [])
+            if item.get("ui_automatable")
+        ]
+        outcomes = [PlaywrightCaseOutcome(**item) for item in outcome_payload] if outcome_payload else []
+        grouped: dict[str, list[PlaywrightCaseOutcome]] = {}
+        for outcome in outcomes:
+            grouped.setdefault(outcome.tc_id, []).append(outcome)
+
+        generated_scripts: list[str] = []
+        for tc_id in automatable_cases:
+            case_outcomes = grouped.get(tc_id, [])
+            if len(case_outcomes) != 1:
+                reasons.append(f"{tc_id} 需要且只能有 1 个唯一 outcome，当前为 {len(case_outcomes)} 个。")
+                continue
+            outcome = case_outcomes[0]
+            if outcome.outcome not in {item.value for item in PlaywrightOutcomeType}:
+                reasons.append(f"{tc_id} 的 outcome `{outcome.outcome}` 不在允许集合内。")
+                continue
+            if outcome.outcome == PlaywrightOutcomeType.SCRIPT_GENERATED.value:
+                if not outcome.script_path or not Path(outcome.script_path).exists():
+                    reasons.append(f"{tc_id} 标记为 script_generated，但 script_path 不存在。")
+                if not outcome.collect_only_passed or not outcome.pytest_passed:
+                    reasons.append(f"{tc_id} 的自动化脚本缺少 collect-only/pytest 通过证明。")
+                if outcome.script_path:
+                    generated_scripts.append(outcome.script_path)
+            elif outcome.outcome == PlaywrightOutcomeType.BUG_RECORDED.value:
+                if not outcome.bug_report_path or not Path(outcome.bug_report_path).exists():
+                    reasons.append(f"{tc_id} 标记为 bug_recorded，但 bug_report_path 不存在。")
+            elif not outcome.manual_review_reason:
+                reasons.append(f"{tc_id} 标记为 manual_review，但缺少 manual_review_reason。")
+
+        unexpected_cases = sorted(set(grouped) - set(automatable_cases))
+        if unexpected_cases:
+            warnings.append(
+                "以下 outcome 未在阶段1可自动化用例清单中出现，将保留但不计入强门禁: "
+                + ", ".join(unexpected_cases)
+            )
+
+        if not reasons:
+            generated_manifest_path = self.store.artifact_path(state.run_id, "generated_scripts_manifest.json")
+            write_json(generated_manifest_path, sorted(set(generated_scripts)))
+            state.artifacts["generated_scripts_manifest"] = str(generated_manifest_path)
+
+        return PhaseGateResult(
+            phase=Phase.PLAYWRIGHT_GENERATOR.value,
+            ok=not reasons,
+            summary=(
+                f"阶段2门禁通过，{len(automatable_cases)} 条可自动化用例已逐条闭环。"
+                if not reasons
+                else "阶段2门禁未通过，存在未闭环或缺少自测证明的可自动化用例。"
+            ),
+            blocking_reasons=reasons,
+            warnings=warnings,
+            details={
+                "text_case_manifest": state.artifacts.get("text_case_manifest", ""),
+                "playwright_case_outcomes": outcomes_path,
+                "automatable_case_count": len(automatable_cases),
+                "generated_script_count": len(set(generated_scripts)),
+            },
+        )
+
+    def _validate_phase3_outputs(self, state: RunState) -> PhaseGateResult:
+        reasons: list[str] = []
+        dry_run_path = self._artifact_value(state, "ok_ui_dry_run_preview")
+        report_path = self._artifact_value(state, "ok_ui_execution_report", "ok_ui_report")
+        recommendation_path = self._artifact_value(state, "release_recommendation", "launch_recommendation")
+        if not read_text(dry_run_path):
+            reasons.append("缺少 ok_ui_dry_run_preview，或 dry-run 预览内容为空。")
+        if not read_text(report_path):
+            reasons.append("缺少 ok_ui_execution_report/ok_ui_report，或真实回归报告内容为空。")
+        if not read_text(recommendation_path):
+            reasons.append("缺少 release_recommendation/launch_recommendation，或上线建议为空。")
+
+        return PhaseGateResult(
+            phase=Phase.OK_UI_REGRESSION.value,
+            ok=not reasons,
+            summary=(
+                "阶段3门禁通过，dry-run、真实回归与上线建议均已落盘。"
+                if not reasons
+                else "阶段3门禁未通过，缺少 dry-run / 真实回归 / 上线建议产物。"
+            ),
+            blocking_reasons=reasons,
+            details={
+                "ok_ui_dry_run_preview": dry_run_path,
+                "ok_ui_execution_report": report_path,
+                "release_recommendation": recommendation_path,
+            },
+        )
+
+    def _validate_knowledge_base_outputs(self, state: RunState) -> PhaseGateResult:
+        reasons: list[str] = []
+        preview_path = self._artifact_value(state, "knowledge_base_update_preview")
+        result_path = self._artifact_value(state, "knowledge_base_update_result")
+        if not read_text(preview_path):
+            reasons.append("缺少 knowledge_base_update_preview，或预览内容为空。")
+        if not read_text(result_path) and not read_json(result_path, default=None):
+            reasons.append("缺少 knowledge_base_update_result，或写入结果为空。")
+
+        return PhaseGateResult(
+            phase=Phase.KNOWLEDGE_BASE_UPDATE.value,
+            ok=not reasons,
+            summary=(
+                "Knowledge base 更新门禁通过，预览与写入结果均已确认。"
+                if not reasons
+                else "Knowledge base 更新门禁未通过，缺少预览或写入结果。"
+            ),
+            blocking_reasons=reasons,
+            details={
+                "knowledge_base_update_context": state.artifacts.get("knowledge_base_update_context", ""),
+                "knowledge_base_update_preview": preview_path,
+                "knowledge_base_update_result": result_path,
+            },
+        )
+
+    def _store_gate_result(self, state: RunState, artifact_key: str, gate: PhaseGateResult) -> None:
+        path = self.store.artifact_path(state.run_id, f"{artifact_key}.json")
+        write_json(path, to_data(gate))
+        state.artifacts[artifact_key] = str(path)
+
+    def _block_with_gate(self, state: RunState, phase: Phase, gate: PhaseGateResult) -> RunState:
+        self._mark(state, phase, PhaseStatus.BLOCKED)
+        state.status = RunStatus.BLOCKED.value
+        state.blocked_reason = gate.summary
+        if gate.blocking_reasons:
+            state.blocked_reason += " " + " ".join(gate.blocking_reasons)
+        return state
+
+    def _artifact_value(self, state: RunState, *keys: str) -> str:
+        for key in keys:
+            value = state.artifacts.get(key, "")
+            if value:
+                return value
+        return ""
+
+    def _append_confirmation(self, state: RunState, record: UserConfirmationRecord) -> None:
+        confirmation_path = self.store.artifact_path(state.run_id, "user_confirmations.json")
+        existing = read_json(confirmation_path, default=[]) or []
+        existing.append(to_data(record))
+        write_json(confirmation_path, existing)
+        state.artifacts["user_confirmations"] = str(confirmation_path)
+
+    def _parse_environment_config(self, text: str) -> dict[str, str]:
+        match = re.search(r"##\s*测试环境配置.*?(?=\n##\s+|\Z)", text, flags=re.S)
+        if not match:
+            return {}
+        environment: dict[str, str] = {}
+        for line in match.group(0).splitlines():
+            if not line.strip().startswith("|"):
+                continue
+            parts = [part.strip() for part in line.strip().strip("|").split("|")]
+            if len(parts) < 2:
+                continue
+            if parts[0] in {"字段", "---", "------"} or parts[0].startswith("---"):
+                continue
+            environment[parts[0]] = parts[1]
+        return environment
+
+    def _parse_text_case_entries(self, text: str, source_doc: str) -> list[TextCaseManifestEntry]:
+        pattern = re.compile(r"^###\s*(TC\d+)\s*:\s*(.+)$", flags=re.M)
+        matches = list(pattern.finditer(text))
+        entries: list[TextCaseManifestEntry] = []
+        for index, match in enumerate(matches):
+            start = match.end()
+            end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
+            block = text[start:end]
+            entries.append(
+                TextCaseManifestEntry(
+                    tc_id=match.group(1).strip(),
+                    title=match.group(2).strip(),
+                    priority=self._extract_case_attribute(block, "优先级"),
+                    test_type=self._extract_case_attribute(block, "测试类型"),
+                    ui_automatable=self._extract_ui_automatable(block),
+                    ui_automation_label=self._extract_case_attribute(block, "UI自动化"),
+                    preconditions=self._extract_case_section(block, "前置条件"),
+                    steps=self._extract_case_section(block, "执行步骤"),
+                    expected_results=self._extract_case_section(block, "预期结果"),
+                    source_doc=source_doc,
+                )
+            )
+        return entries
+
+    def _extract_case_attribute(self, block: str, name: str) -> str:
+        match = re.search(rf"-\s*\*\*{re.escape(name)}\*\*:\s*(.+)", block)
+        return match.group(1).strip() if match else ""
+
+    def _extract_ui_automatable(self, block: str) -> bool:
+        value = self._extract_case_attribute(block, "UI自动化")
+        if not value:
+            return False
+        return "✅" in value or ("可自动化" in value and "❌" not in value)
+
+    def _extract_case_section(self, block: str, section_name: str) -> list[str]:
+        pattern = re.compile(
+            rf"####\s*.*?{re.escape(section_name)}\s*(.*?)(?=\n####\s+|\Z)",
+            flags=re.S,
+        )
+        match = pattern.search(block)
+        if not match:
+            return []
+        lines: list[str] = []
+        for line in match.group(1).splitlines():
+            stripped = line.strip()
+            if not stripped:
+                continue
+            stripped = re.sub(r"^\d+\.\s*", "", stripped)
+            stripped = re.sub(r"^-\s*", "", stripped)
+            if stripped:
+                lines.append(stripped)
+        return lines
+
+    def _knowledge_base_bucket(self, packet: dict[str, Any]) -> str:
+        module = normalize_text((packet.get("candidate_modules") or [""])[0]).replace(" ", "")
+        bucket_map = self.config.knowledge_base_routing.get("text_case_buckets", {})
+        route = bucket_map.get(module, {})
+        if isinstance(route, str):
+            return route
+        return route.get("bucket", "")
+
+    def _knowledge_base_draft_path(self, packet: dict[str, Any], textcases_path: str, bucket: str) -> Path:
+        knowledge_base_root = Path(self.config.skills.get("paths", {}).get("knowledge_base_root", ""))
+        source_name = Path(textcases_path).name
+        generic_names = {"testcases.md", "textcases.md", "cases.md"}
+        if not source_name or source_name in generic_names:
+            source_name = self._generated_text_case_filename(packet)
+        return knowledge_base_root / "文本用例" / bucket / source_name
+
+    def _generated_text_case_filename(self, packet: dict[str, Any]) -> str:
+        site = (packet.get("site", "") or "site").upper()
+        module = (packet.get("candidate_modules") or ["module"])[0] or "module"
+        feature = packet.get("feature_name", "") or "测试用例"
+        date_token = str(packet.get("created_at", ""))[:10].replace("-", "") or "draft"
+        safe_feature = re.sub(r"[\\/:*?\"<>|]+", "-", feature)
+        safe_module = re.sub(r"[\\/:*?\"<>|]+", "-", module)
+        return f"OK-{site}-{safe_module}-{safe_feature}-测试用例-{date_token}.md"
 
     def _phase_legacy_update(self, state: RunState) -> RunState:
         self._mark(state, Phase.LEGACY_UPDATE, PhaseStatus.RUNNING)
@@ -422,6 +872,9 @@ class QAConductor:
         path = self.store.artifact_path(state.run_id, "final_report.md")
         write_text(path, "\n".join(lines) + "\n")
         state.artifacts["final_report"] = str(path)
+        context_path = self.store.artifact_path(state.run_id, "knowledge_base_update_context.md")
+        write_text(context_path, self._render_knowledge_base_update_context(state))
+        state.artifacts["knowledge_base_update_context"] = str(context_path)
         self._mark(state, Phase.FINAL_REPORT, PhaseStatus.COMPLETED)
         state.status = RunStatus.RUNNING.value
         state.blocked_reason = ""
@@ -450,6 +903,8 @@ class QAConductor:
                     "- 按 SKILL.md 流程逐步执行，不要跳步",
                     "- 生成分析报告后等待用户确认",
                     "- 确认后生成 Markdown 测试用例",
+                    "- complete 当前阶段时必须回传 analysis_report 和 textcases 两个产物路径",
+                    "- 文本用例必须包含测试环境配置表格、TC编号、前置条件、步骤、预期、优先级、测试类型、UI自动化",
                 ]
             )
             return "\n".join(parts)
@@ -462,13 +917,17 @@ class QAConductor:
                     f"请读取 `{skill_path}` 并按其定义的 5 阶段流程执行。",
                     "",
                     "## 输入",
-                    "- 测试用例文档: 阶段1(senior-qa-brain)生成的 Markdown 用例",
+                    f"- 测试用例文档: {state.artifacts.get('kb_text_case_draft_path') or state.artifacts.get('textcases', '')}",
+                    f"- 阶段1清单: {state.artifacts.get('text_case_manifest', '')}",
                     "",
                     "## 要求",
                     "- 按 SKILL.md 的 5 个阶段严格顺序执行",
                     "- 每个阶段开始前先读取 SKILL.md 指定的 references 文件",
                     "- 每批最多 5 条用例",
                     "- 生成的脚本暂不直接入库，先交由影响回归阶段验证",
+                    "- complete 当前阶段时必须回传 playwright_case_outcomes.json",
+                    "- 对每条 UI自动化=✅ 的用例，必须给出唯一 outcome: script_generated / bug_recorded / manual_review",
+                    "- script_generated 的用例必须同时附带 collect-only 和 pytest 通过证明",
                 ]
             )
 
@@ -497,11 +956,14 @@ class QAConductor:
                     "- 优先消费 regression_selector_plan.json",
                     "- 先 dry-run 预览，等用户确认后再真实执行",
                     "- 若 selector_plan 缺少必要信息，再退回 module-map.md 做补充",
+                    "- complete 当前阶段时必须回传 dry-run 预览、真实回归报告、上线建议",
                 ]
             )
             return "\n".join(parts)
 
         if phase == Phase.KNOWLEDGE_BASE_UPDATE:
+            kb_context = state.artifacts.get("knowledge_base_update_context", "")
+            kb_draft = state.artifacts.get("kb_text_case_draft_path", "")
             return "\n".join(
                 [
                     f"# 阶段: {phase.value}",
@@ -509,15 +971,19 @@ class QAConductor:
                     f"请读取 `{skill_path}` 并按其“预览 -> 确认 -> 写入”流程执行。",
                     "",
                     "## 输入",
+                    f"- 更新上下文: {kb_context}",
                     f"- 最终报告: {state.artifacts.get('final_report', '')}",
                     f"- 影响分析: {state.artifacts.get('impact_candidates', '')}",
                     f"- 归因报告: {state.artifacts.get('change_attribution_report', '')}",
                     f"- 回归 selector 计划: {state.artifacts.get('regression_selector_plan', '')}",
+                    f"- 文本用例主输入: {kb_draft}",
                     "",
                     "## 要求",
+                    "- 若存在 kb_text_case_draft_path，必须优先读取并回写该路径，不要另起第二份文本用例文档",
                     "- 先输出 knowledge base 更新预览，再等待确认",
                     "- 写入完成后回传 preview/result 产物路径",
                     "- 若 vendored skill 缺失或预览失败，不要跳过本阶段",
+                    "- complete 当前阶段时必须回传 knowledge_base_update_preview 和 knowledge_base_update_result",
                 ]
             )
 
@@ -584,8 +1050,22 @@ class QAConductor:
             return [str(target)]
         if target.suffix == ".json" and target.exists():
             payload = read_json(target, default=[]) or []
-            if isinstance(payload, list):
-                return [str(item) for item in payload if str(item).endswith(".py")]
+            return self._find_script_paths(payload)
+        return []
+
+    def _find_script_paths(self, value: Any) -> list[str]:
+        if isinstance(value, str):
+            return [value] if value.endswith(".py") else []
+        if isinstance(value, list):
+            paths: list[str] = []
+            for item in value:
+                paths.extend(self._find_script_paths(item))
+            return paths
+        if isinstance(value, dict):
+            paths: list[str] = []
+            for item in value.values():
+                paths.extend(self._find_script_paths(item))
+            return paths
         return []
 
     def _discover_existing_cases(self, packet: dict[str, Any]) -> list[ImpactCandidate]:
@@ -911,6 +1391,54 @@ class QAConductor:
                 ]
             )
         return "\n".join(lines).rstrip() + "\n"
+
+    def _render_knowledge_base_update_context(self, state: RunState) -> str:
+        packet = self._requirement_packet(state)
+        module = (packet.get("candidate_modules") or [""])[0]
+        lines = [
+            "# Knowledge Base Update Context",
+            "",
+            f"- run_id: {state.run_id}",
+            f"- change_mode: {state.change_mode}",
+            f"- module: {module}",
+            f"- site: {packet.get('site', '')}",
+            f"- feature: {packet.get('feature_name', '')}",
+            "",
+            "## Primary Inputs",
+            f"- final_report: {state.artifacts.get('final_report', '')}",
+            f"- impact_candidates: {state.artifacts.get('impact_candidates', '')}",
+            f"- change_attribution_report: {state.artifacts.get('change_attribution_report', '')}",
+            f"- regression_selector_plan: {state.artifacts.get('regression_selector_plan', '')}",
+            f"- text_case_manifest: {state.artifacts.get('text_case_manifest', '')}",
+            f"- playwright_case_outcomes: {state.artifacts.get('playwright_case_outcomes', '')}",
+            "",
+            "## Text Case Binding",
+        ]
+        kb_draft = state.artifacts.get("kb_text_case_draft_path", "")
+        if kb_draft:
+            lines.extend(
+                [
+                    f"- kb_text_case_draft_path: {kb_draft}",
+                    "- 该路径是本次 run 的文本用例主输入。",
+                    "- 若需要更新文本用例，请优先回写这个文件，不要新建第二份重复文档。",
+                ]
+            )
+        else:
+            lines.extend(
+                [
+                    "- 本次 run 没有阶段1文本用例草稿。",
+                    "- 请基于 final_report / impact_candidates / change_attribution_report 更新三层结构化知识库。",
+                ]
+            )
+        lines.extend(
+            [
+                "",
+                "## Artifacts",
+            ]
+        )
+        for key, value in sorted(state.artifacts.items()):
+            lines.append(f"- {key}: {value}")
+        return "\n".join(lines) + "\n"
 
     def _build_selector_plan(
         self,
