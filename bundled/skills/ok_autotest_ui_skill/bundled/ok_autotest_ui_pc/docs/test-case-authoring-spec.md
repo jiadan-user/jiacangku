@@ -316,7 +316,7 @@ AI 生成时必须避免：
 新增或修改用例后，至少执行：
 
 ```bash
-cd /Users/a58/Desktop/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc
+cd <skill_root>/bundled/ok_autotest_ui_pc
 ./venv/bin/python -m tooling.ok_test doctor
 ./venv/bin/pytest --collect-only -q -p no:rerunfailures -o addopts=
 ```
@@ -324,8 +324,8 @@ cd /Users/a58/Desktop/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc
 如果要确认筛选映射，再执行：
 
 ```bash
-cd /Users/a58/Desktop/ok_autotest_ui_skill
-python scripts/ok_test.py run --path test_cases/<your_module>/<your_file>.py --dry-run
+cd <skill_root>
+python3 scripts/ok_test.py run --path test_cases/<your_module>/<your_file>.py --dry-run
 ```
 
 ## 13. Review 清单入口

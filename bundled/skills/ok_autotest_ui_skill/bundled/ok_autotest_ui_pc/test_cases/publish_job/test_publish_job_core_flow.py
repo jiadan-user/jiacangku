@@ -329,7 +329,7 @@ def test_tc003_make_another_post(page: Page):
         page.wait_for_timeout(3000)
         
         # 调试：截图并检查页面状态
-        page.screenshot(path=f"reports/tc003_after_continue_{int(time.time())}.png", timeout=60000)
+        page.screenshot(path=f"reports/tc003_after_continue_{int(time.time())}.png")
         current_url = page.url
         logger.info(f"✓ Continue 后 URL: {current_url}")
         
@@ -472,4 +472,3 @@ def test_tc004_view_my_post(page: Page):
         logger.info(f"✓ 验证 URL: {current_url}")
         
         logger.info("✅ TC004 测试通过：成功跳转至职位相关页面")
-

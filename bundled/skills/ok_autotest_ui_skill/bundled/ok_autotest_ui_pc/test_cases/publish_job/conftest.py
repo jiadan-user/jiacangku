@@ -3,19 +3,13 @@
 发布职位测试专用配置
 - 强制使用无头模式（不弹出浏览器窗口）
 - 其他测试模块不受影响
-
-自定义原因：
-- 该目录下有 9 个历史文件没有声明 _CONFIG，需要目录级默认配置兜底。
-- page fixture 需要强制无头，避免本地/CI 执行时弹出窗口干扰。
 """
 import pytest
+import allure
+from datetime import datetime
+from pathlib import Path
+from utils.browser_manager import BrowserManager
 from utils.logger import setup_logger
-from utils.testcase_support import (
-    attach_failure_screenshot,
-    build_runtime_config,
-    finish_managed_page,
-    start_managed_page,
-)
 
 logger = setup_logger()
 
@@ -26,7 +20,11 @@ def config(request):
     读取测试模块内的 _CONFIG
     如果模块没有 _CONFIG，则使用默认配置
     """
-    default_config = {
+    if hasattr(request.module, '_CONFIG'):
+        return request.module._CONFIG
+    
+    # 默认配置（用于没有 _CONFIG 的测试模块）
+    return {
         'base_url': 'https://uspub.58v5.cn/biz/en/publish/job?categoryId=4000',
         'browser': {
             'type': 'chromium',
@@ -40,11 +38,6 @@ def config(request):
             }
         }
     }
-    return build_runtime_config(
-        request.module,
-        default_config=default_config,
-        require_module_config=False,
-    )
 
 
 @pytest.fixture(scope="module")
@@ -55,16 +48,28 @@ def page(config):
     
     注意：使用 mark_in_use()/mark_released() 保护实例不被 pytest hooks 提前清理。
     """
-    browser_manager, page = start_managed_page(
-        config,
-        force_headless=True,
+    browser_manager = BrowserManager()
+    
+    # 强制使用无头模式（覆盖配置文件和环境变量）
+    page = browser_manager.start_browser(
+        browser_type=config['browser']['type'],
+        headless=True,  # 强制无头模式
+        base_url=config['base_url'],
+        viewport=config['browser']['viewport']
     )
+    
+    # 标记为使用中，防止被 pytest hooks 的 _cleanup_all(force=False) 清理
+    browser_manager.mark_in_use()
     
     logger.info("🚀 发布职位测试：使用无头模式（模块共享浏览器）")
     
     yield page
     
-    finish_managed_page(browser_manager, page)
+    # 标记为已释放
+    browser_manager.mark_released()
+    
+    # 模块结束后关闭浏览器
+    browser_manager.close_browser(page)
 
 
 @pytest.fixture(autouse=True)
@@ -94,7 +99,27 @@ def pytest_runtest_makereport(item, call):
         page = item.funcargs.get('page')
         
         if page:
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            screenshot_name = f"FAILED_{item.name}_{timestamp}.png"
+            screenshot_dir = Path("reports/screenshots")
+            screenshot_dir.mkdir(parents=True, exist_ok=True)
+            screenshot_path = screenshot_dir / screenshot_name
+            
             try:
-                attach_failure_screenshot(item, logger)
+                # 截图
+                page.screenshot(path=str(screenshot_path, timeout=60000), full_page=True)
+                
+                # 附加到 Allure 报告
+                with open(screenshot_path, 'rb') as f:
+                    allure.attach(
+                        f.read(),
+                        name="失败截图",
+                        attachment_type=allure.attachment_type.PNG
+                    )
+                
+                # URL 记录在日志中
+                logger.error(f"测试失败 URL: {page.url}")
+                
             except Exception as e:
                 logger.error(f"截图失败: {e}")
+

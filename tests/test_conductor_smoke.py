@@ -44,9 +44,15 @@ class RaisingImpactVerificationExecutor:
 
 
 class FakeLegacyUpdateExecutor:
-    def __init__(self, outcomes: list[LegacyUpdateRoundOutcome]) -> None:
+    def __init__(
+        self,
+        outcomes: list[LegacyUpdateRoundOutcome],
+        refresh_result: dict | None = None,
+    ) -> None:
         self.outcomes = outcomes
         self.calls = 0
+        self.refresh_result = refresh_result
+        self.refresh_calls = 0
 
     def run_round(self, *, run_dir: Path, tasks: list[LegacyUpdateTask], round_index: int) -> LegacyUpdateRoundOutcome:
         del run_dir, tasks, round_index
@@ -54,11 +60,33 @@ class FakeLegacyUpdateExecutor:
         self.calls += 1
         return outcome
 
+    def refresh_catalog_after_script_changes(self, tasks: list[LegacyUpdateTask]) -> dict:
+        del tasks
+        self.refresh_calls += 1
+        return self.refresh_result or {
+            "needed": False,
+            "ok": True,
+            "changed_task_ids": [],
+            "promotion_task_ids": [],
+            "legacy_task_ids": [],
+        }
+
 
 class AlwaysPassLegacyValidator(LegacyUpdateValidator):
     def validate(self, candidate_path: Path, task: LegacyUpdateTask) -> list[ValidationResult]:
         del candidate_path, task
         return [ValidationResult(ok=True, name="fake", message="ok")]
+
+
+class RecordingRefreshLegacyUpdateExecutor(LegacyUpdateExecutor):
+    def __init__(self, config) -> None:
+        super().__init__(config, validator=AlwaysPassLegacyValidator())
+        self.refresh_commands: list[str] = []
+
+    def _run_refresh_command(self, name: str, command_fn) -> dict:
+        del command_fn
+        self.refresh_commands.append(name)
+        return {"name": name, "ok": True, "returncode": 0, "stdout": "", "stderr": ""}
 
 
 class ConductorSmokeTests(unittest.TestCase):
@@ -490,6 +518,149 @@ class ConductorSmokeTests(unittest.TestCase):
         self.assertEqual(state.next_action.kind, "run_skill")
         self.assertEqual(legacy_executor.calls, 2)
 
+    def test_script_change_requires_catalog_refresh_before_ok_ui(self) -> None:
+        done_task = LegacyUpdateTask(
+            task_id="promotion-1",
+            target_script="/tmp/test_new_car.py",
+            recommended_action="promote-new-script",
+            status=LegacyUpdateTaskStatus.COMPLETED.value,
+            impact_type="new-script-promotion",
+        )
+        legacy_executor = FakeLegacyUpdateExecutor(
+            [
+                LegacyUpdateRoundOutcome(
+                    tasks=[done_task],
+                    gate=LegacyUpdateGate(round_index=1, total_count=1, completed_count=1, all_completed=True),
+                    results=[],
+                )
+            ],
+            refresh_result={
+                "needed": True,
+                "ok": True,
+                "changed_task_ids": ["promotion-1"],
+                "promotion_task_ids": ["promotion-1"],
+                "legacy_task_ids": [],
+                "commands": {"catalog_build": {"ok": True}, "audit_identifiers": {"ok": True}},
+            },
+        )
+        conductor = self._make_conductor(
+            legacy_executor=legacy_executor,
+            impact_executor=FakeImpactVerificationExecutor(self._passed_verification_outcome()),
+        )
+        state = conductor.plan(
+            {
+                "change_mode": ChangeMode.REGRESSION.value,
+                "module": "car",
+                "site": "ae",
+                "change_description": "新增车列表脚本",
+            }
+        )
+        state = conductor.drive_to_action(state.run_id)
+        seed_path = self._write_temp_file(
+            "artifacts/legacy_update_tasks_seed.json",
+            "[{"
+            '"task_id":"promotion-1",'
+            '"target_script":"/tmp/test_new_car.py",'
+            '"recommended_action":"promote-new-script",'
+            '"impact_type":"new-script-promotion",'
+            '"status":"pending"'
+            "}]",
+        )
+        state.artifacts["legacy_update_tasks_seed"] = seed_path
+        conductor.store.save(state)
+        state = conductor.complete_phase(state.run_id, Phase.IMPACT_VERIFICATION.value)
+        state = conductor.drive_to_action(state.run_id)
+        self.assertEqual(state.current_phase, Phase.OK_UI_REGRESSION.value)
+        self.assertEqual(legacy_executor.refresh_calls, 1)
+        self.assertIn("catalog_refresh_after_script_changes_round_01", state.artifacts)
+        self.assertIn("catalog_refresh_after_promotion_round_01", state.artifacts)
+
+    def test_script_change_blocks_when_catalog_refresh_fails(self) -> None:
+        done_task = LegacyUpdateTask(
+            task_id="promotion-1",
+            target_script="/tmp/test_new_car.py",
+            recommended_action="promote-new-script",
+            status=LegacyUpdateTaskStatus.COMPLETED.value,
+            impact_type="new-script-promotion",
+        )
+        legacy_executor = FakeLegacyUpdateExecutor(
+            [
+                LegacyUpdateRoundOutcome(
+                    tasks=[done_task],
+                    gate=LegacyUpdateGate(round_index=1, total_count=1, completed_count=1, all_completed=True),
+                    results=[],
+                )
+            ],
+            refresh_result={
+                "needed": True,
+                "ok": False,
+                "changed_task_ids": ["promotion-1"],
+                "promotion_task_ids": ["promotion-1"],
+                "legacy_task_ids": [],
+                "commands": {"catalog_build": {"ok": True}, "audit_identifiers": {"ok": False}},
+            },
+        )
+        conductor = self._make_conductor(
+            legacy_executor=legacy_executor,
+            impact_executor=FakeImpactVerificationExecutor(self._passed_verification_outcome()),
+        )
+        state = conductor.plan(
+            {
+                "change_mode": ChangeMode.REGRESSION.value,
+                "module": "car",
+                "site": "ae",
+                "change_description": "新增车列表脚本",
+            }
+        )
+        state = conductor.drive_to_action(state.run_id)
+        seed_path = self._write_temp_file(
+            "artifacts/legacy_update_tasks_seed.json",
+            "[{"
+            '"task_id":"promotion-1",'
+            '"target_script":"/tmp/test_new_car.py",'
+            '"recommended_action":"promote-new-script",'
+            '"impact_type":"new-script-promotion",'
+            '"status":"pending"'
+            "}]",
+        )
+        state.artifacts["legacy_update_tasks_seed"] = seed_path
+        conductor.store.save(state)
+        state = conductor.complete_phase(state.run_id, Phase.IMPACT_VERIFICATION.value)
+        state = conductor.drive_to_action(state.run_id)
+        self.assertEqual(state.current_phase, Phase.LEGACY_UPDATE.value)
+        self.assertEqual(state.status, RunStatus.BLOCKED.value)
+        self.assertIn("catalog refresh/audit", state.blocked_reason)
+
+    def test_legacy_test_case_update_triggers_catalog_refresh(self) -> None:
+        conductor = self._make_conductor()
+        executor = RecordingRefreshLegacyUpdateExecutor(conductor.config)
+        task = LegacyUpdateTask(
+            task_id="legacy-1",
+            target_script=str(self.regression_root / "test_cases" / "car" / "test_car_list.py"),
+            recommended_action="update-assertion",
+            status=LegacyUpdateTaskStatus.COMPLETED.value,
+        )
+        result = executor.refresh_catalog_after_script_changes([task])
+        self.assertTrue(result["needed"])
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["changed_task_ids"], ["legacy-1"])
+        self.assertEqual(result["legacy_task_ids"], ["legacy-1"])
+        self.assertEqual(result["promotion_task_ids"], [])
+        self.assertEqual(executor.refresh_commands, ["catalog_build", "audit_identifiers"])
+
+    def test_non_test_case_update_does_not_refresh_catalog(self) -> None:
+        conductor = self._make_conductor()
+        executor = RecordingRefreshLegacyUpdateExecutor(conductor.config)
+        task = LegacyUpdateTask(
+            task_id="page-1",
+            target_script=str(self.regression_root / "pages" / "car_page.py"),
+            recommended_action="update-selector",
+            status=LegacyUpdateTaskStatus.COMPLETED.value,
+        )
+        result = executor.refresh_catalog_after_script_changes([task])
+        self.assertFalse(result["needed"])
+        self.assertEqual(executor.refresh_commands, [])
+
     def test_legacy_update_candidate_manifest_resumes_loop_and_merges_candidate(self) -> None:
         target_script = self.regression_root / "test_cases" / "car" / "test_car_list.py"
         target_script.parent.mkdir(parents=True, exist_ok=True)
@@ -521,10 +692,7 @@ class ConductorSmokeTests(unittest.TestCase):
             ],
         )
         conductor = self._make_conductor(impact_executor=FakeImpactVerificationExecutor(impact_outcome))
-        conductor.legacy_update_executor = LegacyUpdateExecutor(
-            conductor.config,
-            validator=AlwaysPassLegacyValidator(),
-        )
+        conductor.legacy_update_executor = RecordingRefreshLegacyUpdateExecutor(conductor.config)
         state = conductor.plan(
             {
                 "change_mode": ChangeMode.REGRESSION.value,
@@ -576,6 +744,7 @@ class ConductorSmokeTests(unittest.TestCase):
         self.assertEqual(state.current_phase, Phase.OK_UI_REGRESSION.value)
         self.assertEqual(state.status, RunStatus.BLOCKED.value)
         self.assertIn("test_new", target_script.read_text(encoding="utf-8"))
+        self.assertIn("catalog_refresh_after_script_changes_round_01", state.artifacts)
 
     def test_drive_to_action_records_error_state(self) -> None:
         conductor = self._make_conductor(impact_executor=RaisingImpactVerificationExecutor())

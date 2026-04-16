@@ -287,6 +287,8 @@ warning 不阻止 `run` 创建任务，但会写入本次 run 的 `doctor_result
 - 不允许 QA Agent 凭空猜测旧脚本改法
 - 小 patch 只有在任务里已有明确 `details.replacements` 时才允许自动生成候选
 - 缺少明确 patch、或任务进入 `re-record/split-case` 时，必须阻塞并调用 `playwright-test-generator`
+- 本阶段只要合并了 `test_cases/**/*.py` 脚本变更，必须执行 `ops catalog-build` 和 `ops audit-identifiers`
+- catalog refresh/audit 失败时，run 必须停在 `旧脚本更新执行`，不得进入 `ok_autotest_ui_skill`
 
 ### 新脚本 promotion
 
@@ -302,6 +304,10 @@ warning 不阻止 `run` 创建任务，但会写入本次 run 的 `doctor_result
 | 4 | 生成 `promote-new-script` 任务 |
 | 5 | 复制候选脚本到正式回归目录前先走 PromotionGuard |
 | 6 | 守卫通过后自动合并 |
+| 7 | 本阶段统一执行 `ops catalog-build` 和 `ops audit-identifiers` |
+| 8 | catalog refresh/audit 通过后才允许进入阶段3 |
+
+如果 catalog refresh 或 identifier audit 失败，run 必须停在 `旧脚本更新执行`，不得进入 `ok_autotest_ui_skill`。原因是阶段3的 `run/list` 依赖 `catalog.generated.json`，旧 catalog 可能选不到刚 promotion 或刚更新的脚本。
 
 ### 旧脚本 patch / re-record
 

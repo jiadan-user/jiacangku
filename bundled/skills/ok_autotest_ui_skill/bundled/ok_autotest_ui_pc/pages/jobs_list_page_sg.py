@@ -21,10 +21,6 @@ class JobsListPageSG(BasePage):
     # 筛选器区域
     LOCATION_FILTER = "text=Singapore"
     LOCATION_FILTER_DROPDOWN = "[role='button']:has-text('Singapore')"
-    JOB_TYPE_FILTER = "text=Job Type"
-    JOB_TYPE_FILTER_BTN = "[role='button']:has-text('Job Type')"
-    WORKPLACE_TYPE_FILTER = "text=Workplace type"
-    WORKPLACE_TYPE_FILTER_BTN = "[role='button']:has-text('Workplace type')"
     SALARY_FILTER = "text=Salary"
     SALARY_FILTER_BTN = "[role='button']:has-text('Salary')"
     RESET_BTN = "text=Reset"
@@ -64,6 +60,15 @@ class JobsListPageSG(BasePage):
     def input_search_keyword(self, keyword: str):
         """在搜索框中输入关键词"""
         try:
+            tb = self.page.get_by_role("textbox", name="Search for anything")
+            if tb.count() > 0:
+                tb.first.wait_for(state="visible", timeout=15000)
+                tb.first.fill(keyword)
+                self.page.wait_for_timeout(500)
+                return
+        except Exception:
+            pass
+        try:
             self.page.locator(self.SEARCH_INPUT).first.fill(keyword)
             self.page.wait_for_timeout(500)
         except Exception:
@@ -78,13 +83,15 @@ class JobsListPageSG(BasePage):
     def click_search_button(self):
         """点击搜索按钮"""
         try:
-            self.page.get_by_role("button", name="Search").click()
-            self.page.wait_for_load_state("networkidle", timeout=10000)
+            self.page.get_by_role("button", name="Search").first.click()
+            self.page.wait_for_load_state("domcontentloaded", timeout=30000)
+            self.page.wait_for_timeout(1000)
         except Exception:
             try:
                 self.logger.error("主定位器失败，尝试备选定位器")
                 self.page.locator(self.SEARCH_BUTTON_BACKUP).first.click()
-                self.page.wait_for_load_state("networkidle", timeout=10000)
+                self.page.wait_for_load_state("domcontentloaded", timeout=30000)
+                self.page.wait_for_timeout(1000)
             except Exception as e:
                 self.logger.error(f"点击搜索按钮失败: {e}")
                 raise
@@ -115,13 +122,32 @@ class JobsListPageSG(BasePage):
             return ""
 
     def click_location_filter(self):
-        """点击Location筛选器"""
+        """点击Location筛选器（与 ES 站一致：芯片在 .listPage-filterArea 内，未必是 role=button）"""
         try:
-            self.page.locator(self.LOCATION_FILTER_DROPDOWN).first.click()
+            area = self.page.locator(".listPage-filterArea")
+            if area.count() > 0:
+                area.first.wait_for(state="visible", timeout=15000)
+                self.page.locator(".listPage-filterArea > div").filter(
+                    has_text="Singapore"
+                ).first.click()
+            else:
+                fa = self.page.locator("#istPageFilterArea")
+                if fa.count() > 0:
+                    fa.first.locator(".FilterItem_filterItem__Ur24_").first.click()
+                else:
+                    self.page.locator(self.LOCATION_FILTER_DROPDOWN).first.click()
             self.page.wait_for_timeout(1000)
-        except Exception as e:
-            self.logger.error(f"点击Location筛选器失败: {e}")
-            raise
+        except Exception:
+            try:
+                loc_btn = self.page.get_by_text("Location", exact=True)
+                if loc_btn.count() > 0:
+                    loc_btn.first.click()
+                else:
+                    self.page.locator(self.LOCATION_FILTER_DROPDOWN).first.click()
+                self.page.wait_for_timeout(1000)
+            except Exception as e:
+                self.logger.error(f"点击Location筛选器失败: {e}")
+                raise
 
     def select_filter_option(self, option_name: str):
         """在筛选器面板中选择指定选项（通用方法）"""
@@ -136,32 +162,22 @@ class JobsListPageSG(BasePage):
                 self.logger.error(f"选择筛选器选项 '{option_name}' 失败: {e}")
                 raise
 
-    def click_job_type_filter(self):
-        """点击Job Type筛选器"""
-        try:
-            self.page.get_by_role("button", name="Job Type").click()
-            self.page.wait_for_timeout(1000)
-        except Exception as e:
-            self.logger.error(f"点击Job Type筛选器失败: {e}")
-            raise
-
-    def click_workplace_type_filter(self):
-        """点击Workplace Type筛选器"""
-        try:
-            self.page.get_by_role("button", name="Workplace type").click()
-            self.page.wait_for_timeout(1000)
-        except Exception as e:
-            self.logger.error(f"点击Workplace Type筛选器失败: {e}")
-            raise
-
     def click_salary_filter(self):
         """点击Salary筛选器"""
         try:
-            self.page.get_by_role("button", name="Salary").click()
+            fa = self.page.locator("#istPageFilterArea")
+            if fa.count() > 0:
+                fa.first.get_by_text("Salary", exact=True).click()
+            else:
+                self.page.locator(".listPage-filterArea").get_by_text("Salary", exact=True).first.click()
             self.page.wait_for_timeout(1000)
-        except Exception as e:
-            self.logger.error(f"点击Salary筛选器失败: {e}")
-            raise
+        except Exception:
+            try:
+                self.page.get_by_role("button", name="Salary").click()
+                self.page.wait_for_timeout(1000)
+            except Exception as e:
+                self.logger.error(f"点击Salary筛选器失败: {e}")
+                raise
 
     def input_salary_range(self, min_salary: str = "", max_salary: str = ""):
         """输入薪资范围"""
@@ -278,6 +294,12 @@ class JobsListPageSG(BasePage):
             self.goto(jobs_url)
             self.wait_for_page_load()
             self.page.wait_for_timeout(2000)
+            # 等待筛选条渲染，避免后续点击 Job Type / Search 超时
+            for sel in (".listPage-filterArea", "#istPageFilterArea"):
+                loc = self.page.locator(sel)
+                if loc.count() > 0:
+                    loc.first.wait_for(state="visible", timeout=20000)
+                    break
         except Exception as e:
             self.logger.error(f"导航到职位列表页失败: {e}")
             raise

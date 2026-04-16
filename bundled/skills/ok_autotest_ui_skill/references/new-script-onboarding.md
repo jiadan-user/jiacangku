@@ -26,7 +26,7 @@
 继续加在这里：
 
 ```text
-/Users/a58/Desktop/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/...
+bundled/ok_autotest_ui_pc/test_cases/...
 ```
 
 规则保持和原工程一致：
@@ -72,10 +72,10 @@
 ## 5. 固定接入流程
 
 ```bash
-cd /Users/a58/Desktop/ok_autotest_ui_skill
-python scripts/ok_test.py catalog build
-python scripts/ok_test.py audit identifiers
-python scripts/ok_test.py coverage --dashboard
+# 从本 skill 根目录执行
+python3 scripts/ok_test.py ops catalog-build
+python3 scripts/ok_test.py ops audit-identifiers
+python3 scripts/ok_test.py coverage --dashboard
 ```
 
 推荐完整流程：
@@ -84,17 +84,17 @@ python scripts/ok_test.py coverage --dashboard
 2. 补齐 `P0-P3`
 3. 补齐 `case_id_*`
 4. 补齐模块和功能标识
-5. 运行 `python scripts/ok_test.py catalog build`
-6. 运行 `python scripts/ok_test.py audit identifiers`
-7. 如果 audit 通过，再运行 `python scripts/ok_test.py coverage --dashboard`
+5. 运行 `python3 scripts/ok_test.py ops catalog-build`
+6. 运行 `python3 scripts/ok_test.py ops audit-identifiers`
+7. 如果 audit 通过，再运行 `python3 scripts/ok_test.py coverage --dashboard`
 
 ## 6. 如何判断接入已经完成
 
 至少满足这几个结果：
 
-- `python scripts/ok_test.py list --module <你的模块>` 能列出新用例
-- `python scripts/ok_test.py audit identifiers` 不再报缺优先级或缺 `case_id`
-- `python scripts/ok_test.py coverage --dashboard` 能把这块文本用例统计进去
+- `python3 scripts/ok_test.py list --module <你的模块>` 能列出新用例
+- `python3 scripts/ok_test.py ops audit-identifiers` 不再报缺优先级或缺 `case_id`
+- `python3 scripts/ok_test.py coverage --dashboard` 能把这块文本用例统计进去
 - 真实执行后，Allure 报告里能看到这批新用例
 
 ## 7. AI 生成用例时的固定入口

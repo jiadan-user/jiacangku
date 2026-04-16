@@ -1229,6 +1229,24 @@ class QAConductor:
         state.artifacts["regression_selector_plan"] = str(self._refresh_selector_plan(state, outcome.tasks))
 
         if outcome.gate.all_completed:
+            refresh_result = self.legacy_update_executor.refresh_catalog_after_script_changes(outcome.tasks)
+            if refresh_result.get("needed"):
+                refresh_path = self.store.artifact_path(
+                    state.run_id,
+                    f"catalog_refresh_after_script_changes_round_{round_index:02d}.json",
+                )
+                write_json(refresh_path, refresh_result)
+                state.artifacts[f"catalog_refresh_after_script_changes_round_{round_index:02d}"] = str(refresh_path)
+                if refresh_result.get("promotion_task_ids"):
+                    state.artifacts[f"catalog_refresh_after_promotion_round_{round_index:02d}"] = str(refresh_path)
+                if not refresh_result.get("ok"):
+                    self._mark(state, Phase.LEGACY_UPDATE, PhaseStatus.BLOCKED)
+                    state.status = RunStatus.BLOCKED.value
+                    state.blocked_reason = (
+                        "脚本更新已合并，但 catalog refresh/audit 失败；"
+                        "请修复标识或 catalog 后再继续"
+                    )
+                    return state
             state.blocked_reason = ""
             self._mark(state, Phase.LEGACY_UPDATE, PhaseStatus.COMPLETED)
             return state

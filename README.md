@@ -137,6 +137,7 @@ python -m qa_agent.cli status --run-id <run_id> --json
    AI 会先跑受影响用例，再给你一份简洁归因报告，等你确认后才允许改旧脚本或 promotion 新脚本。
 4. `旧脚本更新执行`
    如果旧脚本无法安全 patch，QA Agent 会停下来生成重录子任务，让 AI 按 `playwright-test-generator` 重新录制候选脚本；不会自己盲猜修改旧脚本。
+   只要本阶段合并了 `test_cases/**/*.py` 脚本变更，QA Agent 会先刷新 ok_autotest_ui 的 catalog 并审计标识，成功后才进入阶段3。
 5. `ok_autotest_ui_skill`
    AI 会先给你 dry-run 预览，等你确认后才真实执行回归。
 6. `knowledge-base-manager`
@@ -159,7 +160,7 @@ python -m qa_agent.cli status --run-id <run_id> --json
 | 阶段2 | `playwright_case_outcomes`, `generated_scripts_manifest` |
 | 影响分析 | `impact_candidates`, `overlap_report` |
 | 影响归因 | `impact_run_selector_plan`, `impact_run_results`, `change_attribution_report` |
-| 更新循环 | `legacy_update_tasks`, `legacy_update_gate`, `legacy_rerecord_request`, `legacy_rerecord_instruction`, `legacy_update_candidate_manifest`, `regression_selector_plan` |
+| 更新循环 | `legacy_update_tasks`, `legacy_update_gate`, `legacy_rerecord_request`, `legacy_rerecord_instruction`, `legacy_update_candidate_manifest`, `catalog_refresh_after_script_changes_round_XX`, `regression_selector_plan` |
 | 阶段3 | `ok_ui_dry_run_preview`, `ok_ui_execution_report`, `release_recommendation` |
 | 最终阶段 | `final_report`, `knowledge_base_update_context`, `knowledge_base_update_preview`, `knowledge_base_update_result` |
 

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import ast
+import os
 import shutil
+import sys
 import uuid
 from dataclasses import asdict
 from pathlib import Path
@@ -23,6 +25,7 @@ from .promotion_guard import PromotionGuard
 PATCH_ACTIONS = {"update-assertion", "update-selector"}
 PLAYWRIGHT_REGEN_ACTIONS = {"re-record", "split-case"}
 REPLACE_ACTIONS = {*PLAYWRIGHT_REGEN_ACTIONS, "promote-new-script"}
+CATALOG_REFRESH_ACTIONS = {*PATCH_ACTIONS, *PLAYWRIGHT_REGEN_ACTIONS, "promote-new-script"}
 
 
 class OkUISkillRuntime:
@@ -30,14 +33,25 @@ class OkUISkillRuntime:
         commands = config.skills.get("commands", {}).get("ok_ui_skill", {})
         paths = config.skills.get("paths", {})
         self.script = Path(commands.get("script", ""))
-        self.python_bin = str(Path(commands.get("venv_python", "")))
+        configured_python = Path(commands.get("venv_python", ""))
+        self.python_bin = str(configured_python) if configured_python.exists() else sys.executable
         self.project_root = Path(paths.get("regression_project_root", ""))
+
+    def _env(self) -> dict[str, str]:
+        env = os.environ.copy()
+        existing_pythonpath = env.get("PYTHONPATH", "")
+        env["PYTHONPATH"] = (
+            str(self.project_root)
+            if not existing_pythonpath
+            else f"{self.project_root}{os.pathsep}{existing_pythonpath}"
+        )
+        return env
 
     def doctor(self):
         return run_command(
             [self.python_bin, str(self.script), "doctor"],
             cwd=self.project_root,
-            env={"PYTHONPATH": str(self.project_root)},
+            env=self._env(),
         )
 
     def dry_run(self, module: str, relative_path: str):
@@ -53,7 +67,21 @@ class OkUISkillRuntime:
                 "--dry-run",
             ],
             cwd=self.project_root,
-            env={"PYTHONPATH": str(self.project_root)},
+            env=self._env(),
+        )
+
+    def catalog_build(self):
+        return run_command(
+            [self.python_bin, str(self.script), "ops", "catalog-build"],
+            cwd=self.project_root,
+            env=self._env(),
+        )
+
+    def audit_identifiers(self):
+        return run_command(
+            [self.python_bin, str(self.script), "ops", "audit-identifiers"],
+            cwd=self.project_root,
+            env=self._env(),
         )
 
 
@@ -128,6 +156,74 @@ class LegacyUpdateExecutor:
 
         gate = self._build_gate(updated_tasks, round_index)
         return LegacyUpdateRoundOutcome(tasks=updated_tasks, gate=gate, results=results)
+
+    def refresh_catalog_after_script_changes(self, tasks: list[LegacyUpdateTask]) -> dict[str, Any]:
+        changed_tasks = [task for task in tasks if self._needs_catalog_refresh(task)]
+        if not changed_tasks:
+            return {
+                "needed": False,
+                "ok": True,
+                "changed_task_ids": [],
+                "promotion_task_ids": [],
+                "legacy_task_ids": [],
+            }
+
+        runtime = OkUISkillRuntime(self.config)
+        catalog_result = self._run_refresh_command("catalog_build", runtime.catalog_build)
+        audit_result = self._run_refresh_command("audit_identifiers", runtime.audit_identifiers)
+        ok = bool(catalog_result.get("ok")) and bool(audit_result.get("ok"))
+        promotion_task_ids = [task.task_id for task in changed_tasks if task.recommended_action == "promote-new-script"]
+        legacy_task_ids = [task.task_id for task in changed_tasks if task.recommended_action != "promote-new-script"]
+        return {
+            "needed": True,
+            "ok": ok,
+            "changed_task_ids": [task.task_id for task in changed_tasks],
+            "promotion_task_ids": promotion_task_ids,
+            "legacy_task_ids": legacy_task_ids,
+            "actions": {task.task_id: task.recommended_action for task in changed_tasks},
+            "commands": {
+                "catalog_build": catalog_result,
+                "audit_identifiers": audit_result,
+            },
+        }
+
+    def refresh_catalog_after_promotion(self, tasks: list[LegacyUpdateTask]) -> dict[str, Any]:
+        return self.refresh_catalog_after_script_changes(tasks)
+
+    def _needs_catalog_refresh(self, task: LegacyUpdateTask) -> bool:
+        if task.status != LegacyUpdateTaskStatus.COMPLETED.value:
+            return False
+        if task.recommended_action not in CATALOG_REFRESH_ACTIONS:
+            return False
+        if task.recommended_action == "promote-new-script":
+            return True
+        return self._is_test_case_script(task.target_script)
+
+    def _is_test_case_script(self, target_script: str) -> bool:
+        if not target_script:
+            return False
+        path_text = str(target_script).split("::", 1)[0]
+        target = Path(path_text)
+        return target.suffix == ".py" and "test_cases" in target.parts
+
+    def _run_refresh_command(self, name: str, command_fn) -> dict[str, Any]:
+        try:
+            proc = command_fn()
+        except Exception as exc:  # pragma: no cover - defensive process boundary
+            return {
+                "name": name,
+                "ok": False,
+                "returncode": None,
+                "stdout": "",
+                "stderr": f"{type(exc).__name__}: {exc}",
+            }
+        return {
+            "name": name,
+            "ok": proc.returncode == 0,
+            "returncode": proc.returncode,
+            "stdout": (proc.stdout or "")[-4000:],
+            "stderr": (proc.stderr or "")[-4000:],
+        }
 
     def _run_task(
         self,
