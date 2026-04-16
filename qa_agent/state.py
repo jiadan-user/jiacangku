@@ -1,11 +1,21 @@
 from __future__ import annotations
 
-from dataclasses import replace
+import os
+import time
+from contextlib import contextmanager
 from pathlib import Path
 from uuid import uuid4
 
 from qa_agent.io import read_json, write_json, write_text
-from qa_agent.models import ConductorPhase, PhaseStatus, RunState, RunStatus, to_data
+from qa_agent.models import Phase, PhaseStatus, RunState, RunStatus, to_data
+
+
+class RunStateConflictError(RuntimeError):
+    pass
+
+
+class RunLockTimeoutError(RuntimeError):
+    pass
 
 
 class RunStore:
@@ -21,11 +31,11 @@ class RunStore:
             write_json(
                 memory_path,
                 {
-                    "模块约定": {},
-                    "case_id约定": {},
-                    "站点默认值": {},
-                    "模板偏好": {},
-                    "视觉门禁阈值": 90,
+                    "module_conventions": {},
+                    "case_id_conventions": {},
+                    "site_defaults": {},
+                    "template_preferences": {},
+                    "visual_threshold": 90,
                 },
             )
         notepad_path = self.state_root / "notepad.md"
@@ -37,9 +47,9 @@ class RunStore:
         state = RunState(
             run_id=run_id,
             status=RunStatus.PLANNED.value,
-            current_phase=ConductorPhase.INTAKE.value,
+            current_phase=Phase.INTAKE.value,
             change_mode=change_mode,
-            phase_statuses={phase.value: PhaseStatus.PENDING.value for phase in ConductorPhase},
+            phase_statuses={phase.value: PhaseStatus.PENDING.value for phase in Phase},
         )
         self.save(state)
         self.run_dir(run_id).mkdir(parents=True, exist_ok=True)
@@ -51,9 +61,17 @@ class RunStore:
             raise FileNotFoundError(f"未找到运行记录: {run_id}")
         return RunState(**payload)
 
-    def save(self, state: RunState) -> None:
+    def save(self, state: RunState, *, expected_version: int | None = None) -> None:
+        state_path = self.run_dir(state.run_id) / "run_state.json"
+        current = read_json(state_path, default={}) or {}
+        current_version = int(current.get("version", 0))
+        if expected_version is not None and current and current_version != expected_version:
+            raise RunStateConflictError(
+                f"运行 {state.run_id} 状态版本已变化，请重新 status/next 后再操作"
+            )
+        state.version = current_version + 1
         state.touch()
-        write_json(self.run_dir(state.run_id) / "run_state.json", to_data(state))
+        write_json(state_path, to_data(state))
 
     def run_dir(self, run_id: str) -> Path:
         return self.runs_root / run_id
@@ -63,11 +81,27 @@ class RunStore:
         path.parent.mkdir(parents=True, exist_ok=True)
         return path
 
-    def set_phase(self, state: RunState, phase: ConductorPhase, status: PhaseStatus, reason: str = "") -> RunState:
-        next_state = replace(state)
-        next_state.current_phase = phase.value
-        next_state.phase_statuses[phase.value] = status.value
-        if reason:
-            next_state.blocked_reason = reason
-        self.save(next_state)
-        return next_state
+    @contextmanager
+    def locked_run(self, run_id: str, timeout_seconds: float = 10.0):
+        lock_path = self.run_dir(run_id) / ".run.lock"
+        lock_path.parent.mkdir(parents=True, exist_ok=True)
+        start = time.monotonic()
+        fd: int | None = None
+        while True:
+            try:
+                fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                os.write(fd, str(os.getpid()).encode("utf-8"))
+                break
+            except FileExistsError:
+                if time.monotonic() - start >= timeout_seconds:
+                    raise RunLockTimeoutError(f"运行 {run_id} 正在被其他进程操作，请稍后重试")
+                time.sleep(0.05)
+        try:
+            yield
+        finally:
+            if fd is not None:
+                os.close(fd)
+            try:
+                lock_path.unlink()
+            except FileNotFoundError:
+                pass

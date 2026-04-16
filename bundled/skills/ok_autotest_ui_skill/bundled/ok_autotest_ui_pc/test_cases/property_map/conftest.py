@@ -1,15 +1,14 @@
 # test_cases/property_map/conftest.py
 #
-# 自定义原因：
-# - 该目录需要目录级登录与 Cookie 预处理，不能直接使用全局 page fixture。
-# - 其余生命周期逻辑复用 testcase_support，避免重复实现浏览器管理。
+# 覆盖上层 conftest 中 scope="class" 的 page fixture，
+# 改为 scope="module"，使同一模块内所有测试函数共享一个浏览器实例。
 import os
 import pytest
 from pages.login_page import LoginPage
 from pages.property_map_page import PropertyMapPage
+from utils.browser_manager import BrowserManager
 from utils.session_manager import SessionManager
 from utils.logger import setup_logger
-from utils.testcase_support import finish_managed_page, start_managed_page
 
 logger = setup_logger()
 
@@ -21,7 +20,19 @@ def page(config):
     同一模块内的所有测试函数共享同一个浏览器实例，只打开一次浏览器。
     登录也只执行一次（session 复用），之后所有用例直接使用已登录的页面。
     """
-    browser_manager, pg = start_managed_page(config)
+    browser_manager = BrowserManager()
+    pg = browser_manager.start_browser(
+        browser_type=config['browser']['type'],
+        headless=config['browser']['headless'],
+        base_url=config['base_url'],
+        viewport=config['browser']['viewport']
+    )
+
+    if os.environ.get("DEBUG_PAUSE", "").lower() in ("1", "true", "yes"):
+        try:
+            pg.pause()
+        except Exception:
+            pass
 
     # ── 模块级别一次性登录 ──────────────────────────────────────────────
     site = config["site"]
@@ -80,4 +91,5 @@ def page(config):
 
     yield pg
 
-    finish_managed_page(browser_manager, pg)
+    if os.environ.get("KEEP_BROWSER_OPEN", "").lower() not in ("1", "true", "yes"):
+        browser_manager.close_browser(pg)

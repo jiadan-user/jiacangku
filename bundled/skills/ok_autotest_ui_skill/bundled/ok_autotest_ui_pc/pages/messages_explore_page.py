@@ -1,6 +1,11 @@
 # pages/messages_explore_page.py
+import time
+
 from pages.base_page import BasePage
 from utils.logger import setup_logger
+
+# 若日志中仍出现含 [class*='chat-item'] 的旧选择器，说明运行的不是本文件（请清 __pycache__ 并确认 PYTHONPATH）
+WAIT_FOR_CONVERSATION_LIST_IMPL = 2
 
 
 class MessagesExplorePage(BasePage):
@@ -17,9 +22,15 @@ class MessagesExplorePage(BasePage):
     
     # 左侧会话列表相关（2026-04-03 更新：使用精确的选择器）
     CONVERSATION_LIST_CONTAINER = ".list-group.list-group-flush"  # 左侧会话列表容器
-    CONVERSATION_LIST_ITEM = ".list-group > .border-0"  # 左侧会话列表项（精确选择器）
-    # 兼容旧选择器（用于向后兼容）
-    CONVERSATION_ITEM = ".list-group > .border-0"  # 统一使用新的精确选择器
+    # 必须带 .list-group-flush，避免命中页内其它 .list-group 行
+    CONVERSATION_LIST_ITEM = ".list-group.list-group-flush > .border-0"
+    CONVERSATION_ITEM = ".list-group.list-group-flush > .border-0"
+    # 仅匹配左侧列表的回退（勿含 chat-item / 泛 message-item，避免匹配右侧消息气泡）
+    CONVERSATION_LIST_FALLBACK = (
+        ".list-group.list-group-flush .border-0, "
+        "[class*='conversation-list'] [class*='item'], "
+        "[class*='conversation-item']"
+    )
     
     # 右侧聊天消息相关（2026-04-03 新增：区分聊天消息和会话列表）
     CHAT_MESSAGE_ITEM = ".chat-item:not(.tips)"  # 右侧聊天消息（排除 tips 元素）
@@ -91,148 +102,123 @@ class MessagesExplorePage(BasePage):
             self.logger.error(f"点击Messages链接失败: {e}")
             return False
     
+    def wait_for_messages_page_loaded(self, timeout=60000):
+        """
+        等待导航后的页面完成文档级加载（load 事件晚于 domcontentloaded）。
+        避免 DOM 尚未就绪就滑动、截图导致不稳定。
+        """
+        self.page.wait_for_load_state("load", timeout=timeout)
+        self.logger.info("✓ 页面 load 已完成，可继续后续步骤")
+
     def navigate_to_messages_directly(self, target_url):
         """直接导航到Messages页面"""
         try:
             self.page.goto(target_url, wait_until="domcontentloaded", timeout=60000)
-            # 等待页面加载，不使用 networkidle
+            self.wait_for_messages_page_loaded(timeout=60000)
+            # 短等待：给 SPA / 列表渲染一帧时间（不用 networkidle，避免长连接页面永不 idle）
             self.page.wait_for_timeout(2000)
         except Exception as e:
             self.logger.error(f"直接导航到Messages页面失败: {e}")
             raise
     
-    def wait_for_conversation_list(self, timeout=15000):
-        """等待会话列表加载（2026-04-03 更新：使用左侧列表选择器，宽松策略）"""
-        try:
-            # 先等待页面基本加载完成（等待骨架屏消失）
-            self.page.wait_for_timeout(3000)
-            
-            # 策略1: 尝试新的精确选择器（不抛出异常，只记录）
-            try:
-                container = self.page.locator(self.CONVERSATION_LIST_CONTAINER)
-                container.wait_for(state='attached', timeout=3000)
-                self.logger.info("✓ 会话列表容器已加载")
-                
-                items = self.page.locator(self.CONVERSATION_LIST_ITEM)
-                items.first.wait_for(state='attached', timeout=3000)
-                count = items.count()
-                self.logger.info(f"✓ 使用新选择器成功等待到会话列表（共 {count} 个）")
-                self.page.wait_for_timeout(1000)
-                return True
-                
-            except Exception as e1:
-                self.logger.debug(f"新选择器等待超时（这是正常的，继续尝试其他方法）")
-            
-            # 策略2: 尝试旧选择器（向后兼容）
-            try:
-                old_items = self.page.locator("[class*='conversation'], [class*='chat-item'], [class*='message-item']")
-                old_items.first.wait_for(state='attached', timeout=3000)
-                count = old_items.count()
-                self.logger.info(f"✓ 使用旧选择器成功等待到元素（共 {count} 个）")
-                self.page.wait_for_timeout(1000)
-                return True
-                
-            except Exception as e2:
-                self.logger.debug(f"旧选择器等待超时（这是正常的，继续检查页面状态）")
-            
-            # 策略3: 检查页面是否实际加载成功（通过检查其他元素）
-            current_url = self.page.url
-            
-            # 如果在登录页，返回 False
-            if 'login' in current_url.lower():
-                self.logger.error(f"❌ 被重定向到登录页: {current_url}")
-                self.logger.error("Session 可能已过期，请重新登录")
-                return False
-            
-            # 如果在 Messages 页面，即使找不到会话列表也返回 True
-            # （页面可能加载成功但会话列表为空，或者选择器需要更新）
-            if 'chat' in current_url.lower() or 'message' in current_url.lower():
-                self.logger.warning("⚠️  无法通过选择器等待到会话列表，但页面 URL 正确")
-                self.logger.warning(f"   当前 URL: {current_url}")
-                self.logger.warning("   页面可能已加载，继续执行测试")
-                self.page.wait_for_timeout(2000)  # 额外等待 2 秒
-                return True
-            
-            # 其他情况，截图并返回 False
-            self.logger.error(f"❌ 页面加载异常，当前 URL: {current_url}")
-            try:
-                self.page.screenshot(path='screenshots/wait_conversation_list_failed.png', timeout=5000)
-                self.logger.error("已保存失败截图: screenshots/wait_conversation_list_failed.png")
-            except:
-                pass
-            
-            return False
-            
-        except Exception as e:
-            self.logger.error(f"等待会话列表失败: {e}")
-            # 即使出错，也尝试继续（宽松策略）
-            return True
+    # 与 Playwright 选择器互补：类名微调时仍可在浏览器内统计左侧行数
+    _CONVERSATION_COUNT_JS = """
+        () => {
+            const flush = document.querySelector('.list-group.list-group-flush');
+            if (!flush) return 0;
+            const scoped = flush.querySelectorAll(
+                ':scope > .border-0, :scope > a.list-group-item, :scope > .list-group-item'
+            );
+            if (scoped.length) return scoped.length;
+            return Array.from(flush.children).filter((el) => {
+                const st = window.getComputedStyle(el);
+                if (st.display === 'none' || st.visibility === 'hidden') return false;
+                const r = el.getBoundingClientRect();
+                return r.height > 8 && r.width > 40 && r.bottom > 0;
+            }).length;
+        }
+    """
 
-    def scroll_conversation_list(self, distance: int = 200) -> dict:
-        """滑动左侧会话列表"""
+    def wait_for_conversation_list(self, timeout=25000):
+        """等待左侧会话列表区域就绪（容器可见；条目可为 0 条）。"""
         try:
-            # 方法1: 尝试使用选择器定位会话列表容器
+            self.logger.info(
+                "wait_for_conversation_list impl=%s（左侧列表专用选择器，不含右侧 chat-item）",
+                WAIT_FOR_CONVERSATION_LIST_IMPL,
+            )
+            self.page.wait_for_timeout(1500)
+
+            t_ms = max(int(timeout), 5000)
+
+            container = self.page.locator(self.CONVERSATION_LIST_CONTAINER)
             try:
-                list_container = self.page.locator(self.CONVERSATION_LIST).first
-                
-                if list_container.is_visible(timeout=2000):
-                    list_box = list_container.bounding_box()
-                    
-                    if list_box:
-                        start_x = list_box['x'] + list_box['width'] / 2
-                        start_y = list_box['y'] + list_box['height'] / 2
-                        end_y = start_y - distance
-                        
-                        self.logger.info(f"使用选择器定位: ({start_x:.0f}, {start_y:.0f}) -> ({start_x:.0f}, {end_y:.0f})")
-                        
-                        # 执行滑动
-                        self.page.mouse.move(start_x, start_y)
-                        self.page.mouse.down()
-                        self.page.mouse.move(start_x, end_y, steps=10)
-                        self.page.mouse.up()
-                        self.page.wait_for_timeout(1000)
-                        
-                        self.logger.info(f"✓ 滑动完成（选择器方式），距离: {distance}px")
-                        return {
-                            'success': True,
-                            'distance': distance,
-                            'start': (start_x, start_y),
-                            'end': (start_x, end_y),
-                            'method': 'selector'
-                        }
+                container.wait_for(state="visible", timeout=t_ms)
+                self.logger.info("✓ 左侧会话列表容器已可见")
             except Exception as e:
-                self.logger.warning(f"选择器方式失败: {e}，尝试使用坐标方式")
-            
-            # 方法2: 使用固定坐标（基于TC002成功截图的观察）
-            # 左侧会话列表区域大约在 x=50-320, y=300-600
-            start_x = 150  # 会话列表中间位置
-            start_y = 450  # 会话列表中间高度
-            end_y = start_y - distance
-            
-            self.logger.info(f"使用固定坐标: ({start_x}, {start_y}) -> ({start_x}, {end_y})")
-            
-            # 执行滑动操作
-            self.page.mouse.move(start_x, start_y)
-            self.page.mouse.down()
-            self.page.mouse.move(start_x, end_y, steps=10)
-            self.page.mouse.up()
-            
-            # 等待滑动动画完成
-            self.page.wait_for_timeout(1000)
-            
-            self.logger.info(f"✓ 滑动完成（坐标方式），距离: {distance}px")
-            
-            return {
-                'success': True,
-                'distance': distance,
-                'start': (start_x, start_y),
-                'end': (start_x, end_y),
-                'method': 'coordinates'
-            }
-            
+                self.logger.warning(
+                    "左侧列表容器未在 %sms 内 visible: %s，尝试 attached 后继续",
+                    t_ms,
+                    e,
+                )
+                try:
+                    container.wait_for(state="attached", timeout=8000)
+                    self.logger.info("✓ 左侧会话列表容器已挂载到 DOM")
+                except Exception as e2:
+                    self.logger.warning(
+                        "左侧列表容器 attached 仍失败: %s，将仅依赖 URL/条目轮询",
+                        e2,
+                    )
+
+            # 列表项渲染可能晚于容器；单独给足轮询时间（避免容器等待占满整段 deadline）
+            item_poll_deadline = time.monotonic() + max(t_ms / 1000.0, 18.0)
+
+            items = self.page.locator(self.CONVERSATION_LIST_ITEM)
+            while time.monotonic() < item_poll_deadline:
+                n = items.count()
+                if n == 0:
+                    n = self.page.evaluate(self._CONVERSATION_COUNT_JS)
+                if n > 0:
+                    self.logger.info(f"✓ 左侧会话列表已渲染（共 {n} 条）")
+                    self.page.wait_for_timeout(500)
+                    return True
+                self.page.wait_for_timeout(300)
+
+            # 主选择器仍为 0：再短轮询左侧专用回退（DOM 结构微调时）
+            alt_deadline = time.monotonic() + 10.0
+            alt = self.page.locator(self.CONVERSATION_LIST_FALLBACK)
+            while time.monotonic() < alt_deadline:
+                n = alt.count()
+                if n == 0:
+                    n = self.page.evaluate(self._CONVERSATION_COUNT_JS)
+                if n > 0:
+                    self.logger.info(f"✓ 使用回退选择器检测到左侧列表项（共 {n} 条）")
+                    return True
+                self.page.wait_for_timeout(300)
+
+            current_url = self.page.url
+            ul = current_url.lower()
+
+            if "login" in ul:
+                self.logger.error(f"❌ 被重定向到登录页: {current_url}")
+                return False
+
+            if "chat" in ul or "message" in ul:
+                self.logger.warning(
+                    "⚠️ 已进入 Messages URL，但未匹配到左侧列表项（可能空列表或 DOM 变更）"
+                )
+                self.logger.warning(f"   当前 URL: {current_url}")
+                return True
+
+            self.logger.error(f"❌ 页面状态异常，当前 URL: {current_url}")
+            try:
+                self.page.screenshot(path="screenshots/wait_conversation_list_failed.png", timeout=5000)
+            except Exception:
+                pass
+            return False
+
         except Exception as e:
-            self.logger.error(f"滑动会话列表失败: {e}")
-            return {'success': False, 'error': str(e)}
+            self.logger.warning(f"等待会话列表时出现异常（宽松继续）: {e}")
+            return True
 
     def get_conversation_count(self):
         """获取左侧会话列表的数量（2026-04-03 更新：使用精确的左侧列表选择器）"""
@@ -243,14 +229,45 @@ class MessagesExplorePage(BasePage):
             
             # 如果使用新选择器找不到，尝试旧的通用选择器（向后兼容）
             if count == 0:
-                self.logger.warning("使用新选择器未找到会话，尝试旧选择器...")
-                items = self.page.locator("[class*='conversation'], [class*='chat-item'], [class*='message-item']")
+                self.logger.warning("使用新选择器未找到会话，尝试左侧专用回退选择器...")
+                items = self.page.locator(self.CONVERSATION_LIST_FALLBACK)
                 count = items.count()
+
+            if count == 0:
+                js_n = self.page.evaluate(self._CONVERSATION_COUNT_JS)
+                if js_n > 0:
+                    self.logger.info(f"✓ 通过 DOM 统计左侧会话行数: {js_n}")
+                count = js_n
             
             return count
         except Exception as e:
             self.logger.error(f"获取会话数量失败: {e}")
             return 0
+
+    def ensure_conversation_items(self, messages_url=None, max_attempts=2):
+        """
+        等待左侧列表出现会话行；若持续为 0 条则刷新或重新打开 Messages（缓解 SPA 首屏未渲染）。
+        返回最终统计到的会话条数。
+        """
+        last = 0
+        for attempt in range(max_attempts):
+            self.wait_for_conversation_list(timeout=30000)
+            last = self.get_conversation_count()
+            if last > 0:
+                return last
+            if attempt < max_attempts - 1:
+                self.logger.warning(
+                    "⚠️ 会话列表项为 0，刷新页面后重试 (%s/%s)",
+                    attempt + 1,
+                    max_attempts,
+                )
+                if messages_url:
+                    self.navigate_to_messages_directly(messages_url)
+                else:
+                    self.page.reload(wait_until="domcontentloaded", timeout=60000)
+                    self.wait_for_messages_page_loaded(timeout=60000)
+                    self.page.wait_for_timeout(2000)
+        return last
     
     def get_chat_message_count(self):
         """获取右侧聊天消息的数量（2026-04-03 新增）"""
@@ -399,8 +416,8 @@ class MessagesExplorePage(BasePage):
             
             # 如果找不到，尝试旧选择器（向后兼容）
             if items.count() == 0:
-                self.logger.warning("使用新选择器未找到会话，尝试旧选择器...")
-                items = self.page.locator("[class*='conversation'], [class*='chat-item'], [class*='message-item']")
+                self.logger.warning("使用新选择器未找到会话，尝试左侧专用回退选择器...")
+                items = self.page.locator(self.CONVERSATION_LIST_FALLBACK)
             
             target_item = items.nth(index)
             target_item.click(timeout=timeout)
@@ -420,28 +437,20 @@ class MessagesExplorePage(BasePage):
             return False
     
     def scroll_conversation_list(self, direction='down', distance=500):
-        """滚动左侧会话列表（2026-04-03 新增）
-        
-        Args:
-            direction: 滚动方向，'up' 或 'down'
-            distance: 滚动距离（像素）
-        
-        Returns:
-            bool: 是否成功滚动
-        """
+        """滚动左侧会话列表（调整 scrollTop）。返回 dict，与 TC002 等用例兼容。"""
         try:
             container = self.page.locator(self.CONVERSATION_LIST_CONTAINER)
-            
+
             if direction == 'down':
                 container.evaluate(f"el => el.scrollTop = el.scrollTop + {distance}")
-            else:  # up
+            else:
                 container.evaluate(f"el => el.scrollTop = el.scrollTop - {distance}")
-            
+
             self.page.wait_for_timeout(500)
-            return True
+            return {'success': True, 'distance': distance, 'direction': direction, 'method': 'scrollTop'}
         except Exception as e:
             self.logger.error(f"滚动会话列表失败: {e}")
-            return False
+            return {'success': False, 'distance': distance, 'direction': direction, 'error': str(e)}
     
     def scroll_conversation_list_to_top(self):
         """滚动左侧会话列表到顶部（2026-04-03 新增）"""

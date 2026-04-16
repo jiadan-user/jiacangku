@@ -65,60 +65,6 @@ class BasePage:
             timeout: 超时时间（毫秒）
         """
         self.page.wait_for_url(url_pattern, timeout=timeout)
-
-    def wait_for_any_selector(self, selectors, state="visible", timeout=30000):
-        """
-        依次等待一组候选选择器，直到其中一个满足条件。
-
-        Args:
-            selectors: 候选选择器列表
-            state: 元素状态 (visible/attached/hidden)
-            timeout: 总超时时间（毫秒）
-
-        Returns:
-            str: 命中的选择器
-        """
-        last_error = None
-        for selector in selectors:
-            try:
-                self.page.wait_for_selector(selector, state=state, timeout=timeout)
-                return selector
-            except Exception as exc:
-                last_error = exc
-        if last_error:
-            raise last_error
-        raise ValueError("selectors 不能为空")
-
-    def wait_for_key_section(self, selectors, timeout=30000):
-        """
-        等待页面关键区块 ready，适合替代大段固定 sleep。
-        """
-        return self.wait_for_any_selector(selectors, state="visible", timeout=timeout)
-
-    def wait_for_url_ready(self, url_pattern=None, timeout=30000, load_state="domcontentloaded"):
-        """
-        先等待页面 load_state，再按需等待 URL ready。
-        """
-        self.page.wait_for_load_state(load_state, timeout=timeout)
-        if url_pattern:
-            self.page.wait_for_url(url_pattern, timeout=timeout)
-
-    def dismiss_modal_dialogs(self, attempts=3, settle_timeout=200):
-        """
-        尝试关闭当前页面上的模态弹窗，返回实际关闭尝试次数。
-        """
-        closed = 0
-        for _ in range(attempts):
-            dialog = self.page.locator('[role="dialog"][aria-modal="true"]')
-            try:
-                if dialog.count() == 0 or not dialog.first.is_visible(timeout=500):
-                    break
-            except Exception:
-                break
-            self.page.keyboard.press("Escape")
-            self.page.wait_for_timeout(settle_timeout)
-            closed += 1
-        return closed
     
     def fill(self, selector, text, timeout=30000):
         """
@@ -316,3 +262,4 @@ class BasePage:
             full_page: 是否全页面截图
         """
         self.page.screenshot(path=path, full_page=full_page)
+

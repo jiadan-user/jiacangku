@@ -1,9 +1,9 @@
 # AI 执行示例
 
-以下示例默认在最终 skill 根目录执行：
+以下示例默认在本 skill 根目录执行：
 
 ```bash
-cd /Users/a58/Desktop/ok_autotest_ui_skill
+# 包含 SKILL.md 和 scripts/ok_test.py 的目录
 ```
 
 ## 示例 1：开发说“我改了 wallet 提现”
@@ -11,13 +11,13 @@ cd /Users/a58/Desktop/ok_autotest_ui_skill
 AI 先预览：
 
 ```bash
-python scripts/ok_test.py run --module wallet --path test_cases/wallet/test_wallet_withdrawal.py --dry-run
+python3 scripts/ok_test.py run --module wallet --path test_cases/wallet/test_wallet_withdrawal.py --dry-run
 ```
 
 确认后真实执行：
 
 ```bash
-python scripts/ok_test.py run --module wallet --path test_cases/wallet/test_wallet_withdrawal.py
+python3 scripts/ok_test.py run --module wallet --path test_cases/wallet/test_wallet_withdrawal.py
 ```
 
 如果命中的目标 case 有已配置前置，`run` 会先自动补跑前置，再回到目标集合执行。
@@ -27,13 +27,13 @@ python scripts/ok_test.py run --module wallet --path test_cases/wallet/test_wall
 AI 先预览：
 
 ```bash
-python scripts/ok_test.py run --module publish_job --feature publish_job_step1_validation --dry-run
+python3 scripts/ok_test.py run --module publish_job --feature publish_job_step1_validation --dry-run
 ```
 
 确认后真实执行：
 
 ```bash
-python scripts/ok_test.py run --module publish_job --feature publish_job_step1_validation
+python3 scripts/ok_test.py run --module publish_job --feature publish_job_step1_validation
 ```
 
 ## 示例 3：开发说“我改了 car publish”
@@ -41,13 +41,13 @@ python scripts/ok_test.py run --module publish_job --feature publish_job_step1_v
 AI 先预览：
 
 ```bash
-python scripts/ok_test.py run --module car --feature car_publish --site ae --dry-run
+python3 scripts/ok_test.py run --module car --feature car_publish --site ae --dry-run
 ```
 
 确认后真实执行：
 
 ```bash
-python scripts/ok_test.py run --module car --feature car_publish --site ae
+python3 scripts/ok_test.py run --module car --feature car_publish --site ae
 ```
 
 ## AI 如何选用例
@@ -55,7 +55,7 @@ python scripts/ok_test.py run --module car --feature car_publish --site ae
 AI 选用例时固定做两步：
 
 1. 先参考 `references/module-map.md`
-2. 再核对 `/Users/a58/Desktop/knowledge_base/文本用例` 和 `bundled/ok_autotest_ui_pc/test_cases/...`
+2. 再核对 QA Agent 提供的知识库文本用例路径和 `bundled/ok_autotest_ui_pc/test_cases/...`
 
 映射文档只是第一层导航，不是最终真相。
 
@@ -85,6 +85,6 @@ AI 选用例时固定做两步：
 以下命令不属于普通开发主流程，只在维护 catalog 或标识治理时使用：
 
 ```bash
-python -m tooling.ok_test ops catalog-build
-python -m tooling.ok_test ops audit-identifiers
+python3 scripts/ok_test.py ops catalog-build
+python3 scripts/ok_test.py ops audit-identifiers
 ```

@@ -73,7 +73,7 @@ def login_if_needed(page: Page, username: str, password: str):
                 logger.error(f"密码输入或登录失败: {e}")
                 # 尝试截图帮助调试
                 try:
-                    page.screenshot(path=f"reports/login_error_{int(time.time())}.png", timeout=60000)
+                    page.screenshot(path=f"reports/login_error_{int(time.time())}.png")
                     logger.info("✓ 已保存登录错误截图")
                 except:
                     pass
@@ -90,4 +90,3 @@ def login_if_needed(page: Page, username: str, password: str):
             page.wait_for_timeout(2000)
         except Exception:
             pass
-

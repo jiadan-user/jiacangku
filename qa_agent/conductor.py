@@ -1,575 +1,2193 @@
+"""
+QA Agent 编排层 - 纯状态机。
+
+只管阶段流转，不执行 skill 的内部推理流程；编排层自带的阶段只做候选识别、
+影响回归验证、任务编排和产物落盘。
+"""
 from __future__ import annotations
 
-import json
+import re
 from dataclasses import asdict
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from qa_agent.adapters.dedupe_mapper import DedupeMapper
-from qa_agent.adapters.promotion_guard import PromotionGuard
-from qa_agent.adapters.script_normalizer import ScriptNormalizer
-from qa_agent.adapters.ui_probe_enricher import UIProbeEnricher
+from qa_agent.adapters.impact_verification import ImpactVerificationExecutor
+from qa_agent.adapters.legacy_update import (
+    PATCH_ACTIONS,
+    PLAYWRIGHT_REGEN_ACTIONS,
+    LegacyUpdateExecutor,
+    make_task_id,
+)
 from qa_agent.config import AppConfig
-from qa_agent.exceptions import PhaseBlockedError
-from qa_agent.integrations.ok_ui_skill import OkUISkillIntegration
-from qa_agent.integrations.playwright_generator import PlaywrightGeneratorIntegration
-from qa_agent.integrations.senior_qa_brain import SeniorQABrainIntegration
-from qa_agent.io import read_json, write_json, write_text
+from qa_agent.io import read_json, read_text, write_json, write_text
+from qa_agent.markdown_cases import parse_markdown_document
 from qa_agent.models import (
-    CaseManifestEntry,
-    CaseStatus,
+    AttributionCategory,
     ChangeMode,
-    ConductorPhase,
-    GateReport,
+    DoctorCheck,
+    DoctorResult,
+    ImpactCandidate,
+    ImpactRunStatus,
+    ImpactVerificationRecord,
+    LegacyUpdateGate,
+    LegacyUpdateTask,
+    LegacyUpdateTaskStatus,
+    NextAction,
+    NextActionKind,
+    OverlapDecision,
+    Phase,
+    PhaseGateResult,
     PhaseStatus,
+    PlaywrightCaseOutcome,
+    PlaywrightOutcomeType,
     RequirementPacket,
     RunState,
     RunStatus,
+    TextCaseManifest,
+    TextCaseManifestEntry,
+    UserConfirmationRecord,
     to_data,
+    utc_now_iso,
 )
-from qa_agent.presentation import artifact_label, normalize_change_mode
 from qa_agent.state import RunStore
-from qa_agent.utils import read_if_exists, slugify
+from qa_agent.utils import normalize_text, run_command
+
+SKILL_PATHS = {
+    Phase.SENIOR_QA_BRAIN: "bundled/skills/senior-qa-brain/SKILL.md",
+    Phase.PLAYWRIGHT_GENERATOR: "bundled/skills/playwright-test-generator/SKILL.md",
+    Phase.OK_UI_REGRESSION: "bundled/skills/ok_autotest_ui_skill/SKILL.md",
+    Phase.KNOWLEDGE_BASE_UPDATE: "bundled/skills/knowledge-base-manager/SKILL.md",
+}
+
+PHASE_REQUIRED_ARTIFACTS = {
+    Phase.SENIOR_QA_BRAIN: ["analysis_report", "textcases"],
+    Phase.PLAYWRIGHT_GENERATOR: ["playwright_case_outcomes"],
+    Phase.IMPACT_VERIFICATION: [],
+    Phase.OK_UI_REGRESSION: ["ok_ui_dry_run_preview", "ok_ui_execution_report", "release_recommendation"],
+    Phase.KNOWLEDGE_BASE_UPDATE: ["knowledge_base_update_preview", "knowledge_base_update_result"],
+}
+
+NEW_FEATURE_PHASES = [
+    Phase.INTAKE,
+    Phase.IMPACT_SPLIT,
+    Phase.SENIOR_QA_BRAIN,
+    Phase.PLAYWRIGHT_GENERATOR,
+    Phase.IMPACT_ANALYSIS,
+    Phase.IMPACT_VERIFICATION,
+    Phase.LEGACY_UPDATE,
+    Phase.OK_UI_REGRESSION,
+    Phase.FINAL_REPORT,
+    Phase.KNOWLEDGE_BASE_UPDATE,
+]
+
+REGRESSION_PHASES = [
+    Phase.INTAKE,
+    Phase.IMPACT_SPLIT,
+    Phase.IMPACT_ANALYSIS,
+    Phase.IMPACT_VERIFICATION,
+    Phase.LEGACY_UPDATE,
+    Phase.OK_UI_REGRESSION,
+    Phase.FINAL_REPORT,
+    Phase.KNOWLEDGE_BASE_UPDATE,
+]
+
+MIXED_PHASES = NEW_FEATURE_PHASES
 
 
 class QAConductor:
-    def __init__(self, config: AppConfig) -> None:
+    def __init__(
+        self,
+        config: AppConfig,
+        legacy_update_executor: LegacyUpdateExecutor | None = None,
+        impact_verification_executor: ImpactVerificationExecutor | None = None,
+    ) -> None:
         self.config = config
         self.store = RunStore(config.qa_state_root)
-        skills_paths = config.skills.get("paths", {})
-        commands = config.skills.get("commands", {})
-        thresholds = config.thresholds.get("gates", {})
-        promotion_cfg = config.thresholds.get("promotion", {})
-        self.senior_qa = SeniorQABrainIntegration(skills_paths["senior_qa_brain_root"])
-        self.playwright = PlaywrightGeneratorIntegration(skills_paths["playwright_test_generator_root"])
-        self.ok_ui = OkUISkillIntegration(
-            script_path=commands["ok_ui_skill"]["script"],
-            project_root=skills_paths["regression_project_root"],
-            venv_python=commands["ok_ui_skill"]["venv_python"],
-        )
-        self.probe_enricher = UIProbeEnricher()
-        self.dedupe_mapper = DedupeMapper()
-        self.normalizer = ScriptNormalizer(max_wait_ms=int(thresholds.get("max_wait_timeout_ms", 300)))
-        self.guard = PromotionGuard(
-            ok_ui_skill=self.ok_ui,
-            max_wait_ms=int(thresholds.get("max_wait_timeout_ms", 300)),
-            require_runtime_checks=True,
-            keep_staging_files=bool(promotion_cfg.get("keep_staging_files", False)),
-        )
+        self.legacy_update_executor = legacy_update_executor or LegacyUpdateExecutor(config)
+        self.impact_verification_executor = impact_verification_executor or ImpactVerificationExecutor(config)
 
     def plan(self, inputs: dict[str, Any]) -> RunState:
-        self._validate_minimal_inputs(inputs)
-        state = self._ensure_run(inputs)
+        mode = self._coerce_mode(inputs.get("change_mode"))
+        state = self.store.create_run(mode)
         state = self._phase_intake(state, inputs)
-        state = self._phase_impact_split(state, inputs)
+        state = self._phase_impact_split(state, mode)
+        if inputs.get("doctor_result"):
+            self._persist_doctor_result(state, inputs["doctor_result"])
         state.status = RunStatus.PLANNED.value
+        self._refresh_next_action(state)
         self.store.save(state)
         return state
-
-    def _validate_minimal_inputs(self, inputs: dict[str, Any]) -> None:
-        has_figma = bool(inputs.get("figma_url"))
-        has_diff = bool(inputs.get("git_diff_summary") or inputs.get("git_diff_file"))
-        has_run_id = bool(inputs.get("run_id"))
-        if not has_figma and not has_diff and not has_run_id:
-            raise ValueError(
-                "至少需要提供以下输入之一：\n"
-                "  --figma-url / --figma链接（新需求场景）\n"
-                "  --git-diff-file / --git-diff-summary（回归场景）\n"
-                "  --run-id / --运行ID（恢复已有运行）"
-            )
-
-    def run(self, inputs: dict[str, Any]) -> RunState:
-        self._validate_minimal_inputs(inputs)
-        state = self._ensure_run(inputs)
-        state = self._phase_intake(state, inputs)
-        state = self._phase_impact_split(state, inputs)
-
-        if state.change_mode in {ChangeMode.NEW_FEATURE_ONLY.value, ChangeMode.MIXED.value}:
-            state = self._phase_analysis_bundle(state, inputs)
-            state = self._phase_analysis_review(state, inputs)
-            state = self._phase_testcase_gen(state, inputs)
-            state = self._phase_ui_probe_enrich(state, inputs)
-            state = self._phase_dedupe_map(state, inputs)
-            state = self._phase_batch_plan(state)
-            state = self._phase_readiness_gate(state)
-            state = self._phase_proof_ingest(state, inputs)
-            state = self._phase_codegen(state)
-            state = self._phase_normalize(state)
-            state = self._phase_promotion_guard(state)
-            if inputs.get("auto_promote", True):
-                state = self._phase_promote(state)
-
-        if state.change_mode in {ChangeMode.REGRESSION_ONLY.value, ChangeMode.MIXED.value}:
-            state = self._phase_regression_plan(state, inputs)
-            if inputs.get("execute_regression", False):
-                state = self._phase_regression_dry_run(state)
-                if inputs.get("execute_real_run", False):
-                    state = self._phase_regression_run(state)
-
-        state = self._phase_gate_reports(state, inputs)
-        state = self._phase_final_report(state)
-        state.status = RunStatus.COMPLETED.value
-        self.store.save(state)
-        return state
-
-    def resume(self, run_id: str, inputs: dict[str, Any]) -> RunState:
-        inputs = dict(inputs)
-        inputs["run_id"] = run_id
-        state = self.store.load(run_id)
-        artifact_to_input = {
-            "analysis_report": "analysis_report",
-            "testcases_raw": "testcases_raw",
-            "testcases_enriched": "testcases_enriched",
-            "probe_notes": "probe_notes",
-            "proof_dir": "proof_dir",
-            "visual_report": "visual_report",
-            "ui_report": "ui_report",
-            "api_report": "api_report",
-        }
-        for artifact_key, input_key in artifact_to_input.items():
-            if not inputs.get(input_key) and state.artifacts.get(artifact_key):
-                inputs[input_key] = state.artifacts[artifact_key]
-        packet = read_json(state.artifacts.get("requirement_packet", ""), default={}) or {}
-        if not inputs.get("figma_url") and packet.get("figma_url"):
-            inputs["figma_url"] = packet["figma_url"]
-        if not inputs.get("site") and packet.get("site"):
-            inputs["site"] = packet["site"]
-        if not inputs.get("module") and packet.get("candidate_modules"):
-            inputs["module"] = packet["candidate_modules"][0]
-        if not inputs.get("feature") and packet.get("feature_name"):
-            inputs["feature"] = packet["feature_name"]
-        if not inputs.get("change_mode") or inputs.get("change_mode") == "auto":
-            inputs["change_mode"] = state.change_mode
-        return self.run(inputs)
 
     def status(self, run_id: str) -> dict[str, Any]:
         state = self.store.load(run_id)
-        return to_data(state)
+        data = to_data(state)
+        stale_warning = self._stale_blocked_warning(state)
+        if stale_warning:
+            data["stale_warning"] = stale_warning
+        return data
 
-    def promote(self, run_id: str) -> RunState:
+    def advance(self, run_id: str, inputs: dict[str, Any] | None = None) -> RunState:
+        with self.store.locked_run(run_id):
+            return self._advance_unlocked(run_id, inputs)
+
+    def _advance_unlocked(self, run_id: str, inputs: dict[str, Any] | None = None) -> RunState:
+        inputs = inputs or {}
         state = self.store.load(run_id)
-        return self._phase_promote(state)
+        phases = self._phases_for_mode(state.change_mode)
 
-    def _ensure_run(self, inputs: dict[str, Any]) -> RunState:
-        run_id = inputs.get("run_id")
-        if run_id:
-            state = self.store.load(run_id)
-        else:
-            provisional_mode = self._resolve_change_mode(inputs)
-            state = self.store.create_run(provisional_mode)
-        state.status = RunStatus.RUNNING.value
-        self._register_input_artifacts(state, inputs)
+        for phase in phases:
+            phase_state = state.phase_statuses.get(phase.value, PhaseStatus.PENDING.value)
+            if phase_state in (PhaseStatus.COMPLETED.value, PhaseStatus.SKIPPED.value):
+                continue
+            state = self._execute_phase(state, phase, inputs)
+            phase_state = state.phase_statuses.get(phase.value, PhaseStatus.PENDING.value)
+            if phase_state == PhaseStatus.COMPLETED.value:
+                continue
+            self._refresh_next_action(state)
+            self.store.save(state)
+            return state
+
+        if all(
+            state.phase_statuses.get(phase.value) in (PhaseStatus.COMPLETED.value, PhaseStatus.SKIPPED.value)
+            for phase in phases
+        ):
+            state.status = RunStatus.COMPLETED.value
+            state.blocked_reason = ""
+        self._refresh_next_action(state)
         self.store.save(state)
         return state
 
-    def _register_input_artifacts(self, state: RunState, inputs: dict[str, Any]) -> None:
-        for key in [
-            "analysis_report",
-            "testcases_raw",
-            "testcases_enriched",
-            "probe_notes",
-            "proof_dir",
-            "visual_report",
-            "ui_report",
-            "api_report",
-        ]:
-            if inputs.get(key):
-                state.artifacts[key] = str(inputs[key])
+    def complete_phase(self, run_id: str, phase_name: str, artifacts: dict[str, str] | None = None) -> RunState:
+        with self.store.locked_run(run_id):
+            return self._complete_phase_unlocked(run_id, phase_name, artifacts)
 
-    def _resolve_change_mode(self, inputs: dict[str, Any]) -> str:
-        explicit = normalize_change_mode(inputs.get("change_mode"))
-        if explicit and explicit != "auto":
-            return explicit
-        has_figma = bool(inputs.get("figma_url"))
-        has_diff = bool(inputs.get("git_diff_summary") or inputs.get("git_diff_file"))
-        if has_figma and has_diff:
-            return ChangeMode.MIXED.value
-        if has_figma:
-            return ChangeMode.NEW_FEATURE_ONLY.value
-        return ChangeMode.REGRESSION_ONLY.value
+    def _complete_phase_unlocked(
+        self,
+        run_id: str,
+        phase_name: str,
+        artifacts: dict[str, str] | None = None,
+    ) -> RunState:
+        state = self.store.load(run_id)
+        if artifacts:
+            state.artifacts.update(artifacts)
+        phase = self._phase_from_name(phase_name)
+        if phase == Phase.SENIOR_QA_BRAIN:
+            state = self._complete_senior_qa_brain(state)
+        elif phase == Phase.PLAYWRIGHT_GENERATOR:
+            state = self._complete_playwright_generator(state)
+        elif phase == Phase.IMPACT_VERIFICATION:
+            state = self._confirm_impact_verification(state)
+        elif phase == Phase.LEGACY_UPDATE:
+            state = self._complete_legacy_update(state)
+        elif phase == Phase.OK_UI_REGRESSION:
+            state = self._complete_ok_ui_regression(state)
+        elif phase == Phase.KNOWLEDGE_BASE_UPDATE:
+            state = self._complete_knowledge_base_update(state)
+
+        if state.phase_statuses.get(phase.value) == PhaseStatus.BLOCKED.value and state.blocked_reason:
+            self._refresh_next_action(state)
+            self.store.save(state)
+            return state
+
+        if phase == Phase.LEGACY_UPDATE:
+            self._refresh_next_action(state)
+            self.store.save(state)
+            return self._advance_unlocked(run_id)
+
+        state.phase_statuses[phase.value] = PhaseStatus.COMPLETED.value
+        state.current_phase = phase.value
+        state.blocked_reason = ""
+        state.status = RunStatus.RUNNING.value
+        self._refresh_next_action(state)
+        self.store.save(state)
+        return self._advance_unlocked(run_id)
+
+    def drive_to_action(
+        self,
+        run_id: str,
+        inputs: dict[str, Any] | None = None,
+        max_steps: int | None = None,
+    ) -> RunState:
+        with self.store.locked_run(run_id):
+            return self._drive_to_action_unlocked(run_id, inputs, max_steps)
+
+    def _drive_to_action_unlocked(
+        self,
+        run_id: str,
+        inputs: dict[str, Any] | None = None,
+        max_steps: int | None = None,
+    ) -> RunState:
+        phases = self._phases_for_mode(self.store.load(run_id).change_mode)
+        default_steps = int(self.config.thresholds.get("gates", {}).get("max_fix_rounds", 3)) + len(phases) + 5
+        limit = max_steps or default_steps
+        state = self.store.load(run_id)
+        for _ in range(limit):
+            if self._is_actionable(state):
+                self._refresh_next_action(state)
+                self.store.save(state)
+                return state
+            try:
+                state = self._advance_unlocked(run_id, inputs)
+            except Exception as exc:
+                state = self.store.load(run_id)
+                self._set_error_state(state, exc)
+                self.store.save(state)
+                return state
+            if self._is_actionable(state):
+                self._refresh_next_action(state)
+                self.store.save(state)
+                return state
+        self._set_error_state(state, RuntimeError(f"drive_to_action 超过最大自动推进步数 {limit}，已停止以防死循环"))
+        self.store.save(state)
+        return state
+
+    def doctor(self) -> DoctorResult:
+        checks: list[DoctorCheck] = []
+        project_root = self.config.project_root
+        checks.append(
+            DoctorCheck(
+                name="project_root",
+                ok=project_root.exists(),
+                severity="fatal",
+                message=f"项目根目录: {project_root}",
+            )
+        )
+
+        for phase, skill_path in SKILL_PATHS.items():
+            absolute = project_root / skill_path
+            checks.append(
+                DoctorCheck(
+                    name=f"skill:{phase.value}",
+                    ok=absolute.exists(),
+                    severity="fatal",
+                    message=f"{phase.value} skill: {absolute}",
+                )
+            )
+
+        paths = self.config.skills.get("paths", {})
+        commands = self.config.skills.get("commands", {}).get("ok_ui_skill", {})
+        knowledge_base_root = Path(paths.get("knowledge_base_root", ""))
+        knowledge_base_manager_root = Path(paths.get("knowledge_base_manager_root", ""))
+        regression_root = Path(paths.get("regression_project_root", ""))
+        venv_python = Path(commands.get("venv_python", ""))
+        ok_script = Path(commands.get("script", ""))
+
+        checks.extend(
+            [
+                DoctorCheck(
+                    name="knowledge_base_root",
+                    ok=knowledge_base_root.exists(),
+                    severity="fatal",
+                    message=f"知识库目录: {knowledge_base_root}",
+                ),
+                DoctorCheck(
+                    name="knowledge_base_manager_root",
+                    ok=knowledge_base_manager_root.exists(),
+                    severity="fatal",
+                    message=f"knowledge-base-manager: {knowledge_base_manager_root}",
+                ),
+                DoctorCheck(
+                    name="regression_project_root",
+                    ok=regression_root.exists(),
+                    severity="warning",
+                    message=f"回归项目目录: {regression_root}",
+                ),
+                DoctorCheck(
+                    name="ok_ui_venv_python",
+                    ok=venv_python.exists(),
+                    severity="warning",
+                    message=f"ok_autotest_ui Python: {venv_python}",
+                ),
+                DoctorCheck(
+                    name="ok_ui_script",
+                    ok=ok_script.exists(),
+                    severity="warning",
+                    message=f"ok_autotest_ui 脚本: {ok_script}",
+                ),
+            ]
+        )
+
+        if venv_python.exists():
+            pytest_proc = run_command([str(venv_python), "-m", "pytest", "--version"])
+            checks.append(
+                DoctorCheck(
+                    name="pytest",
+                    ok=pytest_proc.returncode == 0,
+                    severity="warning",
+                    message=(pytest_proc.stdout or pytest_proc.stderr).strip()[:240] or "pytest 不可用",
+                )
+            )
+            playwright_proc = run_command([str(venv_python), "-m", "playwright", "--version"])
+            checks.append(
+                DoctorCheck(
+                    name="playwright",
+                    ok=playwright_proc.returncode == 0,
+                    severity="warning",
+                    message=(playwright_proc.stdout or playwright_proc.stderr).strip()[:240] or "playwright 不可用",
+                )
+            )
+            if ok_script.exists() and regression_root.exists():
+                doctor_proc = run_command(
+                    [str(venv_python), str(ok_script), "doctor"],
+                    cwd=regression_root,
+                    env={"PYTHONPATH": str(regression_root)},
+                )
+                checks.append(
+                    DoctorCheck(
+                        name="ok_ui_doctor",
+                        ok=doctor_proc.returncode == 0,
+                        severity="warning",
+                        message=(doctor_proc.stdout or doctor_proc.stderr).strip()[:240] or "ok_ui doctor 未通过",
+                    )
+                )
+
+        has_fatal = any(not check.ok and check.severity == "fatal" for check in checks)
+        return DoctorResult(ok=not any(not check.ok for check in checks), has_fatal=has_fatal, checks=checks)
+
+    def _execute_phase(self, state: RunState, phase: Phase, inputs: dict[str, Any]) -> RunState:
+        if phase == Phase.INTAKE:
+            return self._phase_intake(state, inputs)
+        if phase == Phase.IMPACT_SPLIT:
+            return self._phase_impact_split(state, state.change_mode)
+        if phase in (
+            Phase.SENIOR_QA_BRAIN,
+            Phase.PLAYWRIGHT_GENERATOR,
+            Phase.OK_UI_REGRESSION,
+            Phase.KNOWLEDGE_BASE_UPDATE,
+        ):
+            return self._phase_skill(state, phase, inputs)
+        if phase == Phase.IMPACT_ANALYSIS:
+            return self._phase_impact_analysis(state)
+        if phase == Phase.IMPACT_VERIFICATION:
+            return self._phase_impact_verification(state)
+        if phase == Phase.LEGACY_UPDATE:
+            return self._phase_legacy_update(state)
+        if phase == Phase.FINAL_REPORT:
+            return self._phase_final_report(state)
+        return state
+
+    def _coerce_mode(self, value: str | None) -> str:
+        aliases = {
+            ChangeMode.NEW_FEATURE.value: ChangeMode.NEW_FEATURE.value,
+            ChangeMode.REGRESSION.value: ChangeMode.REGRESSION.value,
+            ChangeMode.MIXED.value: ChangeMode.MIXED.value,
+            "a": ChangeMode.NEW_FEATURE.value,
+            "b": ChangeMode.REGRESSION.value,
+            "c": ChangeMode.MIXED.value,
+            "新需求模式": ChangeMode.NEW_FEATURE.value,
+            "纯回归模式": ChangeMode.REGRESSION.value,
+            "混合模式": ChangeMode.MIXED.value,
+        }
+        normalized = (value or "").strip()
+        if normalized in aliases:
+            return aliases[normalized]
+        raise ValueError(
+            "必须显式选择变更模式：A 新需求模式（--change-mode 新需求）、"
+            "B 纯回归模式（--change-mode 纯回归）、C 混合模式（--change-mode 混合）"
+        )
+
+    def _phase_from_name(self, phase_name: str) -> Phase:
+        try:
+            return Phase(phase_name)
+        except ValueError as exc:
+            raise ValueError(f"未知阶段: {phase_name}") from exc
+
+    def _phases_for_mode(self, mode: str) -> list[Phase]:
+        if mode == ChangeMode.REGRESSION.value:
+            return REGRESSION_PHASES
+        if mode == ChangeMode.MIXED.value:
+            return MIXED_PHASES
+        return NEW_FEATURE_PHASES
+
+    def _is_actionable(self, state: RunState) -> bool:
+        if state.status in (RunStatus.BLOCKED.value, RunStatus.COMPLETED.value, RunStatus.ERROR.value):
+            return True
+        return False
+
+    def _refresh_next_action(self, state: RunState) -> None:
+        if state.status == RunStatus.BLOCKED.value:
+            if not state.blocked_since:
+                state.blocked_since = utc_now_iso()
+        else:
+            state.blocked_since = ""
+
+        if state.status == RunStatus.COMPLETED.value:
+            state.next_action = NextAction(
+                kind=NextActionKind.COMPLETED.value,
+                phase=state.current_phase,
+                summary="运行已完成",
+            )
+            return
+
+        if state.status == RunStatus.ERROR.value:
+            state.next_action = NextAction(
+                kind=NextActionKind.ERROR.value,
+                phase=state.current_phase,
+                summary=state.error_reason or "运行出错",
+                details={"error_reason": state.error_reason},
+            )
+            return
+
+        phase = self._phase_from_name(state.current_phase)
+        if state.status == RunStatus.BLOCKED.value:
+            if phase in SKILL_PATHS:
+                skill_path = str(self.config.project_root / SKILL_PATHS[phase])
+                if not Path(skill_path).exists():
+                    state.next_action = NextAction(
+                        kind=NextActionKind.FIX_ENVIRONMENT.value,
+                        phase=phase.value,
+                        summary=state.blocked_reason or f"缺少 {phase.value} skill，请先同步内嵌资源",
+                        skill_path=skill_path,
+                        resume_command="python -m qa_agent.cli doctor",
+                    )
+                    return
+                kind = NextActionKind.RUN_SKILL.value
+                if phase == Phase.KNOWLEDGE_BASE_UPDATE:
+                    summary = "执行 knowledge-base-manager，生成预览并确认写入"
+                else:
+                    summary = f"执行 {phase.value} skill 并提交产物"
+                state.next_action = NextAction(
+                    kind=kind,
+                    phase=phase.value,
+                    summary=summary,
+                    skill_path=skill_path,
+                    instruction_path=state.artifacts.get(f"{phase.value}_instruction", ""),
+                    required_artifacts=PHASE_REQUIRED_ARTIFACTS.get(phase, []),
+                    resume_command=self._complete_command(state.run_id, phase),
+                )
+                return
+            if phase == Phase.IMPACT_VERIFICATION:
+                state.next_action = NextAction(
+                    kind=NextActionKind.CONFIRM_PHASE.value,
+                    phase=phase.value,
+                    summary="确认变更归因报告后继续",
+                    required_artifacts=[],
+                    resume_command=f"python -m qa_agent.cli complete --run-id {state.run_id} --phase {phase.value}",
+                    details={"report": state.artifacts.get("change_attribution_report", "")},
+                )
+                return
+            if phase == Phase.LEGACY_UPDATE:
+                if self._legacy_playwright_request_active(state):
+                    state.next_action = NextAction(
+                        kind=NextActionKind.RUN_SKILL.value,
+                        phase=phase.value,
+                        summary="调用 playwright-test-generator 为旧脚本生成候选替换版本",
+                        skill_path=str(self.config.project_root / SKILL_PATHS[Phase.PLAYWRIGHT_GENERATOR]),
+                        instruction_path=state.artifacts.get("legacy_rerecord_instruction", ""),
+                        required_artifacts=["legacy_update_candidate_manifest"],
+                        resume_command=(
+                            f"python -m qa_agent.cli complete --run-id {state.run_id} "
+                            f"--phase {phase.value} --artifact legacy_update_candidate_manifest=<path>"
+                        ),
+                        details={
+                            "request": state.artifacts.get("legacy_rerecord_request", ""),
+                            "tasks": state.artifacts.get("legacy_update_tasks", ""),
+                        },
+                    )
+                    return
+                state.next_action = NextAction(
+                    kind=NextActionKind.MANUAL_REVIEW.value,
+                    phase=phase.value,
+                    summary=state.blocked_reason or "旧脚本更新需要人工介入",
+                    required_artifacts=[],
+                    resume_command=f"python -m qa_agent.cli next --run-id {state.run_id}",
+                    details={"legacy_update_tasks": state.artifacts.get("legacy_update_tasks", "")},
+                )
+                return
+
+        state.next_action = NextAction(
+            kind=NextActionKind.CONTINUE_AUTO.value,
+            phase=state.current_phase,
+            summary=state.blocked_reason or "继续推进到下一个动作点",
+            resume_command=f"python -m qa_agent.cli next --run-id {state.run_id}",
+        )
+
+    def _complete_command(self, run_id: str, phase: Phase) -> str:
+        parts = ["python -m qa_agent.cli complete", f"--run-id {run_id}", f"--phase {phase.value}"]
+        for artifact_key in PHASE_REQUIRED_ARTIFACTS.get(phase, []):
+            parts.append(f"--artifact {artifact_key}=<path>")
+        return " ".join(parts)
+
+    def _set_error_state(self, state: RunState, exc: Exception) -> None:
+        state.status = RunStatus.ERROR.value
+        state.phase_statuses[state.current_phase] = PhaseStatus.ERROR.value
+        state.error_reason = f"{type(exc).__name__}: {exc}"
+        state.blocked_reason = "自动推进时发生错误，请查看 error_reason"
+        self._refresh_next_action(state)
+
+    def _stale_blocked_warning(self, state: RunState) -> str:
+        if state.status != RunStatus.BLOCKED.value or not state.blocked_since:
+            return ""
+        threshold = int(self.config.thresholds.get("gates", {}).get("blocked_warn_after_seconds", 1800))
+        try:
+            blocked_at = datetime.fromisoformat(state.blocked_since)
+        except ValueError:
+            return ""
+        seconds = int((datetime.now(timezone.utc) - blocked_at).total_seconds())
+        if seconds < threshold:
+            return ""
+        minutes = seconds // 60
+        return f"已阻塞 {minutes} 分钟，建议检查 skill 是否已完成或是否缺少 artifact。"
+
+    def _persist_doctor_result(self, state: RunState, doctor_result: dict[str, Any] | DoctorResult) -> None:
+        path = self.store.artifact_path(state.run_id, "doctor_result.json")
+        write_json(path, to_data(doctor_result))
+        state.artifacts["doctor_result"] = str(path)
 
     def _phase_intake(self, state: RunState, inputs: dict[str, Any]) -> RunState:
         if state.artifacts.get("requirement_packet"):
-            self._mark_phase(state, ConductorPhase.INTAKE, PhaseStatus.COMPLETED)
+            self._mark(state, Phase.INTAKE, PhaseStatus.COMPLETED)
             return state
-        self._mark_phase(state, ConductorPhase.INTAKE, PhaseStatus.RUNNING)
-        requirement = RequirementPacket(
-            change_mode=self._resolve_change_mode(inputs),
+        self._mark(state, Phase.INTAKE, PhaseStatus.RUNNING)
+        packet = RequirementPacket(
+            change_mode=state.change_mode,
             figma_url=inputs.get("figma_url", ""),
             prd_refs=list(inputs.get("prd_refs", []) or []),
-            git_diff_summary=self._load_git_diff(inputs),
-            candidate_modules=[item for item in [inputs.get("module")] if item],
+            candidate_modules=[m for m in [inputs.get("module")] if m],
             site=inputs.get("site", ""),
             feature_name=inputs.get("feature", ""),
-            risk_hints=list(inputs.get("risk_hints", []) or []),
-            assumptions=["原型来源=Figma"],
+            change_description=inputs.get("change_description", ""),
         )
         path = self.store.artifact_path(state.run_id, "requirement_packet.json")
-        write_json(path, asdict(requirement))
+        write_json(path, asdict(packet))
         state.artifacts["requirement_packet"] = str(path)
-        state.change_mode = requirement.change_mode
-        self._mark_phase(state, ConductorPhase.INTAKE, PhaseStatus.COMPLETED)
+        state.change_mode = packet.change_mode
+        self._mark(state, Phase.INTAKE, PhaseStatus.COMPLETED)
         return state
 
-    def _phase_impact_split(self, state: RunState, inputs: dict[str, Any]) -> RunState:
-        self._mark_phase(state, ConductorPhase.IMPACT_SPLIT, PhaseStatus.RUNNING)
-        state.change_mode = self._resolve_change_mode(inputs)
-        write_json(self.store.artifact_path(state.run_id, "impact_split.json"), {"change_mode": state.change_mode})
-        self._mark_phase(state, ConductorPhase.IMPACT_SPLIT, PhaseStatus.COMPLETED)
-        return state
-
-    def _phase_analysis_bundle(self, state: RunState, inputs: dict[str, Any]) -> RunState:
-        if state.artifacts.get("analysis_report"):
-            self._mark_phase(state, ConductorPhase.ANALYSIS_BUNDLE, PhaseStatus.COMPLETED)
+    def _phase_impact_split(self, state: RunState, mode: str) -> RunState:
+        if (
+            state.artifacts.get("impact_split")
+            and state.phase_statuses.get(Phase.IMPACT_SPLIT.value) == PhaseStatus.COMPLETED.value
+        ):
             return state
-        self._mark_phase(state, ConductorPhase.ANALYSIS_BUNDLE, PhaseStatus.RUNNING)
-        requirement = RequirementPacket(**read_json(state.artifacts["requirement_packet"]))
-        bundle = self.senior_qa.prepare_analysis_bundle(self.store.run_dir(state.run_id), requirement)
-        state.artifacts.update({"analysis_bundle": bundle["bundle_dir"], "analysis_next_step": bundle["next_step"]})
-        self._block(state, ConductorPhase.ANALYSIS_BUNDLE, "等待 senior-qa-brain 分析报告产物")
-        raise PhaseBlockedError(state.blocked_reason, run_id=state.run_id)
-
-    def _phase_analysis_review(self, state: RunState, inputs: dict[str, Any]) -> RunState:
-        self._mark_phase(state, ConductorPhase.ANALYSIS_REVIEW, PhaseStatus.RUNNING)
-        if not inputs.get("analysis_approved", False):
-            self._block(state, ConductorPhase.ANALYSIS_REVIEW, "等待人工确认分析报告")
-            raise PhaseBlockedError(state.blocked_reason, run_id=state.run_id)
-        self._mark_phase(state, ConductorPhase.ANALYSIS_REVIEW, PhaseStatus.COMPLETED)
+        self._mark(state, Phase.IMPACT_SPLIT, PhaseStatus.RUNNING)
+        state.change_mode = mode
+        phases = self._phases_for_mode(mode)
+        state.phase_statuses = {phase.value: PhaseStatus.PENDING.value for phase in phases}
+        state.phase_statuses[Phase.INTAKE.value] = PhaseStatus.COMPLETED.value
+        state.phase_statuses[Phase.IMPACT_SPLIT.value] = PhaseStatus.COMPLETED.value
+        split_path = self.store.artifact_path(state.run_id, "impact_split.json")
+        write_json(split_path, {"change_mode": mode, "phases": [phase.value for phase in phases]})
+        state.artifacts["impact_split"] = str(split_path)
+        self._mark(state, Phase.IMPACT_SPLIT, PhaseStatus.COMPLETED)
         return state
 
-    def _phase_testcase_gen(self, state: RunState, inputs: dict[str, Any]) -> RunState:
-        if state.artifacts.get("testcases_raw"):
-            self._mark_phase(state, ConductorPhase.TESTCASE_GEN, PhaseStatus.COMPLETED)
-            return state
-        self._mark_phase(state, ConductorPhase.TESTCASE_GEN, PhaseStatus.RUNNING)
-        bundle = self.senior_qa.prepare_testcase_bundle(self.store.run_dir(state.run_id), state.artifacts["analysis_report"])
-        state.artifacts.update({"testcase_bundle": bundle["bundle_dir"], "testcase_next_step": bundle["next_step"]})
-        self._block(state, ConductorPhase.TESTCASE_GEN, "等待 senior-qa-brain 生成原始 Markdown 用例")
-        raise PhaseBlockedError(state.blocked_reason, run_id=state.run_id)
+    def _phase_skill(self, state: RunState, phase: Phase, inputs: dict[str, Any]) -> RunState:
+        del inputs
+        self._mark(state, phase, PhaseStatus.RUNNING)
+        skill_path = SKILL_PATHS[phase]
+        absolute_skill_path = self.config.project_root / skill_path
+        state.artifacts[f"{phase.value}_skill_path"] = str(absolute_skill_path)
 
-    def _phase_ui_probe_enrich(self, state: RunState, inputs: dict[str, Any]) -> RunState:
-        if state.artifacts.get("testcases_enriched"):
-            self._mark_phase(state, ConductorPhase.UI_PROBE_ENRICH, PhaseStatus.COMPLETED)
-            return state
-        self._mark_phase(state, ConductorPhase.UI_PROBE_ENRICH, PhaseStatus.RUNNING)
-        result = self.probe_enricher.enrich(
-            self.store.run_dir(state.run_id),
-            state.artifacts["testcases_raw"],
-            inputs.get("probe_notes") or state.artifacts.get("probe_notes"),
-        )
-        if result["status"] != "完成":
-            state.artifacts["probe_checklist"] = result["probe_checklist_path"]
-            self._block(state, ConductorPhase.UI_PROBE_ENRICH, "等待 UI Probe/MCP 实测补充")
-            raise PhaseBlockedError(state.blocked_reason, run_id=state.run_id)
-        state.artifacts["testcases_enriched"] = result["enriched_path"]
-        state.artifacts["reality_diff"] = result["reality_diff_path"]
-        self._mark_phase(state, ConductorPhase.UI_PROBE_ENRICH, PhaseStatus.COMPLETED)
-        return state
+        instruction_path = self.store.artifact_path(state.run_id, f"{phase.value}_instruction.md")
+        write_text(instruction_path, self._build_instruction(state, phase))
+        state.artifacts[f"{phase.value}_instruction"] = str(instruction_path)
 
-    def _phase_dedupe_map(self, state: RunState, inputs: dict[str, Any]) -> RunState:
-        self._mark_phase(state, ConductorPhase.DEDUPE_MAP, PhaseStatus.RUNNING)
-        output_path = self.store.artifact_path(state.run_id, "case_manifest.json")
-        entries = self.dedupe_mapper.build_manifest(
-            enriched_markdown_path=state.artifacts["testcases_enriched"],
-            output_path=output_path,
-            module=inputs.get("module") or self._default_module(state),
-            site=inputs.get("site") or self._default_site(state),
-            feature_key=inputs.get("feature") or self._default_feature(state),
-            knowledge_base_root=self.config.skills["paths"]["knowledge_base_root"],
-            regression_test_root=self.ok_ui.project_root / "test_cases",
-        )
-        state.artifacts["case_manifest"] = str(output_path)
-        candidate_md = self._write_module_map_candidate(state.run_id, entries)
-        state.artifacts["module_map_candidate"] = str(candidate_md)
-        self._mark_phase(state, ConductorPhase.DEDUPE_MAP, PhaseStatus.COMPLETED)
-        return state
-
-    def _phase_batch_plan(self, state: RunState) -> RunState:
-        self._mark_phase(state, ConductorPhase.BATCH_PLAN, PhaseStatus.RUNNING)
-        entries = [CaseManifestEntry(**item) for item in read_json(state.artifacts["case_manifest"], default=[])]
-        batches = self.playwright.build_batches(entries, max_cases=int(self.config.thresholds["batches"]["max_cases_per_batch"]))
-        batch_path = self.store.artifact_path(state.run_id, "batch_plan.json")
-        write_json(batch_path, [[asdict(entry) for entry in batch] for batch in batches])
-        state.artifacts["batch_plan"] = str(batch_path)
-        self._mark_phase(state, ConductorPhase.BATCH_PLAN, PhaseStatus.COMPLETED)
-        return state
-
-    def _phase_readiness_gate(self, state: RunState) -> RunState:
-        self._mark_phase(state, ConductorPhase.READINESS_GATE, PhaseStatus.RUNNING)
-        checks = self.playwright.readiness_checks(state.artifacts["testcases_enriched"])
-        path = self.store.artifact_path(state.run_id, "readiness_gate.json")
-        write_json(path, [asdict(item) for item in checks])
-        state.artifacts["readiness_gate"] = str(path)
-        failed = [item for item in checks if not item.ok]
-        if failed:
-            details = "\n".join(f"  - {item.name}: {item.message}" for item in failed)
-            reason = (
-                "录制环境未准备完成，以下检查项未通过（后续录制步骤依赖这些环境，请先解决）：\n"
-                + details
-                + "\n\n请安装/配置好以上依赖后，使用 resume 命令继续。"
-            )
-            self._block(state, ConductorPhase.READINESS_GATE, reason)
-            raise PhaseBlockedError(state.blocked_reason, run_id=state.run_id)
-        self._mark_phase(state, ConductorPhase.READINESS_GATE, PhaseStatus.COMPLETED)
-        return state
-
-    def _phase_proof_ingest(self, state: RunState, inputs: dict[str, Any]) -> RunState:
-        self._mark_phase(state, ConductorPhase.PROOF_INGEST, PhaseStatus.RUNNING)
-        proof_dir = inputs.get("proof_dir") or state.artifacts.get("proof_dir")
-        entries = [CaseManifestEntry(**item) for item in read_json(state.artifacts["case_manifest"], default=[])]
-        candidate_entries = [
-            entry
-            for entry in entries
-            if entry.status in {CaseStatus.NEW_CANDIDATE.value, CaseStatus.REGEN_REQUIRED.value} and entry.ui_automatable
-        ]
-        if not proof_dir:
-            bundle = self.playwright.build_recording_bundle(
-                self.store.run_dir(state.run_id),
-                state.artifacts["testcases_enriched"],
-                candidate_entries,
-            )
-            state.artifacts["recording_bundle"] = bundle["bundle_dir"]
-            state.artifacts["recording_next_step"] = bundle["next_step"]
-            self._block(state, ConductorPhase.PROOF_INGEST, "等待 playwright-test-generator 证明产物")
-            raise PhaseBlockedError(state.blocked_reason, run_id=state.run_id)
-        artifacts = self.playwright.load_proof_artifacts(proof_dir)
-        if not artifacts:
-            self._block(state, ConductorPhase.PROOF_INGEST, "证明产物目录为空")
-            raise PhaseBlockedError(state.blocked_reason, run_id=state.run_id)
-        proof_path = self.store.artifact_path(state.run_id, "proof_artifacts.json")
-        write_json(proof_path, {key: asdict(value) for key, value in artifacts.items()})
-        state.artifacts["proof_artifacts"] = str(proof_path)
-        self._mark_phase(state, ConductorPhase.PROOF_INGEST, PhaseStatus.COMPLETED)
-        return state
-
-    def _phase_codegen(self, state: RunState) -> RunState:
-        self._mark_phase(state, ConductorPhase.CODEGEN, PhaseStatus.RUNNING)
-        entries = [CaseManifestEntry(**item) for item in read_json(state.artifacts["case_manifest"], default=[])]
-        proof_payload = read_json(state.artifacts["proof_artifacts"], default={})
-        from qa_agent.models import ProofArtifact
-
-        proof_artifacts = {key: ProofArtifact(**value) for key, value in proof_payload.items()}
-        env_config = self.playwright.env_config_from_markdown(state.artifacts["testcases_enriched"])
-        paths = self.playwright.generate_python_drafts(
-            run_dir=self.store.run_dir(state.run_id),
-            env_config=env_config,
-            module=self._default_module(state),
-            feature_key=self._default_feature(state),
-            entries=entries,
-            proof_artifacts=proof_artifacts,
-        )
-        drafts_path = self.store.artifact_path(state.run_id, "generated_drafts.json")
-        write_json(drafts_path, paths)
-        state.artifacts["generated_drafts"] = str(drafts_path)
-        self._mark_phase(state, ConductorPhase.CODEGEN, PhaseStatus.COMPLETED)
-        return state
-
-    def _phase_normalize(self, state: RunState) -> RunState:
-        self._mark_phase(state, ConductorPhase.NORMALIZE, PhaseStatus.RUNNING)
-        draft_paths = read_json(state.artifacts["generated_drafts"], default=[])
-        entries = [CaseManifestEntry(**item) for item in read_json(state.artifacts["case_manifest"], default=[])]
-        env_config = self.playwright.env_config_from_markdown(state.artifacts["testcases_enriched"])
-        normalized = self.normalizer.normalize(
-            draft_paths=draft_paths,
-            entries=entries,
-            output_dir=self.store.artifact_path(state.run_id, "normalized_scripts").parent / "normalized_scripts",
-            env_config=env_config,
-        )
-        path = self.store.artifact_path(state.run_id, "normalized_scripts.json")
-        write_json(path, normalized)
-        state.artifacts["normalized_scripts"] = str(path)
-        self._mark_phase(state, ConductorPhase.NORMALIZE, PhaseStatus.COMPLETED)
-        return state
-
-    def _phase_promotion_guard(self, state: RunState) -> RunState:
-        self._mark_phase(state, ConductorPhase.PROMOTION_GUARD, PhaseStatus.RUNNING)
-        normalized = read_json(state.artifacts["normalized_scripts"], default={})
-        normalized_paths = list(normalized.values())
-        results = self.guard.evaluate(normalized_paths, module=self._default_module(state))
-        path = self.store.artifact_path(state.run_id, "promotion_guard.json")
-        write_json(path, {script: [asdict(item) for item in checks] for script, checks in results.items()})
-        state.artifacts["promotion_guard"] = str(path)
-        if not all(item["ok"] for checks in read_json(path).values() for item in checks):
-            self._block(state, ConductorPhase.PROMOTION_GUARD, "promotion guard 未通过")
-            raise PhaseBlockedError(state.blocked_reason, run_id=state.run_id)
-        self._mark_phase(state, ConductorPhase.PROMOTION_GUARD, PhaseStatus.COMPLETED)
-        return state
-
-    def _phase_promote(self, state: RunState) -> RunState:
-        self._mark_phase(state, ConductorPhase.PROMOTE, PhaseStatus.RUNNING)
-        normalized = read_json(state.artifacts["normalized_scripts"], default={})
-        normalized_paths = list(normalized.values())
-        promoted = self.guard.promote(normalized_paths, module=self._default_module(state))
-        promoted_path = self.store.artifact_path(state.run_id, "promoted_scripts.json")
-        write_json(promoted_path, promoted)
-        state.artifacts["promoted_scripts"] = str(promoted_path)
-        entries = [CaseManifestEntry(**item) for item in read_json(state.artifacts["case_manifest"], default=[])]
-        for entry in entries:
-            if entry.status in {CaseStatus.NEW_CANDIDATE.value, CaseStatus.REGEN_REQUIRED.value}:
-                entry.status = CaseStatus.PROMOTED.value
-        write_json(state.artifacts["case_manifest"], [asdict(entry) for entry in entries])
-        self._mark_phase(state, ConductorPhase.PROMOTE, PhaseStatus.COMPLETED)
-        return state
-
-    def _phase_regression_plan(self, state: RunState, inputs: dict[str, Any]) -> RunState:
-        self._mark_phase(state, ConductorPhase.REGRESSION_PLAN, PhaseStatus.RUNNING)
-        module = inputs.get("module") or self._default_module(state)
-        feature = inputs.get("feature") or self._default_feature(state)
-        selectors = []
-        if feature:
-            selectors.extend(["--module", module, "--feature", slugify(feature)])
+        self._mark(state, phase, PhaseStatus.BLOCKED)
+        if not absolute_skill_path.exists():
+            state.blocked_reason = f"缺少 {skill_path}，请先同步内嵌资源后再继续"
+        elif phase == Phase.KNOWLEDGE_BASE_UPDATE:
+            state.blocked_reason = f"请按 {skill_path} 先生成 KB 预览、等待确认、再写入，完成后用 complete 继续"
         else:
-            selectors.extend(["--module", module])
-        promoted = read_json(state.artifacts.get("promoted_scripts", ""), default=[])
-        if promoted:
-            first = Path(promoted[0]).relative_to(self.ok_ui.project_root).as_posix()
-            selectors.extend(["--path", first])
-        plan = {"module": module, "feature": feature, "selectors": selectors}
-        path = self.store.artifact_path(state.run_id, "regression_plan.json")
-        write_json(path, plan)
-        state.artifacts["regression_plan"] = str(path)
-        self._mark_phase(state, ConductorPhase.REGRESSION_PLAN, PhaseStatus.COMPLETED)
+            state.blocked_reason = f"请按 {skill_path} 执行，完成后用 complete 继续"
+        state.status = RunStatus.BLOCKED.value
         return state
 
-    def _phase_regression_dry_run(self, state: RunState) -> RunState:
-        self._mark_phase(state, ConductorPhase.REGRESSION_DRY_RUN, PhaseStatus.RUNNING)
-        plan = read_json(state.artifacts["regression_plan"])
-        relative_path = ""
-        selectors = plan["selectors"]
-        if "--path" in selectors:
-            relative_path = selectors[selectors.index("--path") + 1]
-        result = self.ok_ui.dry_run(plan["module"], relative_path) if relative_path else self.ok_ui.dry_run(plan["module"], f"test_cases/{plan['module']}")
-        path = self.store.artifact_path(state.run_id, "regression_dry_run.txt")
-        write_text(path, (result.stdout or "") + "\n" + (result.stderr or ""))
-        state.artifacts["regression_dry_run"] = str(path)
-        if result.returncode != 0:
-            self._block(state, ConductorPhase.REGRESSION_DRY_RUN, "回归预演执行失败")
-            raise PhaseBlockedError(state.blocked_reason, run_id=state.run_id)
-        self._mark_phase(state, ConductorPhase.REGRESSION_DRY_RUN, PhaseStatus.COMPLETED)
-        return state
-
-    def _phase_regression_run(self, state: RunState) -> RunState:
-        self._mark_phase(state, ConductorPhase.REGRESSION_RUN, PhaseStatus.RUNNING)
-        plan = read_json(state.artifacts["regression_plan"])
-        result = self.ok_ui.real_run(plan["selectors"])
-        path = self.store.artifact_path(state.run_id, "regression_run.txt")
-        write_text(path, (result.stdout or "") + "\n" + (result.stderr or ""))
-        state.artifacts["regression_run"] = str(path)
-        if result.returncode != 0:
-            self._block(state, ConductorPhase.REGRESSION_RUN, "回归执行失败")
-            raise PhaseBlockedError(state.blocked_reason, run_id=state.run_id)
-        self._mark_phase(state, ConductorPhase.REGRESSION_RUN, PhaseStatus.COMPLETED)
-        return state
-
-    def _phase_gate_reports(self, state: RunState, inputs: dict[str, Any]) -> RunState:
-        gate = GateReport(
-            visual_scores=read_json(inputs.get("visual_report") or state.artifacts.get("visual_report", ""), default=[]) or [],
-            ui_pass_rate=self._load_rate(inputs.get("ui_report") or state.artifacts.get("ui_report", "")),
-            api_pass_rate=self._load_rate(inputs.get("api_report") or state.artifacts.get("api_report", "")),
+    def _phase_impact_analysis(self, state: RunState) -> RunState:
+        self._mark(state, Phase.IMPACT_ANALYSIS, PhaseStatus.RUNNING)
+        packet = self._requirement_packet(state)
+        impact_payload = self._build_impact_payload(state, packet)
+        overlap_decisions = self._build_overlap_decisions(
+            impact_payload["new_cases"],
+            impact_payload["existing_cases"],
         )
-        visual_threshold = float(self.config.thresholds["gates"]["visual_score_min"])
-        if gate.visual_scores and any(float(item.get("score", 0)) < visual_threshold for item in gate.visual_scores):
-            gate.failed_checks.append("视觉门禁")
-        if gate.ui_pass_rate is not None and gate.ui_pass_rate < float(self.config.thresholds["gates"]["ui_pass_rate_min"]):
-            gate.failed_checks.append("UI门禁")
-        if gate.api_pass_rate is not None and gate.api_pass_rate < float(self.config.thresholds["gates"]["api_pass_rate_min"]):
-            gate.failed_checks.append("API门禁")
-        gate.release_recommendation = "建议上线" if not gate.failed_checks else "暂缓上线"
-        path = self.store.artifact_path(state.run_id, "gate_report.json")
-        write_json(path, asdict(gate))
-        state.artifacts["gate_report"] = str(path)
+
+        impact_path = self.store.artifact_path(state.run_id, "impact_candidates.json")
+        overlap_path = self.store.artifact_path(state.run_id, "overlap_report.md")
+        write_json(impact_path, impact_payload)
+        write_text(overlap_path, self._render_overlap_report(packet, overlap_decisions))
+
+        state.artifacts["impact_candidates"] = str(impact_path)
+        state.artifacts["overlap_report"] = str(overlap_path)
+        state.blocked_reason = ""
+        self._mark(state, Phase.IMPACT_ANALYSIS, PhaseStatus.COMPLETED)
         return state
+
+    def _phase_impact_verification(self, state: RunState) -> RunState:
+        if (
+            state.phase_statuses.get(Phase.IMPACT_VERIFICATION.value) == PhaseStatus.BLOCKED.value
+            and state.artifacts.get("change_attribution_report")
+        ):
+            state.current_phase = Phase.IMPACT_VERIFICATION.value
+            state.status = RunStatus.BLOCKED.value
+            state.blocked_reason = "请先确认变更归因报告，确认后再 complete 当前阶段"
+            return state
+
+        self._mark(state, Phase.IMPACT_VERIFICATION, PhaseStatus.RUNNING)
+        packet = self._requirement_packet(state)
+        packet["change_mode"] = state.change_mode
+        impact_payload = read_json(state.artifacts.get("impact_candidates", ""), default={}) or {}
+        outcome = self.impact_verification_executor.verify(
+            run_dir=self.store.run_dir(state.run_id),
+            packet=packet,
+            impact_payload=impact_payload,
+        )
+
+        selector_path = self.store.artifact_path(state.run_id, "impact_run_selector_plan.json")
+        run_results_path = self.store.artifact_path(state.run_id, "impact_run_results.json")
+        attribution_result_path = self.store.artifact_path(state.run_id, "change_attribution_result.json")
+        attribution_report_path = self.store.artifact_path(state.run_id, "change_attribution_report.md")
+
+        write_json(selector_path, outcome.selector_plan)
+        write_json(run_results_path, [asdict(record) for record in outcome.records])
+        write_json(attribution_result_path, [asdict(record) for record in outcome.records])
+        write_text(attribution_report_path, self._render_change_attribution_report(packet, outcome.records))
+
+        state.artifacts.update(
+            {
+                "impact_run_selector_plan": str(selector_path),
+                "impact_run_results": str(run_results_path),
+                "change_attribution_result": str(attribution_result_path),
+                "change_attribution_report": str(attribution_report_path),
+            }
+        )
+        self._mark(state, Phase.IMPACT_VERIFICATION, PhaseStatus.BLOCKED)
+        state.status = RunStatus.BLOCKED.value
+        state.blocked_reason = "受影响用例已执行并生成归因报告，等待你确认后再继续"
+        return state
+
+    def _confirm_impact_verification(self, state: RunState) -> RunState:
+        packet = self._requirement_packet(state)
+        impact_payload = read_json(state.artifacts.get("impact_candidates", ""), default={}) or {}
+        attribution_records = self._load_attribution_records(state)
+        tasks = self._load_seed_tasks(state) or self._build_confirmed_legacy_tasks(packet, attribution_records)
+        gate = self._build_gate(tasks, round_index=0)
+        selector_plan = self._build_selector_plan(packet, impact_payload, tasks)
+
+        tasks_path = self.store.artifact_path(state.run_id, "legacy_update_tasks.json")
+        gate_path = self.store.artifact_path(state.run_id, "legacy_update_gate.json")
+        selector_path = self.store.artifact_path(state.run_id, "regression_selector_plan.json")
+        confirmation_path = self.store.artifact_path(state.run_id, "change_attribution_confirmation.json")
+
+        write_json(tasks_path, [asdict(task) for task in tasks])
+        write_json(gate_path, asdict(gate))
+        write_json(selector_path, selector_plan)
+        write_json(
+            confirmation_path,
+            {
+                "confirmed": True,
+                "tasks_generated": len(tasks),
+                "latest_change_cases": [
+                    record.related_nodeid or record.target
+                    for record in attribution_records
+                    if record.category == AttributionCategory.LATEST_CHANGE.value
+                ],
+            },
+        )
+
+        state.artifacts.update(
+            {
+                "legacy_update_tasks": str(tasks_path),
+                "legacy_update_gate": str(gate_path),
+                "regression_selector_plan": str(selector_path),
+                "change_attribution_confirmation": str(confirmation_path),
+            }
+        )
+        self._append_confirmation(
+            state,
+            UserConfirmationRecord(
+                phase=Phase.IMPACT_VERIFICATION.value,
+                summary="已确认变更归因报告，可继续进入旧脚本更新与新脚本 promotion 阶段",
+                details={"tasks_generated": len(tasks)},
+            ),
+        )
+        state.blocked_reason = ""
+        return state
+
+    def _complete_senior_qa_brain(self, state: RunState) -> RunState:
+        gate = self._validate_phase1_outputs(state)
+        self._store_gate_result(state, "phase1_gate_result", gate)
+        if not gate.ok:
+            return self._block_with_gate(state, Phase.SENIOR_QA_BRAIN, gate)
+        self._append_confirmation(
+            state,
+            UserConfirmationRecord(
+                phase=Phase.SENIOR_QA_BRAIN.value,
+                summary="已确认分析报告并归档文本用例草稿",
+                details={"kb_text_case_draft_path": state.artifacts.get("kb_text_case_draft_path", "")},
+            ),
+        )
+        state.blocked_reason = ""
+        return state
+
+    def _complete_playwright_generator(self, state: RunState) -> RunState:
+        gate = self._validate_phase2_outputs(state)
+        self._store_gate_result(state, "phase2_gate_result", gate)
+        if not gate.ok:
+            return self._block_with_gate(state, Phase.PLAYWRIGHT_GENERATOR, gate)
+        self._append_confirmation(
+            state,
+            UserConfirmationRecord(
+                phase=Phase.PLAYWRIGHT_GENERATOR.value,
+                summary="已验收 playwright 自动化转译结果",
+                details={
+                    "playwright_case_outcomes": state.artifacts.get("playwright_case_outcomes", ""),
+                    "generated_scripts_manifest": state.artifacts.get("generated_scripts_manifest", ""),
+                },
+            ),
+        )
+        state.blocked_reason = ""
+        return state
+
+    def _complete_legacy_update(self, state: RunState) -> RunState:
+        manifest_path = self._artifact_value(
+            state,
+            "legacy_update_candidate_manifest",
+            "legacy_rerecord_candidate_manifest",
+        )
+        tasks = self._load_legacy_tasks(state)
+        if not manifest_path or not read_json(manifest_path, default=None):
+            self._write_legacy_rerecord_request(state, self._legacy_tasks_needing_playwright(tasks))
+            self._mark(state, Phase.LEGACY_UPDATE, PhaseStatus.BLOCKED)
+            state.status = RunStatus.BLOCKED.value
+            state.blocked_reason = "缺少 legacy_update_candidate_manifest，无法恢复旧脚本更新循环"
+            return state
+
+        payload = read_json(manifest_path, default=[]) or []
+        entries = payload.get("tasks", []) if isinstance(payload, dict) else payload
+        if not isinstance(entries, list):
+            self._mark(state, Phase.LEGACY_UPDATE, PhaseStatus.BLOCKED)
+            state.status = RunStatus.BLOCKED.value
+            state.blocked_reason = "legacy_update_candidate_manifest 格式错误，期望 list 或 {tasks: [...]}"
+            return state
+
+        errors = self._apply_legacy_candidate_manifest(tasks, entries, manifest_path)
+        if errors:
+            self._write_legacy_rerecord_request(state, self._legacy_tasks_needing_playwright(tasks))
+            self._persist_legacy_tasks_and_gate(state, tasks, self._current_legacy_round_index(state))
+            self._mark(state, Phase.LEGACY_UPDATE, PhaseStatus.BLOCKED)
+            state.status = RunStatus.BLOCKED.value
+            state.blocked_reason = "legacy_update_candidate_manifest 未通过校验: " + "；".join(errors[:3])
+            return state
+
+        state.artifacts["legacy_update_candidate_manifest"] = manifest_path
+        self._persist_legacy_tasks_and_gate(state, tasks, self._current_legacy_round_index(state))
+        self._append_confirmation(
+            state,
+            UserConfirmationRecord(
+                phase=Phase.LEGACY_UPDATE.value,
+                summary="已接收 playwright-test-generator 候选脚本，可恢复旧脚本更新循环",
+                details={"legacy_update_candidate_manifest": manifest_path},
+            ),
+        )
+        self._mark(state, Phase.LEGACY_UPDATE, PhaseStatus.RUNNING)
+        state.status = RunStatus.RUNNING.value
+        state.blocked_reason = ""
+        return state
+
+    def _complete_ok_ui_regression(self, state: RunState) -> RunState:
+        gate = self._validate_phase3_outputs(state)
+        self._store_gate_result(state, "phase3_gate_result", gate)
+        if not gate.ok:
+            return self._block_with_gate(state, Phase.OK_UI_REGRESSION, gate)
+        self._append_confirmation(
+            state,
+            UserConfirmationRecord(
+                phase=Phase.OK_UI_REGRESSION.value,
+                summary="已确认 dry-run 与真实回归结果，可生成最终报告并继续更新知识库",
+                details={
+                    "ok_ui_dry_run_preview": state.artifacts.get("ok_ui_dry_run_preview", ""),
+                    "ok_ui_execution_report": self._artifact_value(
+                        state,
+                        "ok_ui_execution_report",
+                        "ok_ui_report",
+                    ),
+                },
+            ),
+        )
+        state.blocked_reason = ""
+        return state
+
+    def _complete_knowledge_base_update(self, state: RunState) -> RunState:
+        gate = self._validate_knowledge_base_outputs(state)
+        self._store_gate_result(state, "knowledge_base_gate_result", gate)
+        if not gate.ok:
+            return self._block_with_gate(state, Phase.KNOWLEDGE_BASE_UPDATE, gate)
+        self._append_confirmation(
+            state,
+            UserConfirmationRecord(
+                phase=Phase.KNOWLEDGE_BASE_UPDATE.value,
+                summary="已确认 knowledge base 预览并完成写入",
+                details={
+                    "knowledge_base_update_preview": state.artifacts.get("knowledge_base_update_preview", ""),
+                    "knowledge_base_update_result": state.artifacts.get("knowledge_base_update_result", ""),
+                },
+            ),
+        )
+        state.blocked_reason = ""
+        return state
+
+    def _validate_phase1_outputs(self, state: RunState) -> PhaseGateResult:
+        packet = self._requirement_packet(state)
+        report_path = self._artifact_value(state, "analysis_report")
+        textcases_path = self._artifact_value(state, "textcases", "testcases")
+        reasons: list[str] = []
+        warnings: list[str] = []
+
+        report_text = read_text(report_path)
+        textcases_text = read_text(textcases_path)
+        if not report_text:
+            reasons.append("缺少 analysis_report，或分析报告内容为空。")
+        if not textcases_text:
+            reasons.append("缺少 textcases，或测试用例文档内容为空。")
+
+        document = parse_markdown_document(textcases_path) if textcases_text else None
+        environment = document.environment if document else {}
+        if not environment:
+            reasons.append("测试用例文档缺少“测试环境配置”表格。")
+
+        cases = [
+            TextCaseManifestEntry(
+                tc_id=case.tc_id,
+                title=case.title,
+                priority=case.priority,
+                test_type=case.test_type,
+                ui_automatable=case.ui_automatable,
+                ui_automation_label=case.ui_automation_label,
+                preconditions=case.preconditions,
+                steps=case.steps,
+                expected_results=case.expected_results,
+                source_doc=case.source_doc,
+            )
+            for case in (document.cases if document else [])
+        ]
+        if not cases:
+            reasons.append("测试用例文档中未解析到任何用例。")
+
+        for case in cases:
+            missing = []
+            if not case.tc_id:
+                missing.append("TC编号")
+            if not case.preconditions:
+                missing.append("前置条件")
+            if not case.steps:
+                missing.append("执行步骤")
+            if not case.expected_results:
+                missing.append("预期结果")
+            if not case.priority:
+                missing.append("优先级")
+            if not case.test_type:
+                missing.append("测试类型")
+            if not case.ui_automation_label:
+                missing.append("UI自动化")
+            if missing:
+                reasons.append(f"{case.tc_id or case.title or '未命名用例'} 缺少字段: {', '.join(missing)}。")
+
+        bucket = self._knowledge_base_bucket(packet)
+        if not bucket:
+            reasons.append(
+                f"模块 `{(packet.get('candidate_modules') or [''])[0]}` 缺少知识库文本用例路由，"
+                "请先在 config/knowledge_base_routing.yaml 中补齐。"
+            )
+
+        kb_path = ""
+        if not reasons:
+            target_path = self._knowledge_base_draft_path(packet, textcases_path, bucket)
+            write_text(target_path, textcases_text)
+            manifest = TextCaseManifest(
+                module=(packet.get("candidate_modules") or [""])[0],
+                site=packet.get("site", ""),
+                feature_name=packet.get("feature_name", ""),
+                source_doc=textcases_path,
+                kb_text_case_draft_path=str(target_path),
+                environment=environment,
+                cases=cases,
+            )
+            manifest_path = self.store.artifact_path(state.run_id, "text_case_manifest.json")
+            write_json(manifest_path, to_data(manifest))
+            state.artifacts["text_case_manifest"] = str(manifest_path)
+            state.artifacts["kb_text_case_draft_path"] = str(target_path)
+            kb_path = str(target_path)
+        else:
+            warnings.append("阶段1未通过门禁前，不会写入 knowledge base 文本用例草稿。")
+
+        return PhaseGateResult(
+            phase=Phase.SENIOR_QA_BRAIN.value,
+            ok=not reasons,
+            summary=(
+                f"阶段1门禁通过，共解析 {len(cases)} 条用例，并已归档到 {kb_path}"
+                if not reasons
+                else "阶段1门禁未通过，需补齐分析报告/测试用例结构。"
+            ),
+            blocking_reasons=reasons,
+            warnings=warnings,
+            details={
+                "analysis_report": report_path,
+                "textcases": textcases_path,
+                "case_count": len(cases),
+                "ui_automatable_count": sum(case.ui_automatable for case in cases),
+                "environment_keys": sorted(environment.keys()),
+                "kb_text_case_draft_path": kb_path,
+            },
+        )
+
+    def _validate_phase2_outputs(self, state: RunState) -> PhaseGateResult:
+        manifest_payload = read_json(state.artifacts.get("text_case_manifest", ""), default={}) or {}
+        reasons: list[str] = []
+        warnings: list[str] = []
+        if not manifest_payload:
+            reasons.append("缺少 text_case_manifest.json，无法校验阶段2逐条闭环。")
+
+        outcomes_path = self._artifact_value(state, "playwright_case_outcomes", "case_outcomes")
+        outcome_payload = read_json(outcomes_path, default=[]) or []
+        if not outcome_payload:
+            reasons.append("缺少 playwright_case_outcomes.json，无法确认每条可自动化用例的唯一结局。")
+
+        automatable_cases = [
+            item["tc_id"]
+            for item in manifest_payload.get("cases", [])
+            if item.get("ui_automatable")
+        ]
+        outcomes = [PlaywrightCaseOutcome(**item) for item in outcome_payload] if outcome_payload else []
+        grouped: dict[str, list[PlaywrightCaseOutcome]] = {}
+        for outcome in outcomes:
+            grouped.setdefault(outcome.tc_id, []).append(outcome)
+
+        generated_scripts: list[str] = []
+        for tc_id in automatable_cases:
+            case_outcomes = grouped.get(tc_id, [])
+            if len(case_outcomes) != 1:
+                reasons.append(f"{tc_id} 需要且只能有 1 个唯一 outcome，当前为 {len(case_outcomes)} 个。")
+                continue
+            outcome = case_outcomes[0]
+            if outcome.outcome not in {item.value for item in PlaywrightOutcomeType}:
+                reasons.append(f"{tc_id} 的 outcome `{outcome.outcome}` 不在允许集合内。")
+                continue
+            if outcome.outcome == PlaywrightOutcomeType.SCRIPT_GENERATED.value:
+                if not outcome.script_path or not Path(outcome.script_path).exists():
+                    reasons.append(f"{tc_id} 标记为 script_generated，但 script_path 不存在。")
+                if not outcome.collect_only_passed or not outcome.pytest_passed:
+                    reasons.append(f"{tc_id} 的自动化脚本缺少 collect-only/pytest 通过证明。")
+                if outcome.script_path:
+                    generated_scripts.append(outcome.script_path)
+            elif outcome.outcome == PlaywrightOutcomeType.BUG_RECORDED.value:
+                if not outcome.bug_report_path or not Path(outcome.bug_report_path).exists():
+                    reasons.append(f"{tc_id} 标记为 bug_recorded，但 bug_report_path 不存在。")
+            elif not outcome.manual_review_reason:
+                reasons.append(f"{tc_id} 标记为 manual_review，但缺少 manual_review_reason。")
+
+        unexpected_cases = sorted(set(grouped) - set(automatable_cases))
+        if unexpected_cases:
+            warnings.append(
+                "以下 outcome 未在阶段1可自动化用例清单中出现，将保留但不计入强门禁: "
+                + ", ".join(unexpected_cases)
+            )
+
+        if not reasons:
+            generated_manifest_path = self.store.artifact_path(state.run_id, "generated_scripts_manifest.json")
+            write_json(generated_manifest_path, sorted(set(generated_scripts)))
+            state.artifacts["generated_scripts_manifest"] = str(generated_manifest_path)
+
+        return PhaseGateResult(
+            phase=Phase.PLAYWRIGHT_GENERATOR.value,
+            ok=not reasons,
+            summary=(
+                f"阶段2门禁通过，{len(automatable_cases)} 条可自动化用例已逐条闭环。"
+                if not reasons
+                else "阶段2门禁未通过，存在未闭环或缺少自测证明的可自动化用例。"
+            ),
+            blocking_reasons=reasons,
+            warnings=warnings,
+            details={
+                "text_case_manifest": state.artifacts.get("text_case_manifest", ""),
+                "playwright_case_outcomes": outcomes_path,
+                "automatable_case_count": len(automatable_cases),
+                "generated_script_count": len(set(generated_scripts)),
+            },
+        )
+
+    def _validate_phase3_outputs(self, state: RunState) -> PhaseGateResult:
+        reasons: list[str] = []
+        dry_run_path = self._artifact_value(state, "ok_ui_dry_run_preview")
+        report_path = self._artifact_value(state, "ok_ui_execution_report", "ok_ui_report")
+        recommendation_path = self._artifact_value(state, "release_recommendation", "launch_recommendation")
+        if not read_text(dry_run_path):
+            reasons.append("缺少 ok_ui_dry_run_preview，或 dry-run 预览内容为空。")
+        if not read_text(report_path):
+            reasons.append("缺少 ok_ui_execution_report/ok_ui_report，或真实回归报告内容为空。")
+        if not read_text(recommendation_path):
+            reasons.append("缺少 release_recommendation/launch_recommendation，或上线建议为空。")
+
+        return PhaseGateResult(
+            phase=Phase.OK_UI_REGRESSION.value,
+            ok=not reasons,
+            summary=(
+                "阶段3门禁通过，dry-run、真实回归与上线建议均已落盘。"
+                if not reasons
+                else "阶段3门禁未通过，缺少 dry-run / 真实回归 / 上线建议产物。"
+            ),
+            blocking_reasons=reasons,
+            details={
+                "ok_ui_dry_run_preview": dry_run_path,
+                "ok_ui_execution_report": report_path,
+                "release_recommendation": recommendation_path,
+            },
+        )
+
+    def _validate_knowledge_base_outputs(self, state: RunState) -> PhaseGateResult:
+        reasons: list[str] = []
+        preview_path = self._artifact_value(state, "knowledge_base_update_preview")
+        result_path = self._artifact_value(state, "knowledge_base_update_result")
+        if not read_text(preview_path):
+            reasons.append("缺少 knowledge_base_update_preview，或预览内容为空。")
+        if not read_text(result_path) and not read_json(result_path, default=None):
+            reasons.append("缺少 knowledge_base_update_result，或写入结果为空。")
+
+        return PhaseGateResult(
+            phase=Phase.KNOWLEDGE_BASE_UPDATE.value,
+            ok=not reasons,
+            summary=(
+                "Knowledge base 更新门禁通过，预览与写入结果均已确认。"
+                if not reasons
+                else "Knowledge base 更新门禁未通过，缺少预览或写入结果。"
+            ),
+            blocking_reasons=reasons,
+            details={
+                "knowledge_base_update_context": state.artifacts.get("knowledge_base_update_context", ""),
+                "knowledge_base_update_preview": preview_path,
+                "knowledge_base_update_result": result_path,
+            },
+        )
+
+    def _store_gate_result(self, state: RunState, artifact_key: str, gate: PhaseGateResult) -> None:
+        path = self.store.artifact_path(state.run_id, f"{artifact_key}.json")
+        write_json(path, to_data(gate))
+        state.artifacts[artifact_key] = str(path)
+
+    def _block_with_gate(self, state: RunState, phase: Phase, gate: PhaseGateResult) -> RunState:
+        self._mark(state, phase, PhaseStatus.BLOCKED)
+        state.status = RunStatus.BLOCKED.value
+        state.blocked_reason = gate.summary
+        if gate.blocking_reasons:
+            state.blocked_reason += " " + " ".join(gate.blocking_reasons)
+        return state
+
+    def _artifact_value(self, state: RunState, *keys: str) -> str:
+        for key in keys:
+            value = state.artifacts.get(key, "")
+            if value:
+                return value
+        return ""
+
+    def _append_confirmation(self, state: RunState, record: UserConfirmationRecord) -> None:
+        confirmation_path = self.store.artifact_path(state.run_id, "user_confirmations.json")
+        existing = read_json(confirmation_path, default=[]) or []
+        existing.append(to_data(record))
+        write_json(confirmation_path, existing)
+        state.artifacts["user_confirmations"] = str(confirmation_path)
+
+    def _parse_environment_config(self, text: str) -> dict[str, str]:
+        match = re.search(r"##\s*测试环境配置.*?(?=\n##\s+|\Z)", text, flags=re.S)
+        if not match:
+            return {}
+        environment: dict[str, str] = {}
+        for line in match.group(0).splitlines():
+            if not line.strip().startswith("|"):
+                continue
+            parts = [part.strip() for part in line.strip().strip("|").split("|")]
+            if len(parts) < 2:
+                continue
+            if parts[0] in {"字段", "---", "------"} or parts[0].startswith("---"):
+                continue
+            environment[parts[0]] = parts[1]
+        return environment
+
+    def _parse_text_case_entries(self, text: str, source_doc: str) -> list[TextCaseManifestEntry]:
+        pattern = re.compile(r"^###\s*(TC\d+)\s*:\s*(.+)$", flags=re.M)
+        matches = list(pattern.finditer(text))
+        entries: list[TextCaseManifestEntry] = []
+        for index, match in enumerate(matches):
+            start = match.end()
+            end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
+            block = text[start:end]
+            entries.append(
+                TextCaseManifestEntry(
+                    tc_id=match.group(1).strip(),
+                    title=match.group(2).strip(),
+                    priority=self._extract_case_attribute(block, "优先级"),
+                    test_type=self._extract_case_attribute(block, "测试类型"),
+                    ui_automatable=self._extract_ui_automatable(block),
+                    ui_automation_label=self._extract_case_attribute(block, "UI自动化"),
+                    preconditions=self._extract_case_section(block, "前置条件"),
+                    steps=self._extract_case_section(block, "执行步骤"),
+                    expected_results=self._extract_case_section(block, "预期结果"),
+                    source_doc=source_doc,
+                )
+            )
+        return entries
+
+    def _extract_case_attribute(self, block: str, name: str) -> str:
+        match = re.search(rf"-\s*\*\*{re.escape(name)}\*\*:\s*(.+)", block)
+        return match.group(1).strip() if match else ""
+
+    def _extract_ui_automatable(self, block: str) -> bool:
+        value = self._extract_case_attribute(block, "UI自动化")
+        if not value:
+            return False
+        return "✅" in value or ("可自动化" in value and "❌" not in value)
+
+    def _extract_case_section(self, block: str, section_name: str) -> list[str]:
+        pattern = re.compile(
+            rf"####\s*.*?{re.escape(section_name)}\s*(.*?)(?=\n####\s+|\Z)",
+            flags=re.S,
+        )
+        match = pattern.search(block)
+        if not match:
+            return []
+        lines: list[str] = []
+        for line in match.group(1).splitlines():
+            stripped = line.strip()
+            if not stripped:
+                continue
+            stripped = re.sub(r"^\d+\.\s*", "", stripped)
+            stripped = re.sub(r"^-\s*", "", stripped)
+            if stripped:
+                lines.append(stripped)
+        return lines
+
+    def _knowledge_base_bucket(self, packet: dict[str, Any]) -> str:
+        module = normalize_text((packet.get("candidate_modules") or [""])[0]).replace(" ", "")
+        bucket_map = self.config.knowledge_base_routing.get("text_case_buckets", {})
+        route = bucket_map.get(module, {})
+        if isinstance(route, str):
+            return route
+        return route.get("bucket", "")
+
+    def _knowledge_base_draft_path(self, packet: dict[str, Any], textcases_path: str, bucket: str) -> Path:
+        knowledge_base_root = Path(self.config.skills.get("paths", {}).get("knowledge_base_root", ""))
+        source_name = Path(textcases_path).name
+        generic_names = {"testcases.md", "textcases.md", "cases.md"}
+        if not source_name or source_name in generic_names:
+            source_name = self._generated_text_case_filename(packet)
+        return knowledge_base_root / "文本用例" / bucket / source_name
+
+    def _generated_text_case_filename(self, packet: dict[str, Any]) -> str:
+        site = (packet.get("site", "") or "site").upper()
+        module = (packet.get("candidate_modules") or ["module"])[0] or "module"
+        feature = packet.get("feature_name", "") or "测试用例"
+        date_token = str(packet.get("created_at", ""))[:10].replace("-", "") or "draft"
+        safe_feature = re.sub(r"[\\/:*?\"<>|]+", "-", feature)
+        safe_module = re.sub(r"[\\/:*?\"<>|]+", "-", module)
+        return f"OK-{site}-{safe_module}-{safe_feature}-测试用例-{date_token}.md"
+
+    def _phase_legacy_update(self, state: RunState) -> RunState:
+        self._mark(state, Phase.LEGACY_UPDATE, PhaseStatus.RUNNING)
+        tasks = self._load_legacy_tasks(state)
+        if not tasks:
+            gate = self._build_gate([], round_index=0)
+            gate_path = self.store.artifact_path(state.run_id, "legacy_update_gate.json")
+            write_json(gate_path, asdict(gate))
+            state.artifacts["legacy_update_gate"] = str(gate_path)
+            state.blocked_reason = ""
+            self._mark(state, Phase.LEGACY_UPDATE, PhaseStatus.COMPLETED)
+            return state
+
+        current_gate = read_json(state.artifacts.get("legacy_update_gate", ""), default={}) or {}
+        current_round_index = int(current_gate.get("round_index", 0))
+        playwright_tasks = self._legacy_tasks_needing_playwright(tasks, mutate=True)
+        if playwright_tasks:
+            self._persist_legacy_tasks_and_gate(state, tasks, current_round_index)
+            self._write_legacy_rerecord_request(state, playwright_tasks)
+            self._mark(state, Phase.LEGACY_UPDATE, PhaseStatus.BLOCKED)
+            state.status = RunStatus.BLOCKED.value
+            state.blocked_reason = (
+                f"旧脚本更新有 {len(playwright_tasks)} 个任务需要 playwright-test-generator "
+                "重新录制候选脚本，不能由 QA Agent 盲猜修改"
+            )
+            return state
+
+        round_index = int(current_gate.get("round_index", 0)) + 1
+        outcome = self.legacy_update_executor.run_round(
+            run_dir=self.store.run_dir(state.run_id),
+            tasks=tasks,
+            round_index=round_index,
+        )
+
+        tasks_path = self.store.artifact_path(state.run_id, "legacy_update_tasks.json")
+        gate_path = self.store.artifact_path(state.run_id, "legacy_update_gate.json")
+        results_path = self.store.artifact_path(state.run_id, f"legacy_update_results_round_{round_index:02d}.json")
+
+        write_json(tasks_path, [asdict(task) for task in outcome.tasks])
+        write_json(gate_path, asdict(outcome.gate))
+        write_json(results_path, outcome.results)
+
+        state.artifacts["legacy_update_tasks"] = str(tasks_path)
+        state.artifacts["legacy_update_gate"] = str(gate_path)
+        state.artifacts[f"legacy_update_results_round_{round_index:02d}"] = str(results_path)
+        state.artifacts["regression_selector_plan"] = str(self._refresh_selector_plan(state, outcome.tasks))
+
+        if outcome.gate.all_completed:
+            refresh_result = self.legacy_update_executor.refresh_catalog_after_script_changes(outcome.tasks)
+            if refresh_result.get("needed"):
+                refresh_path = self.store.artifact_path(
+                    state.run_id,
+                    f"catalog_refresh_after_script_changes_round_{round_index:02d}.json",
+                )
+                write_json(refresh_path, refresh_result)
+                state.artifacts[f"catalog_refresh_after_script_changes_round_{round_index:02d}"] = str(refresh_path)
+                if refresh_result.get("promotion_task_ids"):
+                    state.artifacts[f"catalog_refresh_after_promotion_round_{round_index:02d}"] = str(refresh_path)
+                if not refresh_result.get("ok"):
+                    self._mark(state, Phase.LEGACY_UPDATE, PhaseStatus.BLOCKED)
+                    state.status = RunStatus.BLOCKED.value
+                    state.blocked_reason = (
+                        "脚本更新已合并，但 catalog refresh/audit 失败；"
+                        "请修复标识或 catalog 后再继续"
+                    )
+                    return state
+            state.blocked_reason = ""
+            self._mark(state, Phase.LEGACY_UPDATE, PhaseStatus.COMPLETED)
+            return state
+
+        if outcome.gate.has_manual_review:
+            self._mark(state, Phase.LEGACY_UPDATE, PhaseStatus.BLOCKED)
+            state.status = RunStatus.BLOCKED.value
+            state.blocked_reason = (
+                f"旧脚本更新第{round_index}轮后仍有 manual-review 任务，"
+                "需先处理当前阶段再继续"
+            )
+            return state
+
+        state.status = RunStatus.RUNNING.value
+        state.blocked_reason = (
+            f"旧脚本更新第{round_index}轮完成，"
+            f"仍有 {outcome.gate.retry_count + outcome.gate.pending_count} 个任务待处理，"
+            "继续 advance 进入下一轮"
+        )
+        return state
+
+    def _legacy_playwright_request_active(self, state: RunState) -> bool:
+        if not state.artifacts.get("legacy_rerecord_instruction"):
+            return False
+        return bool(self._legacy_tasks_needing_playwright(self._load_legacy_tasks(state)))
+
+    def _legacy_tasks_needing_playwright(
+        self,
+        tasks: list[LegacyUpdateTask],
+        *,
+        mutate: bool = False,
+    ) -> list[LegacyUpdateTask]:
+        needs: list[LegacyUpdateTask] = []
+        for task in tasks:
+            if task.status in (LegacyUpdateTaskStatus.COMPLETED.value, LegacyUpdateTaskStatus.MANUAL_REVIEW.value):
+                continue
+            force_regen = bool(task.details.get("needs_playwright_rerecord")) and (
+                task.recommended_action in PLAYWRIGHT_REGEN_ACTIONS
+            )
+            if self._task_has_replacement_candidate(task) and not force_regen:
+                continue
+
+            needs_playwright = task.recommended_action in PLAYWRIGHT_REGEN_ACTIONS
+            missing_patch = task.recommended_action in PATCH_ACTIONS and not task.details.get("replacements")
+            if not (needs_playwright or missing_patch):
+                continue
+
+            if mutate:
+                if missing_patch:
+                    task.details.setdefault("original_recommended_action", task.recommended_action)
+                    task.recommended_action = "re-record"
+                task.details["needs_playwright_rerecord"] = True
+                task.details.setdefault(
+                    "rerecord_reason",
+                    "缺少可自动应用的候选 patch，需要 playwright-test-generator 重新录制",
+                )
+                if task.status == LegacyUpdateTaskStatus.RUNNING.value:
+                    task.status = LegacyUpdateTaskStatus.RETRY.value
+            needs.append(task)
+        return needs
+
+    def _task_has_replacement_candidate(self, task: LegacyUpdateTask) -> bool:
+        replacement_text = task.details.get("replacement_text")
+        if replacement_text:
+            return True
+        replacement_source = task.details.get("replacement_source_path")
+        if replacement_source and Path(replacement_source).exists():
+            return True
+        return False
+
+    def _current_legacy_round_index(self, state: RunState) -> int:
+        current_gate = read_json(state.artifacts.get("legacy_update_gate", ""), default={}) or {}
+        return int(current_gate.get("round_index", 0))
+
+    def _persist_legacy_tasks_and_gate(
+        self,
+        state: RunState,
+        tasks: list[LegacyUpdateTask],
+        round_index: int,
+    ) -> None:
+        tasks_path = self.store.artifact_path(state.run_id, "legacy_update_tasks.json")
+        gate_path = self.store.artifact_path(state.run_id, "legacy_update_gate.json")
+        write_json(tasks_path, [asdict(task) for task in tasks])
+        write_json(gate_path, asdict(self._build_gate(tasks, round_index=round_index)))
+        state.artifacts["legacy_update_tasks"] = str(tasks_path)
+        state.artifacts["legacy_update_gate"] = str(gate_path)
+        state.artifacts["regression_selector_plan"] = str(self._refresh_selector_plan(state, tasks))
+
+    def _write_legacy_rerecord_request(
+        self,
+        state: RunState,
+        tasks: list[LegacyUpdateTask],
+    ) -> None:
+        packet = self._requirement_packet(state)
+        request_path = self.store.artifact_path(state.run_id, "legacy_rerecord_request.json")
+        instruction_path = self.store.artifact_path(state.run_id, "legacy_rerecord_instruction.md")
+        request = {
+            "run_id": state.run_id,
+            "phase": Phase.LEGACY_UPDATE.value,
+            "skill": SKILL_PATHS[Phase.PLAYWRIGHT_GENERATOR],
+            "module": (packet.get("candidate_modules") or [""])[0],
+            "site": packet.get("site", ""),
+            "feature_name": packet.get("feature_name", ""),
+            "change_description": packet.get("change_description", ""),
+            "tasks": [self._legacy_rerecord_task_payload(task) for task in tasks],
+            "output_manifest": {
+                "artifact_key": "legacy_update_candidate_manifest",
+                "schema": [
+                    {
+                        "task_id": "<legacy task id>",
+                        "replacement_source_path": "<generated candidate .py path>",
+                        "proof_artifact_path": "<playwright-test-generator proof/report path>",
+                        "recommended_action": "re-record",
+                    }
+                ],
+            },
+        }
+        write_json(request_path, request)
+        write_text(instruction_path, self._render_legacy_rerecord_instruction(request))
+        state.artifacts["legacy_rerecord_request"] = str(request_path)
+        state.artifacts["legacy_rerecord_instruction"] = str(instruction_path)
+
+    def _legacy_rerecord_task_payload(self, task: LegacyUpdateTask) -> dict[str, Any]:
+        return {
+            "task_id": task.task_id,
+            "target_script": task.target_script,
+            "target_case_id": task.target_case_id,
+            "target_nodeid": task.target_nodeid,
+            "recommended_action": task.recommended_action,
+            "reason": task.reason,
+            "module": task.details.get("module", ""),
+            "site": task.details.get("site", ""),
+            "rerecord_reason": task.details.get("rerecord_reason", ""),
+        }
+
+    def _render_legacy_rerecord_instruction(self, request: dict[str, Any]) -> str:
+        lines = [
+            "# 旧脚本重录子任务",
+            "",
+            f"请读取 `{request['skill']}`，只针对下面列出的旧脚本更新任务生成候选替换版本。",
+            "",
+            "## 关键规则",
+            "- 不允许直接修改正式回归仓库中的旧脚本。",
+            "- 候选脚本必须先生成到 run 目录或临时产物目录。",
+            "- 每个任务都必须有 proof artifact，证明已按 playwright-test-generator 流程录制/生成/自测。",
+            "- 完成后输出 `legacy_update_candidate_manifest.json`，再用 resume command 回到 QA Agent。",
+            "",
+            "## 输出 manifest 格式",
+            "```json",
+            "[",
+            "  {",
+            '    "task_id": "legacy-xxxx",',
+            '    "replacement_source_path": "/path/to/candidate.py",',
+            '    "proof_artifact_path": "/path/to/proof.md",',
+            '    "recommended_action": "re-record"',
+            "  }",
+            "]",
+            "```",
+            "",
+            "## 任务列表",
+        ]
+        for task in request.get("tasks", []):
+            lines.extend(
+                [
+                    f"### {task.get('task_id', '')}",
+                    f"- target_script: {task.get('target_script', '')}",
+                    f"- target_case_id: {task.get('target_case_id', '')}",
+                    f"- target_nodeid: {task.get('target_nodeid', '')}",
+                    f"- module/site: {task.get('module', '')}/{task.get('site', '')}",
+                    f"- recommended_action: {task.get('recommended_action', '')}",
+                    f"- reason: {task.get('reason', '')}",
+                    f"- rerecord_reason: {task.get('rerecord_reason', '')}",
+                    "",
+                ]
+            )
+        return "\n".join(lines).rstrip() + "\n"
+
+    def _apply_legacy_candidate_manifest(
+        self,
+        tasks: list[LegacyUpdateTask],
+        entries: list[Any],
+        manifest_path: str,
+    ) -> list[str]:
+        errors: list[str] = []
+        for raw_entry in entries:
+            if not isinstance(raw_entry, dict):
+                errors.append("manifest entry 必须是 object")
+                continue
+            task = self._find_legacy_task_for_candidate(tasks, raw_entry)
+            if not task:
+                errors.append(f"未找到匹配任务: {raw_entry.get('task_id') or raw_entry.get('target_nodeid')}")
+                continue
+
+            replacement_source = raw_entry.get("replacement_source_path") or raw_entry.get("candidate_path") or ""
+            replacement_text = raw_entry.get("replacement_text", "")
+            proof_artifact = raw_entry.get("proof_artifact_path") or raw_entry.get("proof_path") or ""
+            if not replacement_source and not replacement_text:
+                errors.append(f"{task.task_id} 缺少 replacement_source_path/replacement_text")
+                continue
+            if replacement_source and not Path(str(replacement_source)).exists():
+                errors.append(f"{task.task_id} replacement_source_path 不存在: {replacement_source}")
+                continue
+            if not proof_artifact or not Path(str(proof_artifact)).exists():
+                errors.append(f"{task.task_id} 缺少有效 proof_artifact_path")
+                continue
+
+            if raw_entry.get("recommended_action") in PLAYWRIGHT_REGEN_ACTIONS:
+                task.recommended_action = str(raw_entry["recommended_action"])
+            elif task.recommended_action not in PLAYWRIGHT_REGEN_ACTIONS:
+                task.recommended_action = "re-record"
+            task.details["replacement_source_path"] = str(replacement_source)
+            if replacement_text:
+                task.details["replacement_text"] = str(replacement_text)
+            task.details["proof_artifact_path"] = str(proof_artifact)
+            task.details["needs_playwright_rerecord"] = False
+            task.details["legacy_update_candidate_manifest"] = manifest_path
+            task.details["playwright_rerecord_completed_at"] = utc_now_iso()
+            task.status = LegacyUpdateTaskStatus.RETRY.value
+        return errors
+
+    def _find_legacy_task_for_candidate(
+        self,
+        tasks: list[LegacyUpdateTask],
+        entry: dict[str, Any],
+    ) -> LegacyUpdateTask | None:
+        for key in ("task_id", "target_nodeid", "target_case_id", "target_script"):
+            value = entry.get(key)
+            if not value:
+                continue
+            for task in tasks:
+                if getattr(task, key, "") == value:
+                    return task
+        return None
 
     def _phase_final_report(self, state: RunState) -> RunState:
-        self._mark_phase(state, ConductorPhase.FINAL_REPORT, PhaseStatus.RUNNING)
-        gate_report = read_json(state.artifacts.get("gate_report", ""), default={}) or {}
-        report_lines = [
+        self._mark(state, Phase.FINAL_REPORT, PhaseStatus.RUNNING)
+        lines = [
             f"# QA Agent 最终报告 - {state.run_id}",
             "",
             f"- 变更模式: {state.change_mode}",
             f"- 当前阶段: {state.current_phase}",
-            f"- 阻塞原因: {state.blocked_reason or '无'}",
             "",
-            "## 产物清单",
+            "## 核心产物",
         ]
+        for key in [
+            "impact_candidates",
+            "change_attribution_report",
+            "legacy_update_gate",
+            "regression_selector_plan",
+        ]:
+            if state.artifacts.get(key):
+                lines.append(f"- {key}: {state.artifacts[key]}")
+        lines.extend(["", "## 完整产物清单"])
         for key, value in sorted(state.artifacts.items()):
-            report_lines.append(f"- {artifact_label(key)}: {value}")
-        report_lines.extend(
-            [
-                "",
-                "## 门禁结论",
-                f"- 上线建议: {gate_report.get('release_recommendation', '待定')}",
-                f"- 未通过项: {', '.join(gate_report.get('failed_checks', [])) or '无'}",
-            ]
-        )
+            lines.append(f"- {key}: {value}")
+        lines.extend(["", "## 阶段状态"])
+        for phase_name, status in state.phase_statuses.items():
+            lines.append(f"- {phase_name}: {status}")
+
         path = self.store.artifact_path(state.run_id, "final_report.md")
-        write_text(path, "\n".join(report_lines) + "\n")
+        write_text(path, "\n".join(lines) + "\n")
         state.artifacts["final_report"] = str(path)
-        self._mark_phase(state, ConductorPhase.FINAL_REPORT, PhaseStatus.COMPLETED)
+        context_path = self.store.artifact_path(state.run_id, "knowledge_base_update_context.md")
+        write_text(context_path, self._render_knowledge_base_update_context(state))
+        state.artifacts["knowledge_base_update_context"] = str(context_path)
+        self._mark(state, Phase.FINAL_REPORT, PhaseStatus.COMPLETED)
+        state.status = RunStatus.RUNNING.value
+        state.blocked_reason = ""
         return state
 
-    def _mark_phase(self, state: RunState, phase: ConductorPhase, status: PhaseStatus) -> None:
+    def _build_instruction(self, state: RunState, phase: Phase) -> str:
+        skill_path = SKILL_PATHS[phase]
+        packet = self._requirement_packet(state)
+
+        if phase == Phase.SENIOR_QA_BRAIN:
+            parts = [
+                f"# 阶段: {phase.value}",
+                "",
+                f"请读取 `{skill_path}` 并按其定义的完整工作流程执行。",
+                "",
+                "## 输入",
+            ]
+            if packet.get("figma_url"):
+                parts.append(f"- Figma: {packet['figma_url']}")
+            for ref in packet.get("prd_refs", []):
+                parts.append(f"- 需求文档: {ref}")
+            parts.extend(
+                [
+                    "",
+                    "## 要求",
+                    "- 按 SKILL.md 流程逐步执行，不要跳步",
+                    "- 生成分析报告后等待用户确认",
+                    "- 确认后生成 Markdown 测试用例",
+                    "- complete 当前阶段时必须回传 analysis_report 和 textcases 两个产物路径",
+                    "- 文本用例必须包含测试环境配置表格、TC编号、前置条件、步骤、预期、优先级、测试类型、UI自动化",
+                ]
+            )
+            return "\n".join(parts)
+
+        if phase == Phase.PLAYWRIGHT_GENERATOR:
+            return "\n".join(
+                [
+                    f"# 阶段: {phase.value}",
+                    "",
+                    f"请读取 `{skill_path}` 并按其定义的 5 阶段流程执行。",
+                    "",
+                    "## 输入",
+                    f"- 测试用例文档: {state.artifacts.get('kb_text_case_draft_path') or state.artifacts.get('textcases', '')}",
+                    f"- 阶段1清单: {state.artifacts.get('text_case_manifest', '')}",
+                    "",
+                    "## 要求",
+                    "- 按 SKILL.md 的 5 个阶段严格顺序执行",
+                    "- 每个阶段开始前先读取 SKILL.md 指定的 references 文件",
+                    "- 每批最多 5 条用例",
+                    "- 生成的脚本暂不直接入库，先交由影响回归阶段验证",
+                    "- complete 当前阶段时必须回传 playwright_case_outcomes.json",
+                    "- 对每条 UI自动化=✅ 的用例，必须给出唯一 outcome: script_generated / bug_recorded / manual_review",
+                    "- script_generated 的用例必须同时附带 collect-only 和 pytest 通过证明",
+                ]
+            )
+
+        if phase == Phase.OK_UI_REGRESSION:
+            module = (packet.get("candidate_modules") or [""])[0]
+            site = packet.get("site", "")
+            desc = packet.get("change_description", "")
+            selector_plan = state.artifacts.get("regression_selector_plan", "")
+            parts = [
+                f"# 阶段: {phase.value}",
+                "",
+                f"请读取 `{skill_path}` 并按其主流程执行。",
+                "",
+                "## 输入",
+                f"- 模块: {module}",
+                f"- 站点: {site}",
+            ]
+            if desc:
+                parts.append(f"- 改动描述: {desc}")
+            if selector_plan:
+                parts.append(f"- selector 计划: {selector_plan}")
+            parts.extend(
+                [
+                    "",
+                    "## 要求",
+                    "- 优先消费 regression_selector_plan.json",
+                    "- 先 dry-run 预览，等用户确认后再真实执行",
+                    "- 若 selector_plan 缺少必要信息，再退回 module-map.md 做补充",
+                    "- complete 当前阶段时必须回传 dry-run 预览、真实回归报告、上线建议",
+                ]
+            )
+            return "\n".join(parts)
+
+        if phase == Phase.KNOWLEDGE_BASE_UPDATE:
+            kb_context = state.artifacts.get("knowledge_base_update_context", "")
+            kb_draft = state.artifacts.get("kb_text_case_draft_path", "")
+            return "\n".join(
+                [
+                    f"# 阶段: {phase.value}",
+                    "",
+                    f"请读取 `{skill_path}` 并按其“预览 -> 确认 -> 写入”流程执行。",
+                    "",
+                    "## 输入",
+                    f"- 更新上下文: {kb_context}",
+                    f"- 最终报告: {state.artifacts.get('final_report', '')}",
+                    f"- 影响分析: {state.artifacts.get('impact_candidates', '')}",
+                    f"- 归因报告: {state.artifacts.get('change_attribution_report', '')}",
+                    f"- 回归 selector 计划: {state.artifacts.get('regression_selector_plan', '')}",
+                    f"- 文本用例主输入: {kb_draft}",
+                    "",
+                    "## 要求",
+                    "- 若存在 kb_text_case_draft_path，必须优先读取并回写该路径，不要另起第二份文本用例文档",
+                    "- 先输出 knowledge base 更新预览，再等待确认",
+                    "- 写入完成后回传 preview/result 产物路径",
+                    "- 若 vendored skill 缺失或预览失败，不要跳过本阶段",
+                    "- complete 当前阶段时必须回传 knowledge_base_update_preview 和 knowledge_base_update_result",
+                ]
+            )
+
+        return f"# 阶段: {phase.value}\n\n请读取 `{skill_path}` 并执行。"
+
+    def _mark(self, state: RunState, phase: Phase, status: PhaseStatus) -> None:
         state.current_phase = phase.value
         state.phase_statuses[phase.value] = status.value
-        state.status = RunStatus.RUNNING.value if status == PhaseStatus.RUNNING else state.status
-        self.store.save(state)
+        if status == PhaseStatus.RUNNING:
+            state.status = RunStatus.RUNNING.value
+        state.touch()
 
-    def _block(self, state: RunState, phase: ConductorPhase, reason: str) -> None:
-        state.current_phase = phase.value
-        state.phase_statuses[phase.value] = PhaseStatus.BLOCKED.value
-        state.status = RunStatus.BLOCKED.value
-        state.blocked_reason = reason
-        self.store.save(state)
+    def _requirement_packet(self, state: RunState) -> dict[str, Any]:
+        return read_json(state.artifacts.get("requirement_packet", ""), default={}) or {}
 
-    def _default_module(self, state: RunState) -> str:
-        packet = read_json(state.artifacts.get("requirement_packet", ""), default={}) or {}
-        modules = packet.get("candidate_modules") or []
-        return modules[0] if modules else "ai"
+    def _build_impact_payload(self, state: RunState, packet: dict[str, Any]) -> dict[str, Any]:
+        module = (packet.get("candidate_modules") or [""])[0]
+        site = packet.get("site", "")
+        feature = packet.get("feature_name", "")
+        new_cases = self._discover_new_cases(state, module, site, feature)
+        existing_cases = self._discover_existing_cases(packet)
+        self._mark_overlapping_source_groups(new_cases, existing_cases)
+        merged_paths = sorted(
+            {
+                candidate.target
+                for candidate in new_cases + existing_cases
+                if candidate.target.endswith(".py")
+            }
+        )
+        return {
+            "module": module,
+            "site": site,
+            "feature_name": feature,
+            "change_mode": state.change_mode,
+            "new_cases": [asdict(item) for item in new_cases],
+            "existing_cases": [asdict(item) for item in existing_cases],
+            "merged_regression_candidates": merged_paths,
+        }
 
-    def _default_site(self, state: RunState) -> str:
-        packet = read_json(state.artifacts.get("requirement_packet", ""), default={}) or {}
-        return packet.get("site") or "us"
-
-    def _default_feature(self, state: RunState) -> str:
-        packet = read_json(state.artifacts.get("requirement_packet", ""), default={}) or {}
-        return packet.get("feature_name") or "自动生成功能"
-
-    def _load_git_diff(self, inputs: dict[str, Any]) -> str:
-        if inputs.get("git_diff_summary"):
-            return str(inputs["git_diff_summary"])
-        if inputs.get("git_diff_file"):
-            return read_if_exists(inputs["git_diff_file"])
-        return ""
-
-    def _load_rate(self, report_path: str | None) -> float | None:
-        if not report_path:
-            return None
-        payload = read_json(report_path, default=None)
-        if payload is None:
-            return None
-        if isinstance(payload, dict):
-            for key in ("pass_rate", "ui_pass_rate", "api_pass_rate"):
-                if key in payload:
-                    return float(payload[key])
-        if isinstance(payload, (int, float)):
-            return float(payload)
-        return None
-
-    def _write_module_map_candidate(self, run_id: str, entries: list[CaseManifestEntry]) -> Path:
-        candidate_path = self.store.artifact_path(run_id, "module_map_candidate.md")
-        lines = [
-            "# module-map 候选映射",
-            "",
-            "| 开发常说的功能 | 推荐 selector | 说明 |",
-            "| --- | --- | --- |",
-        ]
+    def _discover_new_cases(self, state: RunState, module: str, site: str, feature: str) -> list[ImpactCandidate]:
+        candidates: list[ImpactCandidate] = []
         seen: set[str] = set()
-        for entry in entries:
-            key = f"{entry.module}-{entry.feature_key}"
-            if key in seen:
+        for key, value in state.artifacts.items():
+            if not any(token in key for token in ("generated", "promoted", "script", "manifest")):
+                continue
+            for script_path in self._extract_script_paths(value):
+                if script_path in seen:
+                    continue
+                seen.add(script_path)
+                candidates.append(
+                    ImpactCandidate(
+                        source_type="new-script",
+                        target=script_path,
+                        module=module,
+                        site=site,
+                        feature_key=feature,
+                        source_group="new_feature",
+                        reason=f"来源于产物 {key}",
+                    )
+                )
+        return candidates
+
+    def _extract_script_paths(self, artifact_value: str) -> list[str]:
+        target = Path(artifact_value)
+        if target.suffix == ".py" and target.exists():
+            return [str(target)]
+        if target.suffix == ".json" and target.exists():
+            payload = read_json(target, default=[]) or []
+            return self._find_script_paths(payload)
+        return []
+
+    def _find_script_paths(self, value: Any) -> list[str]:
+        if isinstance(value, str):
+            return [value] if value.endswith(".py") else []
+        if isinstance(value, list):
+            paths: list[str] = []
+            for item in value:
+                paths.extend(self._find_script_paths(item))
+            return paths
+        if isinstance(value, dict):
+            paths: list[str] = []
+            for item in value.values():
+                paths.extend(self._find_script_paths(item))
+            return paths
+        return []
+
+    def _discover_existing_cases(self, packet: dict[str, Any]) -> list[ImpactCandidate]:
+        module = (packet.get("candidate_modules") or [""])[0]
+        feature = packet.get("feature_name", "")
+        change_desc = packet.get("change_description", "")
+        regression_root = Path(self.config.skills.get("paths", {}).get("regression_project_root", "")) / "test_cases"
+        if not module or not regression_root.exists():
+            return []
+
+        keywords = self._impact_keywords(module, feature, change_desc)
+        matches: list[ImpactCandidate] = []
+        for script_path in sorted(regression_root.rglob("test_*.py")):
+            normalized_path = normalize_text(script_path.as_posix())
+            text = read_text(script_path)
+            searchable = normalize_text(f"{script_path.as_posix()} {text}")
+            reasons = self._script_impact_reasons(
+                script_path=script_path,
+                text=text,
+                searchable=searchable,
+                module=module,
+                site=packet.get("site", ""),
+                feature=feature,
+                keywords=keywords,
+            )
+            if not reasons:
+                continue
+            case_refs = self._extract_case_refs(script_path, text)
+            if case_refs:
+                for case_ref in case_refs:
+                    matches.append(
+                        ImpactCandidate(
+                            source_type="existing-script",
+                            target=str(script_path),
+                            module=module,
+                            site=packet.get("site", ""),
+                            feature_key=feature,
+                            source_group="regression",
+                            reason="; ".join(reasons),
+                            related_case_id=case_ref["case_id"],
+                            related_nodeid=case_ref["nodeid"],
+                            details={
+                                "test_name": case_ref["test_name"],
+                                "allure_title": case_ref.get("allure_title", ""),
+                                "impact_reasons": reasons,
+                            },
+                        )
+                    )
+            else:
+                matches.append(
+                    ImpactCandidate(
+                        source_type="existing-script",
+                        target=str(script_path),
+                        module=module,
+                        site=packet.get("site", ""),
+                        feature_key=feature,
+                        source_group="regression",
+                        reason="; ".join(reasons),
+                        details={"impact_reasons": reasons},
+                    )
+                )
+        return matches
+
+    def _mark_overlapping_source_groups(
+        self,
+        new_cases: list[ImpactCandidate],
+        existing_cases: list[ImpactCandidate],
+    ) -> None:
+        new_names = {Path(candidate.target).name for candidate in new_cases if candidate.target}
+        existing_names = {Path(candidate.target).name for candidate in existing_cases if candidate.target}
+        overlap_names = new_names & existing_names
+        for candidate in [*new_cases, *existing_cases]:
+            if Path(candidate.target).name in overlap_names:
+                candidate.source_group = "both"
+
+    def _script_impact_reasons(
+        self,
+        *,
+        script_path: Path,
+        text: str,
+        searchable: str,
+        module: str,
+        site: str,
+        feature: str,
+        keywords: list[str],
+    ) -> list[str]:
+        scoped_reasons: list[str] = []
+        metadata_reasons: list[str] = []
+        normalized_path = normalize_text(script_path.as_posix())
+        if module and module in normalized_path:
+            scoped_reasons.append("路径命中 module")
+        if site and re.search(rf"@pytest\.mark\.{re.escape(site)}\b", text):
+            scoped_reasons.append("pytest marker 命中 site")
+        if module and re.search(rf"@pytest\.mark\.{re.escape(module)}\b", text):
+            scoped_reasons.append("pytest marker 命中 module")
+        if feature and normalize_text(feature) in searchable:
+            scoped_reasons.append("allure/title/text 命中 feature")
+        if re.search(r"@pytest\.mark\.case_id_[a-zA-Z0-9_]+", text):
+            metadata_reasons.append("存在 case_id 元数据")
+        if "::test_" in searchable or re.search(r"def test_[a-zA-Z0-9_]+\(", text):
+            metadata_reasons.append("存在 nodeid/test 函数元数据")
+        keyword_hits = [keyword for keyword in keywords if keyword in searchable]
+        if keyword_hits:
+            scoped_reasons.append("关键字命中: " + ", ".join(keyword_hits[:5]))
+        if not scoped_reasons:
+            return []
+        return scoped_reasons + metadata_reasons
+
+    def _impact_keywords(self, module: str, feature: str, change_desc: str) -> list[str]:
+        raw_tokens = [module, feature, change_desc]
+        tokens: set[str] = set()
+        for token_group in raw_tokens:
+            for token in re.split(r"[^a-zA-Z0-9\u4e00-\u9fff]+", token_group or ""):
+                normalized = normalize_text(token)
+                if not normalized:
+                    continue
+                if len(normalized) >= 3 or re.search(r"[\u4e00-\u9fff]{2,}", normalized):
+                    tokens.add(normalized)
+        return sorted(tokens)
+
+    def _extract_case_refs(self, script_path: Path, text: str) -> list[dict[str, str]]:
+        case_ids = re.findall(r"@pytest\.mark\.(case_id_[a-zA-Z0-9_]+)", text)
+        allure_titles = re.findall(r'@allure\.title\("([^"]+)"\)', text)
+        test_names = re.findall(r"def (test_[a-zA-Z0-9_]+)\(", text)
+        refs: list[dict[str, str]] = []
+        for index, test_name in enumerate(test_names):
+            case_id = case_ids[index] if index < len(case_ids) else ""
+            refs.append(
+                {
+                    "case_id": case_id,
+                    "test_name": test_name,
+                    "nodeid": f"{script_path.as_posix()}::{test_name}",
+                    "allure_title": allure_titles[index] if index < len(allure_titles) else "",
+                }
+            )
+        return refs
+
+    def _build_overlap_decisions(
+        self,
+        new_cases: list[dict[str, Any]],
+        existing_cases: list[dict[str, Any]],
+    ) -> list[OverlapDecision]:
+        decisions: list[OverlapDecision] = []
+        for new_case in new_cases:
+            new_target = new_case.get("target", "")
+            new_case_id = new_case.get("related_case_id", "")
+            for existing_case in existing_cases:
+                existing_target = existing_case.get("target", "")
+                existing_case_id = existing_case.get("related_case_id", "")
+                same_case = new_case_id and existing_case_id and new_case_id == existing_case_id
+                same_path = new_target and existing_target and Path(new_target).name == Path(existing_target).name
+                if not (same_case or same_path):
+                    continue
+                decisions.append(
+                    OverlapDecision(
+                        new_target=new_target,
+                        existing_target=existing_target,
+                        decision="overlap",
+                        reason="新旧脚本命中同名脚本或相同 case_id，需先执行影响回归再裁决",
+                        related_case_id=existing_case_id,
+                        related_nodeid=existing_case.get("related_nodeid", ""),
+                    )
+                )
+        return decisions
+
+    def _load_seed_tasks(self, state: RunState) -> list[LegacyUpdateTask]:
+        seed_path = state.artifacts.get("legacy_update_tasks_seed", "")
+        payload = read_json(seed_path, default=[]) or []
+        return self._task_objects(payload)
+
+    def _load_legacy_tasks(self, state: RunState) -> list[LegacyUpdateTask]:
+        payload = read_json(state.artifacts.get("legacy_update_tasks", ""), default=[]) or []
+        return self._task_objects(payload)
+
+    def _task_objects(self, payload: list[dict[str, Any]]) -> list[LegacyUpdateTask]:
+        tasks: list[LegacyUpdateTask] = []
+        for item in payload:
+            if isinstance(item, LegacyUpdateTask):
+                tasks.append(item)
+                continue
+            tasks.append(LegacyUpdateTask(**item))
+        return tasks
+
+    def _load_attribution_records(self, state: RunState) -> list[ImpactVerificationRecord]:
+        payload = read_json(state.artifacts.get("change_attribution_result", ""), default=[]) or []
+        records: list[ImpactVerificationRecord] = []
+        for item in payload:
+            if isinstance(item, ImpactVerificationRecord):
+                records.append(item)
+            else:
+                records.append(ImpactVerificationRecord(**item))
+        return records
+
+    def _build_confirmed_legacy_tasks(
+        self,
+        packet: dict[str, Any],
+        records: list[ImpactVerificationRecord],
+    ) -> list[LegacyUpdateTask]:
+        tasks: list[LegacyUpdateTask] = []
+        promotion_tasks: list[LegacyUpdateTask] = []
+        legacy_tasks: list[LegacyUpdateTask] = []
+        max_rounds = int(self.config.thresholds.get("gates", {}).get("max_fix_rounds", 3))
+        module = (packet.get("candidate_modules") or [""])[0]
+        site = packet.get("site", "")
+        for record in records:
+            if record.source_type == "new-script" and record.run_status == ImpactRunStatus.PASSED.value:
+                promotion_task = self._build_new_script_promotion_task(packet, record, max_rounds)
+                if promotion_task:
+                    promotion_tasks.append(promotion_task)
+                continue
+
+            if record.source_type == "new-script" and record.category == AttributionCategory.LATEST_CHANGE.value:
+                promotion_tasks.append(
+                    LegacyUpdateTask(
+                        task_id=make_task_id("legacy"),
+                        target_script=record.target,
+                        target_case_id=record.related_case_id,
+                        target_nodeid=record.related_nodeid,
+                        impact_type="new-script-failed",
+                        recommended_action="manual-review",
+                        reason="新脚本影响回归失败，需人工确认后决定重录或修正",
+                        max_attempts=max_rounds,
+                        details={"module": module, "site": site, "source_type": record.source_type},
+                    )
+                )
+                continue
+
+            if record.category != AttributionCategory.LATEST_CHANGE.value:
+                continue
+
+            legacy_tasks.append(
+                LegacyUpdateTask(
+                    task_id=make_task_id("legacy"),
+                    target_script=record.target,
+                    target_case_id=record.related_case_id,
+                    target_nodeid=record.related_nodeid,
+                    impact_type="change-attribution",
+                    recommended_action=self._recommended_action(record),
+                    reason=record.reason or "影响回归判定为本次变更引起",
+                    max_attempts=max_rounds,
+                    details={
+                        "module": module,
+                        "site": site,
+                        "source_type": record.source_type,
+                    },
+                )
+            )
+        tasks.extend(promotion_tasks)
+        tasks.extend(legacy_tasks)
+        return tasks
+
+    def _build_new_script_promotion_task(
+        self,
+        packet: dict[str, Any],
+        record: ImpactVerificationRecord,
+        max_rounds: int,
+    ) -> LegacyUpdateTask | None:
+        source_path = Path(record.staged_target or record.target)
+        if not source_path.exists():
+            return None
+        regression_root = Path(self.config.skills.get("paths", {}).get("regression_project_root", ""))
+        try:
+            source_path.resolve().relative_to(regression_root.resolve())
+            return None
+        except ValueError:
+            pass
+        target_path = self._infer_promotion_target(packet, source_path)
+        return LegacyUpdateTask(
+            task_id=make_task_id("legacy"),
+            target_script=str(target_path),
+            target_case_id=record.related_case_id,
+            target_nodeid=record.related_nodeid,
+            impact_type="new-script-promotion",
+            recommended_action="promote-new-script",
+            reason="新脚本影响回归已通过，等待人工确认后 promotion 到正式回归目录",
+            max_attempts=max_rounds,
+            details={
+                "module": (packet.get("candidate_modules") or [""])[0],
+                "site": packet.get("site", ""),
+                "replacement_source_path": str(source_path),
+                "source_type": record.source_type,
+            },
+        )
+
+    def _infer_promotion_target(self, packet: dict[str, Any], source_path: Path) -> Path:
+        regression_root = Path(self.config.skills.get("paths", {}).get("regression_project_root", ""))
+        module = (packet.get("candidate_modules") or ["misc"])[0] or "misc"
+        parts = source_path.parts
+        if "test_cases" in parts:
+            suffix = Path(*parts[parts.index("test_cases") + 1 :])
+            return regression_root / "test_cases" / suffix
+        return regression_root / "test_cases" / module / source_path.name
+
+    def _recommended_action(self, record: ImpactVerificationRecord) -> str:
+        searchable = normalize_text(" ".join([record.summary, record.stdout_excerpt, record.stderr_excerpt]))
+        if any(token in searchable for token in ["selector", "locator", "not found", "strict mode violation"]):
+            return "update-selector"
+        if any(token in searchable for token in ["assert", "expected", "actual", "mismatch"]):
+            return "update-assertion"
+        if "split" in searchable:
+            return "split-case"
+        return "re-record"
+
+    def _build_gate(self, tasks: list[LegacyUpdateTask], round_index: int) -> LegacyUpdateGate:
+        pending_count = sum(task.status == LegacyUpdateTaskStatus.PENDING.value for task in tasks)
+        retry_count = sum(task.status == LegacyUpdateTaskStatus.RETRY.value for task in tasks)
+        completed_count = sum(task.status == LegacyUpdateTaskStatus.COMPLETED.value for task in tasks)
+        manual_review_count = sum(task.status == LegacyUpdateTaskStatus.MANUAL_REVIEW.value for task in tasks)
+        total_count = len(tasks)
+        return LegacyUpdateGate(
+            round_index=round_index,
+            total_count=total_count,
+            pending_count=pending_count,
+            retry_count=retry_count,
+            completed_count=completed_count,
+            manual_review_count=manual_review_count,
+            all_completed=total_count == completed_count,
+            has_manual_review=manual_review_count > 0,
+        )
+
+    def _render_overlap_report(self, packet: dict[str, Any], overlap_decisions: list[OverlapDecision]) -> str:
+        module = (packet.get("candidate_modules") or [""])[0]
+        lines = [
+            "# 重叠裁决报告",
+            "",
+            f"- 模块: {module}",
+            f"- 站点: {packet.get('site', '')}",
+            "",
+        ]
+        if not overlap_decisions:
+            lines.append("本轮未检测到明确重叠项，后续以影响回归结果为准。")
+            return "\n".join(lines) + "\n"
+
+        lines.extend(["| 新脚本 | 旧脚本 | 裁决 | 说明 |", "| --- | --- | --- | --- |"])
+        for decision in overlap_decisions:
+            lines.append(
+                f"| `{decision.new_target}` | `{decision.existing_target}` | "
+                f"`{decision.decision}` | {decision.reason} |"
+            )
+        return "\n".join(lines) + "\n"
+
+    def _render_change_attribution_report(
+        self,
+        packet: dict[str, Any],
+        records: list[ImpactVerificationRecord],
+    ) -> str:
+        counts = {
+            AttributionCategory.PASSED.value: 0,
+            AttributionCategory.LATEST_CHANGE.value: 0,
+            AttributionCategory.PREEXISTING.value: 0,
+            AttributionCategory.ENVIRONMENT.value: 0,
+            AttributionCategory.UNCERTAIN.value: 0,
+        }
+        for record in records:
+            counts[record.category] = counts.get(record.category, 0) + 1
+
+        lines = [
+            "# 变更归因报告",
+            "",
+            f"- 模块: {(packet.get('candidate_modules') or [''])[0]}",
+            f"- 站点: {packet.get('site', '')}",
+            f"- 功能: {packet.get('feature_name', '')}",
+            "",
+            "## 汇总",
+            f"- passed: {counts[AttributionCategory.PASSED.value]}",
+            f"- likely_caused_by_latest_change: {counts[AttributionCategory.LATEST_CHANGE.value]}",
+            f"- likely_preexisting_or_unrelated: {counts[AttributionCategory.PREEXISTING.value]}",
+            f"- environment_or_data_issue: {counts[AttributionCategory.ENVIRONMENT.value]}",
+            f"- uncertain: {counts[AttributionCategory.UNCERTAIN.value]}",
+            "",
+            "## 明细",
+        ]
+
+        if not records:
+            lines.append("- 本轮没有识别到可执行的受影响用例，等待人工确认后决定是否直接进入回归。")
+            return "\n".join(lines) + "\n"
+
+        for record in records:
+            case_ref = record.related_nodeid or record.related_case_id or record.target
+            lines.extend(
+                [
+                    f"### {case_ref}",
+                    f"- 失败现象: {record.summary}",
+                    f"- 判断类别: `{record.category}`",
+                    f"- 判断理由: {record.reason}",
+                    f"- 下一步建议: {record.next_action}",
+                    "",
+                ]
+            )
+        return "\n".join(lines).rstrip() + "\n"
+
+    def _render_knowledge_base_update_context(self, state: RunState) -> str:
+        packet = self._requirement_packet(state)
+        module = (packet.get("candidate_modules") or [""])[0]
+        lines = [
+            "# Knowledge Base Update Context",
+            "",
+            f"- run_id: {state.run_id}",
+            f"- change_mode: {state.change_mode}",
+            f"- module: {module}",
+            f"- site: {packet.get('site', '')}",
+            f"- feature: {packet.get('feature_name', '')}",
+            "",
+            "## Primary Inputs",
+            f"- final_report: {state.artifacts.get('final_report', '')}",
+            f"- impact_candidates: {state.artifacts.get('impact_candidates', '')}",
+            f"- change_attribution_report: {state.artifacts.get('change_attribution_report', '')}",
+            f"- regression_selector_plan: {state.artifacts.get('regression_selector_plan', '')}",
+            f"- text_case_manifest: {state.artifacts.get('text_case_manifest', '')}",
+            f"- playwright_case_outcomes: {state.artifacts.get('playwright_case_outcomes', '')}",
+            "",
+            "## Text Case Binding",
+        ]
+        kb_draft = state.artifacts.get("kb_text_case_draft_path", "")
+        if kb_draft:
+            lines.extend(
+                [
+                    f"- kb_text_case_draft_path: {kb_draft}",
+                    "- 该路径是本次 run 的文本用例主输入。",
+                    "- 若需要更新文本用例，请优先回写这个文件，不要新建第二份重复文档。",
+                ]
+            )
+        else:
+            lines.extend(
+                [
+                    "- 本次 run 没有阶段1文本用例草稿。",
+                    "- 请基于 final_report / impact_candidates / change_attribution_report 更新三层结构化知识库。",
+                ]
+            )
+        lines.extend(
+            [
+                "",
+                "## Artifacts",
+            ]
+        )
+        for key, value in sorted(state.artifacts.items()):
+            lines.append(f"- {key}: {value}")
+        return "\n".join(lines) + "\n"
+
+    def _build_selector_plan(
+        self,
+        packet: dict[str, Any],
+        impact_payload: dict[str, Any],
+        tasks: list[LegacyUpdateTask],
+    ) -> dict[str, Any]:
+        candidate_paths = set(impact_payload.get("merged_regression_candidates", []))
+        for task in tasks:
+            if task.status != LegacyUpdateTaskStatus.MANUAL_REVIEW.value:
+                candidate_paths.add(task.target_script)
+        return {
+            "module": (packet.get("candidate_modules") or [""])[0],
+            "site": packet.get("site", ""),
+            "feature_name": packet.get("feature_name", ""),
+            "candidate_paths": sorted(path for path in candidate_paths if path),
+            "case_ids": sorted({task.target_case_id for task in tasks if task.target_case_id}),
+            "nodeids": sorted({task.target_nodeid for task in tasks if task.target_nodeid}),
+            "selectors": [{"kind": "path", "value": path} for path in sorted(path for path in candidate_paths if path)],
+            "sources": self._selector_sources(impact_payload, tasks),
+        }
+
+    def _selector_sources(self, impact_payload: dict[str, Any], tasks: list[LegacyUpdateTask]) -> list[dict[str, str]]:
+        sources: list[dict[str, str]] = []
+        seen: set[tuple[str, str]] = set()
+        for item in [*(impact_payload.get("new_cases", []) or []), *(impact_payload.get("existing_cases", []) or [])]:
+            target = item.get("target", "")
+            source_group = item.get("source_group", "") or item.get("source_type", "")
+            key = (target, source_group)
+            if not target or key in seen:
                 continue
             seen.add(key)
-            selector = f"`--module {entry.module} --path {entry.target_script_path}`"
-            lines.append(f"| `{entry.feature_key}` | {selector} | 来自 QA Agent 生成候选映射 |")
-        write_text(candidate_path, "\n".join(lines) + "\n")
-        return candidate_path
+            sources.append({"target": target, "source_group": source_group, "reason": item.get("reason", "")})
+        for task in tasks:
+            source_group = str(task.details.get("source_type") or task.impact_type)
+            key = (task.target_script, source_group)
+            if task.target_script and key not in seen:
+                seen.add(key)
+                sources.append({"target": task.target_script, "source_group": source_group, "reason": task.reason})
+        return sources
+
+    def _refresh_selector_plan(self, state: RunState, tasks: list[LegacyUpdateTask]) -> Path:
+        packet = self._requirement_packet(state)
+        impact_payload = read_json(state.artifacts.get("impact_candidates", ""), default={}) or {}
+        selector_plan = self._build_selector_plan(packet, impact_payload, tasks)
+        selector_path = self.store.artifact_path(state.run_id, "regression_selector_plan.json")
+        write_json(selector_path, selector_plan)
+        return selector_path

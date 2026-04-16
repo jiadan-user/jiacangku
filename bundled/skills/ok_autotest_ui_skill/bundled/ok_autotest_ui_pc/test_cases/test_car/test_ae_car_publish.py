@@ -100,48 +100,6 @@ _CONFIG = {
     "test_images_path": "/Users/vickymo/Pictures/公共配置图片/车图"
 }
 
-LOCAL_CAR_IMAGES_DIR = Path(__file__).resolve().parents[2] / "test_data" / "car_images"
-IMAGE_PATTERNS = ("*.png", "*.jpg", "*.jpeg", "*.webp")
-
-
-def _candidate_car_image_dirs(config):
-    candidates = [
-        config.get("test_images_path"),
-        config.get("image_dir"),
-        str(LOCAL_CAR_IMAGES_DIR),
-    ]
-    unique: list[Path] = []
-    seen: set[str] = set()
-    for value in candidates:
-        if not value:
-            continue
-        path = Path(value)
-        key = str(path)
-        if key in seen:
-            continue
-        seen.add(key)
-        unique.append(path)
-    return unique
-
-
-def _list_car_images(config, keyword: str | None = None):
-    fallback: list[Path] = []
-    for directory in _candidate_car_image_dirs(config):
-        if not directory.exists():
-            continue
-        image_files: list[Path] = []
-        for pattern in IMAGE_PATTERNS:
-            image_files.extend(sorted(directory.glob(pattern)))
-        if not image_files:
-            continue
-        if keyword:
-            prioritized = [item for item in image_files if keyword in item.name]
-            if prioritized:
-                return prioritized
-        if not fallback:
-            fallback = image_files
-    return fallback
-
 
 # ============================================
 # 辅助函数
@@ -685,7 +643,12 @@ def test_p0_12_upload_one_exterior_photo(page, config):
     navigate_to_car_publish_page(page, config)
     
     with allure.step("步骤: 上传外观照片"):
-        image_files = _list_car_images(config, keyword="外观")
+        test_images_dir = Path(config['test_images_path'])
+        image_files = list(test_images_dir.glob("*.jpg")) + list(test_images_dir.glob("*.jpeg"))
+        exterior_images = [f for f in image_files if '外观' in f.name]
+        if exterior_images:
+            image_files = exterior_images
+        
         if len(image_files) == 0:
             logger.warning("⚠️ 未找到测试图片,跳过上传")
             pytest.skip("未找到测试图片")
@@ -848,7 +811,12 @@ def test_p0_16_upload_multiple_exterior_photos(page, config):
     navigate_to_car_publish_page(page, config)
     
     with allure.step("步骤: 上传3张外观照片"):
-        image_files = _list_car_images(config, keyword="外观")
+        test_images_dir = Path(config['test_images_path'])
+        image_files = list(test_images_dir.glob("*.jpg")) + list(test_images_dir.glob("*.jpeg"))
+        exterior_images = [f for f in image_files if '外观' in f.name]
+        if exterior_images:
+            image_files = exterior_images
+        
         if len(image_files) < 3:
             logger.warning("⚠️ 图片数量不足3张,跳过测试")
             pytest.skip("图片数量不足")
@@ -946,10 +914,13 @@ def test_p0_18_upload_interior_photo(page, config):
     navigate_to_car_publish_page(page, config)
     
     with allure.step("步骤: 上传内饰照片"):
-        interior_images = _list_car_images(config, keyword="内饰")
+        test_images_dir = Path(config['test_images_path'])
+        image_files = list(test_images_dir.glob("*.jpg")) + list(test_images_dir.glob("*.jpeg"))
+        interior_images = [f for f in image_files if '内饰' in f.name]
+        
         if len(interior_images) == 0:
             logger.warning("⚠️ 未找到内饰图片,使用普通图片")
-            interior_images = _list_car_images(config)
+            interior_images = image_files
         
         if len(interior_images) == 0:
             logger.warning("⚠️ 未找到测试图片,跳过上传")
@@ -1398,11 +1369,16 @@ def test_p0_26_submit_all_required_fields(page, config):
         logger.info(f"✓ 选择Specs: GCC (点击方式: {clicked})")
     
     with allure.step("步骤6: 上传外观照片"):
-        image_files = [str(item) for item in _list_car_images(config, keyword="外观")]
+        import glob
+        image_dir = config.get("image_dir", "/Users/vickymo/Pictures/公共配置图片/车图")
+        image_files = glob.glob(f"{image_dir}/*.jpg") + glob.glob(f"{image_dir}/*.jpeg")
+        
         if not image_files:
             pytest.skip("未找到测试图片")
         
-        image_path = image_files[0]
+        # 优先选择外观图片
+        exterior_images = [img for img in image_files if "外观" in img]
+        image_path = exterior_images[0] if exterior_images else image_files[0]
         
         file_inputs = page.locator('input[type="file"]').all()
         if file_inputs:
@@ -1828,7 +1804,9 @@ def test_p1_04_exterior_photo_count(page, config):
         logger.info("✓ 照片计数显示: 0/9")
     
     with allure.step("步骤2: 上传1张照片"):
-        image_files = [str(item) for item in _list_car_images(config, keyword="外观")]
+        image_dir = config.get("test_images_path")
+        image_files = glob.glob(f"{image_dir}/*.jpg") + glob.glob(f"{image_dir}/*.jpeg")
+        
         if not image_files:
             pytest.skip("未找到测试图片")
         
@@ -1989,9 +1967,9 @@ def test_p1_06_interior_photo_upload(page, config):
         logger.info("✓ 内饰照片计数显示: 0/9")
     
     with allure.step("步骤2: 上传1张内饰照片"):
-        image_files = [str(item) for item in _list_car_images(config, keyword="内饰")]
-        if not image_files:
-            image_files = [str(item) for item in _list_car_images(config)]
+        image_dir = config.get("test_images_path")
+        image_files = glob.glob(f"{image_dir}/*.jpg") + glob.glob(f"{image_dir}/*.jpeg")
+        
         if not image_files:
             pytest.skip("未找到测试图片")
         
@@ -2135,3 +2113,5 @@ def test_p1_09_location_search_suggestions(page, config):
             logger.info("⚠️ 未找到搜索建议,可能API延迟或UI变更")
     
     logger.info("✅ P1-09 测试通过!")
+
+

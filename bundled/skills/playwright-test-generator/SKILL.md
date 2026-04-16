@@ -65,13 +65,16 @@ description: 从 Markdown 测试用例文档生成 Playwright Python 测试脚�
 ### 阶段 3：Python 代码生成（仅针对 PASSED 用例）
 
 **👉 动作前必读（使用 Read 工具读取）**：
-- 项目根目录的 `SCRIPT_SPEC.md` - 提取项目级别的 Allure 装饰器与 Session 复用规则，这是代码生成的全局规范
+- 回归项目的用例编写规范 `ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/docs/test-case-authoring-spec.md` - 文件命名、`_CONFIG`、pytest.mark、allure 装饰器、fixture 复用、等待与断言等全部规范
+- 回归项目的代码模板 `ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/docs/templates/` 下的三个模板文件（standard-flow / stateful-session / component-batch），选择最匹配的模板
+- 目标模块目录下已有的 `conftest.py` 和 `pages/` 文件，以便复用现有 Page Object 和 fixture
 - `references/js-to-py-conversion.md` - JavaScript 到 Python 的严格转换规则
 - `references/element-location-strategies.md` - 选择器生成规范
 
 **执行流程**：
 - **仅针对阶段 2 标记为 PASSED 的用例生成代码**
-- 将阶段 2 "证明存档"中真实记录的 JavaScript 代码，严格转换为 Python 的 Page Object 与 Test Case。
+- 先根据 `test-case-authoring-spec.md` 选择合适的模板，再将阶段 2 "证明存档"中真实记录的 JavaScript 代码，严格转换为 Python 的 Page Object 与 Test Case。
+- 生成的代码必须符合 `test-case-authoring-spec.md` 的全部要求（`_CONFIG` 字段、pytest.mark、allure 装饰器、禁止裸 `wait_for_timeout` 等）。
 - **陷阱提示**：遇到组件遮挡、防抖搜索等具体报错时，请查阅 `references/` 下的相关问题文档（如 `sticky-header-click.md` 或 `search-input-debounce.md`）。
 - **逻辑约束**：如果在阶段 2 没有录制出对应的动作，绝不能在此时盲目"猜"代码，遇到遗漏应请求补充录制。
 

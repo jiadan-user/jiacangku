@@ -8,9 +8,11 @@ from utils.logger import setup_logger
 class LoginPage(BasePage):
     """OK.com 登录页面对象（静默执行）"""
     
-    def __init__(self, page):
+    def __init__(self, page, base_url=None):
         super().__init__(page)
         self.logger = setup_logger()
+        # 兼容历史调用 LoginPage(page, base_url=...)；导航仍走 navigate_to_home_page(base_url)
+        self.base_url = base_url
     
     # ========== 页面操作方法（静默执行）==========
     
@@ -24,7 +26,11 @@ class LoginPage(BasePage):
         try:
             url = base_url or "https://us.58v5.cn"
             self.page.goto(url, wait_until="domcontentloaded", timeout=60000)
-            self.page.wait_for_load_state("load")
+            # load 在 SPA/长连接/第三方统计下可能长期不触发或超过默认 30s，勿因此阻断登录
+            try:
+                self.page.wait_for_load_state("load", timeout=20000)
+            except Exception:
+                self.logger.debug("首页 load 未在 20s 内完成，继续（常见于长连接页面）")
             try:
                 self.page.wait_for_load_state("networkidle", timeout=20000)
             except Exception:

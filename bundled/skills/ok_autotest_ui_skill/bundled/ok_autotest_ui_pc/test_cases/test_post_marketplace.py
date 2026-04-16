@@ -21,14 +21,10 @@ OK阿联酋站 - Marketplace发布页测试套件
 import pytest
 import allure
 import os
-from pathlib import Path
 from playwright.sync_api import Page, expect
 from pages.login_page import LoginPage
 from utils.session_manager import SessionManager
 from utils.logger import setup_logger
-
-ROOT_DIR = Path(__file__).resolve().parents[1]
-DEFAULT_TEST_IMAGE = ROOT_DIR / "test_data" / "images" / "8b423179e72ba4d4a56ca6a5b0479aee.png"
 
 # ========== 测试配置 ==========
 _CONFIG = {
@@ -45,7 +41,7 @@ _CONFIG = {
         'password': 'Qwert_123'
     },
 
-    'test_image': str(DEFAULT_TEST_IMAGE),
+    'test_image': '/Users/a58/ok_autotest_ui_pc/test_data/images/8b423179e72ba4d4a56ca6a5b0479aee.png',
 
     'browser': {
         'type': 'chromium',
@@ -65,10 +61,14 @@ _CONFIG = {
 
 logger = setup_logger()
 SCREENSHOT_DIR = 'screenshots/test_marketplace'
-os.makedirs(SCREENSHOT_DIR, exist_ok=True)
 
 
 # ==================== Fixture ====================
+
+@pytest.fixture(autouse=True)
+def ensure_screenshot_dir():
+    """Only create screenshot output directories when tests actually execute."""
+    os.makedirs(SCREENSHOT_DIR, exist_ok=True)
 
 @pytest.fixture(scope="function")
 def publish_page(page, config):

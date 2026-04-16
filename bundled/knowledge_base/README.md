@@ -127,8 +127,8 @@
 ## 📖 更多信息
 
 详细使用说明请查看：
-- `.claude/skills/knowledge-base-manager/SKILL.md` - Skill 完整说明
-- `.claude/skills/knowledge-base-manager/references/document-templates.md` - 文档模板详情
+- `bundled/skills/knowledge-base-manager/SKILL.md` - Skill 完整说明
+- `bundled/skills/knowledge-base-manager/references/document-templates.md` - 文档模板详情
 
 ## 🔄 工作流程
 

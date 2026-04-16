@@ -11,9 +11,22 @@ def utc_now_iso() -> str:
 
 
 class ChangeMode(str, Enum):
-    REGRESSION_ONLY = "仅回归"
-    NEW_FEATURE_ONLY = "仅新需求"
+    NEW_FEATURE = "新需求"
+    REGRESSION = "纯回归"
     MIXED = "混合"
+
+
+class Phase(str, Enum):
+    INTAKE = "需求接入"
+    IMPACT_SPLIT = "影响拆分"
+    SENIOR_QA_BRAIN = "senior-qa-brain"
+    PLAYWRIGHT_GENERATOR = "playwright-test-generator"
+    IMPACT_ANALYSIS = "影响分析与重叠裁决"
+    IMPACT_VERIFICATION = "影响回归与变更归因"
+    LEGACY_UPDATE = "旧脚本更新执行"
+    OK_UI_REGRESSION = "ok_autotest_ui_skill"
+    FINAL_REPORT = "最终报告"
+    KNOWLEDGE_BASE_UPDATE = "knowledge_base_update"
 
 
 class PhaseStatus(str, Enum):
@@ -21,86 +34,191 @@ class PhaseStatus(str, Enum):
     RUNNING = "执行中"
     COMPLETED = "已完成"
     BLOCKED = "已阻塞"
-    FAILED = "失败"
     SKIPPED = "已跳过"
+    ERROR = "执行出错"
 
 
 class RunStatus(str, Enum):
     PLANNED = "已计划"
     RUNNING = "执行中"
     BLOCKED = "已阻塞"
-    FAILED = "失败"
     COMPLETED = "已完成"
+    ERROR = "执行出错"
 
 
 class CaseStatus(str, Enum):
-    EXISTING_AUTOMATED = "已有自动化"
-    NEW_CANDIDATE = "新增候选"
-    REGEN_REQUIRED = "需要重生成"
-    NON_AUTOMATABLE = "不可自动化"
-    BLOCKED_BY_BUG = "阻塞于缺陷"
-    GENERATED_VERIFIED = "已生成并验证"
-    PROMOTED = "已提升"
+    NEW_CANDIDATE = "new-candidate"
+    EXISTING_AUTOMATED = "existing-automated"
+    REGEN_REQUIRED = "regen-required"
+    NON_AUTOMATABLE = "non-automatable"
 
 
-class ConductorPhase(str, Enum):
-    INTAKE = "需求接入"
-    IMPACT_SPLIT = "影响拆分"
-    ANALYSIS_BUNDLE = "分析资料包"
-    ANALYSIS_REVIEW = "分析确认"
-    TESTCASE_GEN = "原始用例生成"
-    UI_PROBE_ENRICH = "UI探测增强"
-    DEDUPE_MAP = "查重映射"
-    BATCH_PLAN = "批次规划"
-    READINESS_GATE = "录制准备检查"
-    PROOF_INGEST = "证明产物导入"
-    CODEGEN = "脚本草稿生成"
-    NORMALIZE = "脚本规范化"
-    PROMOTION_GUARD = "提升守卫"
-    PROMOTE = "回归池提升"
-    REGRESSION_PLAN = "回归计划"
-    REGRESSION_DRY_RUN = "回归预演"
-    REGRESSION_RUN = "回归执行"
-    VISUAL_GATE = "视觉门禁"
-    UI_GATE = "UI门禁"
-    API_GATE = "API门禁"
-    FINAL_REPORT = "最终报告"
+class ImpactRunStatus(str, Enum):
+    PASSED = "passed"
+    FAILED = "failed"
+    SKIPPED = "skipped"
+
+
+class AttributionCategory(str, Enum):
+    PASSED = "passed"
+    LATEST_CHANGE = "likely_caused_by_latest_change"
+    PREEXISTING = "likely_preexisting_or_unrelated"
+    ENVIRONMENT = "environment_or_data_issue"
+    UNCERTAIN = "uncertain"
+
+
+class LegacyUpdateTaskStatus(str, Enum):
+    PENDING = "pending"
+    RUNNING = "running"
+    RETRY = "retry"
+    COMPLETED = "completed"
+    MANUAL_REVIEW = "manual-review"
+
+
+class PlaywrightOutcomeType(str, Enum):
+    SCRIPT_GENERATED = "script_generated"
+    BUG_RECORDED = "bug_recorded"
+    MANUAL_REVIEW = "manual_review"
+
+
+class NextActionKind(str, Enum):
+    RUN_SKILL = "run_skill"
+    CONFIRM_PHASE = "confirm_phase"
+    CONTINUE_AUTO = "continue_auto"
+    MANUAL_REVIEW = "manual_review"
+    FIX_ENVIRONMENT = "fix_environment"
+    COMPLETED = "completed"
+    ERROR = "error"
+
+
+@dataclass
+class NextAction:
+    kind: str = ""
+    phase: str = ""
+    summary: str = ""
+    skill_path: str = ""
+    instruction_path: str = ""
+    required_artifacts: list[str] = field(default_factory=list)
+    resume_command: str = ""
+    details: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class DoctorCheck:
+    name: str
+    ok: bool
+    severity: str = "warning"
+    message: str = ""
+    details: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class DoctorResult:
+    ok: bool
+    has_fatal: bool = False
+    checks: list[DoctorCheck] = field(default_factory=list)
+
+    @property
+    def warnings(self) -> list[DoctorCheck]:
+        return [check for check in self.checks if not check.ok and check.severity == "warning"]
+
+    @property
+    def fatals(self) -> list[DoctorCheck]:
+        return [check for check in self.checks if not check.ok and check.severity == "fatal"]
 
 
 @dataclass
 class RequirementPacket:
     change_mode: str
-    figma_url: str
+    figma_url: str = ""
     prd_refs: list[str] = field(default_factory=list)
-    git_diff_summary: str = ""
     candidate_modules: list[str] = field(default_factory=list)
     site: str = ""
     feature_name: str = ""
-    risk_hints: list[str] = field(default_factory=list)
-    assumptions: list[str] = field(default_factory=list)
+    change_description: str = ""
     created_at: str = field(default_factory=utc_now_iso)
 
 
 @dataclass
-class MarkdownCase:
-    tc_id: str
-    title: str
-    priority: str = "P1"
-    test_type: str = ""
-    ui_automatable: bool = True
-    group: str = ""
-    preconditions: list[str] = field(default_factory=list)
-    steps: list[str] = field(default_factory=list)
-    expected: list[str] = field(default_factory=list)
+class RunState:
+    run_id: str
+    status: str
+    current_phase: str
+    change_mode: str = ChangeMode.NEW_FEATURE.value
+    blocked_reason: str = ""
+    created_at: str = field(default_factory=utc_now_iso)
+    updated_at: str = field(default_factory=utc_now_iso)
+    phase_statuses: dict[str, str] = field(default_factory=dict)
+    artifacts: dict[str, str] = field(default_factory=dict)
+    notes: list[str] = field(default_factory=list)
+    blocked_since: str = ""
+    next_action: NextAction = field(default_factory=NextAction)
+    error_reason: str = ""
+    version: int = 0
+
+    def __post_init__(self) -> None:
+        if not self.next_action:
+            self.next_action = NextAction()
+        elif isinstance(self.next_action, dict):
+            self.next_action = NextAction(**self.next_action)
+
+    def touch(self) -> None:
+        self.updated_at = utc_now_iso()
 
 
 @dataclass
-class MarkdownDocument:
+class TextCaseManifestEntry:
+    tc_id: str
     title: str
-    env_config: dict[str, Any]
-    cases: list[MarkdownCase]
-    raw_text: str
-    path: str = ""
+    priority: str
+    test_type: str
+    ui_automatable: bool
+    ui_automation_label: str = ""
+    preconditions: list[str] = field(default_factory=list)
+    steps: list[str] = field(default_factory=list)
+    expected_results: list[str] = field(default_factory=list)
+    source_doc: str = ""
+
+
+@dataclass
+class TextCaseManifest:
+    module: str
+    site: str
+    feature_name: str
+    source_doc: str
+    kb_text_case_draft_path: str
+    environment: dict[str, str] = field(default_factory=dict)
+    cases: list[TextCaseManifestEntry] = field(default_factory=list)
+
+
+@dataclass
+class PlaywrightCaseOutcome:
+    tc_id: str
+    outcome: str
+    script_path: str = ""
+    bug_report_path: str = ""
+    manual_review_reason: str = ""
+    collect_only_passed: bool = False
+    pytest_passed: bool = False
+    details: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class PhaseGateResult:
+    phase: str
+    ok: bool
+    summary: str = ""
+    blocking_reasons: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+    details: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class UserConfirmationRecord:
+    phase: str
+    confirmed_at: str = field(default_factory=utc_now_iso)
+    summary: str = ""
+    details: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -123,19 +241,6 @@ class CaseManifestEntry:
 
 
 @dataclass
-class ProofArtifact:
-    tc_id: str
-    batch_id: str
-    refs: list[str] = field(default_factory=list)
-    cli_js_code: list[str] = field(default_factory=list)
-    dynamic_discoveries: list[str] = field(default_factory=list)
-    verification_points: list[str] = field(default_factory=list)
-    cli_stats: dict[str, int] = field(default_factory=dict)
-    screenshots: list[str] = field(default_factory=list)
-    source_path: str = ""
-
-
-@dataclass
 class ValidationResult:
     ok: bool
     name: str
@@ -144,30 +249,91 @@ class ValidationResult:
 
 
 @dataclass
-class GateReport:
-    visual_scores: list[dict[str, Any]] = field(default_factory=list)
-    ui_pass_rate: float | None = None
-    api_pass_rate: float | None = None
-    failed_checks: list[str] = field(default_factory=list)
-    bug_report_paths: list[str] = field(default_factory=list)
-    release_recommendation: str = "暂缓上线"
+class ImpactCandidate:
+    source_type: str
+    target: str
+    module: str = ""
+    site: str = ""
+    feature_key: str = ""
+    source_group: str = ""
+    selector_hint: str = ""
+    reason: str = ""
+    related_case_id: str = ""
+    related_nodeid: str = ""
+    details: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
-class RunState:
-    run_id: str
-    status: str
-    current_phase: str
-    change_mode: str = ChangeMode.NEW_FEATURE_ONLY.value
-    blocked_reason: str = ""
-    created_at: str = field(default_factory=utc_now_iso)
-    updated_at: str = field(default_factory=utc_now_iso)
-    phase_statuses: dict[str, str] = field(default_factory=dict)
-    artifacts: dict[str, str] = field(default_factory=dict)
-    notes: list[str] = field(default_factory=list)
+class ImpactVerificationRecord:
+    source_type: str
+    target: str
+    staged_target: str = ""
+    module: str = ""
+    site: str = ""
+    feature_key: str = ""
+    related_case_id: str = ""
+    related_nodeid: str = ""
+    run_status: str = ImpactRunStatus.SKIPPED.value
+    command: list[str] = field(default_factory=list)
+    returncode: int | None = None
+    summary: str = ""
+    stdout_excerpt: str = ""
+    stderr_excerpt: str = ""
+    category: str = AttributionCategory.UNCERTAIN.value
+    reason: str = ""
+    next_action: str = ""
+    details: dict[str, Any] = field(default_factory=dict)
 
-    def touch(self) -> None:
-        self.updated_at = utc_now_iso()
+
+@dataclass
+class ImpactVerificationOutcome:
+    selector_plan: dict[str, Any]
+    records: list[ImpactVerificationRecord] = field(default_factory=list)
+
+
+@dataclass
+class OverlapDecision:
+    new_target: str
+    existing_target: str
+    decision: str
+    reason: str = ""
+    related_case_id: str = ""
+    related_nodeid: str = ""
+
+
+@dataclass
+class LegacyUpdateTask:
+    task_id: str
+    target_script: str
+    target_case_id: str = ""
+    target_nodeid: str = ""
+    impact_type: str = "coverage_overlap"
+    recommended_action: str = "manual-review"
+    status: str = LegacyUpdateTaskStatus.PENDING.value
+    reason: str = ""
+    blocking: bool = True
+    attempts: int = 0
+    max_attempts: int = 3
+    details: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class LegacyUpdateGate:
+    round_index: int = 0
+    total_count: int = 0
+    pending_count: int = 0
+    retry_count: int = 0
+    completed_count: int = 0
+    manual_review_count: int = 0
+    all_completed: bool = False
+    has_manual_review: bool = False
+
+
+@dataclass
+class LegacyUpdateRoundOutcome:
+    tasks: list[LegacyUpdateTask]
+    gate: LegacyUpdateGate
+    results: list[dict[str, Any]] = field(default_factory=list)
 
 
 def to_data(value: Any) -> Any:

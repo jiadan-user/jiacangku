@@ -1,0 +1,431 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e9] [cursor=pointer]: Browse
+    - generic [ref=e12]:
+      - textbox "Search for anything" [ref=e14]
+      - button "Search" [ref=e17] [cursor=pointer]
+    - generic [ref=e37] [cursor=pointer]: Log in / Register
+  - generic [ref=e39]:
+    - navigation [ref=e40]:
+      - list [ref=e41]:
+        - listitem [ref=e42]:
+          - link "Home" [ref=e43] [cursor=pointer]:
+            - /url: https://ae.58v5.cn/en/city-abu-dhabi/
+        - listitem [ref=e44]:
+          - generic [ref=e45]: Cars
+    - heading "Cars in Abu Dhabi" [level=1] [ref=e47]
+    - generic [ref=e48]:
+      - generic [ref=e49]:
+        - generic [ref=e50]:
+          - generic [ref=e54]: Sort
+          - generic [ref=e59]: Filter
+          - generic [ref=e63]: Abu Dhabi
+          - generic [ref=e67]: Price
+          - generic [ref=e71]: Mileage
+          - generic [ref=e75]: Brand
+          - generic [ref=e76] [cursor=pointer]:
+            - img [ref=e77]
+            - generic [ref=e78]: Reset
+        - generic [ref=e82]: Location:Abu Dhabi
+      - generic [ref=e83]:
+        - link "zhangxue 380 2026 RR Diesel CVT RWD20392724449041981440 zhangxue 380 2026 RR Diesel CVT RWD 2026 54566 km Al Ain AED 22K+" [ref=e84] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/zhangxue-380-2026-rr-diesel-cvt-rwd-2039272444904198144/
+          - generic [ref=e85]:
+            - img "zhangxue 380 2026 RR Diesel CVT RWD20392724449041981440" [ref=e86]
+            - img [ref=e88]
+          - generic [ref=e89]:
+            - heading "zhangxue 380 2026 RR Diesel CVT RWD" [level=3] [ref=e90]
+            - generic [ref=e92]:
+              - generic [ref=e93]: "2026"
+              - generic [ref=e95]: 54566 km
+              - generic [ref=e97]: Al Ain
+            - generic [ref=e102]: AED 22K+
+        - link "AITO 11 2018 39920414201070156267521 AITO 11 2018 399 444 km Al Ain AED 543" [ref=e103] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/aito-11-2018-399-2041420107015626752/
+          - generic [ref=e104]:
+            - img "AITO 11 2018 39920414201070156267521" [ref=e105]
+            - img [ref=e107]
+          - generic [ref=e108]:
+            - heading "AITO 11 2018 399" [level=3] [ref=e109]
+            - generic [ref=e111]:
+              - generic [ref=e112]: 444 km
+              - generic [ref=e114]: Al Ain
+            - generic [ref=e119]: AED 543
+        - link "AITO 10 2018 380i Petrol Manual AWD20414093706795253772 AITO 10 2018 380i Petrol Manual AWD 333 km Al Ain AED 33" [ref=e120] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/aito-10-2018-380i-petrol-manual-awd-2041409370679525377/
+          - generic [ref=e121]:
+            - img "AITO 10 2018 380i Petrol Manual AWD20414093706795253772" [ref=e122]
+            - img [ref=e124]
+          - generic [ref=e125]:
+            - heading "AITO 10 2018 380i Petrol Manual AWD" [level=3] [ref=e126]
+            - generic [ref=e128]:
+              - generic [ref=e129]: 333 km
+              - generic [ref=e131]: Al Ain
+            - generic [ref=e136]: AED 33
+        - link "AITO 8 2025 330i Petrol Auto AWD20392459512977571873 AITO 8 2025 330i Petrol Auto AWD 2025 9999 km Al Ain AED 99K+" [ref=e137] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/aito-8-2025-330i-petrol-auto-awd-2039245951297757187/
+          - generic [ref=e138]:
+            - img "AITO 8 2025 330i Petrol Auto AWD20392459512977571873" [ref=e139]
+            - img [ref=e141]
+          - generic [ref=e142]:
+            - heading "AITO 8 2025 330i Petrol Auto AWD" [level=3] [ref=e143]
+            - generic [ref=e145]:
+              - generic [ref=e146]: "2025"
+              - generic [ref=e148]: 9999 km
+              - generic [ref=e150]: Al Ain
+            - generic [ref=e155]: AED 99K+
+        - link "Bestune B70S 2025 1.5T Limo Petrol Auto FWD20364150940358533134 Bestune B70S 2025 1.5T Limo Petrol Auto FWD 2025 2222 km AED 111" [ref=e156] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/bestune%2Bb70s%2B2025%2B1.5t%2Blimo%2Bpetrol%2Bauto%2Bfwd-2036415094035853313/
+          - generic [ref=e157]:
+            - img "Bestune B70S 2025 1.5T Limo Petrol Auto FWD20364150940358533134" [ref=e158]
+            - img [ref=e160]
+          - generic [ref=e161]:
+            - heading "Bestune B70S 2025 1.5T Limo Petrol Auto FWD" [level=3] [ref=e162]
+            - generic [ref=e164]:
+              - generic [ref=e165]: "2025"
+              - generic [ref=e167]: 2222 km
+            - generic [ref=e172]: AED 111
+        - link "Bestune B70S 2025 1.5T Limo Petrol Auto FWD20359783157177876485 Bestune B70S 2025 1.5T Limo Petrol Auto FWD 2025 111 km AED 111" [ref=e173] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/bestune%2Bb70s%2B2025%2B1.5t%2Blimo%2Bpetrol%2Bauto%2Bfwd-2035978315717787648/
+          - generic [ref=e174]:
+            - img "Bestune B70S 2025 1.5T Limo Petrol Auto FWD20359783157177876485" [ref=e175]
+            - img [ref=e177]
+          - generic [ref=e178]:
+            - heading "Bestune B70S 2025 1.5T Limo Petrol Auto FWD" [level=3] [ref=e179]
+            - generic [ref=e181]:
+              - generic [ref=e182]: "2025"
+              - generic [ref=e184]: 111 km
+            - generic [ref=e189]: AED 111
+        - link "Selling a Car64765267066621106 Selling a Car Free" [ref=e190] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/sell-car-6476526706662110/
+          - generic [ref=e191]:
+            - img "Selling a Car64765267066621106" [ref=e192]
+            - img [ref=e194]
+          - generic [ref=e195]:
+            - heading "Selling a Car" [level=3] [ref=e196]
+            - generic [ref=e202]: Free
+        - link "Bestune B70 2025 1.5T Premium Petrol Auto FWD64906674352893107 Bestune B70 2025 1.5T Premium Petrol Auto FWD 2025 999 km AED 4M+" [ref=e203] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/bestune-b70-2025-1-5t-premium-petrol-auto-fwd-6490667435289310/
+          - generic [ref=e204]:
+            - img "Bestune B70 2025 1.5T Premium Petrol Auto FWD64906674352893107" [ref=e205]
+            - img [ref=e207]
+          - generic [ref=e208]:
+            - heading "Bestune B70 2025 1.5T Premium Petrol Auto FWD" [level=3] [ref=e209]
+            - generic [ref=e211]:
+              - generic [ref=e212]: "2025"
+              - generic [ref=e214]: 999 km
+            - generic [ref=e219]: AED 4M+
+        - link "Alfa Romeo Giulietta 2025 Super Petrol Auto FWD64864155755133108 Alfa Romeo Giulietta 2025 Super Petrol Auto FWD 2025 23123 km AED 2" [ref=e220] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/alfa-romeo-giulietta-2025-super-petrol-auto-fwd-6486415575513310/
+          - generic [ref=e221]:
+            - img "Alfa Romeo Giulietta 2025 Super Petrol Auto FWD64864155755133108" [ref=e222]
+            - img [ref=e224]
+          - generic [ref=e225]:
+            - heading "Alfa Romeo Giulietta 2025 Super Petrol Auto FWD" [level=3] [ref=e226]
+            - generic [ref=e228]:
+              - generic [ref=e229]: "2025"
+              - generic [ref=e231]: 23123 km
+            - generic [ref=e236]: AED 2
+        - link "AITO 7 2025 1.5T Ultra AWD REEV Hybrid Auto AWD64864123749757109 AITO 7 2025 1.5T Ultra AWD REEV Hybrid Auto AWD 2025 234234 km AED 123" [ref=e237] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/aito-7-2025-1-5t-ultra-awd-reev-hybrid-auto-awd-6486412374975710/
+          - generic [ref=e238]:
+            - img "AITO 7 2025 1.5T Ultra AWD REEV Hybrid Auto AWD64864123749757109" [ref=e239]
+            - img [ref=e241]
+          - generic [ref=e242]:
+            - heading "AITO 7 2025 1.5T Ultra AWD REEV Hybrid Auto AWD" [level=3] [ref=e243]
+            - generic [ref=e245]:
+              - generic [ref=e246]: "2025"
+              - generic [ref=e248]: 234234 km
+            - generic [ref=e253]: AED 123
+        - link "AITO 9 2025 1.5T REEV Flagship Hybrid Auto AWD648619147728611010 AITO 9 2025 1.5T REEV Flagship Hybrid Auto AWD 1122 km Umm Al Emarat Park AED 112" [ref=e254] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/aito-9-2025-1-5t-reev-flagship-hybrid-auto-awd-6486191477286110/
+          - generic [ref=e255]:
+            - img "AITO 9 2025 1.5T REEV Flagship Hybrid Auto AWD648619147728611010" [ref=e256]
+            - img [ref=e258]
+          - generic [ref=e259]:
+            - heading "AITO 9 2025 1.5T REEV Flagship Hybrid Auto AWD" [level=3] [ref=e260]
+            - generic [ref=e262]:
+              - generic [ref=e263]: 1122 km
+              - generic [ref=e265]: Umm Al Emarat Park
+            - generic [ref=e270]: AED 112
+        - link "2018 AWD 2646878921477091011 2018 AWD 2 123 km" [ref=e271] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/2018-awd-2-6468789214770910/
+          - generic [ref=e272]:
+            - img "2018 AWD 2646878921477091011" [ref=e273]
+            - img [ref=e275]
+          - generic [ref=e276]:
+            - heading "2018 AWD 2" [level=3] [ref=e277]
+            - generic [ref=e280]: 123 km
+        - link "Audi A6 2020 40 TFSI S-Line 190 HP Petrol Auto FWD656786231436771012 Audi A6 2020 40 TFSI S-Line 190 HP Petrol Auto FWD 2020 10 km Abu Dhabi AED 10K" [ref=e281] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/audi-a6-2020-40-tfsi-s-line-190-hp-petrol-auto-fwd-6567862314367710/
+          - generic [ref=e282]:
+            - img "Audi A6 2020 40 TFSI S-Line 190 HP Petrol Auto FWD656786231436771012" [ref=e283]
+            - img [ref=e285]
+          - generic [ref=e286]:
+            - heading "Audi A6 2020 40 TFSI S-Line 190 HP Petrol Auto FWD" [level=3] [ref=e287]
+            - generic [ref=e289]:
+              - generic [ref=e290]: "2020"
+              - generic [ref=e292]: 10 km
+              - generic [ref=e294]: Abu Dhabi
+            - generic [ref=e299]: AED 10K
+        - link "Audi A6 2021 40 TFSI 190 HP Petrol Auto FWD656784155914211013 Audi A6 2021 40 TFSI 190 HP Petrol Auto FWD 2021 20 km Abu Dhabi AED 100K" [ref=e300] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/audi%2Ba6%2B2021%2B40%2Btfsi%2B190%2Bhp%2Bpetrol%2Bauto%2Bfwd-6567841559142110/
+          - generic [ref=e301]:
+            - img "Audi A6 2021 40 TFSI 190 HP Petrol Auto FWD656784155914211013" [ref=e302]
+            - img [ref=e304]
+          - generic [ref=e305]:
+            - heading "Audi A6 2021 40 TFSI 190 HP Petrol Auto FWD" [level=3] [ref=e306]
+            - generic [ref=e308]:
+              - generic [ref=e309]: "2021"
+              - generic [ref=e311]: 20 km
+              - generic [ref=e313]: Abu Dhabi
+            - generic [ref=e318]: AED 100K
+        - link "Audi A6 2025 40 TFSI S-Line 190 HP Petrol Auto FWD656784050414051014 Audi A6 2025 40 TFSI S-Line 190 HP Petrol Auto FWD 2025 200 km Abu Dhabi AED 200" [ref=e319] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/audi%2Ba6%2B2025%2B40%2Btfsi%2Bs-line%2B190%2Bhp%2Bpetrol%2Bauto%2Bfwd-6567840504140510/
+          - generic [ref=e320]:
+            - img "Audi A6 2025 40 TFSI S-Line 190 HP Petrol Auto FWD656784050414051014" [ref=e321]
+            - img [ref=e323]
+          - generic [ref=e324]:
+            - heading "Audi A6 2025 40 TFSI S-Line 190 HP Petrol Auto FWD" [level=3] [ref=e325]
+            - generic [ref=e327]:
+              - generic [ref=e328]: "2025"
+              - generic [ref=e330]: 200 km
+              - generic [ref=e332]: Abu Dhabi
+            - generic [ref=e337]: AED 200
+        - link "Audi A4 2025 35 TFSI Advanced 150 HP Petrol Auto FWD656711945160931015 Audi A4 2025 35 TFSI Advanced 150 HP Petrol Auto FWD 2025 100 km Abu Dhabi AED 100" [ref=e338] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/audi-a4-2025-35-tfsi-advanced-150-hp-petrol-auto-fwd-6567119451609310/
+          - generic [ref=e339]:
+            - img "Audi A4 2025 35 TFSI Advanced 150 HP Petrol Auto FWD656711945160931015" [ref=e340]
+            - img [ref=e342]
+          - generic [ref=e343]:
+            - heading "Audi A4 2025 35 TFSI Advanced 150 HP Petrol Auto FWD" [level=3] [ref=e344]
+            - generic [ref=e346]:
+              - generic [ref=e347]: "2025"
+              - generic [ref=e349]: 100 km
+              - generic [ref=e351]: Abu Dhabi
+            - generic [ref=e356]: AED 100
+        - link "Alfa Romeo Giulietta 2025 Super Petrol Auto FWD656140686370531016 Alfa Romeo Giulietta 2025 Super Petrol Auto FWD 2025 12 km AED 123" [ref=e357] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/alfa-romeo-giulietta-2025-super-petrol-auto-fwd-6561406863705310/
+          - generic [ref=e358]:
+            - img "Alfa Romeo Giulietta 2025 Super Petrol Auto FWD656140686370531016" [ref=e359]
+            - img [ref=e361]
+          - generic [ref=e362]:
+            - heading "Alfa Romeo Giulietta 2025 Super Petrol Auto FWD" [level=3] [ref=e363]
+            - generic [ref=e365]:
+              - generic [ref=e366]: "2025"
+              - generic [ref=e368]: 12 km
+            - generic [ref=e373]: AED 123
+        - link "Alfa Romeo Giulia 2025 Veloce Petrol Auto RWD650059558100451017 Alfa Romeo Giulia 2025 Veloce Petrol Auto RWD 2025 123 km AED 123" [ref=e374] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/alfa-romeo-giulia-2025-veloce-petrol-auto-rwd-6500595581004510/
+          - generic [ref=e375]:
+            - img "Alfa Romeo Giulia 2025 Veloce Petrol Auto RWD650059558100451017" [ref=e376]
+            - img [ref=e378]
+          - generic [ref=e379]:
+            - heading "Alfa Romeo Giulia 2025 Veloce Petrol Auto RWD" [level=3] [ref=e380]
+            - generic [ref=e382]:
+              - generic [ref=e383]: "2025"
+              - generic [ref=e385]: 123 km
+            - generic [ref=e390]: AED 123
+        - link "Alfa Romeo Giulia 2025 Quadrifoglio Petrol Auto RWD655590764284131018 Alfa Romeo Giulia 2025 Quadrifoglio Petrol Auto RWD 2025 123 km AED 123" [ref=e391] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/alfa-romeo-giulia-2025-quadrifoglio-petrol-auto-rwd-6555907642841310/
+          - generic [ref=e392]:
+            - img "Alfa Romeo Giulia 2025 Quadrifoglio Petrol Auto RWD655590764284131018" [ref=e393]
+            - img [ref=e395]
+          - generic [ref=e396]:
+            - heading "Alfa Romeo Giulia 2025 Quadrifoglio Petrol Auto RWD" [level=3] [ref=e397]
+            - generic [ref=e399]:
+              - generic [ref=e400]: "2025"
+              - generic [ref=e402]: 123 km
+            - generic [ref=e407]: AED 123
+        - link "Bentley Continental 2013 Flying Spur Petrol Auto RWD653066632171491019 Bentley Continental 2013 Flying Spur Petrol Auto RWD 2013 18800 km AED 166K+" [ref=e408] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/bentley-continental-2013-flying-spur-petrol-auto-rwd-6530666321714910/
+          - generic [ref=e409]:
+            - img "Bentley Continental 2013 Flying Spur Petrol Auto RWD653066632171491019" [ref=e410]
+            - img [ref=e412]
+          - generic [ref=e413]:
+            - heading "Bentley Continental 2013 Flying Spur Petrol Auto RWD" [level=3] [ref=e414]
+            - generic [ref=e416]:
+              - generic [ref=e417]: "2013"
+              - generic [ref=e419]: 18800 km
+            - generic [ref=e424]: AED 166K+
+        - link "Alfa Romeo Giulietta 2025 Veloce Petrol Auto FWD653046526583011020 Alfa Romeo Giulietta 2025 Veloce Petrol Auto FWD 2025 0 km United Arab Emirates AED 111" [ref=e425] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/alfa-romeo-giulietta-2025-veloce-petrol-auto-fwd-6530465265830110/
+          - generic [ref=e426]:
+            - img "Alfa Romeo Giulietta 2025 Veloce Petrol Auto FWD653046526583011020" [ref=e427]
+            - img [ref=e429]
+          - generic [ref=e430]:
+            - heading "Alfa Romeo Giulietta 2025 Veloce Petrol Auto FWD" [level=3] [ref=e431]
+            - generic [ref=e433]:
+              - generic [ref=e434]: "2025"
+              - generic [ref=e436]: 0 km
+              - generic [ref=e438]: United Arab Emirates
+            - generic [ref=e443]: AED 111
+        - link "BAIC BJ30 2025 1.5T LV2 2WD Petrol Auto FWD652938431464931021 BAIC BJ30 2025 1.5T LV2 2WD Petrol Auto FWD 2025 0 km AED 111" [ref=e444] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/baic-bj30-2025-15t-lv2-2wd-petrol-auto-fwd-6529384314649310/
+          - generic [ref=e445]:
+            - img "BAIC BJ30 2025 1.5T LV2 2WD Petrol Auto FWD652938431464931021" [ref=e446]
+            - img [ref=e448]
+          - generic [ref=e449]:
+            - heading "BAIC BJ30 2025 1.5T LV2 2WD Petrol Auto FWD" [level=3] [ref=e450]
+            - generic [ref=e452]:
+              - generic [ref=e453]: "2025"
+              - generic [ref=e455]: 0 km
+            - generic [ref=e460]: AED 111
+        - link "Aston Martin DBS Superleggera 2020 5.2T V12 Petrol Auto RWD651622518402531022 Aston Martin DBS Superleggera 2020 5.2T V12 Petrol Auto RWD 2020 10 km Tommy Hilfiger AED 12K+" [ref=e461] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/aston-martin-dbs-superleggera-2020-5-2t-v12-petrol-auto-rwd-6516225184025310/
+          - generic [ref=e462]:
+            - img "Aston Martin DBS Superleggera 2020 5.2T V12 Petrol Auto RWD651622518402531022" [ref=e463]
+            - img [ref=e465]
+          - generic [ref=e466]:
+            - heading "Aston Martin DBS Superleggera 2020 5.2T V12 Petrol Auto RWD" [level=3] [ref=e467]
+            - generic [ref=e469]:
+              - generic [ref=e470]: "2020"
+              - generic [ref=e472]: 10 km
+              - generic [ref=e474]: Tommy Hilfiger
+            - generic [ref=e479]: AED 12K+
+        - link "Bestune B70 2025 1.5T Premium Petrol Auto FWD651034786059491023 Bestune B70 2025 1.5T Premium Petrol Auto FWD 2025 34 km AED 1" [ref=e480] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/bestune-b70-2025-1-5t-premium-petrol-auto-fwd-6510347860594910/
+          - generic [ref=e481]:
+            - img "Bestune B70 2025 1.5T Premium Petrol Auto FWD651034786059491023" [ref=e482]
+            - img [ref=e484]
+          - generic [ref=e485]:
+            - heading "Bestune B70 2025 1.5T Premium Petrol Auto FWD" [level=3] [ref=e486]
+            - generic [ref=e488]:
+              - generic [ref=e489]: "2025"
+              - generic [ref=e491]: 34 km
+            - generic [ref=e496]: AED 1
+        - link "Bentley Continental 2013 Flying Spur Petrol Auto RWD649064235962851024 Bentley Continental 2013 Flying Spur Petrol Auto RWD 2013 1223 km AED 123" [ref=e497] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/bentley-continental-2013-flying-spur-petrol-auto-rwd-6490642359628510/
+          - generic [ref=e498]:
+            - img "Bentley Continental 2013 Flying Spur Petrol Auto RWD649064235962851024" [ref=e499]
+            - img [ref=e501]
+          - generic [ref=e502]:
+            - heading "Bentley Continental 2013 Flying Spur Petrol Auto RWD" [level=3] [ref=e503]
+            - generic [ref=e505]:
+              - generic [ref=e506]: "2013"
+              - generic [ref=e508]: 1223 km
+            - generic [ref=e513]: AED 123
+        - link "AITO 7 2025 1.5T Ultra AWD REEV Hybrid Auto AWD647863662465251025 AITO 7 2025 1.5T Ultra AWD REEV Hybrid Auto AWD 13 km SALT Umm Al Emarat Park AED 23" [ref=e514] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/tesla-model-y-2020-model-y-61-6478636624652510/
+          - generic [ref=e515]:
+            - img "AITO 7 2025 1.5T Ultra AWD REEV Hybrid Auto AWD647863662465251025" [ref=e516]
+            - img [ref=e518]
+          - generic [ref=e519]:
+            - heading "AITO 7 2025 1.5T Ultra AWD REEV Hybrid Auto AWD" [level=3] [ref=e520]
+            - generic [ref=e522]:
+              - generic [ref=e523]: 13 km
+              - generic [ref=e525]: SALT Umm Al Emarat Park
+            - generic [ref=e530]: AED 23
+        - link "Old porsche 911 carrera 2020 sports647821823435491026 Old porsche 911 carrera 2020 sports Emirates Park Zoo and Resort AED 99M+" [ref=e531] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/old-porsche-911-carrera-2020-sports-6478218234354910/
+          - generic [ref=e532]:
+            - img "Old porsche 911 carrera 2020 sports647821823435491026" [ref=e533]
+            - img [ref=e535]
+          - generic [ref=e536]:
+            - heading "Old porsche 911 carrera 2020 sports" [level=3] [ref=e537]
+            - generic [ref=e540]: Emirates Park Zoo and Resort
+            - generic [ref=e545]: AED 99M+
+        - link "AITO 7 2025 1.5T Ultra AWD REEV Hybrid Auto AWD648157884701411027 AITO 7 2025 1.5T Ultra AWD REEV Hybrid Auto AWD 123 km Umm Al Emarat Park AED 123" [ref=e546] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/aito-7-2025-1-5t-ultra-awd-reev-hybrid-auto-awd-6481578847014110/
+          - generic [ref=e547]:
+            - img "AITO 7 2025 1.5T Ultra AWD REEV Hybrid Auto AWD648157884701411027" [ref=e548]
+            - img [ref=e550]
+          - generic [ref=e551]:
+            - heading "AITO 7 2025 1.5T Ultra AWD REEV Hybrid Auto AWD" [level=3] [ref=e552]
+            - generic [ref=e554]:
+              - generic [ref=e555]: 123 km
+              - generic [ref=e557]: Umm Al Emarat Park
+            - generic [ref=e562]: AED 123
+        - link "Audi CX-5 2017 Super Ultra Luxury Executive Extended Edition647636869131491028 Audi CX-5 2017 Super Ultra Luxury Executive Extended Edition 4616616 km AED 123" [ref=e563] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/audi-cx-5-2017-super-ultra-luxury-executive-extended-edition-6476368691314910/
+          - generic [ref=e564]:
+            - img "Audi CX-5 2017 Super Ultra Luxury Executive Extended Edition647636869131491028" [ref=e565]
+            - img [ref=e567]
+          - generic [ref=e568]:
+            - heading "Audi CX-5 2017 Super Ultra Luxury Executive Extended Edition" [level=3] [ref=e569]
+            - generic [ref=e572]: 4616616 km
+            - generic [ref=e577]: AED 123
+        - link "Tesla Model Y 2020 Model Y 61648153422762211029 Tesla Model Y 2020 Model Y 61 99999999 km AED 99M+" [ref=e578] [cursor=pointer]:
+          - /url: https://ae.58v5.cn/en/city-abu-dhabi/cate-car-used-car/tesla-model-y-2020-model-y-61-6481534227622110/
+          - generic [ref=e579]:
+            - img "Tesla Model Y 2020 Model Y 61648153422762211029" [ref=e580]
+            - img [ref=e582]
+          - generic [ref=e583]:
+            - heading "Tesla Model Y 2020 Model Y 61" [level=3] [ref=e584]
+            - generic [ref=e587]: 99999999 km
+            - generic [ref=e592]: AED 99M+
+      - list [ref=e593]:
+        - listitem [ref=e594]:
+          - generic:
+            - generic: Prev
+            - generic: Previous
+        - listitem [ref=e595] [cursor=pointer]:
+          - generic [ref=e596]:
+            - text: "1"
+            - generic [ref=e597]: (current)
+        - listitem [ref=e598] [cursor=pointer]:
+          - button "2" [ref=e599]
+        - listitem [ref=e600] [cursor=pointer]:
+          - button "3" [ref=e601]
+        - listitem [ref=e602] [cursor=pointer]:
+          - button "More" [ref=e603]:
+            - generic [ref=e604]: ···
+            - generic [ref=e605]: More
+        - listitem [ref=e606] [cursor=pointer]:
+          - button "10" [ref=e607]
+        - listitem [ref=e608] [cursor=pointer]:
+          - button "Next" [ref=e609]:
+            - generic [ref=e610]: Next
+            - generic [ref=e611]: Next
+  - generic [ref=e612]:
+    - generic [ref=e613]:
+      - generic [ref=e616]:
+        - link "About Us" [ref=e618] [cursor=pointer]:
+          - /url: https://aepub.58v5.cn/biz/en/about
+        - link "Terms of Use" [ref=e620] [cursor=pointer]:
+          - /url: https://aepub.58v5.cn/biz/en/policy/terms
+        - link "Privacy Policy" [ref=e622] [cursor=pointer]:
+          - /url: https://aepub.58v5.cn/biz/en/policy/privacy
+      - generic [ref=e623]:
+        - generic [ref=e624]: Explore
+        - generic [ref=e625]:
+          - link "Local Posts" [ref=e627] [cursor=pointer]:
+            - /url: https://ae.58v5.cn/content/en/home/
+          - link "Useful Tools" [ref=e629] [cursor=pointer]:
+            - /url: https://us.ok.com/tools/view
+      - generic [ref=e630]:
+        - generic [ref=e631]: Help
+        - generic [ref=e632]:
+          - link "Contact Us" [ref=e634] [cursor=pointer]:
+            - /url: https://aepub.58v5.cn/biz/en/contactus
+          - link "FAQ" [ref=e636] [cursor=pointer]:
+            - /url: https://aepub.58v5.cn/biz/en/faqs
+          - link "Support and feedback" [ref=e638] [cursor=pointer]:
+            - /url: https://aepub.58v5.cn/biz/en/feedBack
+          - link "Return Policy" [ref=e640] [cursor=pointer]:
+            - /url: https://aepub.58v5.cn/biz/en/policy/return-policy
+          - link "Refund Policy" [ref=e642] [cursor=pointer]:
+            - /url: https://aepub.58v5.cn/biz/en/policy/refund-policy
+      - generic [ref=e643]:
+        - generic [ref=e644]: Cookie
+        - generic [ref=e645]:
+          - link "Cookie Policy" [ref=e647] [cursor=pointer]:
+            - /url: https://aepub.58v5.cn/biz/en/policy/cookie
+          - generic [ref=e648]: Cookie Settings
+      - generic [ref=e649]:
+        - generic [ref=e650]: Our Apps
+        - generic [ref=e651]:
+          - generic [ref=e652] [cursor=pointer]:
+            - img "Download" [ref=e653]
+            - generic [ref=e654]:
+              - generic [ref=e655]: Download on the
+              - generic [ref=e656]: APP Store
+          - generic [ref=e657] [cursor=pointer]:
+            - img "Download" [ref=e658]
+            - generic [ref=e659]:
+              - generic [ref=e660]: Get it on
+              - generic [ref=e661]: Google Play
+    - generic [ref=e662]: © 2025 Servanan International Pte. Ltd.
+  - button "Open DevTools" [ref=e663] [cursor=pointer]:
+    - img [ref=e664]
+  - alert [ref=e666]

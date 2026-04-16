@@ -1,0 +1,6 @@
+{
+  "source_repo": "https://igit.58corp.com/intl_qa/knowledge_base.git",
+  "source_commit": "ff8006453b64fac3bc6d8e0002253cb2911f1d52",
+  "synced_at": "2026-04-15T08:38:09Z",
+  "target": "bundled/skills/knowledge-base-manager"
+}

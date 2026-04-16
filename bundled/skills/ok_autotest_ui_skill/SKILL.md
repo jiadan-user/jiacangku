@@ -1,7 +1,7 @@
 ---
-
-## name: ok-ui-autotest
-description: 当开发告诉 AI 改了哪个模块、哪个功能、哪个站点，且需要 AI 结合映射文档、文本用例和自动化脚本来挑选并执行 OK UI 自动化、自动生成 Allure 报告并输出上线建议时，使用这个 skill。
+name: ok-ui-autotest
+description: 当需要根据站点、模块、功能或脚本路径选择并执行 OK PC UI 自动化、先 dry-run 再真实回归、生成 Allure 报告和上线建议时使用；新增、修改或 promotion 测试脚本后，也用它刷新 catalog 并审计标识。
+---
 
 # OK UI 自动化 Skill
 
@@ -9,6 +9,7 @@ description: 当开发告诉 AI 改了哪个模块、哪个功能、哪个站点
 
 - 开发告诉 AI 改了哪个模块和功能
 - AI 先参考 `module-map`，再核对文本用例和自动化脚本
+- 如果本轮新增、修改或 promotion 了脚本，AI 先刷新 catalog 并审计标识
 - AI 先 `--dry-run` 预览，再真实执行
 - 如果目标 case 有已配置前置，CLI 会先自动补跑前置再回到目标执行
 - AI 直接返回 Allure、执行结果和上线建议
@@ -16,12 +17,13 @@ description: 当开发告诉 AI 改了哪个模块、哪个功能、哪个站点
 
 ## 首次环境准备
 
+以下命令默认从本 skill 根目录执行，也就是包含 `SKILL.md` 和 `scripts/ok_test.py` 的目录。
+
 ```bash
-cd /Users/a58/Desktop/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv bundled/ok_autotest_ui_pc/venv
+source bundled/ok_autotest_ui_pc/venv/bin/activate
 python -m pip install --upgrade pip
-pip install -r requirements.txt
+pip install -r bundled/ok_autotest_ui_pc/requirements.txt
 playwright install chromium
 ```
 
@@ -34,8 +36,11 @@ brew install allure
 ## 主流程
 
 1. 第一次使用或环境异常时，运行 `doctor`
-2. AI 先看 `references/module-map.md`，再核对文本用例和自动化脚本，确定 `run --dry-run` 参数
-3. AI 确认范围后运行 `run`
+2. 如果本轮新增、修改或 promotion 了 `test_cases/**/*.py`，先运行 `ops catalog-build`，再运行 `ops audit-identifiers`
+3. AI 先看 `references/module-map.md`，再核对文本用例和自动化脚本，确定 `run --dry-run` 参数
+4. AI 确认范围后运行 `run`
+
+`run/list` 都依赖 `catalog/catalog.generated.json` 做选择。catalog 已存在时不会自动重建；新增脚本如果不先刷新 catalog，`--module`、`--feature`、`--path`、`--nodeid` 都可能选不到它。
 
 ## 公开命令
 
@@ -46,12 +51,12 @@ brew install allure
 
 | 参数  | 是否必填 | 作用                                                   | 示例                                 |
 | --- | ---- | ---------------------------------------------------- | ---------------------------------- |
-| 无   | 是    | 检查 Python、venv、pytest collect、Playwright 和 marker 状态 | `python scripts/ok_test.py doctor` |
+| 无   | 是    | 检查 Python、venv、pytest collect、Playwright 和 marker 状态 | `python3 scripts/ok_test.py doctor` |
 
 
 ### `run`
 
-`python scripts/ok_test.py run` 是主执行入口。
+`python3 scripts/ok_test.py run` 是主执行入口。
 
 - 带 `--dry-run`：只预览会跑哪些用例
 - 不带 `--dry-run`：真实执行，并自动生成：
@@ -75,6 +80,23 @@ brew install allure
 | `--nodeid`   | 否    | 按单条 pytest nodeid 筛选                  | `--nodeid test_cases/test_car/test_ae_car_publish.py::test_publish_success` |
 | `--dry-run`  | 否    | 只预览，不真实执行                             | `--dry-run`                                                                 |
 
+### `ops catalog-build`
+
+新增、修改或 promotion 脚本后必须先刷新 catalog：
+
+```bash
+python3 scripts/ok_test.py ops catalog-build
+```
+
+### `ops audit-identifiers`
+
+刷新 catalog 后审计脚本标识；失败时先补齐优先级、`case_id`、模块/功能标识，再继续 dry-run：
+
+```bash
+python3 scripts/ok_test.py ops audit-identifiers
+```
+
+新增脚本接入细节见 `references/new-script-onboarding.md`，不要把完整接入规范重复塞进本文件。
 
 ## 报告路径
 
@@ -93,5 +115,5 @@ brew install allure
 - 需要功能名到 `run` 参数的映射时，读 `references/module-map.md`
 - 需要看 3 个 AI 执行示例时，读 `references/usage.md`
 - 需要看自动化覆盖汇报时，读静态的 `references/coverage-dashboard.md`
+- 新增、修改或 promotion 脚本后，读 `references/new-script-onboarding.md`
 - 需要维护 catalog 或标识治理时，读 `references/governance.md` 和 `references/identifier-rules.md`
-

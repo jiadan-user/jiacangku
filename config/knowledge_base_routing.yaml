@@ -1,0 +1,41 @@
+text_case_buckets:
+  car:
+    bucket: test_car
+  wallet:
+    bucket: wallet
+  job:
+    bucket: zhaopin
+  jobs:
+    bucket: zhaopin
+  publish_job:
+    bucket: zhaopin
+  job_preferences:
+    bucket: zhaopin
+  resume:
+    bucket: zhaopin
+  property_list:
+    bucket: property_list
+  property_detail:
+    bucket: property_detail
+  property_map:
+    bucket: property_map
+  property:
+    bucket: Property/Basic/List
+  marketplace_post:
+    bucket: marketplace_post
+  marketplace_order:
+    bucket: marketplace_order
+  kyc:
+    bucket: kyc
+  seo:
+    bucket: SEO
+  ai_chat:
+    bucket: ai/ai_chat
+  ai_publish:
+    bucket: ai/ai_publish
+  messages:
+    bucket: Tiyan
+  homepage:
+    bucket: Tiyan/首页
+  search:
+    bucket: Tiyan/Search
