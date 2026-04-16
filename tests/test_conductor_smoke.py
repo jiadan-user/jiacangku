@@ -19,6 +19,7 @@ from qa_agent.models import (
     LegacyUpdateTaskStatus,
     Phase,
     PhaseStatus,
+    RunState,
     RunStatus,
 )
 
@@ -32,6 +33,12 @@ class FakeImpactVerificationExecutor:
         del run_dir, packet, impact_payload
         self.calls += 1
         return self.outcome
+
+
+class RaisingImpactVerificationExecutor:
+    def verify(self, *, run_dir: Path, packet: dict, impact_payload: dict) -> ImpactVerificationOutcome:
+        del run_dir, packet, impact_payload
+        raise RuntimeError("boom")
 
 
 class FakeLegacyUpdateExecutor:
@@ -107,6 +114,16 @@ class ConductorSmokeTests(unittest.TestCase):
             "site": "ae",
             "module": "car",
             "feature": "列表",
+        }
+
+    def _mixed_inputs(self) -> dict[str, str]:
+        return {
+            "change_mode": ChangeMode.MIXED.value,
+            "figma_url": "https://www.figma.com/design/demo",
+            "site": "ae",
+            "module": "car",
+            "feature": "列表",
+            "change_description": "列表卡片样式改大卡",
         }
 
     def _sample_analysis_report(self) -> str:
@@ -221,6 +238,16 @@ class ConductorSmokeTests(unittest.TestCase):
         conductor = self._make_conductor()
         with self.assertRaises(ValueError):
             conductor.plan({"module": "car", "site": "ae", "change_description": "列表卡片样式调整"})
+
+    def test_drive_to_action_stops_at_first_skill_with_next_action(self) -> None:
+        conductor = self._make_conductor()
+        state = conductor.plan(self._new_feature_inputs())
+        state = conductor.drive_to_action(state.run_id)
+        self.assertEqual(state.current_phase, Phase.SENIOR_QA_BRAIN.value)
+        self.assertEqual(state.status, RunStatus.BLOCKED.value)
+        self.assertEqual(state.next_action.kind, "run_skill")
+        self.assertEqual(state.next_action.required_artifacts, ["analysis_report", "textcases"])
+        self.assertIn("complete", state.next_action.resume_command)
 
     def test_stage1_gate_writes_kb_draft_and_manifest(self) -> None:
         conductor = self._make_conductor(impact_executor=FakeImpactVerificationExecutor(self._passed_verification_outcome()))
@@ -358,6 +385,99 @@ class ConductorSmokeTests(unittest.TestCase):
         self.assertIn("继续 advance 进入下一轮", state.blocked_reason)
         self.assertEqual(legacy_executor.calls, 1)
 
+    def test_drive_to_action_auto_consumes_legacy_retry_until_next_skill(self) -> None:
+        impact_outcome = ImpactVerificationOutcome(
+            selector_plan={
+                "module": "wallet",
+                "site": "ae",
+                "feature_name": "withdrawal",
+                "candidate_paths": ["/tmp/test_wallet.py"],
+                "selectors": [{"kind": "path", "value": "/tmp/test_wallet.py"}],
+                "nodeids": ["test_cases/wallet/test_wallet.py::test_xxx"],
+                "case_ids": ["case_id_wallet_xxx"],
+            },
+            records=[
+                ImpactVerificationRecord(
+                    source_type="existing-script",
+                    target="/tmp/test_wallet.py",
+                    module="wallet",
+                    site="ae",
+                    related_case_id="case_id_wallet_xxx",
+                    related_nodeid="test_cases/wallet/test_wallet.py::test_xxx",
+                    run_status=ImpactRunStatus.FAILED.value,
+                    category=AttributionCategory.LATEST_CHANGE.value,
+                    summary="assert amount mismatch",
+                    reason="断言不匹配",
+                    next_action="更新断言",
+                )
+            ],
+        )
+        retry_task = LegacyUpdateTask(
+            task_id="legacy-1",
+            target_script="/tmp/test_wallet.py",
+            target_nodeid="test_cases/wallet/test_wallet.py::test_xxx",
+            recommended_action="update-assertion",
+            status=LegacyUpdateTaskStatus.RETRY.value,
+            attempts=1,
+        )
+        done_task = LegacyUpdateTask(
+            task_id="legacy-1",
+            target_script="/tmp/test_wallet.py",
+            target_nodeid="test_cases/wallet/test_wallet.py::test_xxx",
+            recommended_action="update-assertion",
+            status=LegacyUpdateTaskStatus.COMPLETED.value,
+            attempts=2,
+        )
+        legacy_executor = FakeLegacyUpdateExecutor(
+            [
+                LegacyUpdateRoundOutcome(
+                    tasks=[retry_task],
+                    gate=LegacyUpdateGate(round_index=1, total_count=1, retry_count=1),
+                    results=[],
+                ),
+                LegacyUpdateRoundOutcome(
+                    tasks=[done_task],
+                    gate=LegacyUpdateGate(round_index=2, total_count=1, completed_count=1, all_completed=True),
+                    results=[],
+                ),
+            ]
+        )
+        conductor = self._make_conductor(
+            legacy_executor=legacy_executor,
+            impact_executor=FakeImpactVerificationExecutor(impact_outcome),
+        )
+        state = conductor.plan(
+            {
+                "change_mode": ChangeMode.REGRESSION.value,
+                "module": "wallet",
+                "site": "ae",
+                "change_description": "修改了提现金额校验逻辑",
+            }
+        )
+        state = conductor.drive_to_action(state.run_id)
+        state = conductor.complete_phase(state.run_id, Phase.IMPACT_VERIFICATION.value)
+        self.assertEqual(state.current_phase, Phase.LEGACY_UPDATE.value)
+        state = conductor.drive_to_action(state.run_id)
+        self.assertEqual(state.current_phase, Phase.OK_UI_REGRESSION.value)
+        self.assertEqual(state.status, RunStatus.BLOCKED.value)
+        self.assertEqual(state.next_action.kind, "run_skill")
+        self.assertEqual(legacy_executor.calls, 2)
+
+    def test_drive_to_action_records_error_state(self) -> None:
+        conductor = self._make_conductor(impact_executor=RaisingImpactVerificationExecutor())
+        state = conductor.plan(
+            {
+                "change_mode": ChangeMode.REGRESSION.value,
+                "module": "car",
+                "site": "ae",
+                "change_description": "列表卡片样式调整",
+            }
+        )
+        state = conductor.drive_to_action(state.run_id)
+        self.assertEqual(state.status, RunStatus.ERROR.value)
+        self.assertEqual(state.next_action.kind, "error")
+        self.assertIn("RuntimeError", state.error_reason)
+
     def test_kb_update_context_binds_stage1_draft_path(self) -> None:
         conductor = self._make_conductor(impact_executor=FakeImpactVerificationExecutor(self._passed_verification_outcome()))
         state = self._reach_kb_phase(conductor)
@@ -399,6 +519,123 @@ class ConductorSmokeTests(unittest.TestCase):
         data = conductor.status(state.run_id)
         self.assertEqual(data["run_id"], state.run_id)
         self.assertEqual(data["change_mode"], ChangeMode.REGRESSION.value)
+
+    def test_impact_split_is_idempotent_and_complete_uses_phase_value_key(self) -> None:
+        conductor = self._make_conductor(impact_executor=FakeImpactVerificationExecutor(self._passed_verification_outcome()))
+        state = self._plan_and_enter_stage1(conductor)
+        state = self._complete_stage1(conductor, state)
+        state = self._complete_stage2(conductor, state)
+        self.assertIn(Phase.PLAYWRIGHT_GENERATOR.value, state.phase_statuses)
+        self.assertNotIn("playwright-generator", state.phase_statuses)
+        before = dict(state.phase_statuses)
+        current_phase = state.current_phase
+        state = conductor._phase_impact_split(state, state.change_mode)
+        self.assertEqual(before[Phase.SENIOR_QA_BRAIN.value], state.phase_statuses[Phase.SENIOR_QA_BRAIN.value])
+        self.assertEqual(current_phase, state.current_phase)
+
+    def test_doctor_reports_warnings_without_fatal_for_missing_regression_env(self) -> None:
+        conductor = self._make_conductor()
+        result = conductor.doctor()
+        self.assertFalse(result.has_fatal)
+        self.assertTrue(any(check.severity == "warning" for check in result.checks))
+
+    def test_doctor_reports_fatal_when_knowledge_base_manager_missing(self) -> None:
+        conductor = self._make_conductor()
+        conductor.config.skills["paths"]["knowledge_base_manager_root"] = str(self.temp_path / "missing-kb-manager")
+        result = conductor.doctor()
+        self.assertTrue(result.has_fatal)
+        self.assertTrue(any(check.name == "knowledge_base_manager_root" for check in result.fatals))
+
+    def test_impact_analysis_uses_scoped_reasons_not_generic_case_metadata(self) -> None:
+        matching_script = self.regression_root / "test_cases" / "car" / "test_car_list.py"
+        matching_script.parent.mkdir(parents=True, exist_ok=True)
+        matching_script.write_text(
+            "import pytest\n"
+            "@pytest.mark.ae\n"
+            "@pytest.mark.case_id_car_list\n"
+            "def test_car_list_card():\n"
+            "    assert True\n",
+            encoding="utf-8",
+        )
+        unrelated_script = self.regression_root / "test_cases" / "wallet" / "test_wallet.py"
+        unrelated_script.parent.mkdir(parents=True, exist_ok=True)
+        unrelated_script.write_text(
+            "import pytest\n"
+            "@pytest.mark.case_id_wallet_balance\n"
+            "def test_wallet_balance():\n"
+            "    assert True\n",
+            encoding="utf-8",
+        )
+        conductor = self._make_conductor(impact_executor=FakeImpactVerificationExecutor(self._passed_verification_outcome()))
+        state = conductor.plan(
+            {
+                "change_mode": ChangeMode.REGRESSION.value,
+                "module": "car",
+                "site": "ae",
+                "feature": "列表",
+                "change_description": "列表卡片样式改大卡",
+            }
+        )
+        state = conductor.advance(state.run_id)
+        candidates = read_json(state.artifacts["impact_candidates"], default={})
+        targets = {item["target"] for item in candidates["existing_cases"]}
+        self.assertIn(str(matching_script), targets)
+        self.assertNotIn(str(unrelated_script), targets)
+        reasons = candidates["existing_cases"][0]["details"]["impact_reasons"]
+        self.assertIn("存在 case_id 元数据", reasons)
+
+    def test_mixed_mode_keeps_new_and_regression_sources_in_selector_plan(self) -> None:
+        existing_script = self.regression_root / "test_cases" / "car" / "test_car_list_existing.py"
+        existing_script.parent.mkdir(parents=True, exist_ok=True)
+        existing_script.write_text(
+            "import pytest\n"
+            "@pytest.mark.car\n"
+            "@pytest.mark.case_id_car_list_existing\n"
+            "def test_car_list_existing():\n"
+            "    assert True\n",
+            encoding="utf-8",
+        )
+        conductor = self._make_conductor(impact_executor=FakeImpactVerificationExecutor(self._passed_verification_outcome()))
+        state = conductor.plan(self._mixed_inputs())
+        state = conductor.drive_to_action(state.run_id)
+        state = self._complete_stage1(conductor, state)
+        state = self._complete_stage2(conductor, state)
+        candidates = read_json(state.artifacts["impact_candidates"], default={})
+        source_groups = {
+            item["source_group"]
+            for item in [*candidates["new_cases"], *candidates["existing_cases"]]
+        }
+        self.assertIn("new_feature", source_groups)
+        self.assertIn("regression", source_groups)
+
+        state = conductor.complete_phase(state.run_id, Phase.IMPACT_VERIFICATION.value)
+        selector_plan = read_json(state.artifacts["regression_selector_plan"], default={})
+        selector_sources = {item["source_group"] for item in selector_plan["sources"]}
+        self.assertIn("new_feature", selector_sources)
+        self.assertIn("regression", selector_sources)
+
+    def test_status_warns_for_stale_blocked_without_changing_state(self) -> None:
+        conductor = self._make_conductor()
+        conductor.config.thresholds["gates"]["blocked_warn_after_seconds"] = 1
+        state = conductor.plan(self._new_feature_inputs())
+        state = conductor.drive_to_action(state.run_id)
+        state.blocked_since = "2000-01-01T00:00:00+00:00"
+        conductor.store.save(state)
+
+        data = conductor.status(state.run_id)
+        self.assertEqual(data["status"], RunStatus.BLOCKED.value)
+        self.assertIn("stale_warning", data)
+
+    def test_run_state_loads_legacy_payload_with_next_action_defaults(self) -> None:
+        payload = {
+            "run_id": "legacy",
+            "status": RunStatus.PLANNED.value,
+            "current_phase": Phase.INTAKE.value,
+            "change_mode": ChangeMode.REGRESSION.value,
+        }
+        state = RunState(**payload)
+        self.assertEqual(state.version, 0)
+        self.assertEqual(state.next_action.kind, "")
 
 
 if __name__ == "__main__":

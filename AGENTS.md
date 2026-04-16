@@ -56,6 +56,63 @@ flowchart TD
     KB --> Done["完成"]
 ```
 
+## Driver Loop
+
+默认驱动入口是 `run / next / complete / status`，不是手动猜下一阶段。
+
+| 命令 | 职责 |
+| --- | --- |
+| `qa-agent run` | 先执行 doctor，再创建 run，最后 `drive_to_action` 到第一个可操作点 |
+| `qa-agent next` | 从当前状态继续 `drive_to_action` 到下一个可操作点 |
+| `qa-agent complete` | 提交人工确认或 skill 产物，触发门禁，再继续自动推进 |
+| `qa-agent status --next-action` | 读取结构化 `next_action`，告诉 Agent 下一步做什么 |
+| `qa-agent doctor` | 环境预检，区分 fatal 和 warning |
+
+`advance()` 保持兼容，但只表示低层单步推进；日常协作优先使用 `drive_to_action()`。
+
+`drive_to_action()` 规则：
+
+- 自动穿过编排层可自动完成阶段。
+- 遇到 skill 阶段、人工确认、manual-review、环境修复、完成态或错误态就停止。
+- `旧脚本更新执行` 的 `retry` 会在阶段内自动进入下一轮。
+- 自动推进有最大轮次，超过后进入 `ERROR`，避免死循环。
+- 自动阶段抛异常时，run 进入 `ERROR`，当前 phase 进入 `ERROR`，并写入 `error_reason`。
+
+## next_action 行动表
+
+`next_action` 是 CLI 和 Agent 的唯一结构化行动依据。
+
+| kind | Agent 行动 |
+| --- | --- |
+| `run_skill` | 读取 `skill_path` 和 `instruction_path`，按 skill 完成工作，再用 `resume_command` 提交产物 |
+| `confirm_phase` | 向用户展示关键报告，等待确认后执行 `resume_command` |
+| `continue_auto` | 执行 `qa-agent next --run-id <run_id>` |
+| `manual_review` | 停在当前阶段，整理人工介入点，不进入下一大阶段 |
+| `fix_environment` | 先执行 `doctor` 并修复缺失资源或配置 |
+| `completed` | 输出最终报告位置和结论 |
+| `error` | 查看 `error_reason`，修复后由人工决定是否重试 |
+
+`blocked_reason` 只保留一句话摘要；详细上下文必须放在 artifact 或 `next_action.details` 中。
+
+## Doctor 规则
+
+fatal 会阻止 `run` 创建任务：
+
+| fatal 项 | 说明 |
+| --- | --- |
+| 项目根目录缺失 | 无法定位 QA Agent 仓库 |
+| 必须 skill 缺失 | `senior-qa-brain`、`playwright-test-generator`、`ok_autotest_ui_skill`、`knowledge-base-manager` |
+| `bundled/knowledge_base` 缺失 | 无法执行知识库归档和最终更新 |
+| `knowledge-base-manager` 缺失 | 最终 KB 更新阶段无法执行 |
+
+warning 不阻止 `run` 创建任务，但会写入本次 run 的 `doctor_result.json`：
+
+| warning 项 | 说明 |
+| --- | --- |
+| regression venv 缺失 | 阶段3或影响回归可能无法执行 |
+| pytest / Playwright 不可用 | 自动化执行能力不完整 |
+| ok_autotest_ui_skill doctor 未通过 | 阶段3执行前需要关注 |
+
 ## 阶段1：senior-qa-brain
 
 ### 输入
@@ -154,6 +211,37 @@ flowchart TD
 - `overlap_report.md`
 
 这里只识别候选，不允许改 repo-tracked 测试代码。
+
+候选识别规则按顺序增强：
+
+| 顺序 | 信号 |
+| --- | --- |
+| 1 | `module / site / feature` |
+| 2 | `test_cases` 路径规则 |
+| 3 | `@pytest.mark` |
+| 4 | `@allure.title` 和脚本文本 |
+| 5 | `case_id` |
+| 6 | `nodeid / test function` |
+| 7 | `module-map / impact-map` |
+| 8 | 变更描述关键字 |
+
+`case_id` 和 `nodeid` 是补充元数据，不能单独把无关脚本纳入候选；至少要命中模块、站点、feature、路径或关键词这类范围信号。
+
+混合模式必须同时保留新脚本候选和既有脚本候选。每个 candidate 写入 `source_group`：
+
+| source_group | 含义 |
+| --- | --- |
+| `new_feature` | 阶段2生成的新脚本候选 |
+| `regression` | 既有回归脚本候选 |
+| `both` | 新旧候选有明确重叠 |
+
+人工确认后任务优先级：
+
+| 优先级 | 任务 |
+| --- | --- |
+| 1 | 已通过影响回归的新脚本 promotion |
+| 2 | 已确认由最新变更引起的旧脚本更新 |
+| 3 | manual-review 停机项 |
 
 ## 影响回归与变更归因
 
@@ -281,6 +369,20 @@ flowchart TD
 
 - `.qa_agent/runs/<run_id>/run_state.json`
 
+`run_state.json` 关键字段：
+
+| 字段 | 用途 |
+| --- | --- |
+| `status` | run 总状态，含 `ERROR` |
+| `current_phase` | 当前阶段 |
+| `phase_statuses` | 每个阶段状态，key 必须使用 `Phase.value` |
+| `artifacts` | 各阶段产物路径 |
+| `blocked_reason` | 一句话阻塞摘要 |
+| `blocked_since` | 进入阻塞态的时间 |
+| `next_action` | 下一步结构化行动 |
+| `error_reason` | 自动推进异常原因 |
+| `version` | 每次保存自增，用于并发保护 |
+
 每个 run 还会持久化这些结构化产物：
 
 - `requirement_packet.json`
@@ -307,3 +409,23 @@ flowchart TD
 - `knowledge_base_gate_result.json`
 
 `.qa_agent/project-memory.json` 和 `.qa_agent/notepad.md` 可以存在，但不作为推进逻辑的真相源。
+
+## 并发与错误边界
+
+同一个 run 的写操作必须经过 per-run lock：
+
+| 规则 | 说明 |
+| --- | --- |
+| `advance / complete / drive_to_action` | 必须持有 `.run.lock` |
+| `version` | 每次保存自增 |
+| 版本冲突 | 提示重新 `status/next` |
+| lock 超时 | 当前操作失败，不覆盖已有状态 |
+
+错误态处理：
+
+| 场景 | 行为 |
+| --- | --- |
+| 自动阶段抛异常 | `RunStatus.ERROR` + 当前 `PhaseStatus.ERROR` |
+| 超过自动推进最大步数 | 进入 `ERROR`，防止死循环 |
+| skill 缺失 | `next_action.kind=fix_environment` |
+| 阻塞超时 | 只在 `status` 中提示，不自动改变状态 |

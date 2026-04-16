@@ -71,7 +71,7 @@ class ImpactVerificationExecutor:
             feature_key=candidate.feature_key,
             related_case_id=candidate.related_case_id,
             related_nodeid=candidate.related_nodeid,
-            details=dict(candidate.details or {}),
+            details={**dict(candidate.details or {}), "source_group": candidate.source_group},
         )
 
         if not executable_path or not executable_path.exists():

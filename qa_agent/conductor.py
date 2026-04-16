@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import asdict
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -15,15 +16,20 @@ from qa_agent.adapters.impact_verification import ImpactVerificationExecutor
 from qa_agent.adapters.legacy_update import LegacyUpdateExecutor, make_task_id
 from qa_agent.config import AppConfig
 from qa_agent.io import read_json, read_text, write_json, write_text
+from qa_agent.markdown_cases import parse_markdown_document
 from qa_agent.models import (
     AttributionCategory,
     ChangeMode,
+    DoctorCheck,
+    DoctorResult,
     ImpactCandidate,
     ImpactRunStatus,
     ImpactVerificationRecord,
     LegacyUpdateGate,
     LegacyUpdateTask,
     LegacyUpdateTaskStatus,
+    NextAction,
+    NextActionKind,
     OverlapDecision,
     Phase,
     PhaseGateResult,
@@ -37,15 +43,24 @@ from qa_agent.models import (
     TextCaseManifestEntry,
     UserConfirmationRecord,
     to_data,
+    utc_now_iso,
 )
 from qa_agent.state import RunStore
-from qa_agent.utils import normalize_text
+from qa_agent.utils import normalize_text, run_command
 
 SKILL_PATHS = {
     Phase.SENIOR_QA_BRAIN: "bundled/skills/senior-qa-brain/SKILL.md",
     Phase.PLAYWRIGHT_GENERATOR: "bundled/skills/playwright-test-generator/SKILL.md",
     Phase.OK_UI_REGRESSION: "bundled/skills/ok_autotest_ui_skill/SKILL.md",
     Phase.KNOWLEDGE_BASE_UPDATE: "bundled/skills/knowledge-base-manager/SKILL.md",
+}
+
+PHASE_REQUIRED_ARTIFACTS = {
+    Phase.SENIOR_QA_BRAIN: ["analysis_report", "textcases"],
+    Phase.PLAYWRIGHT_GENERATOR: ["playwright_case_outcomes"],
+    Phase.IMPACT_VERIFICATION: [],
+    Phase.OK_UI_REGRESSION: ["ok_ui_dry_run_preview", "ok_ui_execution_report", "release_recommendation"],
+    Phase.KNOWLEDGE_BASE_UPDATE: ["knowledge_base_update_preview", "knowledge_base_update_result"],
 }
 
 NEW_FEATURE_PHASES = [
@@ -92,15 +107,26 @@ class QAConductor:
         state = self.store.create_run(mode)
         state = self._phase_intake(state, inputs)
         state = self._phase_impact_split(state, mode)
+        if inputs.get("doctor_result"):
+            self._persist_doctor_result(state, inputs["doctor_result"])
         state.status = RunStatus.PLANNED.value
+        self._refresh_next_action(state)
         self.store.save(state)
         return state
 
     def status(self, run_id: str) -> dict[str, Any]:
         state = self.store.load(run_id)
-        return to_data(state)
+        data = to_data(state)
+        stale_warning = self._stale_blocked_warning(state)
+        if stale_warning:
+            data["stale_warning"] = stale_warning
+        return data
 
     def advance(self, run_id: str, inputs: dict[str, Any] | None = None) -> RunState:
+        with self.store.locked_run(run_id):
+            return self._advance_unlocked(run_id, inputs)
+
+    def _advance_unlocked(self, run_id: str, inputs: dict[str, Any] | None = None) -> RunState:
         inputs = inputs or {}
         state = self.store.load(run_id)
         phases = self._phases_for_mode(state.change_mode)
@@ -113,6 +139,7 @@ class QAConductor:
             phase_state = state.phase_statuses.get(phase.value, PhaseStatus.PENDING.value)
             if phase_state == PhaseStatus.COMPLETED.value:
                 continue
+            self._refresh_next_action(state)
             self.store.save(state)
             return state
 
@@ -122,10 +149,20 @@ class QAConductor:
         ):
             state.status = RunStatus.COMPLETED.value
             state.blocked_reason = ""
+        self._refresh_next_action(state)
         self.store.save(state)
         return state
 
     def complete_phase(self, run_id: str, phase_name: str, artifacts: dict[str, str] | None = None) -> RunState:
+        with self.store.locked_run(run_id):
+            return self._complete_phase_unlocked(run_id, phase_name, artifacts)
+
+    def _complete_phase_unlocked(
+        self,
+        run_id: str,
+        phase_name: str,
+        artifacts: dict[str, str] | None = None,
+    ) -> RunState:
         state = self.store.load(run_id)
         if artifacts:
             state.artifacts.update(artifacts)
@@ -142,15 +179,159 @@ class QAConductor:
             state = self._complete_knowledge_base_update(state)
 
         if state.phase_statuses.get(phase.value) == PhaseStatus.BLOCKED.value and state.blocked_reason:
+            self._refresh_next_action(state)
             self.store.save(state)
             return state
 
-        state.phase_statuses[phase_name] = PhaseStatus.COMPLETED.value
-        state.current_phase = phase_name
+        state.phase_statuses[phase.value] = PhaseStatus.COMPLETED.value
+        state.current_phase = phase.value
         state.blocked_reason = ""
         state.status = RunStatus.RUNNING.value
+        self._refresh_next_action(state)
         self.store.save(state)
-        return self.advance(run_id)
+        return self._advance_unlocked(run_id)
+
+    def drive_to_action(
+        self,
+        run_id: str,
+        inputs: dict[str, Any] | None = None,
+        max_steps: int | None = None,
+    ) -> RunState:
+        with self.store.locked_run(run_id):
+            return self._drive_to_action_unlocked(run_id, inputs, max_steps)
+
+    def _drive_to_action_unlocked(
+        self,
+        run_id: str,
+        inputs: dict[str, Any] | None = None,
+        max_steps: int | None = None,
+    ) -> RunState:
+        phases = self._phases_for_mode(self.store.load(run_id).change_mode)
+        default_steps = int(self.config.thresholds.get("gates", {}).get("max_fix_rounds", 3)) + len(phases) + 5
+        limit = max_steps or default_steps
+        state = self.store.load(run_id)
+        for _ in range(limit):
+            if self._is_actionable(state):
+                self._refresh_next_action(state)
+                self.store.save(state)
+                return state
+            try:
+                state = self._advance_unlocked(run_id, inputs)
+            except Exception as exc:
+                state = self.store.load(run_id)
+                self._set_error_state(state, exc)
+                self.store.save(state)
+                return state
+            if self._is_actionable(state):
+                self._refresh_next_action(state)
+                self.store.save(state)
+                return state
+        self._set_error_state(state, RuntimeError(f"drive_to_action 超过最大自动推进步数 {limit}，已停止以防死循环"))
+        self.store.save(state)
+        return state
+
+    def doctor(self) -> DoctorResult:
+        checks: list[DoctorCheck] = []
+        project_root = self.config.project_root
+        checks.append(
+            DoctorCheck(
+                name="project_root",
+                ok=project_root.exists(),
+                severity="fatal",
+                message=f"项目根目录: {project_root}",
+            )
+        )
+
+        for phase, skill_path in SKILL_PATHS.items():
+            absolute = project_root / skill_path
+            checks.append(
+                DoctorCheck(
+                    name=f"skill:{phase.value}",
+                    ok=absolute.exists(),
+                    severity="fatal",
+                    message=f"{phase.value} skill: {absolute}",
+                )
+            )
+
+        paths = self.config.skills.get("paths", {})
+        commands = self.config.skills.get("commands", {}).get("ok_ui_skill", {})
+        knowledge_base_root = Path(paths.get("knowledge_base_root", ""))
+        knowledge_base_manager_root = Path(paths.get("knowledge_base_manager_root", ""))
+        regression_root = Path(paths.get("regression_project_root", ""))
+        venv_python = Path(commands.get("venv_python", ""))
+        ok_script = Path(commands.get("script", ""))
+
+        checks.extend(
+            [
+                DoctorCheck(
+                    name="knowledge_base_root",
+                    ok=knowledge_base_root.exists(),
+                    severity="fatal",
+                    message=f"知识库目录: {knowledge_base_root}",
+                ),
+                DoctorCheck(
+                    name="knowledge_base_manager_root",
+                    ok=knowledge_base_manager_root.exists(),
+                    severity="fatal",
+                    message=f"knowledge-base-manager: {knowledge_base_manager_root}",
+                ),
+                DoctorCheck(
+                    name="regression_project_root",
+                    ok=regression_root.exists(),
+                    severity="warning",
+                    message=f"回归项目目录: {regression_root}",
+                ),
+                DoctorCheck(
+                    name="ok_ui_venv_python",
+                    ok=venv_python.exists(),
+                    severity="warning",
+                    message=f"ok_autotest_ui Python: {venv_python}",
+                ),
+                DoctorCheck(
+                    name="ok_ui_script",
+                    ok=ok_script.exists(),
+                    severity="warning",
+                    message=f"ok_autotest_ui 脚本: {ok_script}",
+                ),
+            ]
+        )
+
+        if venv_python.exists():
+            pytest_proc = run_command([str(venv_python), "-m", "pytest", "--version"])
+            checks.append(
+                DoctorCheck(
+                    name="pytest",
+                    ok=pytest_proc.returncode == 0,
+                    severity="warning",
+                    message=(pytest_proc.stdout or pytest_proc.stderr).strip()[:240] or "pytest 不可用",
+                )
+            )
+            playwright_proc = run_command([str(venv_python), "-m", "playwright", "--version"])
+            checks.append(
+                DoctorCheck(
+                    name="playwright",
+                    ok=playwright_proc.returncode == 0,
+                    severity="warning",
+                    message=(playwright_proc.stdout or playwright_proc.stderr).strip()[:240] or "playwright 不可用",
+                )
+            )
+            if ok_script.exists() and regression_root.exists():
+                doctor_proc = run_command(
+                    [str(venv_python), str(ok_script), "doctor"],
+                    cwd=regression_root,
+                    env={"PYTHONPATH": str(regression_root)},
+                )
+                checks.append(
+                    DoctorCheck(
+                        name="ok_ui_doctor",
+                        ok=doctor_proc.returncode == 0,
+                        severity="warning",
+                        message=(doctor_proc.stdout or doctor_proc.stderr).strip()[:240] or "ok_ui doctor 未通过",
+                    )
+                )
+
+        has_fatal = any(not check.ok and check.severity == "fatal" for check in checks)
+        return DoctorResult(ok=not any(not check.ok for check in checks), has_fatal=has_fatal, checks=checks)
 
     def _execute_phase(self, state: RunState, phase: Phase, inputs: dict[str, Any]) -> RunState:
         if phase == Phase.INTAKE:
@@ -207,6 +388,123 @@ class QAConductor:
             return MIXED_PHASES
         return NEW_FEATURE_PHASES
 
+    def _is_actionable(self, state: RunState) -> bool:
+        if state.status in (RunStatus.BLOCKED.value, RunStatus.COMPLETED.value, RunStatus.ERROR.value):
+            return True
+        return False
+
+    def _refresh_next_action(self, state: RunState) -> None:
+        if state.status == RunStatus.BLOCKED.value:
+            if not state.blocked_since:
+                state.blocked_since = utc_now_iso()
+        else:
+            state.blocked_since = ""
+
+        if state.status == RunStatus.COMPLETED.value:
+            state.next_action = NextAction(
+                kind=NextActionKind.COMPLETED.value,
+                phase=state.current_phase,
+                summary="运行已完成",
+            )
+            return
+
+        if state.status == RunStatus.ERROR.value:
+            state.next_action = NextAction(
+                kind=NextActionKind.ERROR.value,
+                phase=state.current_phase,
+                summary=state.error_reason or "运行出错",
+                details={"error_reason": state.error_reason},
+            )
+            return
+
+        phase = self._phase_from_name(state.current_phase)
+        if state.status == RunStatus.BLOCKED.value:
+            if phase in SKILL_PATHS:
+                skill_path = str(self.config.project_root / SKILL_PATHS[phase])
+                if not Path(skill_path).exists():
+                    state.next_action = NextAction(
+                        kind=NextActionKind.FIX_ENVIRONMENT.value,
+                        phase=phase.value,
+                        summary=state.blocked_reason or f"缺少 {phase.value} skill，请先同步内嵌资源",
+                        skill_path=skill_path,
+                        resume_command="python -m qa_agent.cli doctor",
+                    )
+                    return
+                kind = NextActionKind.RUN_SKILL.value
+                if phase == Phase.KNOWLEDGE_BASE_UPDATE:
+                    summary = "执行 knowledge-base-manager，生成预览并确认写入"
+                else:
+                    summary = f"执行 {phase.value} skill 并提交产物"
+                state.next_action = NextAction(
+                    kind=kind,
+                    phase=phase.value,
+                    summary=summary,
+                    skill_path=skill_path,
+                    instruction_path=state.artifacts.get(f"{phase.value}_instruction", ""),
+                    required_artifacts=PHASE_REQUIRED_ARTIFACTS.get(phase, []),
+                    resume_command=self._complete_command(state.run_id, phase),
+                )
+                return
+            if phase == Phase.IMPACT_VERIFICATION:
+                state.next_action = NextAction(
+                    kind=NextActionKind.CONFIRM_PHASE.value,
+                    phase=phase.value,
+                    summary="确认变更归因报告后继续",
+                    required_artifacts=[],
+                    resume_command=f"python -m qa_agent.cli complete --run-id {state.run_id} --phase {phase.value}",
+                    details={"report": state.artifacts.get("change_attribution_report", "")},
+                )
+                return
+            if phase == Phase.LEGACY_UPDATE:
+                state.next_action = NextAction(
+                    kind=NextActionKind.MANUAL_REVIEW.value,
+                    phase=phase.value,
+                    summary=state.blocked_reason or "旧脚本更新需要人工介入",
+                    required_artifacts=[],
+                    resume_command=f"python -m qa_agent.cli next --run-id {state.run_id}",
+                    details={"legacy_update_tasks": state.artifacts.get("legacy_update_tasks", "")},
+                )
+                return
+
+        state.next_action = NextAction(
+            kind=NextActionKind.CONTINUE_AUTO.value,
+            phase=state.current_phase,
+            summary=state.blocked_reason or "继续推进到下一个动作点",
+            resume_command=f"python -m qa_agent.cli next --run-id {state.run_id}",
+        )
+
+    def _complete_command(self, run_id: str, phase: Phase) -> str:
+        parts = ["python -m qa_agent.cli complete", f"--run-id {run_id}", f"--phase {phase.value}"]
+        for artifact_key in PHASE_REQUIRED_ARTIFACTS.get(phase, []):
+            parts.append(f"--artifact {artifact_key}=<path>")
+        return " ".join(parts)
+
+    def _set_error_state(self, state: RunState, exc: Exception) -> None:
+        state.status = RunStatus.ERROR.value
+        state.phase_statuses[state.current_phase] = PhaseStatus.ERROR.value
+        state.error_reason = f"{type(exc).__name__}: {exc}"
+        state.blocked_reason = "自动推进时发生错误，请查看 error_reason"
+        self._refresh_next_action(state)
+
+    def _stale_blocked_warning(self, state: RunState) -> str:
+        if state.status != RunStatus.BLOCKED.value or not state.blocked_since:
+            return ""
+        threshold = int(self.config.thresholds.get("gates", {}).get("blocked_warn_after_seconds", 1800))
+        try:
+            blocked_at = datetime.fromisoformat(state.blocked_since)
+        except ValueError:
+            return ""
+        seconds = int((datetime.now(timezone.utc) - blocked_at).total_seconds())
+        if seconds < threshold:
+            return ""
+        minutes = seconds // 60
+        return f"已阻塞 {minutes} 分钟，建议检查 skill 是否已完成或是否缺少 artifact。"
+
+    def _persist_doctor_result(self, state: RunState, doctor_result: dict[str, Any] | DoctorResult) -> None:
+        path = self.store.artifact_path(state.run_id, "doctor_result.json")
+        write_json(path, to_data(doctor_result))
+        state.artifacts["doctor_result"] = str(path)
+
     def _phase_intake(self, state: RunState, inputs: dict[str, Any]) -> RunState:
         if state.artifacts.get("requirement_packet"):
             self._mark(state, Phase.INTAKE, PhaseStatus.COMPLETED)
@@ -229,16 +527,20 @@ class QAConductor:
         return state
 
     def _phase_impact_split(self, state: RunState, mode: str) -> RunState:
+        if (
+            state.artifacts.get("impact_split")
+            and state.phase_statuses.get(Phase.IMPACT_SPLIT.value) == PhaseStatus.COMPLETED.value
+        ):
+            return state
         self._mark(state, Phase.IMPACT_SPLIT, PhaseStatus.RUNNING)
         state.change_mode = mode
         phases = self._phases_for_mode(mode)
         state.phase_statuses = {phase.value: PhaseStatus.PENDING.value for phase in phases}
         state.phase_statuses[Phase.INTAKE.value] = PhaseStatus.COMPLETED.value
         state.phase_statuses[Phase.IMPACT_SPLIT.value] = PhaseStatus.COMPLETED.value
-        write_json(
-            self.store.artifact_path(state.run_id, "impact_split.json"),
-            {"change_mode": mode, "phases": [phase.value for phase in phases]},
-        )
+        split_path = self.store.artifact_path(state.run_id, "impact_split.json")
+        write_json(split_path, {"change_mode": mode, "phases": [phase.value for phase in phases]})
+        state.artifacts["impact_split"] = str(split_path)
         self._mark(state, Phase.IMPACT_SPLIT, PhaseStatus.COMPLETED)
         return state
 
@@ -465,11 +767,26 @@ class QAConductor:
         if not textcases_text:
             reasons.append("缺少 textcases，或测试用例文档内容为空。")
 
-        environment = self._parse_environment_config(textcases_text) if textcases_text else {}
+        document = parse_markdown_document(textcases_path) if textcases_text else None
+        environment = document.environment if document else {}
         if not environment:
             reasons.append("测试用例文档缺少“测试环境配置”表格。")
 
-        cases = self._parse_text_case_entries(textcases_text, textcases_path) if textcases_text else []
+        cases = [
+            TextCaseManifestEntry(
+                tc_id=case.tc_id,
+                title=case.title,
+                priority=case.priority,
+                test_type=case.test_type,
+                ui_automatable=case.ui_automatable,
+                ui_automation_label=case.ui_automation_label,
+                preconditions=case.preconditions,
+                steps=case.steps,
+                expected_results=case.expected_results,
+                source_doc=case.source_doc,
+            )
+            for case in (document.cases if document else [])
+        ]
         if not cases:
             reasons.append("测试用例文档中未解析到任何用例。")
 
@@ -1005,6 +1322,7 @@ class QAConductor:
         feature = packet.get("feature_name", "")
         new_cases = self._discover_new_cases(state, module, site, feature)
         existing_cases = self._discover_existing_cases(packet)
+        self._mark_overlapping_source_groups(new_cases, existing_cases)
         merged_paths = sorted(
             {
                 candidate.target
@@ -1039,6 +1357,7 @@ class QAConductor:
                         module=module,
                         site=site,
                         feature_key=feature,
+                        source_group="new_feature",
                         reason=f"来源于产物 {key}",
                     )
                 )
@@ -1080,11 +1399,18 @@ class QAConductor:
         matches: list[ImpactCandidate] = []
         for script_path in sorted(regression_root.rglob("test_*.py")):
             normalized_path = normalize_text(script_path.as_posix())
-            if module and module not in normalized_path:
-                continue
             text = read_text(script_path)
             searchable = normalize_text(f"{script_path.as_posix()} {text}")
-            if keywords and not any(keyword in searchable for keyword in keywords):
+            reasons = self._script_impact_reasons(
+                script_path=script_path,
+                text=text,
+                searchable=searchable,
+                module=module,
+                site=packet.get("site", ""),
+                feature=feature,
+                keywords=keywords,
+            )
+            if not reasons:
                 continue
             case_refs = self._extract_case_refs(script_path, text)
             if case_refs:
@@ -1096,10 +1422,15 @@ class QAConductor:
                             module=module,
                             site=packet.get("site", ""),
                             feature_key=feature,
-                            reason="模块与关键字命中现有自动化脚本",
+                            source_group="regression",
+                            reason="; ".join(reasons),
                             related_case_id=case_ref["case_id"],
                             related_nodeid=case_ref["nodeid"],
-                            details={"test_name": case_ref["test_name"]},
+                            details={
+                                "test_name": case_ref["test_name"],
+                                "allure_title": case_ref.get("allure_title", ""),
+                                "impact_reasons": reasons,
+                            },
                         )
                     )
             else:
@@ -1110,10 +1441,57 @@ class QAConductor:
                         module=module,
                         site=packet.get("site", ""),
                         feature_key=feature,
-                        reason="模块与关键字命中现有自动化脚本",
+                        source_group="regression",
+                        reason="; ".join(reasons),
+                        details={"impact_reasons": reasons},
                     )
                 )
         return matches
+
+    def _mark_overlapping_source_groups(
+        self,
+        new_cases: list[ImpactCandidate],
+        existing_cases: list[ImpactCandidate],
+    ) -> None:
+        new_names = {Path(candidate.target).name for candidate in new_cases if candidate.target}
+        existing_names = {Path(candidate.target).name for candidate in existing_cases if candidate.target}
+        overlap_names = new_names & existing_names
+        for candidate in [*new_cases, *existing_cases]:
+            if Path(candidate.target).name in overlap_names:
+                candidate.source_group = "both"
+
+    def _script_impact_reasons(
+        self,
+        *,
+        script_path: Path,
+        text: str,
+        searchable: str,
+        module: str,
+        site: str,
+        feature: str,
+        keywords: list[str],
+    ) -> list[str]:
+        scoped_reasons: list[str] = []
+        metadata_reasons: list[str] = []
+        normalized_path = normalize_text(script_path.as_posix())
+        if module and module in normalized_path:
+            scoped_reasons.append("路径命中 module")
+        if site and re.search(rf"@pytest\.mark\.{re.escape(site)}\b", text):
+            scoped_reasons.append("pytest marker 命中 site")
+        if module and re.search(rf"@pytest\.mark\.{re.escape(module)}\b", text):
+            scoped_reasons.append("pytest marker 命中 module")
+        if feature and normalize_text(feature) in searchable:
+            scoped_reasons.append("allure/title/text 命中 feature")
+        if re.search(r"@pytest\.mark\.case_id_[a-zA-Z0-9_]+", text):
+            metadata_reasons.append("存在 case_id 元数据")
+        if "::test_" in searchable or re.search(r"def test_[a-zA-Z0-9_]+\(", text):
+            metadata_reasons.append("存在 nodeid/test 函数元数据")
+        keyword_hits = [keyword for keyword in keywords if keyword in searchable]
+        if keyword_hits:
+            scoped_reasons.append("关键字命中: " + ", ".join(keyword_hits[:5]))
+        if not scoped_reasons:
+            return []
+        return scoped_reasons + metadata_reasons
 
     def _impact_keywords(self, module: str, feature: str, change_desc: str) -> list[str]:
         raw_tokens = [module, feature, change_desc]
@@ -1129,6 +1507,7 @@ class QAConductor:
 
     def _extract_case_refs(self, script_path: Path, text: str) -> list[dict[str, str]]:
         case_ids = re.findall(r"@pytest\.mark\.(case_id_[a-zA-Z0-9_]+)", text)
+        allure_titles = re.findall(r'@allure\.title\("([^"]+)"\)', text)
         test_names = re.findall(r"def (test_[a-zA-Z0-9_]+)\(", text)
         refs: list[dict[str, str]] = []
         for index, test_name in enumerate(test_names):
@@ -1138,6 +1517,7 @@ class QAConductor:
                     "case_id": case_id,
                     "test_name": test_name,
                     "nodeid": f"{script_path.as_posix()}::{test_name}",
+                    "allure_title": allure_titles[index] if index < len(allure_titles) else "",
                 }
             )
         return refs
@@ -1204,6 +1584,8 @@ class QAConductor:
         records: list[ImpactVerificationRecord],
     ) -> list[LegacyUpdateTask]:
         tasks: list[LegacyUpdateTask] = []
+        promotion_tasks: list[LegacyUpdateTask] = []
+        legacy_tasks: list[LegacyUpdateTask] = []
         max_rounds = int(self.config.thresholds.get("gates", {}).get("max_fix_rounds", 3))
         module = (packet.get("candidate_modules") or [""])[0]
         site = packet.get("site", "")
@@ -1211,11 +1593,11 @@ class QAConductor:
             if record.source_type == "new-script" and record.run_status == ImpactRunStatus.PASSED.value:
                 promotion_task = self._build_new_script_promotion_task(packet, record, max_rounds)
                 if promotion_task:
-                    tasks.append(promotion_task)
+                    promotion_tasks.append(promotion_task)
                 continue
 
             if record.source_type == "new-script" and record.category == AttributionCategory.LATEST_CHANGE.value:
-                tasks.append(
+                promotion_tasks.append(
                     LegacyUpdateTask(
                         task_id=make_task_id("legacy"),
                         target_script=record.target,
@@ -1233,7 +1615,7 @@ class QAConductor:
             if record.category != AttributionCategory.LATEST_CHANGE.value:
                 continue
 
-            tasks.append(
+            legacy_tasks.append(
                 LegacyUpdateTask(
                     task_id=make_task_id("legacy"),
                     target_script=record.target,
@@ -1250,6 +1632,8 @@ class QAConductor:
                     },
                 )
             )
+        tasks.extend(promotion_tasks)
+        tasks.extend(legacy_tasks)
         return tasks
 
     def _build_new_script_promotion_task(
@@ -1458,7 +1842,27 @@ class QAConductor:
             "case_ids": sorted({task.target_case_id for task in tasks if task.target_case_id}),
             "nodeids": sorted({task.target_nodeid for task in tasks if task.target_nodeid}),
             "selectors": [{"kind": "path", "value": path} for path in sorted(path for path in candidate_paths if path)],
+            "sources": self._selector_sources(impact_payload, tasks),
         }
+
+    def _selector_sources(self, impact_payload: dict[str, Any], tasks: list[LegacyUpdateTask]) -> list[dict[str, str]]:
+        sources: list[dict[str, str]] = []
+        seen: set[tuple[str, str]] = set()
+        for item in [*(impact_payload.get("new_cases", []) or []), *(impact_payload.get("existing_cases", []) or [])]:
+            target = item.get("target", "")
+            source_group = item.get("source_group", "") or item.get("source_type", "")
+            key = (target, source_group)
+            if not target or key in seen:
+                continue
+            seen.add(key)
+            sources.append({"target": target, "source_group": source_group, "reason": item.get("reason", "")})
+        for task in tasks:
+            source_group = str(task.details.get("source_type") or task.impact_type)
+            key = (task.target_script, source_group)
+            if task.target_script and key not in seen:
+                seen.add(key)
+                sources.append({"target": task.target_script, "source_group": source_group, "reason": task.reason})
+        return sources
 
     def _refresh_selector_plan(self, state: RunState, tasks: list[LegacyUpdateTask]) -> Path:
         packet = self._requirement_packet(state)

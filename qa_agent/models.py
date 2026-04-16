@@ -35,6 +35,7 @@ class PhaseStatus(str, Enum):
     COMPLETED = "已完成"
     BLOCKED = "已阻塞"
     SKIPPED = "已跳过"
+    ERROR = "执行出错"
 
 
 class RunStatus(str, Enum):
@@ -42,6 +43,7 @@ class RunStatus(str, Enum):
     RUNNING = "执行中"
     BLOCKED = "已阻塞"
     COMPLETED = "已完成"
+    ERROR = "执行出错"
 
 
 class CaseStatus(str, Enum):
@@ -79,6 +81,52 @@ class PlaywrightOutcomeType(str, Enum):
     MANUAL_REVIEW = "manual_review"
 
 
+class NextActionKind(str, Enum):
+    RUN_SKILL = "run_skill"
+    CONFIRM_PHASE = "confirm_phase"
+    CONTINUE_AUTO = "continue_auto"
+    MANUAL_REVIEW = "manual_review"
+    FIX_ENVIRONMENT = "fix_environment"
+    COMPLETED = "completed"
+    ERROR = "error"
+
+
+@dataclass
+class NextAction:
+    kind: str = ""
+    phase: str = ""
+    summary: str = ""
+    skill_path: str = ""
+    instruction_path: str = ""
+    required_artifacts: list[str] = field(default_factory=list)
+    resume_command: str = ""
+    details: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class DoctorCheck:
+    name: str
+    ok: bool
+    severity: str = "warning"
+    message: str = ""
+    details: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class DoctorResult:
+    ok: bool
+    has_fatal: bool = False
+    checks: list[DoctorCheck] = field(default_factory=list)
+
+    @property
+    def warnings(self) -> list[DoctorCheck]:
+        return [check for check in self.checks if not check.ok and check.severity == "warning"]
+
+    @property
+    def fatals(self) -> list[DoctorCheck]:
+        return [check for check in self.checks if not check.ok and check.severity == "fatal"]
+
+
 @dataclass
 class RequirementPacket:
     change_mode: str
@@ -103,6 +151,16 @@ class RunState:
     phase_statuses: dict[str, str] = field(default_factory=dict)
     artifacts: dict[str, str] = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)
+    blocked_since: str = ""
+    next_action: NextAction = field(default_factory=NextAction)
+    error_reason: str = ""
+    version: int = 0
+
+    def __post_init__(self) -> None:
+        if not self.next_action:
+            self.next_action = NextAction()
+        elif isinstance(self.next_action, dict):
+            self.next_action = NextAction(**self.next_action)
 
     def touch(self) -> None:
         self.updated_at = utc_now_iso()
@@ -197,6 +255,7 @@ class ImpactCandidate:
     module: str = ""
     site: str = ""
     feature_key: str = ""
+    source_group: str = ""
     selector_hint: str = ""
     reason: str = ""
     related_case_id: str = ""
