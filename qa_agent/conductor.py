@@ -19,6 +19,9 @@ from qa_agent.adapters.legacy_update import (
     LegacyUpdateExecutor,
     make_task_id,
 )
+from qa_agent.agent_memory import MemoryExporter, MemoryStore
+from qa_agent.agent_memory.candidate import build_candidate_from_text
+from qa_agent.agent_memory.models import to_data as memory_to_data
 from qa_agent.config import AppConfig
 from qa_agent.io import read_json, read_text, write_json, write_text
 from qa_agent.markdown_cases import parse_markdown_document
@@ -112,6 +115,7 @@ class QAConductor:
         state = self.store.create_run(mode)
         state = self._phase_intake(state, inputs)
         state = self._phase_impact_split(state, mode)
+        self._attach_memory_context(state, inputs)
         if inputs.get("doctor_result"):
             self._persist_doctor_result(state, inputs["doctor_result"])
         state.status = RunStatus.PLANNED.value
@@ -455,6 +459,7 @@ class QAConductor:
                     instruction_path=state.artifacts.get(f"{phase.value}_instruction", ""),
                     required_artifacts=PHASE_REQUIRED_ARTIFACTS.get(phase, []),
                     resume_command=self._complete_command(state.run_id, phase),
+                    details={"memory_context": state.artifacts.get("memory_context", "")},
                 )
                 return
             if phase == Phase.IMPACT_VERIFICATION:
@@ -534,6 +539,31 @@ class QAConductor:
         path = self.store.artifact_path(state.run_id, "doctor_result.json")
         write_json(path, to_data(doctor_result))
         state.artifacts["doctor_result"] = str(path)
+
+    def _attach_memory_context(self, state: RunState, inputs: dict[str, Any]) -> None:
+        query = self._memory_query_from_inputs(inputs)
+        memory_root = self.config.agent_memory_root
+        exporter = MemoryExporter(memory_root)
+        content = exporter.render_context(query, limit=8, include_empty=True)
+        path = self.store.artifact_path(state.run_id, "memory_context.md")
+        write_text(path, content)
+        state.artifacts["memory_context"] = str(path)
+        if memory_root.exists():
+            try:
+                exported = exporter.export("qa-agent", query=query, limit=8)
+                state.artifacts["memory_context_export"] = str(exported)
+            except Exception as exc:
+                state.notes.append(f"memory export skipped: {type(exc).__name__}: {exc}")
+
+    def _memory_query_from_inputs(self, inputs: dict[str, Any]) -> str:
+        parts: list[str] = []
+        for key in ("change_mode", "site", "module", "feature", "change_description", "figma_url"):
+            value = inputs.get(key)
+            if value:
+                parts.append(str(value))
+        for ref in inputs.get("prd_refs", []) or []:
+            parts.append(str(ref))
+        return " ".join(parts)
 
     def _phase_intake(self, state: RunState, inputs: dict[str, Any]) -> RunState:
         if state.artifacts.get("requirement_packet"):
@@ -1512,10 +1542,50 @@ class QAConductor:
         context_path = self.store.artifact_path(state.run_id, "knowledge_base_update_context.md")
         write_text(context_path, self._render_knowledge_base_update_context(state))
         state.artifacts["knowledge_base_update_context"] = str(context_path)
+        candidates_path = self._write_memory_candidates(state)
+        if candidates_path:
+            state.artifacts["memory_candidates"] = str(candidates_path)
         self._mark(state, Phase.FINAL_REPORT, PhaseStatus.COMPLETED)
         state.status = RunStatus.RUNNING.value
         state.blocked_reason = ""
         return state
+
+    def _write_memory_candidates(self, state: RunState) -> Path | None:
+        final_report = state.artifacts.get("final_report", "")
+        if not final_report:
+            return None
+        content = (
+            f"QA Agent run {state.run_id} 已完成最终报告。"
+            f"变更模式：{state.change_mode}；"
+            f"最终报告：{final_report}。"
+            "如本次过程包含可复用的用户纠错、流程决策或踩坑经验，请在任务结束时批量确认后写入正式记忆。"
+        )
+        candidate = build_candidate_from_text(
+            content,
+            memory_type="summary",
+            scope=["qa_agent", "run_summary"],
+            tags=["qa-agent", "summary"],
+            priority="low",
+            risk="low",
+            candidate_reason="QA Agent 最终报告阶段自动生成的候选摘要",
+            source_kind="run_summary",
+            run_id=state.run_id,
+        )
+        memory_root = self.config.agent_memory_root
+        try:
+            stored = MemoryStore(memory_root).append_candidate(candidate)
+            payload = [memory_to_data(stored)]
+        except Exception as exc:
+            payload = [
+                {
+                    "candidate": memory_to_data(candidate),
+                    "not_stored_reason": f"{type(exc).__name__}: {exc}",
+                }
+            ]
+            state.notes.append(f"memory candidate skipped: {type(exc).__name__}: {exc}")
+        path = self.store.artifact_path(state.run_id, "memory_candidates.json")
+        write_json(path, payload)
+        return path
 
     def _build_instruction(self, state: RunState, phase: Phase) -> str:
         skill_path = SKILL_PATHS[phase]
@@ -1544,29 +1614,30 @@ class QAConductor:
                     "- 文本用例必须包含测试环境配置表格、TC编号、前置条件、步骤、预期、优先级、测试类型、UI自动化",
                 ]
             )
+            self._append_memory_instruction(parts, state)
             return "\n".join(parts)
 
         if phase == Phase.PLAYWRIGHT_GENERATOR:
-            return "\n".join(
-                [
-                    f"# 阶段: {phase.value}",
-                    "",
-                    f"请读取 `{skill_path}` 并按其定义的 5 阶段流程执行。",
-                    "",
-                    "## 输入",
-                    f"- 测试用例文档: {state.artifacts.get('kb_text_case_draft_path') or state.artifacts.get('textcases', '')}",
-                    f"- 阶段1清单: {state.artifacts.get('text_case_manifest', '')}",
-                    "",
-                    "## 要求",
-                    "- 按 SKILL.md 的 5 个阶段严格顺序执行",
-                    "- 每个阶段开始前先读取 SKILL.md 指定的 references 文件",
-                    "- 每批最多 5 条用例",
-                    "- 生成的脚本暂不直接入库，先交由影响回归阶段验证",
-                    "- complete 当前阶段时必须回传 playwright_case_outcomes.json",
-                    "- 对每条 UI自动化=✅ 的用例，必须给出唯一 outcome: script_generated / bug_recorded / manual_review",
-                    "- script_generated 的用例必须同时附带 collect-only 和 pytest 通过证明",
-                ]
-            )
+            parts = [
+                f"# 阶段: {phase.value}",
+                "",
+                f"请读取 `{skill_path}` 并按其定义的 5 阶段流程执行。",
+                "",
+                "## 输入",
+                f"- 测试用例文档: {state.artifacts.get('kb_text_case_draft_path') or state.artifacts.get('textcases', '')}",
+                f"- 阶段1清单: {state.artifacts.get('text_case_manifest', '')}",
+                "",
+                "## 要求",
+                "- 按 SKILL.md 的 5 个阶段严格顺序执行",
+                "- 每个阶段开始前先读取 SKILL.md 指定的 references 文件",
+                "- 每批最多 5 条用例",
+                "- 生成的脚本暂不直接入库，先交由影响回归阶段验证",
+                "- complete 当前阶段时必须回传 playwright_case_outcomes.json",
+                "- 对每条 UI自动化=✅ 的用例，必须给出唯一 outcome: script_generated / bug_recorded / manual_review",
+                "- script_generated 的用例必须同时附带 collect-only 和 pytest 通过证明",
+            ]
+            self._append_memory_instruction(parts, state)
+            return "\n".join(parts)
 
         if phase == Phase.OK_UI_REGRESSION:
             module = (packet.get("candidate_modules") or [""])[0]
@@ -1596,35 +1667,49 @@ class QAConductor:
                     "- complete 当前阶段时必须回传 dry-run 预览、真实回归报告、上线建议",
                 ]
             )
+            self._append_memory_instruction(parts, state)
             return "\n".join(parts)
 
         if phase == Phase.KNOWLEDGE_BASE_UPDATE:
             kb_context = state.artifacts.get("knowledge_base_update_context", "")
             kb_draft = state.artifacts.get("kb_text_case_draft_path", "")
-            return "\n".join(
-                [
-                    f"# 阶段: {phase.value}",
-                    "",
-                    f"请读取 `{skill_path}` 并按其“预览 -> 确认 -> 写入”流程执行。",
-                    "",
-                    "## 输入",
-                    f"- 更新上下文: {kb_context}",
-                    f"- 最终报告: {state.artifacts.get('final_report', '')}",
-                    f"- 影响分析: {state.artifacts.get('impact_candidates', '')}",
-                    f"- 归因报告: {state.artifacts.get('change_attribution_report', '')}",
-                    f"- 回归 selector 计划: {state.artifacts.get('regression_selector_plan', '')}",
-                    f"- 文本用例主输入: {kb_draft}",
-                    "",
-                    "## 要求",
-                    "- 若存在 kb_text_case_draft_path，必须优先读取并回写该路径，不要另起第二份文本用例文档",
-                    "- 先输出 knowledge base 更新预览，再等待确认",
-                    "- 写入完成后回传 preview/result 产物路径",
-                    "- 若 vendored skill 缺失或预览失败，不要跳过本阶段",
-                    "- complete 当前阶段时必须回传 knowledge_base_update_preview 和 knowledge_base_update_result",
-                ]
-            )
+            parts = [
+                f"# 阶段: {phase.value}",
+                "",
+                f"请读取 `{skill_path}` 并按其“预览 -> 确认 -> 写入”流程执行。",
+                "",
+                "## 输入",
+                f"- 更新上下文: {kb_context}",
+                f"- 最终报告: {state.artifacts.get('final_report', '')}",
+                f"- 影响分析: {state.artifacts.get('impact_candidates', '')}",
+                f"- 归因报告: {state.artifacts.get('change_attribution_report', '')}",
+                f"- 回归 selector 计划: {state.artifacts.get('regression_selector_plan', '')}",
+                f"- 文本用例主输入: {kb_draft}",
+                "",
+                "## 要求",
+                "- 若存在 kb_text_case_draft_path，必须优先读取并回写该路径，不要另起第二份文本用例文档",
+                "- 先输出 knowledge base 更新预览，再等待确认",
+                "- 写入完成后回传 preview/result 产物路径",
+                "- 若 vendored skill 缺失或预览失败，不要跳过本阶段",
+                "- complete 当前阶段时必须回传 knowledge_base_update_preview 和 knowledge_base_update_result",
+            ]
+            self._append_memory_instruction(parts, state)
+            return "\n".join(parts)
 
         return f"# 阶段: {phase.value}\n\n请读取 `{skill_path}` 并执行。"
+
+    def _append_memory_instruction(self, parts: list[str], state: RunState) -> None:
+        memory_context = state.artifacts.get("memory_context", "")
+        if not memory_context:
+            return
+        parts.extend(
+            [
+                "",
+                "## 相关记忆提醒",
+                f"- 先读取 memory_context: {memory_context}",
+                "- memory 只作为协作提醒，不能绕过本阶段 SKILL.md、门禁或人工确认。",
+            ]
+        )
 
     def _mark(self, state: RunState, phase: Phase, status: PhaseStatus) -> None:
         state.current_phase = phase.value

@@ -4,6 +4,9 @@ import argparse
 import json
 from pathlib import Path
 
+from qa_agent.agent_memory import MemoryExporter, MemoryRetriever, MemoryStore
+from qa_agent.agent_memory.candidate import build_candidate_from_text
+from qa_agent.agent_memory.models import to_data as memory_to_data
 from qa_agent.config import load_config
 from qa_agent.conductor import QAConductor
 from qa_agent.models import RunStatus, to_data
@@ -50,6 +53,44 @@ def build_parser() -> argparse.ArgumentParser:
     status.add_argument("--verbose", action="store_true", help="显示 artifacts 等详细信息")
 
     sub.add_parser("doctor", aliases=["环境检查"], help="执行 QA Agent 环境预检")
+
+    memory = sub.add_parser("memory", aliases=["记忆"], help="独立 Agent Memory 管理")
+    memory_sub = memory.add_subparsers(dest="memory_command", required=True)
+
+    memory_sub.add_parser("init", aliases=["初始化"], help="初始化 .agent_memory 目录")
+
+    search = memory_sub.add_parser("search", aliases=["搜索"], help="搜索正式记忆")
+    search.add_argument("query", help="搜索关键词")
+    search.add_argument("--scope", action="append", default=[], help="限定 scope，可多次传入")
+    search.add_argument("--limit", type=int, default=8)
+    search.add_argument("--json", action="store_true")
+
+    suggest = memory_sub.add_parser("suggest", aliases=["候选"], help="生成候选记忆，不写入正式记忆")
+    suggest.add_argument("--text", required=True, help="需要沉淀的纠错、偏好或结论")
+    suggest.add_argument("--type", default="correction", choices=["correction", "decision", "preference", "lesson", "summary"])
+    suggest.add_argument("--scope", action="append", default=[])
+    suggest.add_argument("--tag", action="append", default=[])
+    suggest.add_argument("--priority", default="high", choices=["pinned", "high", "medium", "low"])
+    suggest.add_argument("--risk", default="medium", choices=["low", "medium", "high"])
+    suggest.add_argument("--run-id")
+    suggest.add_argument("--json", action="store_true")
+
+    list_pending = memory_sub.add_parser("list-pending", aliases=["待确认"], help="列出待确认候选记忆")
+    list_pending.add_argument("--json", action="store_true")
+
+    promote = memory_sub.add_parser("promote", aliases=["写入"], help="把候选记忆写入正式记忆")
+    promote.add_argument("--id", dest="candidate_id")
+    promote.add_argument("--all-recommended", action="store_true", help="写入所有 suggested_action=promote 的 pending 候选")
+    promote.add_argument("--json", action="store_true")
+
+    reject = memory_sub.add_parser("reject", aliases=["拒绝"], help="拒绝候选记忆")
+    reject.add_argument("--id", dest="candidate_id", required=True)
+    reject.add_argument("--json", action="store_true")
+
+    export = memory_sub.add_parser("export", aliases=["导出"], help="导出给不同 AI 工具读取的记忆上下文")
+    export.add_argument("--target", required=True, choices=["qa-agent", "claude", "cursor"])
+    export.add_argument("--query", default="")
+    export.add_argument("--limit", type=int, default=8)
 
     return parser
 
@@ -124,6 +165,37 @@ def _doctor_has_fatal(result) -> bool:
     return bool(getattr(result, "has_fatal", False))
 
 
+def _memory_root(config) -> Path:
+    return config.agent_memory_root
+
+
+def _format_memory_results(results) -> str:
+    if not results:
+        return "未找到相关正式记忆。"
+    lines = ["相关记忆:"]
+    for item in results:
+        memory = item.memory
+        scope = ", ".join(memory.scope) if memory.scope else "general"
+        lines.append(f"- {memory.id} [{memory.priority}] {memory.title} ({memory.type}; {scope})")
+        lines.append(f"  {memory.content}")
+    return "\n".join(lines)
+
+
+def _format_candidates(candidates) -> str:
+    if not candidates:
+        return "暂无待确认候选记忆。"
+    lines = ["待确认候选记忆:"]
+    for candidate in candidates:
+        scope = ", ".join(candidate.scope) if candidate.scope else "general"
+        conflict = f" | conflict: {', '.join(candidate.conflict_ids)}" if candidate.conflict_ids else ""
+        lines.append(
+            f"- {candidate.id} [{candidate.risk}/{candidate.suggested_action}] "
+            f"{candidate.title} ({candidate.type}; {scope}){conflict}"
+        )
+        lines.append(f"  {candidate.content}")
+    return "\n".join(lines)
+
+
 def _validate_plan_inputs(args, inputs: dict) -> str:
     if not args.change_mode:
         return (
@@ -149,9 +221,89 @@ def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
     config = load_config(Path(__file__).resolve().parents[1])
-    conductor = QAConductor(config)
 
     cmd = args.command
+    if cmd in ("memory", "记忆"):
+        store = MemoryStore(_memory_root(config))
+        subcmd = args.memory_command
+        try:
+            if subcmd in ("init", "初始化"):
+                store.init()
+                print(f"Agent Memory 已初始化: {store.root}")
+                return 0
+
+            if subcmd in ("search", "搜索"):
+                results = MemoryRetriever(store.root).search(args.query, scopes=args.scope, limit=args.limit)
+                if args.json:
+                    print(json.dumps([memory_to_data(item) for item in results], ensure_ascii=False, indent=2))
+                else:
+                    print(_format_memory_results(results))
+                return 0
+
+            if subcmd in ("suggest", "候选"):
+                candidate = build_candidate_from_text(
+                    args.text,
+                    memory_type=args.type,
+                    scope=args.scope or None,
+                    tags=args.tag or None,
+                    priority=args.priority,
+                    risk=args.risk,
+                    run_id=args.run_id,
+                )
+                candidate = store.append_candidate(candidate)
+                if args.json:
+                    print(json.dumps(memory_to_data(candidate), ensure_ascii=False, indent=2))
+                else:
+                    print(f"候选记忆已生成: {candidate.id}")
+                    if candidate.conflict_ids:
+                        print(f"提示: 发现潜在冲突，需人工确认: {', '.join(candidate.conflict_ids)}")
+                return 0
+
+            if subcmd in ("list-pending", "待确认"):
+                candidates = store.list_candidates()
+                if args.json:
+                    print(json.dumps([memory_to_data(item) for item in candidates], ensure_ascii=False, indent=2))
+                else:
+                    print(_format_candidates(candidates))
+                return 0
+
+            if subcmd in ("promote", "写入"):
+                promoted = []
+                if args.all_recommended:
+                    for candidate in store.list_candidates():
+                        if candidate.suggested_action == "promote" and not candidate.conflict_ids:
+                            promoted.append(store.promote(candidate.id))
+                else:
+                    if not args.candidate_id:
+                        print("参数错误: promote 需要 --id，或使用 --all-recommended")
+                        return 1
+                    promoted.append(store.promote(args.candidate_id))
+                if args.json:
+                    print(json.dumps([memory_to_data(item) for item in promoted], ensure_ascii=False, indent=2))
+                else:
+                    print(f"已写入正式记忆: {len(promoted)} 条")
+                    for memory in promoted:
+                        print(f"- {memory.id}: {memory.title}")
+                return 0
+
+            if subcmd in ("reject", "拒绝"):
+                candidate = store.reject(args.candidate_id)
+                if args.json:
+                    print(json.dumps(memory_to_data(candidate), ensure_ascii=False, indent=2))
+                else:
+                    print(f"已拒绝候选记忆: {candidate.id}")
+                return 0
+
+            if subcmd in ("export", "导出"):
+                output = MemoryExporter(store.root).export(args.target, query=args.query, limit=args.limit)
+                print(f"记忆上下文已导出: {output}")
+                return 0
+        except Exception as exc:
+            print(f"错误: {exc}")
+            return 1
+
+    conductor = QAConductor(config)
+
     if cmd in ("plan", "计划"):
         inputs = {k: v for k, v in vars(args).items() if k != "command" and v not in (None, [], "")}
         validation_error = _validate_plan_inputs(args, inputs)

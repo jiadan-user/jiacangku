@@ -1,4 +1,5 @@
 .qa_agent/
+.agent_memory/
 .venv/
 .tmp/
 .pytest_cache/

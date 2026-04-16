@@ -106,6 +106,7 @@ class ConductorSmokeTests(unittest.TestCase):
         config = load_config(root)
         config.skills["paths"]["knowledge_base_root"] = str(self.kb_root)
         config.skills["paths"]["regression_project_root"] = str(self.regression_root)
+        config.skills["paths"]["agent_memory_root"] = str(self.temp_path / ".agent_memory")
         return QAConductor(
             config,
             legacy_update_executor=legacy_executor,
@@ -208,6 +209,14 @@ class ConductorSmokeTests(unittest.TestCase):
         self.assertEqual(state.current_phase, Phase.SENIOR_QA_BRAIN.value)
         self.assertEqual(state.status, RunStatus.BLOCKED.value)
         return state
+
+    def test_plan_attaches_memory_context_artifact(self) -> None:
+        conductor = self._make_conductor()
+        state = conductor.plan(self._new_feature_inputs())
+
+        self.assertIn("memory_context", state.artifacts)
+        self.assertTrue(Path(state.artifacts["memory_context"]).exists())
+        self.assertIn("Usage Rule", read_text(state.artifacts["memory_context"]))
 
     def _complete_stage1(self, conductor: QAConductor, state, *, missing_ui_marker: bool = False):
         analysis_path = self._write_temp_file("artifacts/analysis_report.md", self._sample_analysis_report())

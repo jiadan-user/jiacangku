@@ -18,6 +18,11 @@ class AppConfig:
     def qa_state_root(self) -> Path:
         return self.project_root / ".qa_agent"
 
+    @property
+    def agent_memory_root(self) -> Path:
+        configured = self.skills.get("paths", {}).get("agent_memory_root", "")
+        return Path(configured) if configured else self.project_root / ".agent_memory"
+
 
 def _resolve_nested_paths(value: Any, project_root: Path) -> Any:
     if isinstance(value, dict):
