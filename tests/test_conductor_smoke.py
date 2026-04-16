@@ -4,6 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from qa_agent.adapters.legacy_update import LegacyUpdateExecutor, LegacyUpdateValidator
 from qa_agent.config import load_config
 from qa_agent.conductor import QAConductor
 from qa_agent.io import read_json, read_text
@@ -21,6 +22,7 @@ from qa_agent.models import (
     PhaseStatus,
     RunState,
     RunStatus,
+    ValidationResult,
 )
 
 
@@ -51,6 +53,12 @@ class FakeLegacyUpdateExecutor:
         outcome = self.outcomes[min(self.calls, len(self.outcomes) - 1)]
         self.calls += 1
         return outcome
+
+
+class AlwaysPassLegacyValidator(LegacyUpdateValidator):
+    def validate(self, candidate_path: Path, task: LegacyUpdateTask) -> list[ValidationResult]:
+        del candidate_path, task
+        return [ValidationResult(ok=True, name="fake", message="ok")]
 
 
 class ConductorSmokeTests(unittest.TestCase):
@@ -313,7 +321,7 @@ class ConductorSmokeTests(unittest.TestCase):
         self.assertEqual(state.status, RunStatus.BLOCKED.value)
         self.assertEqual(state.phase_statuses[Phase.LEGACY_UPDATE.value], PhaseStatus.COMPLETED.value)
 
-    def test_complete_impact_verification_generates_legacy_tasks_and_loops(self) -> None:
+    def test_complete_impact_verification_blocks_for_playwright_when_patch_is_missing(self) -> None:
         impact_outcome = ImpactVerificationOutcome(
             selector_plan={
                 "module": "wallet",
@@ -380,10 +388,14 @@ class ConductorSmokeTests(unittest.TestCase):
         state = conductor.advance(state.run_id)
         state = conductor.complete_phase(state.run_id, Phase.IMPACT_VERIFICATION.value)
         self.assertEqual(state.current_phase, Phase.LEGACY_UPDATE.value)
-        self.assertEqual(state.status, RunStatus.RUNNING.value)
-        self.assertEqual(state.phase_statuses[Phase.LEGACY_UPDATE.value], PhaseStatus.RUNNING.value)
-        self.assertIn("继续 advance 进入下一轮", state.blocked_reason)
-        self.assertEqual(legacy_executor.calls, 1)
+        self.assertEqual(state.status, RunStatus.BLOCKED.value)
+        self.assertEqual(state.phase_statuses[Phase.LEGACY_UPDATE.value], PhaseStatus.BLOCKED.value)
+        self.assertEqual(state.next_action.kind, "run_skill")
+        self.assertIn("playwright-test-generator", state.next_action.skill_path)
+        self.assertEqual(state.next_action.required_artifacts, ["legacy_update_candidate_manifest"])
+        request = read_json(state.artifacts["legacy_rerecord_request"], default={})
+        self.assertEqual(request["tasks"][0]["recommended_action"], "re-record")
+        self.assertEqual(legacy_executor.calls, 0)
 
     def test_drive_to_action_auto_consumes_legacy_retry_until_next_skill(self) -> None:
         impact_outcome = ImpactVerificationOutcome(
@@ -416,17 +428,19 @@ class ConductorSmokeTests(unittest.TestCase):
             task_id="legacy-1",
             target_script="/tmp/test_wallet.py",
             target_nodeid="test_cases/wallet/test_wallet.py::test_xxx",
-            recommended_action="update-assertion",
+            recommended_action="promote-new-script",
             status=LegacyUpdateTaskStatus.RETRY.value,
             attempts=1,
+            details={"replacement_text": "def test_xxx():\n    assert True\n"},
         )
         done_task = LegacyUpdateTask(
             task_id="legacy-1",
             target_script="/tmp/test_wallet.py",
             target_nodeid="test_cases/wallet/test_wallet.py::test_xxx",
-            recommended_action="update-assertion",
+            recommended_action="promote-new-script",
             status=LegacyUpdateTaskStatus.COMPLETED.value,
             attempts=2,
+            details={"replacement_text": "def test_xxx():\n    assert True\n"},
         )
         legacy_executor = FakeLegacyUpdateExecutor(
             [
@@ -455,6 +469,19 @@ class ConductorSmokeTests(unittest.TestCase):
             }
         )
         state = conductor.drive_to_action(state.run_id)
+        seed_path = self._write_temp_file(
+            "artifacts/legacy_update_tasks_seed.json",
+            "["
+            '{"task_id":"legacy-1",'
+            '"target_script":"/tmp/test_wallet.py",'
+            '"target_nodeid":"test_cases/wallet/test_wallet.py::test_xxx",'
+            '"recommended_action":"promote-new-script",'
+            '"status":"pending",'
+            '"details":{"replacement_text":"def test_xxx():\\n    assert True\\n"}}'
+            "]",
+        )
+        state.artifacts["legacy_update_tasks_seed"] = seed_path
+        conductor.store.save(state)
         state = conductor.complete_phase(state.run_id, Phase.IMPACT_VERIFICATION.value)
         self.assertEqual(state.current_phase, Phase.LEGACY_UPDATE.value)
         state = conductor.drive_to_action(state.run_id)
@@ -462,6 +489,93 @@ class ConductorSmokeTests(unittest.TestCase):
         self.assertEqual(state.status, RunStatus.BLOCKED.value)
         self.assertEqual(state.next_action.kind, "run_skill")
         self.assertEqual(legacy_executor.calls, 2)
+
+    def test_legacy_update_candidate_manifest_resumes_loop_and_merges_candidate(self) -> None:
+        target_script = self.regression_root / "test_cases" / "car" / "test_car_list.py"
+        target_script.parent.mkdir(parents=True, exist_ok=True)
+        target_script.write_text("def test_old():\n    assert False\n", encoding="utf-8")
+        impact_outcome = ImpactVerificationOutcome(
+            selector_plan={
+                "module": "car",
+                "site": "ae",
+                "feature_name": "列表",
+                "candidate_paths": [str(target_script)],
+                "selectors": [{"kind": "path", "value": str(target_script)}],
+                "nodeids": [f"{target_script}::test_old"],
+                "case_ids": ["case_id_car_list"],
+            },
+            records=[
+                ImpactVerificationRecord(
+                    source_type="existing-script",
+                    target=str(target_script),
+                    module="car",
+                    site="ae",
+                    related_case_id="case_id_car_list",
+                    related_nodeid=f"{target_script}::test_old",
+                    run_status=ImpactRunStatus.FAILED.value,
+                    category=AttributionCategory.LATEST_CHANGE.value,
+                    summary="需要重新录制",
+                    reason="旧脚本逻辑已不适配最新列表改动",
+                    next_action="重录",
+                )
+            ],
+        )
+        conductor = self._make_conductor(impact_executor=FakeImpactVerificationExecutor(impact_outcome))
+        conductor.legacy_update_executor = LegacyUpdateExecutor(
+            conductor.config,
+            validator=AlwaysPassLegacyValidator(),
+        )
+        state = conductor.plan(
+            {
+                "change_mode": ChangeMode.REGRESSION.value,
+                "module": "car",
+                "site": "ae",
+                "feature": "列表",
+                "change_description": "列表卡片样式改大卡",
+            }
+        )
+        state = conductor.drive_to_action(state.run_id)
+        state = conductor.complete_phase(state.run_id, Phase.IMPACT_VERIFICATION.value)
+        self.assertEqual(state.current_phase, Phase.LEGACY_UPDATE.value)
+        self.assertEqual(state.status, RunStatus.BLOCKED.value)
+
+        tasks = read_json(state.artifacts["legacy_update_tasks"], default=[])
+        candidate = self._write_temp_file("generated/re_recorded_car_list.py", "def test_new():\n    assert True\n")
+        proof = self._write_temp_file("generated/re_recorded_car_list_proof.md", "# proof\n\n- collect-only passed\n")
+        bad_manifest = self._write_temp_file(
+            "generated/legacy_update_candidate_manifest_without_proof.json",
+            "[{"
+            f'"task_id": "{tasks[0]["task_id"]}", '
+            f'"replacement_source_path": "{candidate}", '
+            '"recommended_action": "re-record"'
+            "}]",
+        )
+        state = conductor.complete_phase(
+            state.run_id,
+            Phase.LEGACY_UPDATE.value,
+            {"legacy_update_candidate_manifest": bad_manifest},
+        )
+        self.assertEqual(state.current_phase, Phase.LEGACY_UPDATE.value)
+        self.assertEqual(state.status, RunStatus.BLOCKED.value)
+        self.assertIn("proof_artifact_path", state.blocked_reason)
+
+        manifest = self._write_temp_file(
+            "generated/legacy_update_candidate_manifest.json",
+            "[{"
+            f'"task_id": "{tasks[0]["task_id"]}", '
+            f'"replacement_source_path": "{candidate}", '
+            f'"proof_artifact_path": "{proof}", '
+            '"recommended_action": "re-record"'
+            "}]",
+        )
+        state = conductor.complete_phase(
+            state.run_id,
+            Phase.LEGACY_UPDATE.value,
+            {"legacy_update_candidate_manifest": manifest},
+        )
+        self.assertEqual(state.current_phase, Phase.OK_UI_REGRESSION.value)
+        self.assertEqual(state.status, RunStatus.BLOCKED.value)
+        self.assertIn("test_new", target_script.read_text(encoding="utf-8"))
 
     def test_drive_to_action_records_error_state(self) -> None:
         conductor = self._make_conductor(impact_executor=RaisingImpactVerificationExecutor())

@@ -135,9 +135,11 @@ python -m qa_agent.cli status --run-id <run_id> --json
    AI 会要求产出逐条 case outcome，确认每条 `UI自动化=✅` 的用例都有唯一结局。
 3. `影响回归与变更归因`
    AI 会先跑受影响用例，再给你一份简洁归因报告，等你确认后才允许改旧脚本或 promotion 新脚本。
-4. `ok_autotest_ui_skill`
+4. `旧脚本更新执行`
+   如果旧脚本无法安全 patch，QA Agent 会停下来生成重录子任务，让 AI 按 `playwright-test-generator` 重新录制候选脚本；不会自己盲猜修改旧脚本。
+5. `ok_autotest_ui_skill`
    AI 会先给你 dry-run 预览，等你确认后才真实执行回归。
-5. `knowledge-base-manager`
+6. `knowledge-base-manager`
    AI 会先给你知识库更新预览，等你确认后才写入。
 
 ## 阶段完成时通常要交哪些产物
@@ -157,7 +159,7 @@ python -m qa_agent.cli status --run-id <run_id> --json
 | 阶段2 | `playwright_case_outcomes`, `generated_scripts_manifest` |
 | 影响分析 | `impact_candidates`, `overlap_report` |
 | 影响归因 | `impact_run_selector_plan`, `impact_run_results`, `change_attribution_report` |
-| 更新循环 | `legacy_update_tasks`, `legacy_update_gate`, `regression_selector_plan` |
+| 更新循环 | `legacy_update_tasks`, `legacy_update_gate`, `legacy_rerecord_request`, `legacy_rerecord_instruction`, `legacy_update_candidate_manifest`, `regression_selector_plan` |
 | 阶段3 | `ok_ui_dry_run_preview`, `ok_ui_execution_report`, `release_recommendation` |
 | 最终阶段 | `final_report`, `knowledge_base_update_context`, `knowledge_base_update_preview`, `knowledge_base_update_result` |
 
@@ -196,6 +198,7 @@ python -m qa_agent.cli status --run-id <run_id> --json
 
 - 如果 AI 提示“等待确认”，说明这是正常门禁，确认后继续即可
 - 如果提示缺少某个 artifact，就把对应文件补齐后再次 `complete`
+- 如果 `next_action.kind=run_skill` 且阶段是 `旧脚本更新执行`，说明需要按 `legacy_rerecord_instruction.md` 调用 `playwright-test-generator`，产出 `legacy_update_candidate_manifest`
 - 如果停在 `manual-review`，说明自动循环已经到边界，需要人工介入
 
 查看状态：

@@ -20,6 +20,10 @@ from qa_agent.utils import run_command
 
 from .promotion_guard import PromotionGuard
 
+PATCH_ACTIONS = {"update-assertion", "update-selector"}
+PLAYWRIGHT_REGEN_ACTIONS = {"re-record", "split-case"}
+REPLACE_ACTIONS = {*PLAYWRIGHT_REGEN_ACTIONS, "promote-new-script"}
+
 
 class OkUISkillRuntime:
     def __init__(self, config: AppConfig) -> None:
@@ -172,9 +176,9 @@ class LegacyUpdateExecutor:
         candidate_path: Path,
         workspace: Path,
     ) -> tuple[bool, str]:
-        if task.recommended_action in {"update-assertion", "update-selector"}:
+        if task.recommended_action in PATCH_ACTIONS:
             return self._patch_candidate(task, target_path, candidate_path)
-        if task.recommended_action in {"re-record", "split-case", "promote-new-script"}:
+        if task.recommended_action in REPLACE_ACTIONS:
             return self._replace_candidate(task, target_path, candidate_path, workspace)
         return False, f"不支持的更新动作: {task.recommended_action}"
 
@@ -184,6 +188,9 @@ class LegacyUpdateExecutor:
         text = read_text(target_path)
         replacements = list(task.details.get("replacements", []) or [])
         if not replacements:
+            task.details["original_recommended_action"] = task.recommended_action
+            task.details["needs_playwright_rerecord"] = True
+            task.details["rerecord_reason"] = "缺少明确 replacements，不能由 QA Agent 盲猜 patch"
             task.recommended_action = "re-record"
             return False, "未提供可应用 patch，已升级为 re-record"
 
@@ -199,6 +206,9 @@ class LegacyUpdateExecutor:
             applied += 1
 
         if applied == 0:
+            task.details["original_recommended_action"] = task.recommended_action
+            task.details["needs_playwright_rerecord"] = True
+            task.details["rerecord_reason"] = "patch 片段未命中旧脚本，不能由 QA Agent 盲猜 patch"
             task.recommended_action = "re-record"
             return False, "未命中任何 patch 片段，已升级为 re-record"
 
@@ -220,6 +230,12 @@ class LegacyUpdateExecutor:
         replacement_source = task.details.get("replacement_source_path")
         replacement_text = task.details.get("replacement_text")
         proof_artifact = task.details.get("proof_artifact_path")
+        requires_proof = task.recommended_action in PLAYWRIGHT_REGEN_ACTIONS
+
+        if requires_proof and (not proof_artifact or not Path(proof_artifact).exists()):
+            task.details["needs_playwright_rerecord"] = True
+            task.details["rerecord_reason"] = "re-record/split-case 必须由 playwright-test-generator 提供 proof artifact"
+            return False, "缺少 playwright-test-generator proof artifact，无法完成 re-record/split-case"
 
         if proof_artifact and Path(proof_artifact).exists():
             proof_target = workspace / Path(proof_artifact).name
@@ -234,7 +250,11 @@ class LegacyUpdateExecutor:
             return True, "已写入候选替换文本"
         if target_path.exists():
             shutil.copy2(target_path, candidate_path)
+            if task.recommended_action in PLAYWRIGHT_REGEN_ACTIONS:
+                task.details["needs_playwright_rerecord"] = True
             return False, "缺少替换内容，无法完成 re-record/split-case"
+        if task.recommended_action in PLAYWRIGHT_REGEN_ACTIONS:
+            task.details["needs_playwright_rerecord"] = True
         return False, "缺少替换内容且目标脚本不存在"
 
     def _fail_or_retry(
@@ -245,6 +265,9 @@ class LegacyUpdateExecutor:
         message: str,
         validations: list[dict[str, Any]] | None = None,
     ) -> LegacyUpdateTask:
+        if task.recommended_action in PLAYWRIGHT_REGEN_ACTIONS:
+            task.details["needs_playwright_rerecord"] = True
+            task.details["rerecord_reason"] = message
         if task.attempts >= task.max_attempts:
             task.status = LegacyUpdateTaskStatus.MANUAL_REVIEW.value
             final_message = f"{message}；超过最大轮次，升级为 manual-review"

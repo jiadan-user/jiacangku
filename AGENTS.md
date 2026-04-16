@@ -284,12 +284,75 @@ warning 不阻止 `run` 创建任务，但会写入本次 run 的 `doctor_result
 - 不因为任务未完成而离开当前阶段
 - 出现 `manual-review` 时，停在当前阶段等待人工介入
 - 新脚本 promotion 也归在这个阶段
+- 不允许 QA Agent 凭空猜测旧脚本改法
+- 小 patch 只有在任务里已有明确 `details.replacements` 时才允许自动生成候选
+- 缺少明确 patch、或任务进入 `re-record/split-case` 时，必须阻塞并调用 `playwright-test-generator`
+
+### 新脚本 promotion
+
+新脚本 promotion 不重新调用 `playwright-test-generator`。它只处理阶段2已经生成、并且影响回归已通过的新脚本。
+
+流程：
+
+| 步骤 | 行为 |
+| --- | --- |
+| 1 | 阶段2生成新脚本，停留在 run/staging 产物中 |
+| 2 | 影响回归先执行该新脚本 |
+| 3 | 人工确认归因报告 |
+| 4 | 生成 `promote-new-script` 任务 |
+| 5 | 复制候选脚本到正式回归目录前先走 PromotionGuard |
+| 6 | 守卫通过后自动合并 |
+
+### 旧脚本 patch / re-record
+
+旧脚本更新分三类处理：
+
+| recommended_action | 执行方式 |
+| --- | --- |
+| `update-assertion` / `update-selector` 且有 `details.replacements` | 在 run 目录生成候选 patch，验收通过后覆盖旧脚本 |
+| `update-assertion` / `update-selector` 但没有 `details.replacements` | 自动转为 `re-record`，阻塞到 `playwright-test-generator` |
+| `re-record` / `split-case` | 阻塞到 `playwright-test-generator`，生成候选替换脚本和 proof artifact |
+| `manual-review` | 不进入自动循环，停在当前阶段等待人工 |
+
+进入重录阻塞时，编排层必须生成：
+
+| artifact | 说明 |
+| --- | --- |
+| `legacy_rerecord_request.json` | 结构化重录任务列表 |
+| `legacy_rerecord_instruction.md` | 给 `playwright-test-generator` 的最小重录说明 |
+
+此时 `next_action` 必须是：
+
+| 字段 | 值 |
+| --- | --- |
+| `kind` | `run_skill` |
+| `skill_path` | `bundled/skills/playwright-test-generator/SKILL.md` |
+| `instruction_path` | `legacy_rerecord_instruction.md` |
+| `required_artifacts` | `legacy_update_candidate_manifest` |
+
+`playwright-test-generator` 完成后必须提交 `legacy_update_candidate_manifest`：
+
+```json
+[
+  {
+    "task_id": "legacy-xxxx",
+    "replacement_source_path": "/path/to/candidate.py",
+    "proof_artifact_path": "/path/to/proof.md",
+    "recommended_action": "re-record"
+  }
+]
+```
+
+`proof_artifact_path` 是强制项。没有 proof 的 `re-record/split-case` 不允许合并。
 
 输出：
 
 - `legacy_update_tasks.json`
 - `legacy_update_gate.json`
 - `legacy_update_results_round_XX.json`
+- `legacy_rerecord_request.json`
+- `legacy_rerecord_instruction.md`
+- `legacy_update_candidate_manifest.json`
 - `regression_selector_plan.json`
 
 ## 阶段3：ok_autotest_ui_skill
@@ -402,6 +465,9 @@ warning 不阻止 `run` 创建任务，但会写入本次 run 的 `doctor_result
 - `legacy_update_tasks.json`
 - `legacy_update_gate.json`
 - `legacy_update_results_round_XX.json`
+- `legacy_rerecord_request.json`
+- `legacy_rerecord_instruction.md`
+- `legacy_update_candidate_manifest.json`
 - `regression_selector_plan.json`
 - `phase3_gate_result.json`
 - `final_report.md`

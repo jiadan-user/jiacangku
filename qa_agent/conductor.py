@@ -13,7 +13,12 @@ from pathlib import Path
 from typing import Any
 
 from qa_agent.adapters.impact_verification import ImpactVerificationExecutor
-from qa_agent.adapters.legacy_update import LegacyUpdateExecutor, make_task_id
+from qa_agent.adapters.legacy_update import (
+    PATCH_ACTIONS,
+    PLAYWRIGHT_REGEN_ACTIONS,
+    LegacyUpdateExecutor,
+    make_task_id,
+)
 from qa_agent.config import AppConfig
 from qa_agent.io import read_json, read_text, write_json, write_text
 from qa_agent.markdown_cases import parse_markdown_document
@@ -173,6 +178,8 @@ class QAConductor:
             state = self._complete_playwright_generator(state)
         elif phase == Phase.IMPACT_VERIFICATION:
             state = self._confirm_impact_verification(state)
+        elif phase == Phase.LEGACY_UPDATE:
+            state = self._complete_legacy_update(state)
         elif phase == Phase.OK_UI_REGRESSION:
             state = self._complete_ok_ui_regression(state)
         elif phase == Phase.KNOWLEDGE_BASE_UPDATE:
@@ -182,6 +189,11 @@ class QAConductor:
             self._refresh_next_action(state)
             self.store.save(state)
             return state
+
+        if phase == Phase.LEGACY_UPDATE:
+            self._refresh_next_action(state)
+            self.store.save(state)
+            return self._advance_unlocked(run_id)
 
         state.phase_statuses[phase.value] = PhaseStatus.COMPLETED.value
         state.current_phase = phase.value
@@ -456,6 +468,24 @@ class QAConductor:
                 )
                 return
             if phase == Phase.LEGACY_UPDATE:
+                if self._legacy_playwright_request_active(state):
+                    state.next_action = NextAction(
+                        kind=NextActionKind.RUN_SKILL.value,
+                        phase=phase.value,
+                        summary="调用 playwright-test-generator 为旧脚本生成候选替换版本",
+                        skill_path=str(self.config.project_root / SKILL_PATHS[Phase.PLAYWRIGHT_GENERATOR]),
+                        instruction_path=state.artifacts.get("legacy_rerecord_instruction", ""),
+                        required_artifacts=["legacy_update_candidate_manifest"],
+                        resume_command=(
+                            f"python -m qa_agent.cli complete --run-id {state.run_id} "
+                            f"--phase {phase.value} --artifact legacy_update_candidate_manifest=<path>"
+                        ),
+                        details={
+                            "request": state.artifacts.get("legacy_rerecord_request", ""),
+                            "tasks": state.artifacts.get("legacy_update_tasks", ""),
+                        },
+                    )
+                    return
                 state.next_action = NextAction(
                     kind=NextActionKind.MANUAL_REVIEW.value,
                     phase=phase.value,
@@ -708,6 +738,52 @@ class QAConductor:
                 },
             ),
         )
+        state.blocked_reason = ""
+        return state
+
+    def _complete_legacy_update(self, state: RunState) -> RunState:
+        manifest_path = self._artifact_value(
+            state,
+            "legacy_update_candidate_manifest",
+            "legacy_rerecord_candidate_manifest",
+        )
+        tasks = self._load_legacy_tasks(state)
+        if not manifest_path or not read_json(manifest_path, default=None):
+            self._write_legacy_rerecord_request(state, self._legacy_tasks_needing_playwright(tasks))
+            self._mark(state, Phase.LEGACY_UPDATE, PhaseStatus.BLOCKED)
+            state.status = RunStatus.BLOCKED.value
+            state.blocked_reason = "缺少 legacy_update_candidate_manifest，无法恢复旧脚本更新循环"
+            return state
+
+        payload = read_json(manifest_path, default=[]) or []
+        entries = payload.get("tasks", []) if isinstance(payload, dict) else payload
+        if not isinstance(entries, list):
+            self._mark(state, Phase.LEGACY_UPDATE, PhaseStatus.BLOCKED)
+            state.status = RunStatus.BLOCKED.value
+            state.blocked_reason = "legacy_update_candidate_manifest 格式错误，期望 list 或 {tasks: [...]}"
+            return state
+
+        errors = self._apply_legacy_candidate_manifest(tasks, entries, manifest_path)
+        if errors:
+            self._write_legacy_rerecord_request(state, self._legacy_tasks_needing_playwright(tasks))
+            self._persist_legacy_tasks_and_gate(state, tasks, self._current_legacy_round_index(state))
+            self._mark(state, Phase.LEGACY_UPDATE, PhaseStatus.BLOCKED)
+            state.status = RunStatus.BLOCKED.value
+            state.blocked_reason = "legacy_update_candidate_manifest 未通过校验: " + "；".join(errors[:3])
+            return state
+
+        state.artifacts["legacy_update_candidate_manifest"] = manifest_path
+        self._persist_legacy_tasks_and_gate(state, tasks, self._current_legacy_round_index(state))
+        self._append_confirmation(
+            state,
+            UserConfirmationRecord(
+                phase=Phase.LEGACY_UPDATE.value,
+                summary="已接收 playwright-test-generator 候选脚本，可恢复旧脚本更新循环",
+                details={"legacy_update_candidate_manifest": manifest_path},
+            ),
+        )
+        self._mark(state, Phase.LEGACY_UPDATE, PhaseStatus.RUNNING)
+        state.status = RunStatus.RUNNING.value
         state.blocked_reason = ""
         return state
 
@@ -1119,6 +1195,19 @@ class QAConductor:
             return state
 
         current_gate = read_json(state.artifacts.get("legacy_update_gate", ""), default={}) or {}
+        current_round_index = int(current_gate.get("round_index", 0))
+        playwright_tasks = self._legacy_tasks_needing_playwright(tasks, mutate=True)
+        if playwright_tasks:
+            self._persist_legacy_tasks_and_gate(state, tasks, current_round_index)
+            self._write_legacy_rerecord_request(state, playwright_tasks)
+            self._mark(state, Phase.LEGACY_UPDATE, PhaseStatus.BLOCKED)
+            state.status = RunStatus.BLOCKED.value
+            state.blocked_reason = (
+                f"旧脚本更新有 {len(playwright_tasks)} 个任务需要 playwright-test-generator "
+                "重新录制候选脚本，不能由 QA Agent 盲猜修改"
+            )
+            return state
+
         round_index = int(current_gate.get("round_index", 0)) + 1
         outcome = self.legacy_update_executor.run_round(
             run_dir=self.store.run_dir(state.run_id),
@@ -1160,6 +1249,219 @@ class QAConductor:
             "继续 advance 进入下一轮"
         )
         return state
+
+    def _legacy_playwright_request_active(self, state: RunState) -> bool:
+        if not state.artifacts.get("legacy_rerecord_instruction"):
+            return False
+        return bool(self._legacy_tasks_needing_playwright(self._load_legacy_tasks(state)))
+
+    def _legacy_tasks_needing_playwright(
+        self,
+        tasks: list[LegacyUpdateTask],
+        *,
+        mutate: bool = False,
+    ) -> list[LegacyUpdateTask]:
+        needs: list[LegacyUpdateTask] = []
+        for task in tasks:
+            if task.status in (LegacyUpdateTaskStatus.COMPLETED.value, LegacyUpdateTaskStatus.MANUAL_REVIEW.value):
+                continue
+            force_regen = bool(task.details.get("needs_playwright_rerecord")) and (
+                task.recommended_action in PLAYWRIGHT_REGEN_ACTIONS
+            )
+            if self._task_has_replacement_candidate(task) and not force_regen:
+                continue
+
+            needs_playwright = task.recommended_action in PLAYWRIGHT_REGEN_ACTIONS
+            missing_patch = task.recommended_action in PATCH_ACTIONS and not task.details.get("replacements")
+            if not (needs_playwright or missing_patch):
+                continue
+
+            if mutate:
+                if missing_patch:
+                    task.details.setdefault("original_recommended_action", task.recommended_action)
+                    task.recommended_action = "re-record"
+                task.details["needs_playwright_rerecord"] = True
+                task.details.setdefault(
+                    "rerecord_reason",
+                    "缺少可自动应用的候选 patch，需要 playwright-test-generator 重新录制",
+                )
+                if task.status == LegacyUpdateTaskStatus.RUNNING.value:
+                    task.status = LegacyUpdateTaskStatus.RETRY.value
+            needs.append(task)
+        return needs
+
+    def _task_has_replacement_candidate(self, task: LegacyUpdateTask) -> bool:
+        replacement_text = task.details.get("replacement_text")
+        if replacement_text:
+            return True
+        replacement_source = task.details.get("replacement_source_path")
+        if replacement_source and Path(replacement_source).exists():
+            return True
+        return False
+
+    def _current_legacy_round_index(self, state: RunState) -> int:
+        current_gate = read_json(state.artifacts.get("legacy_update_gate", ""), default={}) or {}
+        return int(current_gate.get("round_index", 0))
+
+    def _persist_legacy_tasks_and_gate(
+        self,
+        state: RunState,
+        tasks: list[LegacyUpdateTask],
+        round_index: int,
+    ) -> None:
+        tasks_path = self.store.artifact_path(state.run_id, "legacy_update_tasks.json")
+        gate_path = self.store.artifact_path(state.run_id, "legacy_update_gate.json")
+        write_json(tasks_path, [asdict(task) for task in tasks])
+        write_json(gate_path, asdict(self._build_gate(tasks, round_index=round_index)))
+        state.artifacts["legacy_update_tasks"] = str(tasks_path)
+        state.artifacts["legacy_update_gate"] = str(gate_path)
+        state.artifacts["regression_selector_plan"] = str(self._refresh_selector_plan(state, tasks))
+
+    def _write_legacy_rerecord_request(
+        self,
+        state: RunState,
+        tasks: list[LegacyUpdateTask],
+    ) -> None:
+        packet = self._requirement_packet(state)
+        request_path = self.store.artifact_path(state.run_id, "legacy_rerecord_request.json")
+        instruction_path = self.store.artifact_path(state.run_id, "legacy_rerecord_instruction.md")
+        request = {
+            "run_id": state.run_id,
+            "phase": Phase.LEGACY_UPDATE.value,
+            "skill": SKILL_PATHS[Phase.PLAYWRIGHT_GENERATOR],
+            "module": (packet.get("candidate_modules") or [""])[0],
+            "site": packet.get("site", ""),
+            "feature_name": packet.get("feature_name", ""),
+            "change_description": packet.get("change_description", ""),
+            "tasks": [self._legacy_rerecord_task_payload(task) for task in tasks],
+            "output_manifest": {
+                "artifact_key": "legacy_update_candidate_manifest",
+                "schema": [
+                    {
+                        "task_id": "<legacy task id>",
+                        "replacement_source_path": "<generated candidate .py path>",
+                        "proof_artifact_path": "<playwright-test-generator proof/report path>",
+                        "recommended_action": "re-record",
+                    }
+                ],
+            },
+        }
+        write_json(request_path, request)
+        write_text(instruction_path, self._render_legacy_rerecord_instruction(request))
+        state.artifacts["legacy_rerecord_request"] = str(request_path)
+        state.artifacts["legacy_rerecord_instruction"] = str(instruction_path)
+
+    def _legacy_rerecord_task_payload(self, task: LegacyUpdateTask) -> dict[str, Any]:
+        return {
+            "task_id": task.task_id,
+            "target_script": task.target_script,
+            "target_case_id": task.target_case_id,
+            "target_nodeid": task.target_nodeid,
+            "recommended_action": task.recommended_action,
+            "reason": task.reason,
+            "module": task.details.get("module", ""),
+            "site": task.details.get("site", ""),
+            "rerecord_reason": task.details.get("rerecord_reason", ""),
+        }
+
+    def _render_legacy_rerecord_instruction(self, request: dict[str, Any]) -> str:
+        lines = [
+            "# 旧脚本重录子任务",
+            "",
+            f"请读取 `{request['skill']}`，只针对下面列出的旧脚本更新任务生成候选替换版本。",
+            "",
+            "## 关键规则",
+            "- 不允许直接修改正式回归仓库中的旧脚本。",
+            "- 候选脚本必须先生成到 run 目录或临时产物目录。",
+            "- 每个任务都必须有 proof artifact，证明已按 playwright-test-generator 流程录制/生成/自测。",
+            "- 完成后输出 `legacy_update_candidate_manifest.json`，再用 resume command 回到 QA Agent。",
+            "",
+            "## 输出 manifest 格式",
+            "```json",
+            "[",
+            "  {",
+            '    "task_id": "legacy-xxxx",',
+            '    "replacement_source_path": "/path/to/candidate.py",',
+            '    "proof_artifact_path": "/path/to/proof.md",',
+            '    "recommended_action": "re-record"',
+            "  }",
+            "]",
+            "```",
+            "",
+            "## 任务列表",
+        ]
+        for task in request.get("tasks", []):
+            lines.extend(
+                [
+                    f"### {task.get('task_id', '')}",
+                    f"- target_script: {task.get('target_script', '')}",
+                    f"- target_case_id: {task.get('target_case_id', '')}",
+                    f"- target_nodeid: {task.get('target_nodeid', '')}",
+                    f"- module/site: {task.get('module', '')}/{task.get('site', '')}",
+                    f"- recommended_action: {task.get('recommended_action', '')}",
+                    f"- reason: {task.get('reason', '')}",
+                    f"- rerecord_reason: {task.get('rerecord_reason', '')}",
+                    "",
+                ]
+            )
+        return "\n".join(lines).rstrip() + "\n"
+
+    def _apply_legacy_candidate_manifest(
+        self,
+        tasks: list[LegacyUpdateTask],
+        entries: list[Any],
+        manifest_path: str,
+    ) -> list[str]:
+        errors: list[str] = []
+        for raw_entry in entries:
+            if not isinstance(raw_entry, dict):
+                errors.append("manifest entry 必须是 object")
+                continue
+            task = self._find_legacy_task_for_candidate(tasks, raw_entry)
+            if not task:
+                errors.append(f"未找到匹配任务: {raw_entry.get('task_id') or raw_entry.get('target_nodeid')}")
+                continue
+
+            replacement_source = raw_entry.get("replacement_source_path") or raw_entry.get("candidate_path") or ""
+            replacement_text = raw_entry.get("replacement_text", "")
+            proof_artifact = raw_entry.get("proof_artifact_path") or raw_entry.get("proof_path") or ""
+            if not replacement_source and not replacement_text:
+                errors.append(f"{task.task_id} 缺少 replacement_source_path/replacement_text")
+                continue
+            if replacement_source and not Path(str(replacement_source)).exists():
+                errors.append(f"{task.task_id} replacement_source_path 不存在: {replacement_source}")
+                continue
+            if not proof_artifact or not Path(str(proof_artifact)).exists():
+                errors.append(f"{task.task_id} 缺少有效 proof_artifact_path")
+                continue
+
+            if raw_entry.get("recommended_action") in PLAYWRIGHT_REGEN_ACTIONS:
+                task.recommended_action = str(raw_entry["recommended_action"])
+            elif task.recommended_action not in PLAYWRIGHT_REGEN_ACTIONS:
+                task.recommended_action = "re-record"
+            task.details["replacement_source_path"] = str(replacement_source)
+            if replacement_text:
+                task.details["replacement_text"] = str(replacement_text)
+            task.details["proof_artifact_path"] = str(proof_artifact)
+            task.details["needs_playwright_rerecord"] = False
+            task.details["legacy_update_candidate_manifest"] = manifest_path
+            task.details["playwright_rerecord_completed_at"] = utc_now_iso()
+            task.status = LegacyUpdateTaskStatus.RETRY.value
+        return errors
+
+    def _find_legacy_task_for_candidate(
+        self,
+        tasks: list[LegacyUpdateTask],
+        entry: dict[str, Any],
+    ) -> LegacyUpdateTask | None:
+        for key in ("task_id", "target_nodeid", "target_case_id", "target_script"):
+            value = entry.get(key)
+            if not value:
+                continue
+            for task in tasks:
+                if getattr(task, key, "") == value:
+                    return task
+        return None
 
     def _phase_final_report(self, state: RunState) -> RunState:
         self._mark(state, Phase.FINAL_REPORT, PhaseStatus.RUNNING)
