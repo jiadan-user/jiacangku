@@ -216,4 +216,4 @@ python -m qa_agent.cli next --run-id <run_id>
 
 如果 `doctor` 报 fatal，需要先修复内嵌 skill、知识库或项目根目录；如果只有 warning，`run` 会继续创建任务，但会把预检结果保存到本次 run。
 
-完整内部编排契约、阶段门禁和状态持久化说明见 [AGENTS.md](/Users/a58/Desktop/QA_Agent/AGENTS.md)。
+完整内部编排契约、阶段门禁和状态持久化说明见 [AGENTS.md]。
