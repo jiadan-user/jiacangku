@@ -1,7 +1,7 @@
 interface:
   display_name: "OK UI 自动化"
-  short_description: "用于根据模块功能分析并执行 UI 自动化，用少量命令返回 Allure 与上线建议"
-  default_prompt: "使用 $ok-ui-autotest 先参考映射文档，再核对文本用例和自动化脚本，帮我挑选并执行相关 UI 自动化用例，然后总结执行结果、Allure 报告和上线建议。"
+  short_description: "按站点、模块、功能或脚本选择 OK PC UI 自动化，先 dry-run 再回归；脚本变更后刷新 catalog 并审计标识。"
+  default_prompt: "使用 $ok-ui-autotest 先参考映射文档，必要时刷新 catalog 并审计标识，再 dry-run 预览并执行相关 OK PC UI 自动化用例，最后总结 Allure 报告和上线建议。"
 
 policy:
   allow_implicit_invocation: true

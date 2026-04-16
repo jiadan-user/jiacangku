@@ -2,14 +2,11 @@
 """
 定位面板测试专用 conftest
 优化：module 级别 fixture，一个测试文件只打开一次浏览器
-
-自定义原因：
-- 该目录保留 module 级 page，只为无状态批次测试复用浏览器。
-- 生命周期逻辑复用 testcase_support，不再复制全局 page 实现。
 """
 import pytest
+import os
+from utils.browser_manager import BrowserManager
 from utils.logger import setup_logger
-from utils.testcase_support import finish_managed_page, start_managed_page
 
 logger = setup_logger()
 
@@ -29,11 +26,34 @@ def page(config):
     - 测试用例之间需要保持独立性（每个测试导航到初始页面）
     - 不适用于有登录态或状态保持的测试
     """
-    browser_manager, page = start_managed_page(config)
+    from utils.browser_manager import BrowserManager
+    
+    browser_manager = BrowserManager()
+    page = browser_manager.start_browser(
+        browser_type=config['browser']['type'],
+        headless=config['browser']['headless'],
+        base_url=config['base_url'],
+        viewport=config['browser']['viewport']
+    )
+    
+    # 标记为使用中，防止被 pytest hooks 的 _cleanup_all(force=False) 清理
+    browser_manager.mark_in_use()
+
+    # 调试开关（默认关闭）
+    if os.environ.get("DEBUG_PAUSE", "").lower() in ("1", "true", "yes"):
+        try:
+            page.pause()
+        except Exception:
+            pass
     
     yield page
     
-    finish_managed_page(browser_manager, page)
+    # 标记为已释放
+    browser_manager.mark_released()
+    
+    # 测试批次结束后关闭浏览器
+    if os.environ.get("KEEP_BROWSER_OPEN", "").lower() not in ("1", "true", "yes"):
+        browser_manager.close_browser(page)
 
 
 @pytest.fixture(autouse=True)

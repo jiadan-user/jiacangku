@@ -343,6 +343,5 @@ def test_tc015_salary_min_equals_max_allowed(page: Page):
             if 'required' in page_content.lower() or 'error' in page_content.lower():
                 logger.error("⚠️ 页面可能有验证错误")
             # 截图
-            page.screenshot(path=f"reports/tc015_debug_{int(page.evaluate('Date.now(, timeout=60000)'))}.png")
+            page.screenshot(path=f"reports/tc015_debug_{int(page.evaluate('Date.now()'))}.png")
             raise
-

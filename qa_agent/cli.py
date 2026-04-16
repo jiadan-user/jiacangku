@@ -6,136 +6,257 @@ from pathlib import Path
 
 from qa_agent.config import load_config
 from qa_agent.conductor import QAConductor
-from qa_agent.exceptions import PhaseBlockedError
-from qa_agent.presentation import format_status_for_display, normalize_change_mode, normalize_command_name
+from qa_agent.models import RunStatus, to_data
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="qa-agent",
-        description="AI 测试资产编排器，用于串联 senior-qa-brain、playwright-test-generator 与回归测试 skill。",
-        add_help=False,
+        description="AI 测试编排层：串联 senior-qa-brain、playwright-test-generator、ok_autotest_ui_skill。",
     )
-    parser.add_argument("-h", "--help", "--帮助", action="help", help="显示帮助并退出。")
-    parser._positionals.title = "子命令"
-    parser._optionals.title = "可选参数"
-    subparsers = parser.add_subparsers(dest="command", required=True)
+    sub = parser.add_subparsers(dest="command", required=True)
 
-    for name, aliases, help_text in (
-        ("plan", ["计划"], "只生成需求包与执行规划，不推进完整链路。"),
-        ("run", ["运行", "执行"], "执行完整编排链路；缺少外部产物时会阻塞并给出下一步说明。"),
-    ):
-        sub = subparsers.add_parser(name, aliases=aliases, help=help_text, add_help=False)
-        sub.add_argument("-h", "--help", "--帮助", action="help", help="显示帮助并退出。")
-        sub._optionals.title = "可选参数"
-        _add_common_args(sub, include_run_id=True)
-        if name == "run":
-            sub.add_argument("--analysis-approved", "--分析已确认", dest="analysis_approved", action="store_true", help="确认分析报告已经过人工审核。")
-            sub.add_argument("--execute-regression", "--执行回归预演", dest="execute_regression", action="store_true", help="继续执行回归预演阶段。")
-            sub.add_argument("--execute-real-run", "--执行真实回归", dest="execute_real_run", action="store_true", help="在回归预演通过后继续执行真实回归。")
-            sub.add_argument("--no-auto-promote", "--不自动提升", dest="no_auto_promote", action="store_true", help="跳过脚本自动提升到回归池。")
+    plan = sub.add_parser("plan", aliases=["计划"], help="创建测试计划")
+    _add_input_args(plan)
 
-    status = subparsers.add_parser("status", aliases=["状态"], help="查看指定运行ID的当前状态。", add_help=False)
-    status.add_argument("-h", "--help", "--帮助", action="help", help="显示帮助并退出。")
-    status._optionals.title = "可选参数"
-    status.add_argument("--run-id", "--运行ID", dest="run_id", required=True, help="需要查询的运行ID。")
+    run = sub.add_parser("run", aliases=["运行"], help="创建测试计划并推进到第一个可操作点")
+    _add_input_args(run)
+    run.add_argument("--max-steps", dest="max_steps", type=int)
 
-    resume = subparsers.add_parser("resume", aliases=["恢复", "继续"], help="基于已有运行ID继续执行。", add_help=False)
-    resume.add_argument("-h", "--help", "--帮助", action="help", help="显示帮助并退出。")
-    resume._optionals.title = "可选参数"
-    _add_common_args(resume, include_run_id=False)
-    resume.add_argument("--run-id", "--运行ID", dest="run_id", required=True, help="需要继续执行的运行ID。")
-    resume.add_argument("--analysis-approved", "--分析已确认", dest="analysis_approved", action="store_true", help="确认分析报告已经过人工审核。")
-    resume.add_argument("--execute-regression", "--执行回归预演", dest="execute_regression", action="store_true", help="继续执行回归预演阶段。")
-    resume.add_argument("--execute-real-run", "--执行真实回归", dest="execute_real_run", action="store_true", help="在回归预演通过后继续执行真实回归。")
-    resume.add_argument("--no-auto-promote", "--不自动提升", dest="no_auto_promote", action="store_true", help="跳过脚本自动提升到回归池。")
+    advance = sub.add_parser("advance", aliases=["推进", "继续"], help="推进到下一阶段")
+    advance.add_argument("--run-id", "--运行ID", dest="run_id", required=True)
 
-    promote = subparsers.add_parser("promote", aliases=["提升", "入库"], help="将已通过提升守卫的脚本提升到回归池。", add_help=False)
-    promote.add_argument("-h", "--help", "--帮助", action="help", help="显示帮助并退出。")
-    promote._optionals.title = "可选参数"
-    promote.add_argument("--run-id", "--运行ID", dest="run_id", required=True, help="需要执行提升的运行ID。")
+    next_cmd = sub.add_parser("next", aliases=["下一步"], help="自动推进到下一个可操作点")
+    next_cmd.add_argument("--run-id", "--运行ID", dest="run_id", required=True)
+    next_cmd.add_argument("--max-steps", dest="max_steps", type=int)
+    next_cmd.add_argument("--doctor", action="store_true", help="推进前重新执行环境预检")
+
+    complete = sub.add_parser("complete", aliases=["完成阶段"], help="提交当前阶段产物并触发门禁验收")
+    complete.add_argument("--run-id", "--运行ID", dest="run_id", required=True)
+    complete.add_argument("--phase", "--阶段", dest="phase", required=True, help="要标记完成的阶段名")
+    complete.add_argument(
+        "--artifact",
+        "--产物",
+        dest="artifacts",
+        action="append",
+        default=[],
+        help="附加产物 key=path 格式，可多次；阶段1/2/3/KB 都会按产物做门禁校验",
+    )
+
+    status = sub.add_parser("status", aliases=["状态"], help="查看运行状态")
+    status.add_argument("--run-id", "--运行ID", dest="run_id", required=True)
+    status.add_argument("--next-action", action="store_true", help="显示下一步结构化行动")
+    status.add_argument("--json", action="store_true", help="输出完整 JSON 状态")
+    status.add_argument("--verbose", action="store_true", help="显示 artifacts 等详细信息")
+
+    sub.add_parser("doctor", aliases=["环境检查"], help="执行 QA Agent 环境预检")
 
     return parser
 
 
-def _add_common_args(parser: argparse.ArgumentParser, include_run_id: bool) -> None:
-    if include_run_id:
-        parser.add_argument("--run-id", "--运行ID", dest="run_id", help="已有运行ID；为空时会自动新建一次运行。")
-    parser.add_argument("--figma-url", "--figma链接", dest="figma_url", help="Figma 原型链接。")
-    parser.add_argument("--prd-ref", "--需求文档", dest="prd_refs", action="append", default=[], help="需求文档、PRD、PDF 或其他需求材料路径，可重复传入。")
-    parser.add_argument("--git-diff-file", "--git-diff文件", dest="git_diff_file", help="git diff 文件路径。")
-    parser.add_argument("--git-diff-summary", "--git-diff摘要", dest="git_diff_summary", help="git diff 的文本摘要。")
-    parser.add_argument("--site", "--站点", dest="site", help="站点标识，例如 sg、ae、us。")
-    parser.add_argument("--module", "--模块", dest="module", help="业务模块名。")
-    parser.add_argument("--feature", "--功能", dest="feature", help="功能名或 feature key。")
-    parser.add_argument(
-        "--change-mode",
-        "--变更模式",
-        dest="change_mode",
-        default="auto",
-        choices=["auto", "自动", "regression_only", "仅回归", "new_feature_only", "仅新需求", "mixed", "混合"],
-        help="变更模式；默认自动推断。",
-    )
-    parser.add_argument("--analysis-report", "--分析报告", dest="analysis_report", help="senior-qa-brain 产出的分析报告路径。")
-    parser.add_argument("--testcases-raw", "--原始用例", dest="testcases_raw", help="senior-qa-brain 产出的原始 Markdown 用例路径。")
-    parser.add_argument("--testcases-enriched", "--增强用例", dest="testcases_enriched", help="补充 UI Probe 信息后的 Markdown 用例路径。")
-    parser.add_argument("--probe-notes", "--探测补充说明", dest="probe_notes", help="UI Probe/MCP 实测补充说明路径。")
-    parser.add_argument("--proof-dir", "--证明产物目录", dest="proof_dir", help="playwright-test-generator 产出的证明产物目录。")
-    parser.add_argument("--visual-report", "--视觉报告", dest="visual_report", help="视觉门禁报告路径。")
-    parser.add_argument("--ui-report", "--UI报告", dest="ui_report", help="UI 门禁报告路径。")
-    parser.add_argument("--api-report", "--API报告", dest="api_report", help="API 门禁报告路径。")
+def _add_input_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--figma-url", "--figma链接", dest="figma_url")
+    parser.add_argument("--prd-ref", "--需求文档", dest="prd_refs", action="append", default=[])
+    parser.add_argument("--site", "--站点", dest="site")
+    parser.add_argument("--module", "--模块", dest="module")
+    parser.add_argument("--feature", "--功能", dest="feature")
+    parser.add_argument("--change-description", "--改动描述", dest="change_description")
+    parser.add_argument("--change-mode", "--变更模式", dest="change_mode")
 
 
-def namespace_to_inputs(namespace: argparse.Namespace) -> dict[str, object]:
-    data = vars(namespace).copy()
-    data["auto_promote"] = not data.pop("no_auto_promote", False)
-    data.pop("command", None)
-    if "change_mode" in data:
-        data["change_mode"] = normalize_change_mode(data.get("change_mode"))
-    return {key: value for key, value in data.items() if value not in (None, [], "")}
+def _format_brief(state_data: dict) -> str:
+    """一句话状态摘要。"""
+    run_id = state_data["run_id"]
+    phase = state_data["current_phase"]
+    status = state_data["status"]
+    mode = state_data["change_mode"]
+    reason = state_data.get("blocked_reason", "")
+    error_reason = state_data.get("error_reason", "")
+    stale_warning = state_data.get("stale_warning", "")
+
+    header = f"[{run_id}] {mode} | {phase}"
+
+    if status == RunStatus.ERROR.value:
+        return f"{header} | 执行出错\n  → {error_reason or reason}"
+    if status == RunStatus.BLOCKED.value and reason:
+        suffix = f"\n  → {stale_warning}" if stale_warning else ""
+        return f"{header}\n  → {reason}{suffix}"
+    if status == RunStatus.COMPLETED.value:
+        report = state_data.get("artifacts", {}).get("final_report", "")
+        return f"{header} | 已完成\n  → 最终报告: {report}" if report else f"{header} | 已完成"
+    if status == RunStatus.PLANNED.value:
+        return f"{header} | 已计划，使用 advance 开始执行"
+    if reason:
+        return f"{header}\n  → {reason}"
+    return header
+
+
+def _format_next_action(state_data: dict) -> str:
+    action = state_data.get("next_action", {}) or {}
+    if not action:
+        return "下一步: 暂无"
+    lines = [
+        f"下一步: {action.get('summary', '')}",
+        f"- kind: {action.get('kind', '')}",
+        f"- phase: {action.get('phase', '')}",
+    ]
+    if action.get("skill_path"):
+        lines.append(f"- skill: {action['skill_path']}")
+    if action.get("instruction_path"):
+        lines.append(f"- instruction: {action['instruction_path']}")
+    if action.get("required_artifacts"):
+        lines.append("- required_artifacts: " + ", ".join(action["required_artifacts"]))
+    if action.get("resume_command"):
+        lines.append(f"- resume: {action['resume_command']}")
+    return "\n".join(lines)
+
+
+def _format_doctor(result) -> str:
+    payload = to_data(result)
+    lines = ["QA Agent doctor:"]
+    for check in payload.get("checks", []):
+        status = "OK" if check.get("ok") else check.get("severity", "warning").upper()
+        lines.append(f"- [{status}] {check.get('name')}: {check.get('message')}")
+    return "\n".join(lines)
+
+
+def _doctor_has_fatal(result) -> bool:
+    return bool(getattr(result, "has_fatal", False))
+
+
+def _validate_plan_inputs(args, inputs: dict) -> str:
+    if not args.change_mode:
+        return (
+            "参数错误: 必须显式选择变更模式：\n"
+            "  A 新需求模式  -> --change-mode 新需求\n"
+            "  B 纯回归模式  -> --change-mode 纯回归\n"
+            "  C 混合模式    -> --change-mode 混合"
+        )
+    has_figma = bool(inputs.get("figma_url"))
+    has_prd = bool(inputs.get("prd_refs"))
+    has_desc = bool(inputs.get("change_description"))
+    if not has_figma and not has_prd and not has_desc:
+        return (
+            "参数错误: 至少需要提供以下输入之一：\n"
+            "  --figma-url / --figma链接（新需求）\n"
+            "  --prd-ref / --需求文档（新需求）\n"
+            "  --change-description / --改动描述（回归）"
+        )
+    return ""
 
 
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
-    command = normalize_command_name(args.command)
     config = load_config(Path(__file__).resolve().parents[1])
     conductor = QAConductor(config)
 
-    try:
-        if command == "plan":
-            state = conductor.plan(namespace_to_inputs(args))
-            print(json.dumps(format_status_for_display(conductor.status(state.run_id)), indent=2, ensure_ascii=False))
-            return 0
-        if command == "run":
-            state = conductor.run(namespace_to_inputs(args))
-            print(json.dumps(format_status_for_display(conductor.status(state.run_id)), indent=2, ensure_ascii=False))
-            return 0
-        if command == "resume":
-            state = conductor.resume(args.run_id, namespace_to_inputs(args))
-            print(json.dumps(format_status_for_display(conductor.status(state.run_id)), indent=2, ensure_ascii=False))
-            return 0
-        if command == "status":
-            print(json.dumps(format_status_for_display(conductor.status(args.run_id)), indent=2, ensure_ascii=False))
-            return 0
-        if command == "promote":
-            state = conductor.promote(args.run_id)
-            print(json.dumps(format_status_for_display(conductor.status(state.run_id)), indent=2, ensure_ascii=False))
-            return 0
-    except PhaseBlockedError as exc:
-        run_id = getattr(exc, "run_id", None) or getattr(args, "run_id", None)
-        if run_id:
-            payload = conductor.status(run_id)
-            print(json.dumps(format_status_for_display(payload), indent=2, ensure_ascii=False))
-        else:
-            print(str(exc))
-        return 2
-    except ValueError as exc:
-        print(f"参数错误: {exc}")
-        return 1
-    except FileNotFoundError as exc:
-        print(f"错误: {exc}")
-        return 1
+    cmd = args.command
+    if cmd in ("plan", "计划"):
+        inputs = {k: v for k, v in vars(args).items() if k != "command" and v not in (None, [], "")}
+        validation_error = _validate_plan_inputs(args, inputs)
+        if validation_error:
+            print(validation_error)
+            return 1
+        try:
+            state = conductor.plan(inputs)
+            print(_format_brief(conductor.status(state.run_id)))
+        except Exception as exc:
+            print(f"错误: {exc}")
+            return 1
+        return 0
+
+    if cmd in ("run", "运行"):
+        inputs = {k: v for k, v in vars(args).items() if k != "command" and v not in (None, [], "")}
+        validation_error = _validate_plan_inputs(args, inputs)
+        if validation_error:
+            print(validation_error)
+            return 1
+        doctor_result = conductor.doctor()
+        print(_format_doctor(doctor_result))
+        if _doctor_has_fatal(doctor_result):
+            print("doctor 存在 fatal 项，未创建 run。")
+            return 1
+        inputs["doctor_result"] = to_data(doctor_result)
+        try:
+            state = conductor.plan(inputs)
+            state = conductor.drive_to_action(state.run_id, max_steps=args.max_steps)
+            data = conductor.status(state.run_id)
+            print(_format_brief(data))
+            print(_format_next_action(data))
+        except Exception as exc:
+            print(f"错误: {exc}")
+            return 1
+        return 0
+
+    if cmd in ("advance", "推进", "继续"):
+        try:
+            state = conductor.advance(args.run_id)
+            print(_format_brief(conductor.status(state.run_id)))
+        except FileNotFoundError as exc:
+            print(f"错误: {exc}")
+            return 1
+        return 0
+
+    if cmd in ("next", "下一步"):
+        try:
+            if args.doctor:
+                doctor_result = conductor.doctor()
+                print(_format_doctor(doctor_result))
+                if _doctor_has_fatal(doctor_result):
+                    return 1
+            state = conductor.drive_to_action(args.run_id, max_steps=args.max_steps)
+            data = conductor.status(state.run_id)
+            print(_format_brief(data))
+            print(_format_next_action(data))
+        except FileNotFoundError as exc:
+            print(f"错误: {exc}")
+            return 1
+        return 0
+
+    if cmd in ("complete", "完成阶段"):
+        artifacts = {}
+        for item in (args.artifacts or []):
+            if "=" in item:
+                k, v = item.split("=", 1)
+                artifacts[k] = v
+        try:
+            state = conductor.complete_phase(args.run_id, args.phase, artifacts or None)
+            print(_format_brief(conductor.status(state.run_id)))
+        except FileNotFoundError as exc:
+            print(f"错误: {exc}")
+            return 1
+        return 0
+
+    if cmd in ("status", "状态"):
+        try:
+            data = conductor.status(args.run_id)
+            if args.json:
+                print(json.dumps(data, ensure_ascii=False, indent=2))
+                return 0
+            print(_format_brief(data))
+            if args.next_action:
+                print(_format_next_action(data))
+            phases = data.get("phase_statuses", {})
+            if phases:
+                print("\n阶段状态:")
+                for name, st in phases.items():
+                    print(f"  {name}: {st}")
+            if args.verbose:
+                artifacts = data.get("artifacts", {})
+                if artifacts:
+                    print("\n产物:")
+                    for name, path in sorted(artifacts.items()):
+                        print(f"  {name}: {path}")
+        except FileNotFoundError as exc:
+            print(f"错误: {exc}")
+            return 1
+        return 0
+
+    if cmd in ("doctor", "环境检查"):
+        result = conductor.doctor()
+        print(_format_doctor(result))
+        return 1 if _doctor_has_fatal(result) else 0
 
     return 0
 

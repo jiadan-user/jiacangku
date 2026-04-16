@@ -118,3 +118,48 @@ def ensure_es_logged_in(page, config):
     logger.info(f"保存Session: {session_name}")
     session_manager.save_session()
     logger.info("✓ Session已保存，下次测试将自动复用")
+
+
+def ensure_espub_resume_add_page(page, config):
+    """
+    打开 espub 简历添加页 Step1。
+
+    若账号已有简历，业务常将 /resume/add 重定向至 /resume，此时无法执行添加页用例，
+    调用方应使用 pytest.skip 跳过（避免长时间等待不存在元素）。
+    """
+    import pytest
+
+    base = config.get("base_url", "https://es.58v5.cn")
+    pub_url = base.replace("es.58v5.cn", "espub.58v5.cn/biz")
+    page.goto(f"{pub_url}/en/resume/add", wait_until="domcontentloaded", timeout=60000)
+    page.wait_for_timeout(2500)
+    if "/resume/add" not in page.url:
+        pytest.skip(
+            f"无法停留在 /resume/add（当前 {page.url}），账号可能已有简历；"
+            "需无简历账号或清理简历数据后再跑本用例"
+        )
+
+
+def cleanup_es_resume_in_db(config=None):
+    """
+    删除当前 ES 联调账号在测试库中的简历相关行（与 test_es_resume_submit 清理顺序一致）。
+
+    用于：同一 pytest 会话中先跑 TC037 等「会提交简历」的用例后，后续仍依赖 /resume/add 的用例
+    可在步骤前调用，避免被重定向到 /biz/en/resume 而 skip。
+
+    Args:
+        config: 可选；若含 ``test_user_id`` 则使用该值，否则使用默认 wangyongli@58.com 对应 id。
+    """
+    from utils.db_client import execute_update
+
+    uid = "796567146451408960"
+    if config and config.get("test_user_id"):
+        uid = str(config["test_user_id"])
+    for sql in (
+        "DELETE FROM resume_work_experience WHERE user_id = %s",
+        "DELETE FROM resume_education WHERE user_id = %s",
+        "DELETE FROM resume_person_info WHERE user_id = %s",
+        "DELETE FROM resume WHERE user_id = %s",
+    ):
+        execute_update(sql, (uid,))
+    logger.info(f"✓ 已清理数据库简历数据 user_id={uid}")

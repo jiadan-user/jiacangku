@@ -22,7 +22,7 @@
 
 执行流程：
 
-1. Run `python scripts/ok_test.py audit identifiers`.
+1. Run `python3 scripts/ok_test.py ops audit-identifiers`.
 2. 查看项目里的 `catalog/identifier_audit.md`，或导出 skill 后查看 `bundled/ok_autotest_ui_pc/catalog/identifier_audit.md`。
-3. 如果建议合理，再运行 `python scripts/ok_test.py audit identifiers --apply`。
-4. 然后重新执行 `catalog build`。
+3. 如果建议合理，再运行 `python3 scripts/ok_test.py ops audit-identifiers --apply`。
+4. 然后重新执行 `python3 scripts/ok_test.py ops catalog-build`。

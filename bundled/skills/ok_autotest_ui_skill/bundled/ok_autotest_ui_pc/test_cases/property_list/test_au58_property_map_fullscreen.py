@@ -155,8 +155,8 @@ def test_tc003_fullscreen_map_renders_correctly(page, config):
         logger.info("✓ 全屏模式下地图正常渲染")
 
     with allure.step("步骤3：验证地图 Pin 点标记仍可见"):
-        # 地图上的价格 Pin 点（img[alt="sale marker"] 或 img[alt="bottom icon"]）
-        pin_count = page.locator('img[alt="bottom icon"], img[alt="sale marker"]').count()
+        # 使用 PropertyMapPage 的方法获取 Pin 点数量
+        pin_count = pmp.get_pin_count()
         assert pin_count > 0, "全屏模式下地图 Pin 点标记应可见"
         logger.info(f"✓ 全屏模式下 Pin 点标记可见，共 {pin_count} 个")
 

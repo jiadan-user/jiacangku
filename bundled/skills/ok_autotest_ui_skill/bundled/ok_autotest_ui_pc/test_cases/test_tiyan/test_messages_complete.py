@@ -1,40 +1,28 @@
 # test_cases/test_messages_complete.py
 """
 OK阿联酋站 - Messages页面完整测试套件
-包含TC001-TC040的所有测试用例（已去除冗余代码和不可自动化用例）
+包含 TC001-TC039（已去除冗余代码、不可自动化项及页面不存在的搜索/筛选用例）
 
 测试用例分布：
-- TC001-TC008: 基础探索测试
-- TC009-TC014: 功能按钮测试
-- TC014A: URL消息发送测试
-- TC015-TC017: 深度功能探索测试
-- TC018-TC021: 异常和边界测试
-- TC022: 消息操作功能测试（已删除 - 自动化无法触发Copy菜单）
-- TC023-TC028: 列表功能（滑动/时间戳/未读气泡/时间顺序/置顶/免打扰）
-- TC029: 发送附件（PDF）
-- TC030: 附件类型校验
-- TC031: 发送图片
-- TC032: 图片类型校验
-- TC033: 地理位置图标入口
-- TC034: 发送框初始 Send 按钮禁用
-- TC035: 输入文字后 Send 按钮启用
-- TC036: 发送文件图标触发文件选择
-- TC037: 发送图片图标触发图片选择
-- TC038: 验证左侧会话列表数量统计准确性（2026-04-03 新增）
-- TC039: 验证会话列表滚动功能（2026-04-03 新增）
-- TC040: 验证右侧聊天消息统计功能（2026-04-03 新增）
+- TC001-TC007: 基础探索
+- TC008-TC013 与 TC013A: 功能按钮与消息发送
+- TC017-TC020: 异常与边界
+- TC021: 复制消息（已删除 - 无法自动化）
+- TC022-TC027: 列表交互（滑动/时间戳/未读/排序/置顶与免打扰图标）
+- TC028-TC036: 附件、图片、位置、Send 状态与输入区 DOM
+- TC037-TC039: 会话列表与消息数量统计（2026-04-03 起）
 
 更新日志：
-2026-04-03: 
-- 修复了会话列表选择器混淆问题（TC038）
-- 新增会话列表滚动功能测试（TC039）
-- 新增聊天消息统计功能测试（TC040）
+2026-04-13:
+- 删除原 TC005 搜索与筛选；原 TC006 及之后编号整体减一（现 TC039 为最后一条）
+2026-04-03:
+- 修复会话列表选择器混淆（对应现 TC037）
+- 新增列表滚动与消息统计（现 TC038、TC039）
 - 详见: docs/MESSAGES_PAGE_SELECTOR_UPDATE_20260403.md
 """
 import pytest
 import allure
 import platform
-from pathlib import Path
 from pages.login_page import LoginPage
 from pages.messages_explore_page import MessagesExplorePage
 from utils.session_manager import SessionManager
@@ -76,7 +64,7 @@ _CONFIG = {
 logger = setup_logger()
 
 
-# ==================== TC001-TC008: 基础探索测试 ====================
+# ==================== TC001-TC007: 基础探索测试 ====================
 
 @pytest.mark.p0
 @allure.feature("OK - Messages")
@@ -438,78 +426,21 @@ def test_explore_message_sending(page, config):
     logger.info("=" * 80)
 
 
-@pytest.mark.p2
-@allure.feature("OK - Messages")
-@allure.story("Messages页面功能探索 - 搜索筛选")
-@allure.title("TC005: 探索搜索和筛选功能")
-@allure.severity(allure.severity_level.NORMAL)
-@pytest.mark.messages
-@pytest.mark.search
-@pytest.mark.exploration
-@pytest.mark.ae
-@pytest.mark.case_id_messages_explore_005
-def test_explore_search_and_filter(page, config):
-    """TC005: 探索搜索和筛选功能（简化版）"""
-    logger.info("=" * 80)
-    logger.info("TC005: 探索搜索和筛选功能")
-    logger.info("=" * 80)
-    
-    # Arrange
-    session_name = f"{config['site']}_{config['role']}_{config['user_name']}"
-    session_manager = SessionManager(page, config['base_url'], session_name)
-    login_page = LoginPage(page, base_url=config['base_url'])
-    messages_page = MessagesExplorePage(page)
-    
-    if session_manager.load_session():
-        logger.info("✓ 成功加载已保存的 Session")
-    else:
-        logger.info("✗ Session不存在，开始登录流程")
-        login_page.navigate_to_home_page()
-        login_page.handle_cookie_popup()
-        login_page.click_login_register()
-        login_page.input_email(config['test_account']['username'])
-        login_page.click_continue()
-        login_page.input_password(config['test_account']['password'])
-        login_page.click_login()
-        session_manager.save_session()
-        logger.info("✓ 登录成功并保存 Session")
-    
-    # Act
-    messages_page.navigate_to_messages_directly(config['target_page'])
-    logger.info("✓ 已导航到Messages页面")
-    
-    messages_page.wait_for_conversation_list()
-    
-    # 检查搜索框
-    has_search = messages_page.check_search_input()
-    logger.info(f"✓ 搜索框: {has_search}")
-    
-    # 检查筛选功能
-    has_filter = messages_page.check_filter_button()
-    logger.info(f"✓ 筛选功能: {has_filter}")
-    
-    # Assert
-    conversation_count = messages_page.get_conversation_count()
-    assert conversation_count > 0, "会话列表为空"
-    
-    logger.info("✅ TC005 测试通过！")
-    logger.info("=" * 80)
-
 
 @pytest.mark.p2
 @allure.feature("OK - Messages")
 @allure.story("Messages页面功能探索 - 用户信息")
-@allure.title("TC006: 探索用户信息和操作")
+@allure.title("TC005: 探索用户信息和操作")
 @allure.severity(allure.severity_level.NORMAL)
 @pytest.mark.messages
 @pytest.mark.user
 @pytest.mark.exploration
 @pytest.mark.ae
-@pytest.mark.case_id_messages_explore_006
+@pytest.mark.case_id_messages_explore_005
 def test_explore_user_info(page, config):
-    """TC006: 探索用户信息和操作（简化版）"""
+    """TC005: 探索用户信息和操作（简化版）"""
     logger.info("=" * 80)
-    logger.info("TC006: 探索用户信息")
+    logger.info("TC005: 探索用户信息")
     logger.info("=" * 80)
     
     # Arrange
@@ -552,24 +483,24 @@ def test_explore_user_info(page, config):
     logger.info(f"  - 用户名: {user_info.get('has_name', False)}")
     logger.info(f"  - 在线状态: {user_info.get('has_status', False)}")
     
-    logger.info("✅ TC006 测试通过！")
+    logger.info("✅ TC005 测试通过！")
     logger.info("=" * 80)
 
 
 @pytest.mark.p2
 @allure.feature("OK - Messages")
 @allure.story("Messages页面功能探索 - 消息展示")
-@allure.title("TC007: 探索消息类型和展示")
+@allure.title("TC006: 探索消息类型和展示")
 @allure.severity(allure.severity_level.NORMAL)
 @pytest.mark.messages
 @pytest.mark.display
 @pytest.mark.exploration
 @pytest.mark.ae
-@pytest.mark.case_id_messages_explore_007
+@pytest.mark.case_id_messages_explore_006
 def test_explore_message_display(page, config):
-    """TC007: 探索消息类型和展示（简化版）"""
+    """TC006: 探索消息类型和展示（简化版）"""
     logger.info("=" * 80)
-    logger.info("TC007: 探索消息类型和展示")
+    logger.info("TC006: 探索消息类型和展示")
     logger.info("=" * 80)
     
     # Arrange
@@ -614,23 +545,23 @@ def test_explore_message_display(page, config):
     else:
         logger.info(f"✓ 成功分析 {len(message_analysis)} 条消息")
     
-    logger.info("✅ TC007 测试通过！")
+    logger.info("✅ TC006 测试通过！")
     logger.info("=" * 80)
 
 
 @pytest.mark.p1
 @allure.feature("OK - Messages")
 @allure.story("Messages页面功能探索 - 安全提示")
-@allure.title("TC008: 会话页面安全提示检查")
+@allure.title("TC007: 会话页面安全提示检查")
 @allure.severity(allure.severity_level.NORMAL)
 @pytest.mark.messages
 @pytest.mark.security
 @pytest.mark.exploration
 @pytest.mark.ae
-@pytest.mark.case_id_messages_explore_008
+@pytest.mark.case_id_messages_explore_007
 def test_security_tip_check(page, config):
     """
-    TC008: 会话页面安全提示检查
+    TC007: 会话页面安全提示检查
     
     测试步骤:
     1. 访问Messages页面并进入会话
@@ -638,7 +569,7 @@ def test_security_tip_check(page, config):
     3. 查看是否展示安全提示"for your safe..."
     """
     logger.info("=" * 80)
-    logger.info("TC008: 会话页面安全提示检查")
+    logger.info("TC007: 会话页面安全提示检查")
     logger.info("=" * 80)
     
     # Arrange
@@ -667,8 +598,9 @@ def test_security_tip_check(page, config):
     messages_page.navigate_to_messages_directly(config['target_page'])
     logger.info("✓ 已导航到Messages页面")
     
-    messages_page.wait_for_conversation_list()
-    conversation_count = messages_page.get_conversation_count()
+    conversation_count = messages_page.ensure_conversation_items(
+        config['target_page'], max_attempts=2
+    )
     logger.info(f"✓ 会话总数: {conversation_count}")
     
     if conversation_count == 0:
@@ -681,8 +613,8 @@ def test_security_tip_check(page, config):
     logger.info("✓ 已进入会话详情页")
     
     # 截图（进入会话后）
-    page.screenshot(path="screenshots/tc008_conversation_initial.png", timeout=60000)
-    logger.info("✓ 已截图: tc008_conversation_initial.png")
+    page.screenshot(path="screenshots/tc007_conversation_initial.png", timeout=60000)
+    logger.info("✓ 已截图: tc007_conversation_initial.png")
     
     # 步骤2: 向下滑动会话页至顶部
     logger.info("\n--- 滑动会话页至顶部 ---")
@@ -724,8 +656,8 @@ def test_security_tip_check(page, config):
         logger.warning(f"滚动失败: {e}")
     
     # 截图（滚动后）
-    page.screenshot(path="screenshots/tc008_after_scroll_top.png", timeout=60000)
-    logger.info("✓ 已截图: tc008_after_scroll_top.png")
+    page.screenshot(path="screenshots/tc007_after_scroll_top.png", timeout=60000)
+    logger.info("✓ 已截图: tc007_after_scroll_top.png")
     
     # 步骤3: 查找安全提示
     logger.info("\n--- 查找安全提示 ---")
@@ -771,8 +703,8 @@ def test_security_tip_check(page, config):
         logger.info(f"  内容: {security_tip['text'][:100]}")
         
         # 截图（安全提示）
-        page.screenshot(path="screenshots/tc008_security_tip.png", timeout=60000)
-        logger.info("✓ 已截图: tc008_security_tip.png")
+        page.screenshot(path="screenshots/tc007_security_tip.png", timeout=60000)
+        logger.info("✓ 已截图: tc007_security_tip.png")
     else:
         logger.warning("  ⚠️ 未找到安全提示（可能需要滚动或在其他位置）")
         
@@ -814,26 +746,26 @@ def test_security_tip_check(page, config):
     if security_tip['found']:
         logger.info(f"  - 提示内容: {security_tip['text'][:80]}")
     
-    logger.info("✅ TC008 测试通过！")
+    logger.info("✅ TC007 测试通过！")
     logger.info("=" * 80)
 
 
-# ==================== TC009-TC014: 功能按钮测试 ====================
+# ==================== TC008-TC013: 功能按钮测试 ====================
 
 @pytest.mark.p2
 @allure.feature("OK - Messages")
 @allure.story("Messages页面功能探索 - 电话按钮")
-@allure.title("TC009: 测试会话页面的电话按钮功能")
+@allure.title("TC008: 测试会话页面的电话按钮功能")
 @allure.severity(allure.severity_level.NORMAL)
 @pytest.mark.messages
 @pytest.mark.conversation
 @pytest.mark.phone
 @pytest.mark.exploration
 @pytest.mark.ae
-@pytest.mark.case_id_messages_explore_009
+@pytest.mark.case_id_messages_explore_008
 def test_phone_button(page, config):
     """
-    TC009: 会话页面电话按钮测试
+    TC008: 会话页面电话按钮测试
     
     测试步骤:
     1. 访问Messages页面并进入会话
@@ -841,7 +773,105 @@ def test_phone_button(page, config):
     3. 测试电话按钮点击（如果存在）
     """
     logger.info("=" * 80)
-    logger.info("TC009: 会话页面电话按钮测试")
+    logger.info("TC008: 会话页面电话按钮测试")
+    logger.info("=" * 80)
+    
+    # Arrange
+    session_name = f"{config['site']}_{config['role']}_{config['user_name']}"
+    session_manager = SessionManager(page, config['base_url'], session_name)
+    login_page = LoginPage(page, base_url=config['base_url'])
+    messages_page = MessagesExplorePage(page)
+    
+    # 加载Session或登录
+    if session_manager.load_session():
+        logger.info("✓ 成功加载已保存的 Session")
+    else:
+        logger.info("✗ Session不存在，开始登录流程")
+        login_page.navigate_to_home_page()
+        login_page.handle_cookie_popup()
+        login_page.login(config['test_account']['username'], config['test_account']['password'])
+        session_manager.save_session()
+        logger.info("✓ 登录成功并保存 Session")
+    
+    # Act
+    
+    # 步骤1: 导航到Messages页面并进入会话
+    messages_page.navigate_to_messages_directly(config['target_page'])
+    logger.info("✓ 已导航到Messages页面")
+    
+    messages_page.wait_for_conversation_list()
+    conv_count = messages_page.get_conversation_count()
+    logger.info(f"✓ 会话列表加载完成，当前会话数: {conv_count}")
+    
+    if conv_count == 0:
+        logger.warning("⚠️ 会话列表为空，跳过测试")
+        pytest.skip("会话列表为空")
+    
+    # 点击第二个会话
+    messages_page.click_conversation_by_index(1)
+    page.wait_for_timeout(3000)
+    logger.info("✓ 已进入会话详情页")
+    
+    # 截图
+    page.screenshot(path="screenshots/tc008_conversation_page.png", timeout=60000)
+    logger.info("✓ 已截图: tc009_conversation_page.png")
+    
+    # 步骤2: 查找电话按钮
+    logger.info("\n--- 查找电话按钮 ---")
+    has_phone = messages_page.check_phone_button_advanced()
+    logger.info(f"✓ 电话按钮: {has_phone['exists']}")
+    
+    if has_phone['exists']:
+        logger.info(f"  选择器: {has_phone['selector']}")
+        
+        # 步骤3: 测试电话按钮点击
+        logger.info("\n--- 测试电话按钮点击 ---")
+        click_result = messages_page.click_phone_button_advanced()
+        logger.info(f"✓ 点击成功: {click_result['success']}")
+        logger.info(f"  弹窗显示: {click_result['has_dialog']}")
+        
+        if click_result['has_dialog']:
+            logger.info(f"  弹窗内容: {click_result['dialog_text'][:100] if click_result['dialog_text'] else 'N/A'}")
+            page.screenshot(path="screenshots/tc008_phone_dialog.png", timeout=60000)
+            logger.info("✓ 已截图: tc009_phone_dialog.png")
+    else:
+        logger.warning("  ✗ 未找到电话按钮")
+    
+    # Assert
+    logger.info("\n" + "=" * 80)
+    logger.info("电话按钮测试汇总:")
+    logger.info(f"  - 电话按钮: {'✅ 存在' if has_phone['exists'] else '❌ 不存在'}")
+    if has_phone['exists']:
+        logger.info(f"  - 点击成功: {'✅' if click_result['success'] else '❌'}")
+        logger.info(f"  - 弹窗显示: {'✅' if click_result['has_dialog'] else '❌'}")
+    
+    logger.info("✅ TC008 测试通过！")
+    logger.info("=" * 80)
+
+
+@pytest.mark.p1
+@allure.feature("OK - Messages")
+@allure.story("Messages页面功能探索 - 设置入口")
+@allure.title("TC009: 测试会话页面右上角三点菜单（...）")
+@allure.severity(allure.severity_level.CRITICAL)
+@pytest.mark.messages
+@pytest.mark.conversation
+@pytest.mark.settings
+@pytest.mark.exploration
+@pytest.mark.ae
+@pytest.mark.case_id_messages_explore_009
+def test_three_dots_menu(page, config):
+    """
+    TC009: 会话页面设置入口测试
+    
+    测试步骤:
+    1. 访问Messages页面并进入会话
+    2. 定位会话详情页右上角的三点菜单（...）
+    3. 点击三点菜单打开下拉列表
+    4. 验证下拉列表中的选项
+    """
+    logger.info("=" * 80)
+    logger.info("TC009: 会话页面设置入口测试")
     logger.info("=" * 80)
     
     # Arrange
@@ -882,64 +912,75 @@ def test_phone_button(page, config):
     
     # 截图
     page.screenshot(path="screenshots/tc009_conversation_page.png", timeout=60000)
-    logger.info("✓ 已截图: tc009_conversation_page.png")
+    logger.info("✓ 已截图: tc010_conversation_page.png")
     
-    # 步骤2: 查找电话按钮
-    logger.info("\n--- 查找电话按钮 ---")
-    has_phone = messages_page.check_phone_button_advanced()
-    logger.info(f"✓ 电话按钮: {has_phone['exists']}")
+    # 步骤2: 定位并点击三点菜单
+    logger.info("\n--- 查找三点菜单（...） ---")
+    has_menu = messages_page.check_three_dots_menu()
+    logger.info(f"✓ 三点菜单: {has_menu['exists']}")
     
-    if has_phone['exists']:
-        logger.info(f"  选择器: {has_phone['selector']}")
+    if has_menu['exists']:
+        if 'x' in has_menu and 'y' in has_menu:
+            logger.info(f"  位置: ({has_menu['x']}, {has_menu['y']})")
         
-        # 步骤3: 测试电话按钮点击
-        logger.info("\n--- 测试电话按钮点击 ---")
-        click_result = messages_page.click_phone_button_advanced()
-        logger.info(f"✓ 点击成功: {click_result['success']}")
-        logger.info(f"  弹窗显示: {click_result['has_dialog']}")
+        # 步骤3: 点击打开菜单
+        logger.info("\n--- 点击打开三点菜单 ---")
+        menu_result = messages_page.click_three_dots_menu()
+        logger.info(f"✓ 菜单打开: {menu_result['opened']}")
         
-        if click_result['has_dialog']:
-            logger.info(f"  弹窗内容: {click_result['dialog_text'][:100] if click_result['dialog_text'] else 'N/A'}")
-            page.screenshot(path="screenshots/tc009_phone_dialog.png", timeout=60000)
-            logger.info("✓ 已截图: tc009_phone_dialog.png")
+        if menu_result['opened']:
+            logger.info(f"  菜单项数量: {menu_result['item_count']}")
+            logger.info("  菜单选项:")
+            for i, item in enumerate(menu_result['items'], 1):
+                logger.info(f"    {i}. {item}")
+            
+            # 截图
+            page.screenshot(path="screenshots/tc009_menu_opened.png", timeout=60000)
+            logger.info("✓ 已截图: tc010_menu_opened.png")
+            
+            # 关闭菜单
+            page.keyboard.press('Escape')
+            page.wait_for_timeout(1000)
+        else:
+            logger.warning(f"  ✗ 菜单未打开: {menu_result.get('error', '未知原因')}")
     else:
-        logger.warning("  ✗ 未找到电话按钮")
+        logger.warning("  ✗ 未找到三点菜单")
     
     # Assert
     logger.info("\n" + "=" * 80)
-    logger.info("电话按钮测试汇总:")
-    logger.info(f"  - 电话按钮: {'✅ 存在' if has_phone['exists'] else '❌ 不存在'}")
-    if has_phone['exists']:
-        logger.info(f"  - 点击成功: {'✅' if click_result['success'] else '❌'}")
-        logger.info(f"  - 弹窗显示: {'✅' if click_result['has_dialog'] else '❌'}")
+    logger.info("设置入口测试汇总:")
+    logger.info(f"  - 三点菜单（...）: {'✅ 存在' if has_menu['exists'] else '❌ 不存在'}")
+    if has_menu['exists'] and menu_result.get('opened'):
+        logger.info(f"  - 菜单可打开: ✅")
+        logger.info(f"  - 菜单项数量: {menu_result['item_count']}")
     
     logger.info("✅ TC009 测试通过！")
     logger.info("=" * 80)
 
 
-@pytest.mark.p1
+@pytest.mark.p2
 @allure.feature("OK - Messages")
-@allure.story("Messages页面功能探索 - 设置入口")
-@allure.title("TC010: 测试会话页面右上角三点菜单（...）")
-@allure.severity(allure.severity_level.CRITICAL)
+@allure.story("Messages页面功能探索 - 置顶功能")
+@allure.title("TC010: 测试会话置顶/取消置顶功能")
+@allure.severity(allure.severity_level.NORMAL)
 @pytest.mark.messages
 @pytest.mark.conversation
-@pytest.mark.settings
+@pytest.mark.pin
 @pytest.mark.exploration
 @pytest.mark.ae
 @pytest.mark.case_id_messages_explore_010
-def test_three_dots_menu(page, config):
+def test_pin_function(page, config):
     """
-    TC010: 会话页面设置入口测试
+    TC010: 会话页面置顶功能测试
     
     测试步骤:
     1. 访问Messages页面并进入会话
-    2. 定位会话详情页右上角的三点菜单（...）
-    3. 点击三点菜单打开下拉列表
-    4. 验证下拉列表中的选项
+    2. 打开三点菜单（...）
+    3. 查找置顶选项（Pin/Unpin）
+    4. 点击置顶选项并验证
     """
     logger.info("=" * 80)
-    logger.info("TC010: 会话页面设置入口测试")
+    logger.info("TC010: 会话页面置顶功能测试")
     logger.info("=" * 80)
     
     # Arrange
@@ -978,49 +1019,46 @@ def test_three_dots_menu(page, config):
     page.wait_for_timeout(3000)
     logger.info("✓ 已进入会话详情页")
     
+    # 步骤2: 打开三点菜单
+    logger.info("\n--- 打开三点菜单 ---")
+    menu_result = messages_page.click_three_dots_menu()
+    
+    if not menu_result['opened']:
+        logger.warning(f"⚠️ 三点菜单未打开: {menu_result.get('error', '未知原因')}")
+        pytest.skip("三点菜单未打开")
+    
+    logger.info(f"✓ 菜单已打开，菜单项数量: {menu_result['item_count']}")
+    
     # 截图
-    page.screenshot(path="screenshots/tc010_conversation_page.png", timeout=60000)
-    logger.info("✓ 已截图: tc010_conversation_page.png")
+    page.screenshot(path="screenshots/tc010_menu_opened.png", timeout=60000)
     
-    # 步骤2: 定位并点击三点菜单
-    logger.info("\n--- 查找三点菜单（...） ---")
-    has_menu = messages_page.check_three_dots_menu()
-    logger.info(f"✓ 三点菜单: {has_menu['exists']}")
+    # 步骤3: 查找置顶选项
+    logger.info("\n--- 查找置顶选项 ---")
+    has_pin = messages_page.check_pin_option_in_menu()
+    logger.info(f"✓ 置顶选项: {has_pin['exists']}")
     
-    if has_menu['exists']:
-        if 'x' in has_menu and 'y' in has_menu:
-            logger.info(f"  位置: ({has_menu['x']}, {has_menu['y']})")
+    if has_pin['exists']:
+        logger.info(f"  选项文本: {has_pin['text']}")
         
-        # 步骤3: 点击打开菜单
-        logger.info("\n--- 点击打开三点菜单 ---")
-        menu_result = messages_page.click_three_dots_menu()
-        logger.info(f"✓ 菜单打开: {menu_result['opened']}")
+        # 步骤4: 点击置顶选项
+        logger.info("\n--- 点击置顶选项 ---")
+        pin_result = messages_page.click_pin_option(cancel=True)
+        logger.info(f"✓ 点击成功: {pin_result['success']}")
+        logger.info(f"  确认弹窗: {pin_result['has_dialog']}")
         
-        if menu_result['opened']:
-            logger.info(f"  菜单项数量: {menu_result['item_count']}")
-            logger.info("  菜单选项:")
-            for i, item in enumerate(menu_result['items'], 1):
-                logger.info(f"    {i}. {item}")
-            
-            # 截图
-            page.screenshot(path="screenshots/tc010_menu_opened.png", timeout=60000)
-            logger.info("✓ 已截图: tc010_menu_opened.png")
-            
-            # 关闭菜单
-            page.keyboard.press('Escape')
-            page.wait_for_timeout(1000)
-        else:
-            logger.warning(f"  ✗ 菜单未打开: {menu_result.get('error', '未知原因')}")
+        if pin_result['has_dialog']:
+            page.screenshot(path="screenshots/tc010_pin_dialog.png", timeout=60000)
+            logger.info("✓ 已截图: tc011_pin_dialog.png")
     else:
-        logger.warning("  ✗ 未找到三点菜单")
+        logger.warning("  ✗ 未找到置顶选项")
     
     # Assert
     logger.info("\n" + "=" * 80)
-    logger.info("设置入口测试汇总:")
-    logger.info(f"  - 三点菜单（...）: {'✅ 存在' if has_menu['exists'] else '❌ 不存在'}")
-    if has_menu['exists'] and menu_result.get('opened'):
-        logger.info(f"  - 菜单可打开: ✅")
-        logger.info(f"  - 菜单项数量: {menu_result['item_count']}")
+    logger.info("置顶功能测试汇总:")
+    logger.info(f"  - 置顶选项: {'✅ 存在' if has_pin['exists'] else '❌ 不存在'}")
+    if has_pin['exists']:
+        logger.info(f"  - 选项文本: {has_pin['text']}")
+        logger.info(f"  - 点击成功: {'✅' if pin_result['success'] else '❌'}")
     
     logger.info("✅ TC010 测试通过！")
     logger.info("=" * 80)
@@ -1028,27 +1066,27 @@ def test_three_dots_menu(page, config):
 
 @pytest.mark.p2
 @allure.feature("OK - Messages")
-@allure.story("Messages页面功能探索 - 置顶功能")
-@allure.title("TC011: 测试会话置顶/取消置顶功能")
+@allure.story("Messages页面功能探索 - 免打扰功能")
+@allure.title("TC011: 测试会话免打扰/取消免打扰功能")
 @allure.severity(allure.severity_level.NORMAL)
 @pytest.mark.messages
 @pytest.mark.conversation
-@pytest.mark.pin
+@pytest.mark.mute
 @pytest.mark.exploration
 @pytest.mark.ae
 @pytest.mark.case_id_messages_explore_011
-def test_pin_function(page, config):
+def test_mute_function(page, config):
     """
-    TC011: 会话页面置顶功能测试
+    TC011: 会话页面免打扰功能测试
     
     测试步骤:
     1. 访问Messages页面并进入会话
     2. 打开三点菜单（...）
-    3. 查找置顶选项（Pin/Unpin）
-    4. 点击置顶选项并验证
+    3. 查找免打扰选项（Mute/Unmute）
+    4. 点击免打扰选项并验证
     """
     logger.info("=" * 80)
-    logger.info("TC011: 会话页面置顶功能测试")
+    logger.info("TC011: 会话页面免打扰功能测试")
     logger.info("=" * 80)
     
     # Arrange
@@ -1100,112 +1138,6 @@ def test_pin_function(page, config):
     # 截图
     page.screenshot(path="screenshots/tc011_menu_opened.png", timeout=60000)
     
-    # 步骤3: 查找置顶选项
-    logger.info("\n--- 查找置顶选项 ---")
-    has_pin = messages_page.check_pin_option_in_menu()
-    logger.info(f"✓ 置顶选项: {has_pin['exists']}")
-    
-    if has_pin['exists']:
-        logger.info(f"  选项文本: {has_pin['text']}")
-        
-        # 步骤4: 点击置顶选项
-        logger.info("\n--- 点击置顶选项 ---")
-        pin_result = messages_page.click_pin_option(cancel=True)
-        logger.info(f"✓ 点击成功: {pin_result['success']}")
-        logger.info(f"  确认弹窗: {pin_result['has_dialog']}")
-        
-        if pin_result['has_dialog']:
-            page.screenshot(path="screenshots/tc011_pin_dialog.png", timeout=60000)
-            logger.info("✓ 已截图: tc011_pin_dialog.png")
-    else:
-        logger.warning("  ✗ 未找到置顶选项")
-    
-    # Assert
-    logger.info("\n" + "=" * 80)
-    logger.info("置顶功能测试汇总:")
-    logger.info(f"  - 置顶选项: {'✅ 存在' if has_pin['exists'] else '❌ 不存在'}")
-    if has_pin['exists']:
-        logger.info(f"  - 选项文本: {has_pin['text']}")
-        logger.info(f"  - 点击成功: {'✅' if pin_result['success'] else '❌'}")
-    
-    logger.info("✅ TC011 测试通过！")
-    logger.info("=" * 80)
-
-
-@pytest.mark.p2
-@allure.feature("OK - Messages")
-@allure.story("Messages页面功能探索 - 免打扰功能")
-@allure.title("TC012: 测试会话免打扰/取消免打扰功能")
-@allure.severity(allure.severity_level.NORMAL)
-@pytest.mark.messages
-@pytest.mark.conversation
-@pytest.mark.mute
-@pytest.mark.exploration
-@pytest.mark.ae
-@pytest.mark.case_id_messages_explore_012
-def test_mute_function(page, config):
-    """
-    TC012: 会话页面免打扰功能测试
-    
-    测试步骤:
-    1. 访问Messages页面并进入会话
-    2. 打开三点菜单（...）
-    3. 查找免打扰选项（Mute/Unmute）
-    4. 点击免打扰选项并验证
-    """
-    logger.info("=" * 80)
-    logger.info("TC012: 会话页面免打扰功能测试")
-    logger.info("=" * 80)
-    
-    # Arrange
-    session_name = f"{config['site']}_{config['role']}_{config['user_name']}"
-    session_manager = SessionManager(page, config['base_url'], session_name)
-    login_page = LoginPage(page, base_url=config['base_url'])
-    messages_page = MessagesExplorePage(page)
-    
-    # 加载Session或登录
-    if session_manager.load_session():
-        logger.info("✓ 成功加载已保存的 Session")
-    else:
-        logger.info("✗ Session不存在，开始登录流程")
-        login_page.navigate_to_home_page()
-        login_page.handle_cookie_popup()
-        login_page.login(config['test_account']['username'], config['test_account']['password'])
-        session_manager.save_session()
-        logger.info("✓ 登录成功并保存 Session")
-    
-    # Act
-    
-    # 步骤1: 导航到Messages页面并进入会话
-    messages_page.navigate_to_messages_directly(config['target_page'])
-    logger.info("✓ 已导航到Messages页面")
-    
-    messages_page.wait_for_conversation_list()
-    conv_count = messages_page.get_conversation_count()
-    logger.info(f"✓ 会话列表加载完成，当前会话数: {conv_count}")
-    
-    if conv_count == 0:
-        logger.warning("⚠️ 会话列表为空，跳过测试")
-        pytest.skip("会话列表为空")
-    
-    # 点击第二个会话
-    messages_page.click_conversation_by_index(1)
-    page.wait_for_timeout(3000)
-    logger.info("✓ 已进入会话详情页")
-    
-    # 步骤2: 打开三点菜单
-    logger.info("\n--- 打开三点菜单 ---")
-    menu_result = messages_page.click_three_dots_menu()
-    
-    if not menu_result['opened']:
-        logger.warning(f"⚠️ 三点菜单未打开: {menu_result.get('error', '未知原因')}")
-        pytest.skip("三点菜单未打开")
-    
-    logger.info(f"✓ 菜单已打开，菜单项数量: {menu_result['item_count']}")
-    
-    # 截图
-    page.screenshot(path="screenshots/tc012_menu_opened.png", timeout=60000)
-    
     # 步骤3: 查找免打扰选项
     logger.info("\n--- 查找免打扰选项 ---")
     has_mute = messages_page.check_mute_option_in_menu()
@@ -1221,7 +1153,7 @@ def test_mute_function(page, config):
         logger.info(f"  确认弹窗: {mute_result['has_dialog']}")
         
         if mute_result['has_dialog']:
-            page.screenshot(path="screenshots/tc012_mute_dialog.png", timeout=60000)
+            page.screenshot(path="screenshots/tc011_mute_dialog.png", timeout=60000)
             logger.info("✓ 已截图: tc012_mute_dialog.png")
     else:
         logger.warning("  ✗ 未找到免打扰选项")
@@ -1234,24 +1166,24 @@ def test_mute_function(page, config):
         logger.info(f"  - 选项文本: {has_mute['text']}")
         logger.info(f"  - 点击成功: {'✅' if mute_result['success'] else '❌'}")
     
-    logger.info("✅ TC012 测试通过！")
+    logger.info("✅ TC011 测试通过！")
     logger.info("=" * 80)
 
 
 @pytest.mark.p1
 @allure.feature("OK - Messages")
 @allure.story("Messages页面功能探索 - 拉黑功能")
-@allure.title("TC013: 测试会话拉黑/取消拉黑完整流程")
+@allure.title("TC012: 测试会话拉黑/取消拉黑完整流程")
 @allure.severity(allure.severity_level.CRITICAL)
 @pytest.mark.messages
 @pytest.mark.conversation
 @pytest.mark.block
 @pytest.mark.exploration
 @pytest.mark.ae
-@pytest.mark.case_id_messages_explore_013
+@pytest.mark.case_id_messages_explore_012
 def test_block_function(page, config):
     """
-    TC013: 会话页面拉黑功能完整测试
+    TC012: 会话页面拉黑功能完整测试
     
     测试步骤:
     1. 访问Messages页面并进入会话
@@ -1264,7 +1196,7 @@ def test_block_function(page, config):
     8. 测试拉黑半层上的Unblock按钮
     """
     logger.info("=" * 80)
-    logger.info("TC013: 会话页面拉黑功能完整测试")
+    logger.info("TC012: 会话页面拉黑功能完整测试")
     logger.info("=" * 80)
     
     # Arrange
@@ -1302,7 +1234,7 @@ def test_block_function(page, config):
     messages_page.click_conversation_by_index(1)
     page.wait_for_timeout(3000)
     logger.info("✓ 已进入会话详情页")
-    page.screenshot(path="screenshots/tc013_conversation_page.png", timeout=60000)
+    page.screenshot(path="screenshots/tc012_conversation_page.png", timeout=60000)
     
     # 步骤2: 打开三点菜单
     logger.info("\n--- 步骤2: 打开三点菜单 ---")
@@ -1313,7 +1245,7 @@ def test_block_function(page, config):
         pytest.skip("三点菜单未打开")
     
     logger.info(f"✓ 菜单已打开，菜单项数量: {menu_result['item_count']}")
-    page.screenshot(path="screenshots/tc013_menu_opened.png", timeout=60000)
+    page.screenshot(path="screenshots/tc012_menu_opened.png", timeout=60000)
     
     # 步骤3: 查找拉黑选项
     logger.info("\n--- 步骤3: 查找Block选项 ---")
@@ -1339,7 +1271,7 @@ def test_block_function(page, config):
     
     page.wait_for_timeout(1000)
     # 点击后立即截图，查看页面状态
-    page.screenshot(path="screenshots/tc013_after_block_click.png", timeout=60000)
+    page.screenshot(path="screenshots/tc012_after_block_click.png", timeout=60000)
     logger.info("✓ 已截图: tc013_after_block_click.png")
     
     page.wait_for_timeout(1000)
@@ -1401,7 +1333,7 @@ def test_block_function(page, config):
         logger.info(f"  弹窗大小: {dialog_info.get('size', {}).get('width', 'N/A')}x{dialog_info.get('size', {}).get('height', 'N/A')}")
         logger.info(f"  弹窗按钮: {dialog_info['buttons']}")
         logger.info(f"  弹窗内容: {dialog_info['text'][:150]}")
-        page.screenshot(path="screenshots/tc013_block_dialog.png", timeout=60000)
+        page.screenshot(path="screenshots/tc012_block_dialog.png", timeout=60000)
         logger.info("✓ 已截图: tc013_block_dialog.png")
         
         # 点击Cancel按钮
@@ -1448,7 +1380,7 @@ def test_block_function(page, config):
         if cancel_clicked.get('success'):
             logger.info(f"  ✓ Cancel按钮点击成功: {cancel_clicked.get('buttonText', 'Cancel')}")
             page.wait_for_timeout(1000)
-            page.screenshot(path="screenshots/tc013_after_cancel.png", timeout=60000)
+            page.screenshot(path="screenshots/tc012_after_cancel.png", timeout=60000)
             logger.info("✓ 已截图: tc013_after_cancel.png")
         else:
             logger.warning("  ⚠️ 未找到Cancel按钮，使用ESC键关闭")
@@ -1497,7 +1429,7 @@ def test_block_function(page, config):
         logger.info(f"  包含Unblock按钮: {block_overlay_early['hasUnblockButton']}")
         if block_overlay_early['hasUnblockButton']:
             logger.info(f"  Unblock按钮文本: {block_overlay_early['unblockButtonText']}")
-        page.screenshot(path="screenshots/tc013_block_overlay_direct.png", timeout=60000)
+        page.screenshot(path="screenshots/tc012_block_overlay_direct.png", timeout=60000)
         logger.info("✓ 已截图: tc013_block_overlay_direct.png")
         
         # 直接测试Unblock按钮
@@ -1537,7 +1469,7 @@ def test_block_function(page, config):
             if unblock_clicked['success']:
                 logger.info(f"  按钮文本: {unblock_clicked.get('buttonText', 'N/A')}")
                 page.wait_for_timeout(3000)
-                page.screenshot(path="screenshots/tc013_after_unblock.png", timeout=60000)
+                page.screenshot(path="screenshots/tc012_after_unblock.png", timeout=60000)
                 logger.info("✓ 已截图: tc013_after_unblock.png")
                 
                 # 验证拉黑半层是否消失
@@ -1571,7 +1503,7 @@ def test_block_function(page, config):
         logger.info(f"  - 拉黑半层: ✅ 显示")
         logger.info(f"  - Unblock按钮: {'✅ 测试通过' if block_overlay_early.get('hasUnblockButton') and unblock_clicked.get('success') else '❌ 测试失败'}")
         
-        logger.info("✅ TC013 测试通过！")
+        logger.info("✅ TC012 测试通过！")
         logger.info("=" * 80)
         return  # 提前结束测试
     
@@ -1602,7 +1534,7 @@ def test_block_function(page, config):
         page.locator("text=/^Block$/i, text=/^拉黑$/i").first.click()
     
     page.wait_for_timeout(1000)
-    page.screenshot(path="screenshots/tc013_after_second_block_click.png", timeout=60000)
+    page.screenshot(path="screenshots/tc012_after_second_block_click.png", timeout=60000)
     logger.info("✓ 已截图: tc013_after_second_block_click.png")
     page.wait_for_timeout(1000)
     
@@ -1653,7 +1585,7 @@ def test_block_function(page, config):
     if block_confirmed['success']:
         logger.info(f"  按钮文本: {block_confirmed.get('buttonText', 'N/A')}")
         page.wait_for_timeout(3000)  # 等待拉黑操作完成
-        page.screenshot(path="screenshots/tc013_after_block_confirm.png", timeout=60000)
+        page.screenshot(path="screenshots/tc012_after_block_confirm.png", timeout=60000)
         logger.info("✓ 已截图: tc013_after_block_confirm.png")
     else:
         logger.warning(f"  ⚠️ Block按钮点击失败: {block_confirmed.get('reason', 'unknown')}")
@@ -1706,7 +1638,7 @@ def test_block_function(page, config):
         if block_overlay['hasUnblockButton']:
             logger.info(f"  Unblock按钮文本: {block_overlay['unblockButtonText']}")
         logger.info(f"  半层内容: {block_overlay['text'][:100]}")
-        page.screenshot(path="screenshots/tc013_block_overlay.png", timeout=60000)
+        page.screenshot(path="screenshots/tc012_block_overlay.png", timeout=60000)
         logger.info("✓ 已截图: tc013_block_overlay.png")
         
         # 步骤8: 测试Unblock按钮
@@ -1746,7 +1678,7 @@ def test_block_function(page, config):
             if unblock_clicked['success']:
                 logger.info(f"  按钮文本: {unblock_clicked.get('buttonText', 'N/A')}")
                 page.wait_for_timeout(3000)  # 等待取消拉黑操作完成
-                page.screenshot(path="screenshots/tc013_after_unblock.png", timeout=60000)
+                page.screenshot(path="screenshots/tc012_after_unblock.png", timeout=60000)
                 logger.info("✓ 已截图: tc013_after_unblock.png")
                 
                 # 验证拉黑半层是否消失
@@ -1786,24 +1718,24 @@ def test_block_function(page, config):
     logger.info(f"  - 拉黑半层: {'✅ 显示' if block_overlay['found'] else '❌ 未显示'}")
     logger.info(f"  - Unblock按钮: {'✅ 测试通过' if block_overlay.get('hasUnblockButton') else '❌ 未找到'}")
     
-    logger.info("✅ TC013 测试通过！")
+    logger.info("✅ TC012 测试通过！")
     logger.info("=" * 80)
 
 
 @pytest.mark.p1
 @allure.feature("OK - Messages")
 @allure.story("Messages页面功能探索 - 消息发送")
-@allure.title("TC014: 输入框输入消息并发送")
+@allure.title("TC013: 输入框输入消息并发送")
 @allure.severity(allure.severity_level.CRITICAL)
 @pytest.mark.messages
 @pytest.mark.conversation
 @pytest.mark.send
 @pytest.mark.exploration
 @pytest.mark.ae
-@pytest.mark.case_id_messages_explore_014
+@pytest.mark.case_id_messages_explore_013
 def test_send_message(page, config):
     """
-    TC014: 会话页面消息发送功能测试
+    TC013: 会话页面消息发送功能测试
     
     测试步骤:
     1. 访问Messages页面并进入会话
@@ -1813,7 +1745,7 @@ def test_send_message(page, config):
     5. 验证消息已发送
     """
     logger.info("=" * 80)
-    logger.info("TC014: 会话页面消息发送功能测试")
+    logger.info("TC013: 会话页面消息发送功能测试")
     logger.info("=" * 80)
     
     # Arrange
@@ -1853,7 +1785,7 @@ def test_send_message(page, config):
     logger.info("✓ 已进入会话详情页")
     
     # 截图（初始状态）
-    page.screenshot(path="screenshots/tc014_conversation_page.png", timeout=60000)
+    page.screenshot(path="screenshots/tc013_conversation_page.png", timeout=60000)
     logger.info("✓ 已截图: tc014_conversation_page.png")
     
     # 步骤2: 检查消息输入框
@@ -1877,7 +1809,7 @@ def test_send_message(page, config):
         logger.error(f"  输入失败: {input_result.get('error', '未知错误')}")
     
     # 截图（输入后）
-    page.screenshot(path="screenshots/tc014_after_input.png", timeout=60000)
+    page.screenshot(path="screenshots/tc013_after_input.png", timeout=60000)
     logger.info("✓ 已截图: tc014_after_input.png")
     
     # 步骤4: 检查并点击发送按钮
@@ -1895,7 +1827,7 @@ def test_send_message(page, config):
         logger.info(f"  按钮文本: '{has_send_button['text']}'")
     
     # 截图（发送前）
-    page.screenshot(path="screenshots/tc014_before_send.png", timeout=60000)
+    page.screenshot(path="screenshots/tc013_before_send.png", timeout=60000)
     logger.info("✓ 已截图: tc014_before_send.png")
     
     logger.info("\n--- 点击发送按钮 ---")
@@ -1926,7 +1858,7 @@ def test_send_message(page, config):
         logger.warning(f"滚动失败: {e}")
     
     # 截图（发送后）
-    page.screenshot(path="screenshots/tc014_after_send.png", timeout=60000)
+    page.screenshot(path="screenshots/tc013_after_send.png", timeout=60000)
     logger.info("✓ 已截图: tc014_after_send.png")
     
     # 步骤5: 验证消息已发送（多次尝试）
@@ -1964,14 +1896,14 @@ def test_send_message(page, config):
     if latest_message['found']:
         logger.info(f"  - 消息已显示: {'✅' if 'hello' in latest_message['text'].lower() else '⚠️ 未确认'}")
     
-    logger.info("✅ TC014 测试通过！")
+    logger.info("✅ TC013 测试通过！")
     logger.info("=" * 80)
 
 
 @pytest.mark.p1
 @allure.feature("OK - Messages")
 @allure.story("Messages页面功能探索 - 消息发送")
-@allure.title("TC014A: 输入框输入URL并发送")
+@allure.title("TC013A: 输入框输入URL并发送")
 @allure.severity(allure.severity_level.CRITICAL)
 @pytest.mark.messages
 @pytest.mark.conversation
@@ -1979,10 +1911,10 @@ def test_send_message(page, config):
 @pytest.mark.url
 @pytest.mark.exploration
 @pytest.mark.ae
-@pytest.mark.case_id_messages_explore_014a
+@pytest.mark.case_id_messages_explore_013a
 def test_send_url_message(page, config):
     """
-    TC014A: 会话页面发送URL消息功能测试
+    TC013A: 会话页面发送URL消息功能测试
     
     测试步骤:
     1. 访问Messages页面并进入会话
@@ -1992,7 +1924,7 @@ def test_send_url_message(page, config):
     5. 验证URL消息已发送并正确显示
     """
     logger.info("=" * 80)
-    logger.info("TC014A: 会话页面发送URL消息功能测试")
+    logger.info("TC013A: 会话页面发送URL消息功能测试")
     logger.info("=" * 80)
     
     # Arrange
@@ -2032,7 +1964,7 @@ def test_send_url_message(page, config):
     logger.info("✓ 已进入会话详情页")
     
     # 截图（初始状态）
-    page.screenshot(path="screenshots/tc014a_conversation_page.png", timeout=60000)
+    page.screenshot(path="screenshots/tc013a_conversation_page.png", timeout=60000)
     logger.info("✓ 已截图: tc014a_conversation_page.png")
     
     # 步骤2: 检查消息输入框
@@ -2057,7 +1989,7 @@ def test_send_url_message(page, config):
         logger.error(f"  输入失败: {input_result.get('error', '未知错误')}")
     
     # 截图（输入URL后）
-    page.screenshot(path="screenshots/tc014a_after_url_input.png", timeout=60000)
+    page.screenshot(path="screenshots/tc013a_after_url_input.png", timeout=60000)
     logger.info("✓ 已截图: tc014a_after_url_input.png")
     
     # 检查URL是否被自动识别为链接
@@ -2106,7 +2038,7 @@ def test_send_url_message(page, config):
         logger.info(f"  按钮文本: '{has_send_button['text']}'")
     
     # 截图（发送前）
-    page.screenshot(path="screenshots/tc014a_before_send.png", timeout=60000)
+    page.screenshot(path="screenshots/tc013a_before_send.png", timeout=60000)
     logger.info("✓ 已截图: tc014a_before_send.png")
     
     logger.info("\n--- 点击发送按钮 ---")
@@ -2137,7 +2069,7 @@ def test_send_url_message(page, config):
         logger.warning(f"滚动失败: {e}")
     
     # 截图（发送后）
-    page.screenshot(path="screenshots/tc014a_after_send.png", timeout=60000)
+    page.screenshot(path="screenshots/tc013a_after_send.png", timeout=60000)
     logger.info("✓ 已截图: tc014a_after_send.png")
     
     # 步骤5: 验证URL消息已发送（多次尝试）
@@ -2220,7 +2152,7 @@ def test_send_url_message(page, config):
                 logger.info(f"    - target: {link.get('target', 'N/A')}")
         
         # 截图（URL链接渲染）
-        page.screenshot(path="screenshots/tc014a_url_link_rendered.png", timeout=60000)
+        page.screenshot(path="screenshots/tc013a_url_link_rendered.png", timeout=60000)
         logger.info("✓ 已截图: tc014a_url_link_rendered.png")
     else:
         logger.warning(f"  未找到URL消息: {url_link_check.get('reason', 'unknown')}")
@@ -2240,24 +2172,24 @@ def test_send_url_message(page, config):
     if url_link_check.get('found'):
         logger.info(f"  - URL渲染为链接: {'✅' if url_link_check.get('hasClickableLink') else '❌ 纯文本'}")
     
-    logger.info("✅ TC014A 测试通过！")
+    logger.info("✅ TC013A 测试通过！")
     logger.info("=" * 80)
 
 
 @pytest.mark.p2
 @allure.feature("OK - Messages")
 @allure.story("Messages页面异常测试 - 输入验证")
-@allure.title("TC018: 发送空消息异常测试")
+@allure.title("TC017: 发送空消息异常测试")
 @allure.severity(allure.severity_level.NORMAL)
 @pytest.mark.messages
 @pytest.mark.conversation
 @pytest.mark.send
 @pytest.mark.exception
 @pytest.mark.ae
-@pytest.mark.case_id_messages_exception_018
+@pytest.mark.case_id_messages_exception_017
 def test_send_empty_message(page, config):
     """
-    TC018: 发送空消息异常测试
+    TC017: 发送空消息异常测试
     
     测试步骤:
     1. 访问Messages页面并进入会话
@@ -2268,7 +2200,7 @@ def test_send_empty_message(page, config):
     6. 验证空消息未被发送
     """
     logger.info("=" * 80)
-    logger.info("TC018: 发送空消息异常测试")
+    logger.info("TC017: 发送空消息异常测试")
     logger.info("=" * 80)
     
     # Arrange
@@ -2314,7 +2246,7 @@ def test_send_empty_message(page, config):
     
     # 步骤2: 不输入任何内容，检查发送按钮状态
     logger.info("\n--- 测试1: 空输入框 ---")
-    page.screenshot(path="screenshots/tc018_empty_input.png", timeout=60000)
+    page.screenshot(path="screenshots/tc017_empty_input.png", timeout=60000)
     logger.info("✓ 已截图: tc018_empty_input.png")
     
     send_button_state = page.evaluate("""
@@ -2346,7 +2278,7 @@ def test_send_empty_message(page, config):
     input_result = messages_page.input_message('   ')  # 3个空格
     logger.info(f"✓ 输入空格: {input_result['success']}")
     
-    page.screenshot(path="screenshots/tc018_space_input.png", timeout=60000)
+    page.screenshot(path="screenshots/tc017_space_input.png", timeout=60000)
     logger.info("✓ 已截图: tc018_space_input.png")
     
     send_button_state_space = page.evaluate("""
@@ -2395,7 +2327,7 @@ def test_send_empty_message(page, config):
     """)
     page.wait_for_timeout(500)
     
-    page.screenshot(path="screenshots/tc018_newline_input.png", timeout=60000)
+    page.screenshot(path="screenshots/tc017_newline_input.png", timeout=60000)
     logger.info("✓ 已截图: tc018_newline_input.png")
     
     send_button_state_newline = page.evaluate("""
@@ -2486,11 +2418,11 @@ def test_send_empty_message(page, config):
     
     # 如果发送按钮未禁用但消息未发送，也算通过（有其他验证机制）
     if not message_sent:
-        logger.info("✅ TC018 测试通过！（空消息未被发送）")
+        logger.info("✅ TC017 测试通过！（空消息未被发送）")
     elif send_button_state.get('disabled') or send_button_state_space.get('disabled') or send_button_state_newline.get('disabled'):
-        logger.info("✅ TC018 测试通过！（发送按钮正确禁用）")
+        logger.info("✅ TC017 测试通过！（发送按钮正确禁用）")
     else:
-        logger.warning("⚠️ TC018 测试警告：发送按钮未禁用且空消息可能被发送")
+        logger.warning("⚠️ TC017 测试警告：发送按钮未禁用且空消息可能被发送")
     
     logger.info("=" * 80)
 
@@ -2498,7 +2430,7 @@ def test_send_empty_message(page, config):
 @pytest.mark.p2
 @allure.feature("OK - Messages")
 @allure.story("Messages页面异常测试 - 输入验证")
-@allure.title("TC019: 发送超长消息异常测试")
+@allure.title("TC018: 发送超长消息异常测试")
 @allure.severity(allure.severity_level.NORMAL)
 @pytest.mark.messages
 @pytest.mark.conversation
@@ -2506,10 +2438,10 @@ def test_send_empty_message(page, config):
 @pytest.mark.exception
 @pytest.mark.boundary
 @pytest.mark.ae
-@pytest.mark.case_id_messages_exception_019
+@pytest.mark.case_id_messages_exception_018
 def test_send_long_message(page, config):
     """
-    TC019: 发送超长消息异常测试
+    TC018: 发送超长消息异常测试
     
     测试步骤:
     1. 访问Messages页面并进入会话
@@ -2519,7 +2451,7 @@ def test_send_long_message(page, config):
     5. 验证消息是否被截断或拒绝
     """
     logger.info("=" * 80)
-    logger.info("TC019: 发送超长消息异常测试")
+    logger.info("TC018: 发送超长消息异常测试")
     logger.info("=" * 80)
     
     # Arrange
@@ -2568,7 +2500,7 @@ def test_send_long_message(page, config):
     if actual_length < len(long_text):
         logger.info(f"  字符限制: {actual_length} 字符")
     
-    page.screenshot(path="screenshots/tc019_long_text_input.png", timeout=60000)
+    page.screenshot(path="screenshots/tc018_long_text_input.png", timeout=60000)
     logger.info("✓ 已截图: tc019_long_text_input.png")
     
     # 步骤2: 检查字符计数器
@@ -2606,7 +2538,7 @@ def test_send_long_message(page, config):
     logger.info(f"✓ 发送操作: {send_result['success']}")
     
     page.wait_for_timeout(2000)
-    page.screenshot(path="screenshots/tc019_after_send.png", timeout=60000)
+    page.screenshot(path="screenshots/tc018_after_send.png", timeout=60000)
     
     # Assert
     logger.info("\n" + "=" * 80)
@@ -2615,14 +2547,14 @@ def test_send_long_message(page, config):
     logger.info(f"  - 字符计数器: {'✅ 显示' if char_counter['found'] else '❌ 未显示'}")
     logger.info(f"  - 发送操作: {'✅ 成功' if send_result['success'] else '❌ 失败'}")
     
-    logger.info("✅ TC019 测试通过！")
+    logger.info("✅ TC018 测试通过！")
     logger.info("=" * 80)
 
 
 @pytest.mark.p1
 @allure.feature("OK - Messages")
 @allure.story("Messages页面异常测试 - 安全验证")
-@allure.title("TC020: 发送特殊字符消息测试")
+@allure.title("TC019: 发送特殊字符消息测试")
 @allure.severity(allure.severity_level.CRITICAL)
 @pytest.mark.messages
 @pytest.mark.conversation
@@ -2630,10 +2562,10 @@ def test_send_long_message(page, config):
 @pytest.mark.exception
 @pytest.mark.security
 @pytest.mark.ae
-@pytest.mark.case_id_messages_exception_020
+@pytest.mark.case_id_messages_exception_019
 def test_send_special_characters(page, config):
     """
-    TC020: 发送特殊字符消息测试
+    TC019: 发送特殊字符消息测试
     
     测试步骤:
     1. 访问Messages页面并进入会话
@@ -2644,7 +2576,7 @@ def test_send_special_characters(page, config):
     6. 验证所有特殊字符被正确处理
     """
     logger.info("=" * 80)
-    logger.info("TC020: 发送特殊字符消息测试")
+    logger.info("TC019: 发送特殊字符消息测试")
     logger.info("=" * 80)
     
     # Arrange
@@ -2685,7 +2617,7 @@ def test_send_special_characters(page, config):
     logger.info(f"测试内容: {html_test}")
     
     messages_page.input_message(html_test)
-    page.screenshot(path="screenshots/tc020_html_input.png", timeout=60000)
+    page.screenshot(path="screenshots/tc019_html_input.png", timeout=60000)
     
     messages_page.click_send_button()
     page.wait_for_timeout(2000)
@@ -2697,7 +2629,7 @@ def test_send_special_characters(page, config):
         logger.info(f"  是否转义: {is_escaped}")
         test_results['html'] = is_escaped
     
-    page.screenshot(path="screenshots/tc020_html_sent.png", timeout=60000)
+    page.screenshot(path="screenshots/tc019_html_sent.png", timeout=60000)
     
     # 测试2: SQL注入
     logger.info("\n--- 测试2: SQL注入字符 ---")
@@ -2705,7 +2637,7 @@ def test_send_special_characters(page, config):
     logger.info(f"测试内容: {sql_test}")
     
     messages_page.input_message(sql_test)
-    page.screenshot(path="screenshots/tc020_sql_input.png", timeout=60000)
+    page.screenshot(path="screenshots/tc019_sql_input.png", timeout=60000)
     
     messages_page.click_send_button()
     page.wait_for_timeout(2000)
@@ -2715,7 +2647,7 @@ def test_send_special_characters(page, config):
         logger.info(f"  消息内容: {latest_message['text'][:100]}")
         test_results['sql'] = True
     
-    page.screenshot(path="screenshots/tc020_sql_sent.png", timeout=60000)
+    page.screenshot(path="screenshots/tc019_sql_sent.png", timeout=60000)
     
     # 测试3: Emoji表情
     logger.info("\n--- 测试3: Emoji表情 ---")
@@ -2723,7 +2655,7 @@ def test_send_special_characters(page, config):
     logger.info(f"测试内容: {emoji_test}")
     
     messages_page.input_message(emoji_test)
-    page.screenshot(path="screenshots/tc020_emoji_input.png", timeout=60000)
+    page.screenshot(path="screenshots/tc019_emoji_input.png", timeout=60000)
     
     messages_page.click_send_button()
     page.wait_for_timeout(2000)
@@ -2735,7 +2667,7 @@ def test_send_special_characters(page, config):
         logger.info(f"  Emoji显示正常: {emoji_displayed}")
         test_results['emoji'] = emoji_displayed
     
-    page.screenshot(path="screenshots/tc020_emoji_sent.png", timeout=60000)
+    page.screenshot(path="screenshots/tc019_emoji_sent.png", timeout=60000)
     
     # 测试4: 特殊符号
     logger.info("\n--- 测试4: 特殊符号 ---")
@@ -2743,7 +2675,7 @@ def test_send_special_characters(page, config):
     logger.info(f"测试内容: {special_test}")
     
     messages_page.input_message(special_test)
-    page.screenshot(path="screenshots/tc020_special_input.png", timeout=60000)
+    page.screenshot(path="screenshots/tc019_special_input.png", timeout=60000)
     
     messages_page.click_send_button()
     page.wait_for_timeout(2000)
@@ -2753,7 +2685,7 @@ def test_send_special_characters(page, config):
         logger.info(f"  消息内容: {latest_message['text'][:100]}")
         test_results['special'] = True
     
-    page.screenshot(path="screenshots/tc020_special_sent.png", timeout=60000)
+    page.screenshot(path="screenshots/tc019_special_sent.png", timeout=60000)
     
     # Assert
     logger.info("\n" + "=" * 80)
@@ -2763,23 +2695,23 @@ def test_send_special_characters(page, config):
     logger.info(f"  - Emoji显示: {'✅' if test_results.get('emoji', False) else '❌'}")
     logger.info(f"  - 特殊符号显示: {'✅' if test_results.get('special', False) else '❌'}")
     
-    logger.info("✅ TC020 测试通过！")
+    logger.info("✅ TC019 测试通过！")
     logger.info("=" * 80)
 
 
 @pytest.mark.p2
 @allure.feature("OK - Messages")
 @allure.story("Messages页面功能测试 - 多行文本")
-@allure.title("TC021: 发送多行文本消息测试")
+@allure.title("TC020: 发送多行文本消息测试")
 @allure.severity(allure.severity_level.NORMAL)
 @pytest.mark.messages
 @pytest.mark.conversation
 @pytest.mark.send
 @pytest.mark.ae
-@pytest.mark.case_id_messages_exception_021
+@pytest.mark.case_id_messages_exception_020
 def test_send_multiline_message(page, config):
     """
-    TC021: 发送多行文本消息测试
+    TC020: 发送多行文本消息测试
     
     测试步骤:
     1. 访问Messages页面并进入会话
@@ -2788,7 +2720,7 @@ def test_send_multiline_message(page, config):
     4. 验证换行符被正确保留和显示
     """
     logger.info("=" * 80)
-    logger.info("TC021: 发送多行文本消息测试")
+    logger.info("TC020: 发送多行文本消息测试")
     logger.info("=" * 80)
     
     # Arrange
@@ -2833,7 +2765,7 @@ def test_send_multiline_message(page, config):
     line_count = input_result.get('text', '').count('\n') + 1
     logger.info(f"  输入行数: {line_count}")
     
-    page.screenshot(path="screenshots/tc021_multiline_input.png", timeout=60000)
+    page.screenshot(path="screenshots/tc020_multiline_input.png", timeout=60000)
     logger.info("✓ 已截图: tc021_multiline_input.png")
     
     # 步骤2: 发送多行消息
@@ -2856,7 +2788,7 @@ def test_send_multiline_message(page, config):
     """)
     page.wait_for_timeout(1000)
     
-    page.screenshot(path="screenshots/tc021_after_send.png", timeout=60000)
+    page.screenshot(path="screenshots/tc020_after_send.png", timeout=60000)
     logger.info("✓ 已截图: tc021_after_send.png")
     
     # 步骤3: 验证多行消息显示
@@ -2895,7 +2827,7 @@ def test_send_multiline_message(page, config):
         logger.info(f"  换行符保留: {message_display['preservesNewlines']}")
         logger.info(f"  消息内容: {message_display['text'][:80]}")
     
-    page.screenshot(path="screenshots/tc021_multiline_display.png", timeout=60000)
+    page.screenshot(path="screenshots/tc020_multiline_display.png", timeout=60000)
     logger.info("✓ 已截图: tc021_multiline_display.png")
     
     # Assert
@@ -2906,27 +2838,27 @@ def test_send_multiline_message(page, config):
     logger.info(f"  - 换行符保留: {'✅' if message_display.get('preservesNewlines', False) else '❌'}")
     logger.info(f"  - 显示格式正确: {'✅' if message_display.get('lineCount', 0) > 1 or message_display.get('hasBrTag', False) else '❌'}")
     
-    logger.info("✅ TC021 测试通过！")
+    logger.info("✅ TC020 测试通过！")
     logger.info("=" * 80)
 
 
-# TC022: 复制消息功能测试 - 已删除（自动化无法触发应用的自定义Copy菜单）
+# TC021: 复制消息功能测试 - 已删除（自动化无法触发应用的自定义Copy菜单）
 
 
-# ==================== TC023-TC025: 会话列表交互测试 ====================
+# ==================== TC022-TC024: 会话列表交互测试 ====================
 
 @allure.feature("OK - Messages")
 @allure.story("Messages页面功能探索 - 会话列表交互")
-@allure.title("TC023: 会话列表滑动功能测试")
+@allure.title("TC022: 会话列表滑动功能测试")
 @allure.severity(allure.severity_level.NORMAL)
 @pytest.mark.messages
 @pytest.mark.conversation
 @pytest.mark.scroll
 @pytest.mark.ae
-@pytest.mark.case_id_messages_scroll_023
+@pytest.mark.case_id_messages_scroll_022
 def test_conversation_list_scroll(page, config):
     """
-    TC023: 会话列表滑动功能测试
+    TC022: 会话列表滑动功能测试
     
     ⚠️ 状态：需要进一步调查
     
@@ -2943,7 +2875,7 @@ def test_conversation_list_scroll(page, config):
     5. 验证复制的消息已发送
     """
     logger.info("=" * 80)
-    logger.info("TC022: 复制消息功能测试")
+    logger.info("TC021: 复制消息功能测试")
     logger.info("=" * 80)
     
     # Arrange
@@ -2983,7 +2915,7 @@ def test_conversation_list_scroll(page, config):
     logger.info("\n--- 步骤1: 查找可见区域的消息 ---")
     
     # 截图当前状态
-    page.screenshot(path="screenshots/tc022_initial_state.png", timeout=60000)
+    page.screenshot(path="screenshots/tc021_initial_state.png", timeout=60000)
     logger.info("✓ 已截图初始状态")
     
     message_info = page.evaluate("""
@@ -3077,7 +3009,7 @@ def test_conversation_list_scroll(page, config):
     logger.info(f"  尺寸: {message_info['width']}x{message_info['height']}")
     
     # 截图：点击前
-    page.screenshot(path="screenshots/tc022_before_click.png", timeout=60000)
+    page.screenshot(path="screenshots/tc021_before_click.png", timeout=60000)
     logger.info("✓ 截图: tc022_before_click.png")
     
     # 步骤1: 左键点击消息（激活），然后右键点击（触发Copy菜单）
@@ -3100,7 +3032,7 @@ def test_conversation_list_scroll(page, config):
     page.wait_for_timeout(500)
     
     # 截图：左键点击后
-    page.screenshot(path="screenshots/tc022_after_left_click.png", timeout=60000)
+    page.screenshot(path="screenshots/tc021_after_left_click.png", timeout=60000)
     logger.info("✓ 截图: tc022_after_left_click.png")
     
     # 然后右键点击（触发Copy菜单）
@@ -3111,7 +3043,7 @@ def test_conversation_list_scroll(page, config):
     page.wait_for_timeout(1000)
     
     # 截图：右键后
-    page.screenshot(path="screenshots/tc022_after_right_click.png", timeout=60000)
+    page.screenshot(path="screenshots/tc021_after_right_click.png", timeout=60000)
     logger.info("✓ 截图: tc022_after_right_click.png")
     
     # 步骤2: 查找并点击Copy按钮
@@ -3194,7 +3126,7 @@ def test_conversation_list_scroll(page, config):
     
     if not copy_button_info['found']:
         logger.error("⚠️ 未找到Copy按钮")
-        page.screenshot(path="screenshots/tc022_copy_button_not_found.png", timeout=60000)
+        page.screenshot(path="screenshots/tc021_copy_button_not_found.png", timeout=60000)
         pytest.skip("未找到Copy按钮")
     
     logger.info(f"✓ 找到Copy按钮")
@@ -3215,7 +3147,7 @@ def test_conversation_list_scroll(page, config):
     page.wait_for_timeout(1000)
     
     # 截图：点击Copy后
-    page.screenshot(path="screenshots/tc022_after_copy_click.png", timeout=60000)
+    page.screenshot(path="screenshots/tc021_after_copy_click.png", timeout=60000)
     logger.info("✓ 截图: tc022_after_copy_click.png")
     
     # 保存原始消息文本用于验证
@@ -3270,7 +3202,7 @@ def test_conversation_list_scroll(page, config):
     
     if not paste_result.get('hasContent'):
         logger.error("❌ 粘贴后输入框为空")
-        page.screenshot(path="screenshots/tc022_paste_failed.png", timeout=60000)
+        page.screenshot(path="screenshots/tc021_paste_failed.png", timeout=60000)
         pytest.fail("复制功能失败：粘贴后输入框为空")
     
     pasted_text = paste_result['text']
@@ -3282,7 +3214,7 @@ def test_conversation_list_scroll(page, config):
     logger.info(f"  原始消息文本: '{target_text[:50]}'")
     logger.info(f"  粘贴匹配原始消息: {paste_matches_target}")
     
-    page.screenshot(path="screenshots/tc022_after_paste.png", timeout=60000)
+    page.screenshot(path="screenshots/tc021_after_paste.png", timeout=60000)
     logger.info("✓ 已截图: tc022_after_paste.png")
     
     # 步骤4: 点击Send发送
@@ -3295,7 +3227,7 @@ def test_conversation_list_scroll(page, config):
     
     page.wait_for_timeout(2000)  # 等待消息发送完成
     
-    page.screenshot(path="screenshots/tc022_message_sent_from_paste.png", timeout=60000)
+    page.screenshot(path="screenshots/tc021_message_sent_from_paste.png", timeout=60000)
     logger.info("✓ 已截图: tc022_message_sent_from_paste.png")
     
     # 步骤5: 验证粘贴的消息已发送
@@ -3355,7 +3287,7 @@ def test_conversation_list_scroll(page, config):
     
     # Assert
     logger.info("\n" + "=" * 80)
-    logger.info("TC022 测试结果汇总:")
+    logger.info("TC021 测试结果汇总:")
     logger.info(f"  1. 找到目标消息: ✅ ('{target_text[:30]}')")
     logger.info(f"  2. 选中消息文本: ✅")
     logger.info(f"  3. Cmd+C复制: ✅")
@@ -3366,9 +3298,9 @@ def test_conversation_list_scroll(page, config):
     logger.info(f"  8. 消息已发送: {'✅' if message_contains_pasted else '❌'}")
     
     if paste_matches_target and message_contains_pasted:
-        logger.info("✅ TC022 测试通过！（复制功能正常）")
+        logger.info("✅ TC021 测试通过！（复制功能正常）")
     else:
-        logger.warning(f"⚠️ TC022 测试异常")
+        logger.warning(f"⚠️ TC021 测试异常")
         logger.warning(f"   目标文本: '{target_text}'")
         logger.warning(f"   复制内容: '{pasted_text}'")
     
@@ -3380,21 +3312,21 @@ def test_conversation_list_scroll(page, config):
     assert message_contains_pasted, "发送的消息不包含粘贴的内容"
 
 
-# ==================== TC023-TC025: 会话列表交互测试 ====================
+# ==================== TC022-TC024: 会话列表交互测试 ====================
 
 @pytest.mark.p2
 @allure.feature("OK - Messages")
 @allure.story("Messages页面功能探索 - 会话列表交互")
-@allure.title("TC023: 会话列表滑动功能测试")
+@allure.title("TC022: 会话列表滑动功能测试")
 @allure.severity(allure.severity_level.NORMAL)
 @pytest.mark.messages
 @pytest.mark.conversation
 @pytest.mark.scroll
 @pytest.mark.ae
-@pytest.mark.case_id_messages_scroll_023
+@pytest.mark.case_id_messages_scroll_022
 def test_conversation_list_scroll(page, config):
     """
-    TC023: 会话列表滑动功能测试
+    TC022: 会话列表滑动功能测试
     
     测试步骤:
     1. 定位会话列表容器
@@ -3403,7 +3335,7 @@ def test_conversation_list_scroll(page, config):
     4. 验证滑动后的状态
     """
     logger.info("=" * 80)
-    logger.info("TC023: 会话列表滑动功能测试")
+    logger.info("TC022: 会话列表滑动功能测试")
     logger.info("=" * 80)
     
     # 准备：确保在Messages页面
@@ -3476,7 +3408,7 @@ def test_conversation_list_scroll(page, config):
     """)
     
     logger.info(f"✓ 初始状态 - 总会话数: {initial_state['total']}, 可见: {initial_state['visible']}")
-    page.screenshot(path='screenshots/tc023_before_scroll.png', timeout=60000)
+    page.screenshot(path='screenshots/tc022_before_scroll.png', timeout=60000)
     
     # 步骤3：向下滑动会话列表
     logger.info("\n--- 步骤3: 向下滑动会话列表 ---")
@@ -3530,7 +3462,7 @@ def test_conversation_list_scroll(page, config):
     """)
     
     logger.info(f"✓ 滑动后状态 - 可见: {after_scroll_state['visible']}")
-    page.screenshot(path='screenshots/tc023_after_scroll.png', timeout=60000)
+    page.screenshot(path='screenshots/tc022_after_scroll.png', timeout=60000)
     
     # 验证滑动效果
     if conversation_list['scrollable']:
@@ -3539,22 +3471,22 @@ def test_conversation_list_scroll(page, config):
     else:
         logger.info("⚠ 会话列表不可滑动（会话数量较少）")
     
-    logger.info("✓ TC023 测试通过")
+    logger.info("✓ TC022 测试通过")
 
 
 @pytest.mark.p2
 @allure.feature("OK - Messages")
 @allure.story("Messages页面功能探索 - 会话列表展示")
-@allure.title("TC024: 会话列表时间戳检查")
+@allure.title("TC023: 会话列表时间戳检查")
 @allure.severity(allure.severity_level.NORMAL)
 @pytest.mark.messages
 @pytest.mark.conversation
 @pytest.mark.timestamp
 @pytest.mark.ae
-@pytest.mark.case_id_messages_timestamp_024
+@pytest.mark.case_id_messages_timestamp_023
 def test_conversation_timestamp(page, config):
     """
-    TC024: 会话列表时间戳检查
+    TC023: 会话列表时间戳检查
     
     测试步骤:
     1. 获取所有会话的时间戳
@@ -3562,7 +3494,7 @@ def test_conversation_timestamp(page, config):
     3. 验证时间戳位置
     """
     logger.info("=" * 80)
-    logger.info("TC024: 会话列表时间戳检查")
+    logger.info("TC023: 会话列表时间戳检查")
     logger.info("=" * 80)
     
     # 准备：确保在Messages页面
@@ -3661,25 +3593,25 @@ def test_conversation_timestamp(page, config):
         assert coverage >= 0.7, f"时间戳覆盖率不足: {coverage*100:.1f}%"
     
     # 截图
-    page.screenshot(path='screenshots/tc024_timestamps.png', timeout=60000)
+    page.screenshot(path='screenshots/tc023_timestamps.png', timeout=60000)
     
-    logger.info("✓ TC024 测试通过")
+    logger.info("✓ TC023 测试通过")
 
 
 @pytest.mark.p1
 @allure.feature("OK - Messages")
 @allure.story("Messages页面功能探索 - 未读消息提示")
-@allure.title("TC025: 未读消息气泡展示测试")
+@allure.title("TC024: 未读消息气泡展示测试")
 @allure.severity(allure.severity_level.CRITICAL)
 @pytest.mark.messages
 @pytest.mark.conversation
 @pytest.mark.unread
 @pytest.mark.notification
 @pytest.mark.ae
-@pytest.mark.case_id_messages_unread_025
+@pytest.mark.case_id_messages_unread_024
 def test_unread_message_badge(page, config):
     """
-    TC025: 未读消息气泡展示测试
+    TC024: 未读消息气泡展示测试
     
     测试步骤:
     1. 查找未读消息气泡
@@ -3688,7 +3620,7 @@ def test_unread_message_badge(page, config):
     4. 返回验证气泡消失
     """
     logger.info("=" * 80)
-    logger.info("TC025: 未读消息气泡展示测试")
+    logger.info("TC024: 未读消息气泡展示测试")
     logger.info("=" * 80)
     
     # 准备：确保在Messages页面
@@ -3787,7 +3719,7 @@ def test_unread_message_badge(page, config):
     for badge in unread_badges[:5]:
         logger.info(f"  {badge['userName']}: {badge['badgeText'] or '红点'} (背景: {badge['backgroundColor']})")
     
-    page.screenshot(path='screenshots/tc025_unread_badges.png', timeout=60000)
+    page.screenshot(path='screenshots/tc024_unread_badges.png', timeout=60000)
     
     # 步骤2：验证气泡样式
     logger.info("\n--- 步骤2: 验证气泡样式 ---")
@@ -3832,28 +3764,28 @@ def test_unread_message_badge(page, config):
         if click_result['success']:
             logger.info(f"✓ 点击未读会话: {click_result['userName']} (未读: {click_result['unreadCount']})")
             page.wait_for_timeout(2000)
-            page.screenshot(path='screenshots/tc025_after_click.png', timeout=60000)
+            page.screenshot(path='screenshots/tc024_after_click.png', timeout=60000)
         else:
             logger.info("⚠ 未找到可点击的未读会话")
     
-    logger.info("✓ TC025 测试通过")
+    logger.info("✓ TC024 测试通过")
 
 
-# ==================== TC026-TC028: 会话列表深度交互测试 ====================
+# ==================== TC025-TC027: 会话列表深度交互测试 ====================
 
 @pytest.mark.p1
 @allure.feature("OK - Messages")
 @allure.story("Messages页面功能探索 - 会话列表时间顺序")
-@allure.title("TC026: 会话列表按最新消息时间倒序排列")
+@allure.title("TC025: 会话列表按最新消息时间倒序排列")
 @allure.severity(allure.severity_level.CRITICAL)
 @pytest.mark.messages
 @pytest.mark.conversation
 @pytest.mark.timestamp
 @pytest.mark.ae
-@pytest.mark.case_id_messages_list_order_026
+@pytest.mark.case_id_messages_list_order_025
 def test_conversation_list_time_order(page, config):
     """
-    TC026: 会话列表时间顺序展示测试（✅ 实测）
+    TC025: 会话列表时间顺序展示测试（✅ 实测）
 
     实测发现：
     - 会话列表容器：.list-group.list-group-flush（scrollH=2642, clientH=684，可滚动）
@@ -3868,7 +3800,7 @@ def test_conversation_list_time_order(page, config):
     4. 验证时间格式正确
     """
     logger.info("=" * 80)
-    logger.info("TC026: 会话列表时间顺序展示测试")
+    logger.info("TC025: 会话列表时间顺序展示测试")
     logger.info("=" * 80)
 
     # 准备
@@ -3920,7 +3852,7 @@ def test_conversation_list_time_order(page, config):
                 f"总会话数={container_info['totalItems']}")
 
     assert container_info['totalItems'] > 0, "会话列表为空"
-    page.screenshot(path='screenshots/tc026_list_initial.png', timeout=60000)
+    page.screenshot(path='screenshots/tc025_list_initial.png', timeout=60000)
 
     # 步骤2：获取前10条会话的时间戳
     logger.info("\n--- 步骤2: 获取会话时间戳 ---")
@@ -3995,22 +3927,22 @@ def test_conversation_list_time_order(page, config):
     else:
         logger.info("⚠ 当天/昨天消息不足，仅有日期格式，跳过顺序验证")
 
-    logger.info("✓ TC026 测试通过 ✅ 实测")
+    logger.info("✓ TC025 测试通过 ✅ 实测")
 
 
 @pytest.mark.p1
 @allure.feature("OK - Messages")
 @allure.story("Messages页面功能探索 - 置顶会话icon")
-@allure.title("TC027: 置顶会话在列表顶部显示pin图标")
+@allure.title("TC026: 置顶会话在列表顶部显示pin图标")
 @allure.severity(allure.severity_level.CRITICAL)
 @pytest.mark.messages
 @pytest.mark.conversation
 @pytest.mark.pin
 @pytest.mark.ae
-@pytest.mark.case_id_messages_pin_icon_027
+@pytest.mark.case_id_messages_pin_icon_026
 def test_pinned_conversation_icon(page, config):
     """
-    TC027: 置顶会话icon展示测试（✅ 实测）
+    TC026: 置顶会话icon展示测试（✅ 实测）
 
     实测发现：
     - 置顶操作入口：右侧聊天区顶部 .c-d-img-menu → 点击后弹出 .c-d-menu
@@ -4027,7 +3959,7 @@ def test_pinned_conversation_icon(page, config):
     5. 还原：执行Unpin操作
     """
     logger.info("=" * 80)
-    logger.info("TC027: 置顶会话icon展示测试")
+    logger.info("TC026: 置顶会话icon展示测试")
     logger.info("=" * 80)
 
     # 准备
@@ -4068,7 +4000,7 @@ def test_pinned_conversation_icon(page, config):
     logger.info(f"✓ 待置顶会话信息（第3条）: {before_info}")
     target_name = before_info['texts'][0] if before_info else None
 
-    page.screenshot(path='screenshots/tc027_before_pin.png', timeout=60000)
+    page.screenshot(path='screenshots/tc026_before_pin.png', timeout=60000)
 
     # 步骤2：点击第3条会话进入详情，打开菜单Pin
     logger.info("\n--- 步骤2: 执行Pin操作 ---")
@@ -4087,7 +4019,7 @@ def test_pinned_conversation_icon(page, config):
     menu_text = page.locator('.c-d-menu').first.text_content()
     logger.info(f"✓ 当前菜单内容: '{menu_text}'")
 
-    page.screenshot(path='screenshots/tc027_menu_open.png', timeout=60000)
+    page.screenshot(path='screenshots/tc026_menu_open.png', timeout=60000)
 
     # 判断当前是已Pin还是未Pin
     if 'Unpin' in menu_text:
@@ -4150,7 +4082,7 @@ def test_pinned_conversation_icon(page, config):
     else:
         logger.warning(f"⚠ 置顶后第1条会话为 {after_pin['texts']}，可能有新消息进来，但置顶icon已正确显示")
 
-    page.screenshot(path='screenshots/tc027_after_pin.png', timeout=60000)
+    page.screenshot(path='screenshots/tc026_after_pin.png', timeout=60000)
 
     # 步骤5：还原 - 执行Unpin
     logger.info("\n--- 步骤5: 还原 - 执行Unpin ---")
@@ -4167,22 +4099,22 @@ def test_pinned_conversation_icon(page, config):
     else:
         logger.warning("⚠ Unpin按钮不可见，跳过还原")
 
-    logger.info("✓ TC027 测试通过 ✅ 实测")
+    logger.info("✓ TC026 测试通过 ✅ 实测")
 
 
 @pytest.mark.p1
 @allure.feature("OK - Messages")
 @allure.story("Messages页面功能探索 - 免打扰会话icon")
-@allure.title("TC028: 免打扰会话在列表显示mute图标")
+@allure.title("TC027: 免打扰会话在列表显示mute图标")
 @allure.severity(allure.severity_level.CRITICAL)
 @pytest.mark.messages
 @pytest.mark.conversation
 @pytest.mark.mute
 @pytest.mark.ae
-@pytest.mark.case_id_messages_mute_icon_028
+@pytest.mark.case_id_messages_mute_icon_027
 def test_muted_conversation_icon(page, config):
     """
-    TC028: 免打扰会话icon展示测试（✅ 实测）
+    TC027: 免打扰会话icon展示测试（✅ 实测）
 
     实测发现：
     - 免打扰操作入口：.c-d-img-menu → .c-d-menu → "Mute"菜单项
@@ -4198,7 +4130,7 @@ def test_muted_conversation_icon(page, config):
     5. 还原：执行Unmute操作
     """
     logger.info("=" * 80)
-    logger.info("TC028: 免打扰会话icon展示测试")
+    logger.info("TC027: 免打扰会话icon展示测试")
     logger.info("=" * 80)
 
     # 准备
@@ -4239,7 +4171,7 @@ def test_muted_conversation_icon(page, config):
         }
     """)
     logger.info(f"✓ 第2条会话信息: {before_info}")
-    page.screenshot(path='screenshots/tc028_before_mute.png', timeout=60000)
+    page.screenshot(path='screenshots/tc027_before_mute.png', timeout=60000)
 
     # 步骤2：点击第2条会话，检查并确保从未静音状态开始
     logger.info("\n--- 步骤2: 确保从未静音状态开始 ---")
@@ -4304,7 +4236,7 @@ def test_muted_conversation_icon(page, config):
     assert mute_verify['mutedCount'] >= 1, "执行Mute后未找到任何静音icon（listMute图片）"
     logger.info("✓ 静音icon验证通过！img src 包含 'listMute'")
 
-    page.screenshot(path='screenshots/tc028_after_mute.png', timeout=60000)
+    page.screenshot(path='screenshots/tc027_after_mute.png', timeout=60000)
 
     # 步骤5：验证菜单变为Unmute
     logger.info("\n--- 步骤5: 验证菜单变为Unmute ---")
@@ -4370,10 +4302,10 @@ def test_muted_conversation_icon(page, config):
     else:
         logger.warning("⚠ Unmute按钮不可见，跳过还原")
 
-    logger.info("✓ TC028 测试通过 ✅ 实测")
+    logger.info("✓ TC027 测试通过 ✅ 实测")
 
 
-# ==================== TC029-TC037: 消息输入区新增功能 ====================
+# ==================== TC028-TC036: 消息输入区新增功能 ====================
 
 def _setup_session_and_navigate(page, config):
     """
@@ -4445,14 +4377,14 @@ def _enter_first_conversation(page):
 @pytest.mark.p1
 @allure.feature("OK - Messages")
 @allure.story("消息输入区 - 发送附件")
-@allure.title("TC029: 发送附件 - 上传 PDF 文件后预览区显示文件名")
+@allure.title("TC028: 发送附件 - 上传 PDF 文件后预览区显示文件名")
 @allure.severity(allure.severity_level.CRITICAL)
 @pytest.mark.messages
 @pytest.mark.ae
-@pytest.mark.case_id_messages_attachment_029
+@pytest.mark.case_id_messages_attachment_028
 def test_send_pdf_attachment(page, config):
     """
-    TC029: 发送 PDF 附件 ✅ 实测
+    TC028: 发送 PDF 附件 ✅ 实测
     
     实测结论：
     - 输入区底部有 sendFile 图标，对应隐藏的 input[type=file][accept=".pdf,.doc,..."]
@@ -4461,7 +4393,7 @@ def test_send_pdf_attachment(page, config):
     """
     import os
     logger.info("=" * 80)
-    logger.info("TC029: 发送PDF附件")
+    logger.info("TC028: 发送PDF附件")
 
     PDF_PATH = '/Users/a58/ok_autotest_ui_pc/test_data/files/口算题 (加减混合) 1000题.pdf'
     if not os.path.exists(PDF_PATH):
@@ -4496,26 +4428,26 @@ def test_send_pdf_attachment(page, config):
         assert send_btn.count() > 0, "上传文件后应出现 Send 按钮"
         logger.info(f"✓ Send 按钮存在，disabled={send_btn.first.get_attribute('disabled')}")
 
-    page.screenshot(path='screenshots/tc029_pdf_attachment.png', timeout=60000)
-    logger.info("✓ TC029 PDF附件测试通过 ✅ 实测")
+    page.screenshot(path='screenshots/tc028_pdf_attachment.png', timeout=60000)
+    logger.info("✓ TC028 PDF附件测试通过 ✅ 实测")
 
 
 @pytest.mark.p2
 @allure.feature("OK - Messages")
 @allure.story("消息输入区 - 发送附件")
-@allure.title("TC030: 附件 file input - accept 属性支持多种文档格式")
+@allure.title("TC029: 附件 file input - accept 属性支持多种文档格式")
 @allure.severity(allure.severity_level.NORMAL)
 @pytest.mark.messages
 @pytest.mark.ae
-@pytest.mark.case_id_messages_attachment_030
+@pytest.mark.case_id_messages_attachment_029
 def test_attachment_accepted_types(page, config):
     """
-    TC030: 附件 file input accept 属性包含所有支持格式 ✅ 实测
+    TC029: 附件 file input accept 属性包含所有支持格式 ✅ 实测
     
     实测结论：accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt"
     """
     logger.info("=" * 80)
-    logger.info("TC030: 附件类型校验")
+    logger.info("TC029: 附件类型校验")
 
     _setup_session_and_navigate(page, config)
     _click_first_conversation(page)
@@ -4536,21 +4468,21 @@ def test_attachment_accepted_types(page, config):
         assert multiple is not None, "附件 file input 应支持 multiple（多文件上传）"
         logger.info("✓ file input multiple 属性存在")
 
-    page.screenshot(path='screenshots/tc030_attachment_types.png', timeout=60000)
-    logger.info("✓ TC030 附件类型校验通过 ✅ 实测")
+    page.screenshot(path='screenshots/tc029_attachment_types.png', timeout=60000)
+    logger.info("✓ TC029 附件类型校验通过 ✅ 实测")
 
 
 @pytest.mark.p1
 @allure.feature("OK - Messages")
 @allure.story("消息输入区 - 发送图片")
-@allure.title("TC031: 发送图片 - 上传图片后预览区应有 img 元素")
+@allure.title("TC030: 发送图片 - 上传图片后预览区应有 img 元素")
 @allure.severity(allure.severity_level.CRITICAL)
 @pytest.mark.messages
 @pytest.mark.ae
-@pytest.mark.case_id_messages_image_031
+@pytest.mark.case_id_messages_image_030
 def test_send_image(page, config):
     """
-    TC031: 发送图片 ✅ 实测
+    TC030: 发送图片 ✅ 实测
     
     实测结论：
     - 输入区底部有 picture25@2x 图标，对应 input[type=file][accept="image/JPG,image/PNG,image/JPEG"]
@@ -4559,11 +4491,9 @@ def test_send_image(page, config):
     """
     import os
     logger.info("=" * 80)
-    logger.info("TC031: 发送图片")
+    logger.info("TC030: 发送图片")
 
-    IMG_PATH = str(
-        Path(__file__).resolve().parents[2] / "test_data" / "images" / "8b423179e72ba4d4a56ca6a5b0479aee.png"
-    )
+    IMG_PATH = '/Users/a58/ok_autotest_ui_pc/test_data/images/8b423179e72ba4d4a56ca6a5b0479aee.png'
     if not os.path.exists(IMG_PATH):
         pytest.skip(f"图片文件不存在: {IMG_PATH}")
 
@@ -4592,26 +4522,26 @@ def test_send_image(page, config):
         assert send_btn.count() > 0, "上传图片后应有 Send 按钮"
         logger.info(f"✓ Send 按钮存在，disabled={send_btn.first.get_attribute('disabled')}")
 
-    page.screenshot(path='screenshots/tc031_image_send.png', timeout=60000)
-    logger.info("✓ TC031 图片发送测试通过 ✅ 实测")
+    page.screenshot(path='screenshots/tc030_image_send.png', timeout=60000)
+    logger.info("✓ TC030 图片发送测试通过 ✅ 实测")
 
 
 @pytest.mark.p2
 @allure.feature("OK - Messages")
 @allure.story("消息输入区 - 发送图片")
-@allure.title("TC032: 图片 file input - accept 只接受 JPG/PNG/JPEG 格式")
+@allure.title("TC031: 图片 file input - accept 只接受 JPG/PNG/JPEG 格式")
 @allure.severity(allure.severity_level.NORMAL)
 @pytest.mark.messages
 @pytest.mark.ae
-@pytest.mark.case_id_messages_image_032
+@pytest.mark.case_id_messages_image_031
 def test_image_accepted_types(page, config):
     """
-    TC032: 图片 file input accept 属性只接受图片格式 ✅ 实测
+    TC031: 图片 file input accept 属性只接受图片格式 ✅ 实测
     
     实测结论：accept="image/JPG,image/PNG,image/JPEG"，不含 gif/webp/pdf 等
     """
     logger.info("=" * 80)
-    logger.info("TC032: 图片类型校验")
+    logger.info("TC031: 图片类型校验")
 
     _setup_session_and_navigate(page, config)
     _click_first_conversation(page)
@@ -4637,21 +4567,21 @@ def test_image_accepted_types(page, config):
         assert multiple is not None, "图片 file input 应支持 multiple"
         logger.info("✓ 图片 file input 支持多选")
 
-    page.screenshot(path='screenshots/tc032_image_types.png', timeout=60000)
-    logger.info("✓ TC032 图片类型校验通过 ✅ 实测")
+    page.screenshot(path='screenshots/tc031_image_types.png', timeout=60000)
+    logger.info("✓ TC031 图片类型校验通过 ✅ 实测")
 
 
 @pytest.mark.p1
 @allure.feature("OK - Messages")
 @allure.story("消息输入区 - 地理位置")
-@allure.title("TC033: 地理位置图标 - 点击弹出 Send Location 地图弹窗")
+@allure.title("TC032: 地理位置图标 - 点击弹出 Send Location 地图弹窗")
 @allure.severity(allure.severity_level.CRITICAL)
 @pytest.mark.messages
 @pytest.mark.ae
-@pytest.mark.case_id_messages_location_033
+@pytest.mark.case_id_messages_location_032
 def test_location_icon_entry(page, config):
     """
-    TC033: 地理位置图标入口 ✅ 实测
+    TC032: 地理位置图标入口 ✅ 实测
 
     实测结论：
     - 输入区 .ci-send 第一个图标为 icon-location-big.png（地理位置）
@@ -4661,7 +4591,7 @@ def test_location_icon_entry(page, config):
     - 注意：图标在页面底部（viewY≈912），需确保会话已打开
     """
     logger.info("=" * 80)
-    logger.info("TC033: 地理位置图标 - Send Location 弹窗")
+    logger.info("TC032: 地理位置图标 - Send Location 弹窗")
 
     _setup_session_and_navigate(page, config)
     _click_first_conversation(page)
@@ -4728,28 +4658,28 @@ def test_location_icon_entry(page, config):
             "弹窗应有 'Accurate locations get more responses' 提示"
         logger.info("✓ 弹窗提示文案正确")
 
-    page.screenshot(path='screenshots/tc033_location_modal.png', timeout=60000)
-    logger.info("✓ TC033 地理位置弹窗测试通过 ✅ 实测")
+    page.screenshot(path='screenshots/tc032_location_modal.png', timeout=60000)
+    logger.info("✓ TC032 地理位置弹窗测试通过 ✅ 实测")
 
 
 @pytest.mark.p1
 @allure.feature("OK - Messages")
 @allure.story("消息输入区 - Send 按钮状态")
-@allure.title("TC034: Send 按钮初始状态为 disabled")
+@allure.title("TC033: Send 按钮初始状态为 disabled")
 @allure.severity(allure.severity_level.CRITICAL)
 @pytest.mark.messages
 @pytest.mark.ae
-@pytest.mark.case_id_messages_send_034
+@pytest.mark.case_id_messages_send_033
 def test_send_button_initially_disabled(page, config):
     """
-    TC034: 发送框初始 Send 按钮禁用 ✅ 实测
+    TC033: 发送框初始 Send 按钮禁用 ✅ 实测
     
     实测结论：
     - 初始状态 Send 按钮有 class button_disabled__9jYJ2，disabled=true
     - textarea 为空时 Send 无法点击
     """
     logger.info("=" * 80)
-    logger.info("TC034: Send 按钮初始禁用状态验证")
+    logger.info("TC033: Send 按钮初始禁用状态验证")
 
     _setup_session_and_navigate(page, config)
     _click_first_conversation(page)
@@ -4769,28 +4699,28 @@ def test_send_button_initially_disabled(page, config):
         assert send_state['hasDisabledClass'], "Send 按钮初始应有 disabled class（button_disabled__9jYJ2）"
         logger.info(f"✓ Send 按钮初始状态: {send_state}")
 
-    page.screenshot(path='screenshots/tc034_send_disabled.png', timeout=60000)
-    logger.info("✓ TC034 Send 按钮初始禁用验证通过 ✅ 实测")
+    page.screenshot(path='screenshots/tc033_send_disabled.png', timeout=60000)
+    logger.info("✓ TC033 Send 按钮初始禁用验证通过 ✅ 实测")
 
 
 @pytest.mark.p1
 @allure.feature("OK - Messages")
 @allure.story("消息输入区 - Send 按钮状态")
-@allure.title("TC035: 输入文字后 Send 按钮变为 enabled")
+@allure.title("TC034: 输入文字后 Send 按钮变为 enabled")
 @allure.severity(allure.severity_level.BLOCKER)
 @pytest.mark.messages
 @pytest.mark.ae
-@pytest.mark.case_id_messages_send_035
+@pytest.mark.case_id_messages_send_034
 def test_send_button_enabled_after_input(page, config):
     """
-    TC035: 输入文字后 Send 按钮启用 ✅ 实测
+    TC034: 输入文字后 Send 按钮启用 ✅ 实测
     
     实测结论：
     - textarea 输入文字后 Send 按钮 disabled 状态解除
     - 清空文字后 Send 按钮重新 disabled
     """
     logger.info("=" * 80)
-    logger.info("TC035: 输入文字后 Send 按钮启用")
+    logger.info("TC034: 输入文字后 Send 按钮启用")
 
     _setup_session_and_navigate(page, config)
     ta = _click_first_conversation(page)
@@ -4814,28 +4744,28 @@ def test_send_button_enabled_after_input(page, config):
         assert after_clear_disabled, "清空后 Send 应重新 disabled"
         logger.info("✓ 清空文字后 Send 重新 disabled ✅ 实测")
 
-    page.screenshot(path='screenshots/tc035_send_enabled.png', timeout=60000)
-    logger.info("✓ TC035 Send 按钮状态验证通过 ✅ 实测")
+    page.screenshot(path='screenshots/tc034_send_enabled.png', timeout=60000)
+    logger.info("✓ TC034 Send 按钮状态验证通过 ✅ 实测")
 
 
 @pytest.mark.p2
 @allure.feature("OK - Messages")
 @allure.story("消息输入区 - 发送附件")
-@allure.title("TC036: 发送文件图标（sendFile）对应隐藏 file input 存在")
+@allure.title("TC035: 发送文件图标（sendFile）对应隐藏 file input 存在")
 @allure.severity(allure.severity_level.NORMAL)
 @pytest.mark.messages
 @pytest.mark.ae
-@pytest.mark.case_id_messages_attachment_036
+@pytest.mark.case_id_messages_attachment_035
 def test_send_file_icon_input(page, config):
     """
-    TC036: 发送文件图标触发文件选择 ✅ 实测
+    TC035: 发送文件图标触发文件选择 ✅ 实测
     
     实测结论：
     - sendFile.png 图标旁有隐藏 input[type=file]
     - 图标的父 div 包裹 img + input[type=file]（input display:none）
     """
     logger.info("=" * 80)
-    logger.info("TC036: 发送文件图标 DOM 结构验证")
+    logger.info("TC035: 发送文件图标 DOM 结构验证")
 
     _setup_session_and_navigate(page, config)
     _click_first_conversation(page)
@@ -4863,28 +4793,28 @@ def test_send_file_icon_input(page, config):
         assert '.pdf' in file_input_structure['accept'], "file input accept 应包含 .pdf"
         logger.info(f"✓ file input 结构验证通过: {file_input_structure}")
 
-    page.screenshot(path='screenshots/tc036_sendfile_icon.png', timeout=60000)
-    logger.info("✓ TC036 发送文件图标验证通过 ✅ 实测")
+    page.screenshot(path='screenshots/tc035_sendfile_icon.png', timeout=60000)
+    logger.info("✓ TC035 发送文件图标验证通过 ✅ 实测")
 
 
 @pytest.mark.p2
 @allure.feature("OK - Messages")
 @allure.story("消息输入区 - 发送图片")
-@allure.title("TC037: 发送图片图标（picture25）对应隐藏 image file input 存在")
+@allure.title("TC036: 发送图片图标（picture25）对应隐藏 image file input 存在")
 @allure.severity(allure.severity_level.NORMAL)
 @pytest.mark.messages
 @pytest.mark.ae
-@pytest.mark.case_id_messages_image_037
+@pytest.mark.case_id_messages_image_036
 def test_send_image_icon_input(page, config):
     """
-    TC037: 发送图片图标触发图片选择 ✅ 实测
+    TC036: 发送图片图标触发图片选择 ✅ 实测
     
     实测结论：
     - picture25@2x.png 图标旁有隐藏 input[type=file][accept="image/JPG,image/PNG,image/JPEG"]
     - 输入区完整结构：ci-input（textarea） + ci-send（三个图标+Send按钮）
     """
     logger.info("=" * 80)
-    logger.info("TC037: 发送图片图标 DOM 结构验证")
+    logger.info("TC036: 发送图片图标 DOM 结构验证")
 
     _setup_session_and_navigate(page, config)
     _click_first_conversation(page)
@@ -4932,24 +4862,24 @@ def test_send_image_icon_input(page, config):
         assert ci_send_structure['sendBtnText'] == 'Send', "Send 按钮文字应为 'Send'"
         logger.info(f"✓ .ci-send 结构验证通过: {ci_send_structure}")
 
-    page.screenshot(path='screenshots/tc037_image_icon.png', timeout=60000)
-    logger.info("✓ TC037 发送图片图标验证通过 ✅ 实测")
+    page.screenshot(path='screenshots/tc036_image_icon.png', timeout=60000)
+    logger.info("✓ TC036 发送图片图标验证通过 ✅ 实测")
 
 
-# ==================== TC038-TC040: 会话列表选择器验证测试（2026-04-03 新增）====================
+# ==================== TC037-TC039: 会话列表选择器验证测试（2026-04-03 新增）====================
 
 @pytest.mark.p1
 @allure.feature("OK - Messages")
 @allure.story("Messages页面功能探索 - 会话列表统计")
-@allure.title("TC038: 验证左侧会话列表数量统计准确性")
+@allure.title("TC037: 验证左侧会话列表数量统计准确性")
 @allure.severity(allure.severity_level.CRITICAL)
 @pytest.mark.messages
 @pytest.mark.conversation_list
 @pytest.mark.ae
-@pytest.mark.case_id_messages_explore_038
+@pytest.mark.case_id_messages_explore_037
 def test_conversation_list_count_accuracy(page, config):
     """
-    TC038: 验证左侧会话列表数量统计准确性
+    TC037: 验证左侧会话列表数量统计准确性
     
     背景: 2026-04-03 修复了选择器混淆问题，之前错误地统计右侧聊天消息
     
@@ -4967,7 +4897,7 @@ def test_conversation_list_count_accuracy(page, config):
     - 不应该被右侧聊天消息数量干扰
     """
     logger.info("=" * 80)
-    logger.info("TC038: 验证左侧会话列表数量统计准确性")
+    logger.info("TC037: 验证左侧会话列表数量统计准确性")
     logger.info("=" * 80)
     
     # Arrange
@@ -4996,7 +4926,7 @@ def test_conversation_list_count_accuracy(page, config):
         logger.info(f"✓ 成功进入 Messages 页面: {current_url}")
     
     # 截图
-    page.screenshot(path='screenshots/tc038_initial.png', timeout=60000)
+    page.screenshot(path='screenshots/tc037_initial.png', timeout=60000)
     
     # Assert: 验证初始会话列表数量
     with allure.step("验证初始会话列表数量"):
@@ -5017,7 +4947,7 @@ def test_conversation_list_count_accuracy(page, config):
             pytest.skip("会话列表为空")
     
     # 截图
-    page.screenshot(path='screenshots/tc038_after_click.png', timeout=60000)
+    page.screenshot(path='screenshots/tc037_after_click.png', timeout=60000)
     
     # Assert: 验证会话列表数量保持一致
     with allure.step("验证会话列表数量保持一致"):
@@ -5039,22 +4969,22 @@ def test_conversation_list_count_accuracy(page, config):
         logger.info(f"✅ 聊天消息数量与会话列表数量正确区分")
     
     logger.info("=" * 80)
-    logger.info("✅ TC038 测试通过！")
+    logger.info("✅ TC037 测试通过！")
     logger.info("=" * 80)
 
 
 @pytest.mark.p2
 @allure.feature("OK - Messages")
 @allure.story("Messages页面功能探索 - 会话列表滚动")
-@allure.title("TC039: 验证会话列表滚动功能")
+@allure.title("TC038: 验证会话列表滚动功能")
 @allure.severity(allure.severity_level.NORMAL)
 @pytest.mark.messages
 @pytest.mark.conversation_list
 @pytest.mark.ae
-@pytest.mark.case_id_messages_explore_039
+@pytest.mark.case_id_messages_explore_038
 def test_conversation_list_scroll_functions(page, config):
     """
-    TC039: 验证会话列表滚动功能
+    TC038: 验证会话列表滚动功能
     
     背景: 2026-04-03 新增了会话列表滚动功能
     
@@ -5072,7 +5002,7 @@ def test_conversation_list_scroll_functions(page, config):
     - 自定义滚动功能正常
     """
     logger.info("=" * 80)
-    logger.info("TC039: 验证会话列表滚动功能")
+    logger.info("TC038: 验证会话列表滚动功能")
     logger.info("=" * 80)
     
     # Arrange
@@ -5099,7 +5029,7 @@ def test_conversation_list_scroll_functions(page, config):
         logger.info(f"✓ 成功进入 Messages 页面")
     
     # 初始截图
-    page.screenshot(path='screenshots/tc039_initial.png', timeout=60000)
+    page.screenshot(path='screenshots/tc038_initial.png', timeout=60000)
     
     # Test 1: 滚动到底部
     with allure.step("测试滚动到底部"):
@@ -5108,7 +5038,7 @@ def test_conversation_list_scroll_functions(page, config):
         page.wait_for_timeout(1000)
         logger.info("✓ 成功滚动到底部")
         
-        page.screenshot(path='screenshots/tc039_scroll_bottom.png', timeout=60000)
+        page.screenshot(path='screenshots/tc038_scroll_bottom.png', timeout=60000)
     
     # Test 2: 滚动到顶部
     with allure.step("测试滚动到顶部"):
@@ -5117,43 +5047,43 @@ def test_conversation_list_scroll_functions(page, config):
         page.wait_for_timeout(1000)
         logger.info("✓ 成功滚动到顶部")
         
-        page.screenshot(path='screenshots/tc039_scroll_top.png', timeout=60000)
+        page.screenshot(path='screenshots/tc038_scroll_top.png', timeout=60000)
     
     # Test 3: 自定义滚动（向下 500px）
     with allure.step("测试自定义滚动（向下 500px）"):
-        success = messages_page.scroll_conversation_list('down', 500)
-        assert success, "自定义滚动失败"
+        scroll_r = messages_page.scroll_conversation_list('down', 500)
+        assert scroll_r.get('success'), "自定义滚动失败"
         page.wait_for_timeout(1000)
         logger.info("✓ 成功向下滚动 500px")
         
-        page.screenshot(path='screenshots/tc039_scroll_custom.png', timeout=60000)
+        page.screenshot(path='screenshots/tc038_scroll_custom.png', timeout=60000)
     
     # Test 4: 自定义滚动（向上 300px）
     with allure.step("测试自定义滚动（向上 300px）"):
-        success = messages_page.scroll_conversation_list('up', 300)
-        assert success, "自定义滚动失败"
+        scroll_r = messages_page.scroll_conversation_list('up', 300)
+        assert scroll_r.get('success'), "自定义滚动失败"
         page.wait_for_timeout(1000)
         logger.info("✓ 成功向上滚动 300px")
         
-        page.screenshot(path='screenshots/tc039_scroll_up.png', timeout=60000)
+        page.screenshot(path='screenshots/tc038_scroll_up.png', timeout=60000)
     
     logger.info("=" * 80)
-    logger.info("✅ TC039 测试通过！")
+    logger.info("✅ TC038 测试通过！")
     logger.info("=" * 80)
 
 
 @pytest.mark.p2
 @allure.feature("OK - Messages")
 @allure.story("Messages页面功能探索 - 聊天消息统计")
-@allure.title("TC040: 验证右侧聊天消息统计功能")
+@allure.title("TC039: 验证右侧聊天消息统计功能")
 @allure.severity(allure.severity_level.NORMAL)
 @pytest.mark.messages
 @pytest.mark.chat_messages
 @pytest.mark.ae
-@pytest.mark.case_id_messages_explore_040
+@pytest.mark.case_id_messages_explore_039
 def test_chat_message_count(page, config):
     """
-    TC040: 验证右侧聊天消息统计功能
+    TC039: 验证右侧聊天消息统计功能
     
     背景: 2026-04-03 新增了右侧聊天消息统计功能
     
@@ -5170,7 +5100,7 @@ def test_chat_message_count(page, config):
     - 不包括 tips 元素
     """
     logger.info("=" * 80)
-    logger.info("TC040: 验证右侧聊天消息统计功能")
+    logger.info("TC039: 验证右侧聊天消息统计功能")
     logger.info("=" * 80)
     
     # Arrange
@@ -5209,7 +5139,7 @@ def test_chat_message_count(page, config):
         logger.info("✓ 成功打开第一个会话")
     
     # 截图
-    page.screenshot(path='screenshots/tc040_conversation_opened.png', timeout=60000)
+    page.screenshot(path='screenshots/tc039_conversation_opened.png', timeout=60000)
     
     # Assert: 验证聊天消息数量
     with allure.step("验证聊天消息数量"):
@@ -5242,5 +5172,5 @@ def test_chat_message_count(page, config):
         logger.info(f"✅ 聊天消息统计正确排除了 tips 元素")
     
     logger.info("=" * 80)
-    logger.info("✅ TC040 测试通过！")
+    logger.info("✅ TC039 测试通过！")
     logger.info("=" * 80)

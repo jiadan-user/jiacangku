@@ -11,14 +11,11 @@ OK阿联酋站 - Post页面功能探索测试
 import pytest
 import allure
 import os
-from pathlib import Path
 from pages.login_page import LoginPage
 from utils.session_manager import SessionManager
 from utils.logger import setup_logger
 
 logger = setup_logger()
-ROOT_DIR = Path(__file__).resolve().parents[1]
-DEFAULT_TEST_IMAGE = ROOT_DIR / "test_data" / "images" / "8b423179e72ba4d4a56ca6a5b0479aee.png"
 
 # 配置信息
 _CONFIG = {
@@ -35,7 +32,7 @@ _CONFIG = {
     },
     
     'test_resources': {
-        'image_path': str(DEFAULT_TEST_IMAGE)
+        'image_path': '/Users/a58/ok_autotest_ui_pc/test_data/images/8b423179e72ba4d4a56ca6a5b0479aee.png'
     },
     'browser': {
         'type': 'chromium',

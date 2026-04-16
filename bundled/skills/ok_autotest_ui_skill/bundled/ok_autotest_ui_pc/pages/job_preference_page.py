@@ -4,6 +4,8 @@ Job Preferences 职位偏好设置页面对象
 入口：新加坡站首页 → 点击 Jobs 金刚位图标 → 跳转至此中间态表单页
 URL：https://sgpub.58v5.cn/biz/en/jobPreference?showSkip=1&returnUrl=...
 """
+import re
+
 from pages.base_page import BasePage
 from utils.logger import setup_logger
 
@@ -111,12 +113,38 @@ class JobPreferencePage(BasePage):
     def get_validation_error_count(self) -> int:
         """获取当前显示的校验错误数量"""
         try:
+            # 兼容弯撇号 / 直撇号及文案微调
+            rx = re.compile(
+                r"Don[\u2019']t leave this field empty|This field is required|Please (select|enter)",
+                re.I,
+            )
+            n = self.page.locator("form").get_by_text(rx).count()
+            if n == 0:
+                n = self.page.get_by_text(rx).count()
+            if n > 0:
+                return n
             c = self.page.locator(self.VALIDATION_ERROR_SELECTOR).count()
             if c > 0:
                 return c
+            c2 = self.page.locator("text=Don't leave this field empty.").count()
+            if c2 > 0:
+                return c2
             return self.page.locator(self.VALIDATION_ERROR_SELECTOR_ALT).count()
         except Exception:
             return 0
+
+    def location_panel_form(self):
+        """Location 多选面板（含 Confirm）。与 Job Functions 面板均含 Confirm 时取 last，避免点到左侧两栏面板。"""
+        return self.page.locator("form").filter(
+            has=self.page.get_by_role("button", name="Confirm")
+        ).last
+
+    def workplace_type_checkbox(self, name: str):
+        # 同名节点在 DOM 中可能有多份，可见交互区通常在后者
+        return self.page.get_by_role("checkbox", name=name).last
+
+    def job_type_checkbox(self, name: str):
+        return self.page.get_by_role("checkbox", name=name).last
 
     def is_skip_link_visible(self) -> bool:
         """判断 Skip 链接是否可见"""
@@ -143,9 +171,9 @@ class JobPreferencePage(BasePage):
             self.wait_for_selector(self.LOCATION_TRIGGER, timeout=8000)
             self.page.locator(self.LOCATION_TRIGGER).first.click()
             self.page.wait_for_timeout(300)
-            self.page.get_by_role("checkbox", name=location_name, exact=True).click()
-            self.wait_for_selector("button:has-text('Confirm')", timeout=5000)
-            self.click("button:has-text('Confirm')")
+            panel = self.location_panel_form()
+            panel.get_by_role("checkbox", name=location_name, exact=True).click()
+            panel.get_by_role("button", name="Confirm").click()
         except Exception as e:
             self.logger.error(f"选择 Location 失败: {e}")
             raise
@@ -176,11 +204,11 @@ class JobPreferencePage(BasePage):
             self.wait_for_selector(self.LOCATION_TRIGGER, timeout=8000)
             self.page.locator(self.LOCATION_TRIGGER).first.click()
             self.page.wait_for_timeout(300)
+            panel = self.location_panel_form()
             for name in location_names:
-                self.page.get_by_role("checkbox", name=name, exact=True).click()
+                panel.get_by_role("checkbox", name=name, exact=True).click()
                 self.page.wait_for_timeout(150)
-            self.wait_for_selector("button:has-text('Confirm')", timeout=5000)
-            self.click("button:has-text('Confirm')")
+            panel.get_by_role("button", name="Confirm").click()
         except Exception as e:
             self.logger.error(f"选择 Location 失败: {e}")
             raise
@@ -222,12 +250,21 @@ class JobPreferencePage(BasePage):
             raise
 
     def click_confirm_in_panel(self):
-        """点击面板内 Confirm 按钮"""
+        """点击面板内 Confirm 按钮（优先当前已打开的面板上的第一个 Confirm）"""
         try:
             self.wait_for_selector("button:has-text('Confirm')", timeout=5000)
             self.click("button:has-text('Confirm')")
         except Exception as e:
             self.logger.error(f"点击 Confirm 失败: {e}")
+            raise
+
+    def click_confirm_in_location_panel(self):
+        """点击 Location 浮层内的 Confirm（避免与 Job Functions 等同名按钮混淆）"""
+        try:
+            panel = self.location_panel_form()
+            panel.get_by_role("button", name="Confirm").click(timeout=8000)
+        except Exception as e:
+            self.logger.error(f"点击 Location 面板 Confirm 失败: {e}")
             raise
 
     def click_clear_in_panel(self):
@@ -291,7 +328,7 @@ class JobPreferencePage(BasePage):
             self.page.wait_for_timeout(400)
             self.click_clear_in_panel()
             self.page.wait_for_timeout(200)
-            self.click_confirm_in_panel()
+            self.click_confirm_in_location_panel()
             self.page.wait_for_timeout(400)
         except Exception as e:
             self.logger.warning(f"清空 Location 失败（可忽略）: {e}")

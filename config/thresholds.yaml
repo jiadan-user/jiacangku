@@ -9,6 +9,7 @@ gates:
   api_pass_rate_min: 100
   max_fix_rounds: 3
   max_wait_timeout_ms: 300
+  blocked_warn_after_seconds: 1800
 
 promotion:
   auto_stage_for_validation: true

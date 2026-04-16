@@ -3,9 +3,16 @@ import pytest
 import allure
 import os
 import re
+import sys
+import asyncio
+from datetime import datetime
 from pathlib import Path
 from utils.logger import setup_logger
-from utils.testcase_support import attach_failure_screenshot, build_runtime_config, finish_managed_page, start_managed_page
+
+# Playwright 截图前会等待 document.fonts.ready；外链字体慢/被 CSP 拦截时会卡在
+# "waiting for fonts to load..." 直至 screenshot 超时。官方 workaround：跳过字体就绪等待。
+# Ref: https://github.com/microsoft/playwright/issues/28995
+os.environ.setdefault("PW_TEST_SCREENSHOT_NO_FONTS_READY", "1")
 
 logger = setup_logger()
 
@@ -131,18 +138,33 @@ def pytest_configure(config):
 @pytest.fixture(scope="module")
 def config(request):
     """
-    读取测试模块内的 _CONFIG，并统一应用运行时覆盖。
-
-    配置优先级：
-    1. 测试文件中的 _CONFIG
-    2. config/runtime_overrides.yaml 中的 defaults/modules 覆盖
-    3. OK_UI__* 和 HEADLESS 等环境变量覆盖
+    读取测试模块内的 _CONFIG
+    支持通过环境变量 HEADLESS 全局覆盖无头模式设置
+    
+    新生成的脚本必须在文件顶部定义 _CONFIG 字典
     """
-    return build_runtime_config(request.module)
+    if not hasattr(request.module, '_CONFIG'):
+        raise ValueError(
+            f"测试模块 {request.module.__name__} 缺少 _CONFIG 配置。\n"
+            f"请确保脚本由 playwright-test-generator 生成，或手动添加 _CONFIG。"
+        )
+    cfg = request.module._CONFIG
+    
+    # 检查是否有全局环境变量覆盖
+    env_headless = os.getenv("HEADLESS")
+    if env_headless is not None:
+        cfg['browser']['headless'] = env_headless.lower() in ('true', '1', 't', 'yes', 'y')
+    elif not cfg['browser'].get('headless', False):
+        # 在无显示器的 Linux 环境（CI 服务器）下自动切换为无头模式
+        import sys
+        if sys.platform.startswith('linux') and not os.getenv("DISPLAY"):
+            cfg['browser']['headless'] = True
+
+    return cfg
 
 
 @pytest.fixture(scope="module")
-def page(config):
+def page(config, request):
     """
     浏览器页面 fixture（静默执行）
     整个测试模块共享同一个浏览器实例，提升执行效率 80-90%
@@ -151,12 +173,51 @@ def page(config):
     1. scope="module"：同一模块内的所有测试共享浏览器，模块结束后关闭
     2. 使用 mark_in_use()/mark_released() 保护实例不被 pytest hooks 提前清理
     3. 测试间状态隔离由 reset_page_state_after_test fixture 处理
+    4. 认证：优先环境变量 MARKETPLACE_STORAGE_STATE；否则若测试文件同目录存在 auth_state.json 则自动加载（如 marketplace_post）
     """
-    browser_manager, page = start_managed_page(config)
+    from utils.browser_manager import BrowserManager
+    
+    browser_manager = BrowserManager()
+    storage_path = os.environ.get("MARKETPLACE_STORAGE_STATE", "").strip()
+    storage_kw = {}
+    if storage_path and Path(storage_path).is_file():
+        storage_kw["storage_state"] = storage_path
+        logger.info("[AUTH] MARKETPLACE_STORAGE_STATE=%s", storage_path)
+    else:
+        module_dir = Path(request.module.__file__).resolve().parent
+        default_auth = module_dir / "auth_state.json"
+        if default_auth.is_file():
+            storage_kw["storage_state"] = str(default_auth)
+            logger.info("[AUTH] 使用模块旁默认 auth_state.json: %s", default_auth)
+    page = browser_manager.start_browser(
+        browser_type=config['browser']['type'],
+        headless=config['browser']['headless'],
+        base_url=config['base_url'],
+        viewport=config['browser']['viewport'],
+        **storage_kw,
+    )
+    
+    # 标记为使用中，防止被 pytest hooks 的 _cleanup_all(force=False) 清理
+    browser_manager.mark_in_use()
+
+    # 调试开关（默认关闭，不影响正常跑测）
+    # - DEBUG_PAUSE=1: 启动后立刻暂停，打开 Playwright Inspector（用于手动调试）
+    # - KEEP_BROWSER_OPEN=1: 用例结束后不自动关闭浏览器（便于观察最终页面/控制台）
+    if os.environ.get("DEBUG_PAUSE", "").lower() in ("1", "true", "yes"):
+        try:
+            page.pause()
+        except Exception:
+            # 某些环境不支持 pause（例如无 GUI），保持静默
+            pass
     
     yield page
     
-    finish_managed_page(browser_manager, page)
+    # 标记为已释放
+    browser_manager.mark_released()
+    
+    # 模块结束后关闭浏览器（静默执行）
+    if os.environ.get("KEEP_BROWSER_OPEN", "").lower() not in ("1", "true", "yes"):
+        browser_manager.close_browser(page)
 
 
 @pytest.fixture(autouse=True)
@@ -310,7 +371,26 @@ def pytest_runtest_makereport(item, call):
         page = item.funcargs.get('page')
         
         if page:
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            screenshot_name = f"FAILED_{item.name}_{timestamp}.png"
+            screenshot_dir = Path("reports/screenshots")
+            screenshot_dir.mkdir(parents=True, exist_ok=True)
+            screenshot_path = screenshot_dir / screenshot_name
+            
             try:
-                attach_failure_screenshot(item, logger)
+                # 截图
+                page.screenshot(path=str(screenshot_path), timeout=60000, full_page=True)
+                
+                # 附加到 Allure 报告（仅保留截图，不附加其他信息）
+                with open(screenshot_path, 'rb') as f:
+                    allure.attach(
+                        f.read(),
+                        name="失败截图",
+                        attachment_type=allure.attachment_type.PNG
+                    )
+                
+                # URL 记录在日志中，不附加到报告
+                logger.error(f"测试失败 URL: {page.url}")
+                
             except Exception as e:
                 logger.error(f"截图失败: {e}")

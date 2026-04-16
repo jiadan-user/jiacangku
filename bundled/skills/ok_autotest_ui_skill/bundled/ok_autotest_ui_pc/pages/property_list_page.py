@@ -695,33 +695,53 @@ class PropertyListPage(BasePage):
     def get_first_card_price_text(self):
         """获取第一张卡片的价格文本（包含货币符号和周期）"""
         try:
-            # 租房列表使用 cate-rent，买房列表使用 cate-property-for-sale
-            first_card = self.page.locator('a[href*="cate-rent-"], a[href*="cate-property-for-sale-"], a[href*="residential-"]').first
+            # 尝试多种卡片定位器（租房、买房、商业地产等）
+            first_card = self.page.locator(
+                'a[href*="cate-rent-"], '
+                'a[href*="cate-property-for-sale-"], '
+                'a[href*="residential-"], '
+                'a[href*="cate-buy-"], '
+                'a[href*="cate-commercial-"]'
+            ).first
             first_card.wait_for(state="visible", timeout=5000)
             # 获取卡片全文，从中提取价格信息
             card_text = first_card.inner_text()
-            # 使用正则提取价格（A$XXX 或 $XXX 格式）
-            import re
-            price_match = re.search(r'A?\$[\d,]+(?:\s*(?:\/|per)\s*(?:week|month|year|day))?', card_text, re.IGNORECASE)
+            # 使用正则提取价格（A$XXX 或 $XXX 格式，支持负数）
+            price_match = re.search(r'A?\$-?[\d,]+(?:\s*(?:\/|per)\s*(?:week|month|year|day))?', card_text, re.IGNORECASE)
             if price_match:
                 return price_match.group()
+            # 检查是否是 Free 或 Contact for price
+            if re.search(r'\bFree\b', card_text, re.IGNORECASE):
+                return "Free"
+            if re.search(r'Contact for price', card_text, re.IGNORECASE):
+                return "Contact for price"
             return ""
-        except Exception:
+        except Exception as e:
             return ""
 
     def get_card_prices(self, max_cards: int = 5):
         """获取前 N 张卡片的价格列表"""
-        import re
-        cards = self.page.locator('a[href*="cate-rent-"], a[href*="cate-property-for-sale-"], a[href*="residential-"]')
+        cards = self.page.locator(
+            'a[href*="cate-rent-"], '
+            'a[href*="cate-property-for-sale-"], '
+            'a[href*="residential-"], '
+            'a[href*="cate-buy-"], '
+            'a[href*="cate-commercial-"]'
+        )
         count = min(max_cards, cards.count())
         prices = []
         for i in range(count):
             try:
                 card = cards.nth(i)
                 card_text = card.inner_text()
-                price_match = re.search(r'A?\$[\d,]+(?:\s*(?:\/|per)\s*(?:week|month|year|day))?', card_text, re.IGNORECASE)
+                # 支持负数价格
+                price_match = re.search(r'A?\$-?[\d,]+(?:\s*(?:\/|per)\s*(?:week|month|year|day))?', card_text, re.IGNORECASE)
                 if price_match:
                     prices.append(price_match.group())
+                elif re.search(r'\bFree\b', card_text, re.IGNORECASE):
+                    prices.append("Free")
+                elif re.search(r'Contact for price', card_text, re.IGNORECASE):
+                    prices.append("Contact for price")
                 else:
                     prices.append("")
             except Exception:
@@ -731,8 +751,11 @@ class PropertyListPage(BasePage):
     def is_price_format_valid(self, price_text: str):
         """验证价格格式是否正确（包含货币符号、数字、可能的周期）"""
         import re
-        # 匹配格式：A$XXX 或 $XXX，可能包含 /week, per week 等
-        pattern = r'A?\$[\d,]+(\s*(\/|per)\s*(week|month|year|day))?'
+        # 匹配格式：A$XXX 或 $XXX，可能包含 /week, per week 等，支持负数
+        pattern = r'A?\$-?[\d,]+(\s*(\/|per)\s*(week|month|year|day))?'
+        # 或者是 Free / Contact for price
+        if price_text in ("Free", "Contact for price"):
+            return True
         return bool(re.search(pattern, price_text, re.IGNORECASE))
 
     def click_first_card_price(self):
@@ -970,7 +993,13 @@ class PropertyListPage(BasePage):
 
     def get_first_card_title_text(self):
         """第一张卡片的文案（含标题），用于校验非空与长度（标题来源：详情页 Property Introduction 副标题）"""
-        first_card = self.page.locator('a[href*="cate-property-for-sale-"]').first
+        first_card = self.page.locator(
+            'a[href*="cate-property-for-sale-"], '
+            'a[href*="cate-rent-"], '
+            'a[href*="residential-"], '
+            'a[href*="cate-buy-"], '
+            'a[href*="cate-commercial-"]'
+        ).first
         return first_card.inner_text()
 
     def get_first_card_title_stripped(self):
@@ -978,7 +1007,8 @@ class PropertyListPage(BasePage):
         raw = self.get_first_card_title_text()
         lines = [ln.strip() for ln in raw.split("\n") if ln.strip()]
         for ln in lines:
-            if re.match(r"^A\$[\d,]+(\+)?$", ln) or re.match(r"^Free$", ln):
+            # 匹配价格：A$123, A$-1, A$1,000+, A$500 per day, Free, Contact for price
+            if re.match(r"^A\$-?[\d,]+(\+)?(\s+per\s+(day|week|month|year))?$", ln) or re.match(r"^Free$", ln) or "Contact for price" in ln:
                 continue
             if re.match(r"^\d+\s*/\s*\d+$", ln):
                 continue
@@ -991,14 +1021,21 @@ class PropertyListPage(BasePage):
 
     def get_card_titles_stripped(self, max_cards: int = 5):
         """前 N 张卡片的标题近似文本列表（用于 TC002/TC005）"""
-        cards = self.page.locator('a[href*="cate-property-for-sale-"]')
+        cards = self.page.locator(
+            'a[href*="cate-property-for-sale-"], '
+            'a[href*="cate-rent-"], '
+            'a[href*="residential-"], '
+            'a[href*="cate-buy-"], '
+            'a[href*="cate-commercial-"]'
+        )
         n = min(max_cards, cards.count())
         result = []
         for i in range(n):
             raw = cards.nth(i).inner_text()
             lines = [ln.strip() for ln in raw.split("\n") if ln.strip()]
             for ln in lines:
-                if re.match(r"^A\$[\d,]+(\+)?$", ln) or ln == "Free":
+                # 匹配价格：A$123, A$-1, A$1,000+, A$500 per day, Free, Contact for price
+                if re.match(r"^A\$-?[\d,]+(\+)?(\s+per\s+(day|week|month|year))?$", ln) or ln == "Free" or "Contact for price" in ln:
                     continue
                 if re.match(r"^\d+\s*/\s*\d+$", ln):
                     continue
@@ -1014,7 +1051,13 @@ class PropertyListPage(BasePage):
 
     def click_first_card_title(self):
         """点击第一张卡片的标题区域进入详情（录制：整卡为 link，点击即进详情）"""
-        self.page.locator('a[href*="cate-property-for-sale-"]').first.click()
+        self.page.locator(
+            'a[href*="cate-property-for-sale-"], '
+            'a[href*="cate-rent-"], '
+            'a[href*="residential-"], '
+            'a[href*="cate-buy-"], '
+            'a[href*="cate-commercial-"]'
+        ).first.click()
 
     # ─────────────────────────────────────────────
     # 买房列表卡片 Parking（停车位）图标和数量

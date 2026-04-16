@@ -1,120 +1,219 @@
-# QA Agent 编排层
+# QA Agent 使用说明
 
-`QA_Agent` 是一个本地编排层，用来把下面三个现有 skill 串成一条完整链路：
+`QA_Agent` 是一个测试编排项目。你在这个仓库里让 AI 工作时，它会帮你串起：
 
-- `senior-qa-brain`
-- `playwright-test-generator`
-- `ok_autotest_ui_skill`
+- `senior-qa-brain`：分析 Figma / PRD，输出分析报告和文本用例
+- `playwright-test-generator`：把可自动化文本用例转成 UI 自动化脚本
+- `ok_autotest_ui_skill`：做 PC UI 回归
+- `knowledge-base-manager`：把本次产物同步回知识库
 
-它负责状态管理、产物沉淀、查重映射、脚本规范化、提升守卫，以及回归执行计划。
+这个项目的重点不是“替代 skill”，而是“把 skill 串起来，并在每一阶段做验收”。
 
-## 当前可用性
-
-这套项目现在已经切到“项目内一体化集成”模式。核心 skill、回归项目和知识库都已经收进当前仓库，默认不再依赖你桌面的外部绝对路径。
-
-- 它已经可以直接执行 `计划 / 运行 / 状态 / 恢复 / 提升` 这几类命令。
-- 它会在缺少外部产物时自动阻塞，并在 `.qa_agent/runs/<运行ID>/` 下生成下一步说明。
-- 真正的回归执行，默认调用项目内的 `bundled/skills/ok_autotest_ui_skill/scripts/ok_test.py`。
-- 新需求分析提示词、录制生成提示词、回归规范文档都已经跟着项目一起走。
-- 文本知识库默认读取项目内的 `bundled/knowledge_base/`。
-
-换句话说：
-
-- 同事拉下这个项目后，不需要再额外配置你机器上的那些桌面路径。
-- 真正还需要准备的是运行环境依赖，例如 Python venv、Playwright 浏览器和回归项目 requirements。
-- 如果缺少分析报告、原始用例、UI Probe 补充说明或证明产物，`QA_Agent` 仍然会阻塞在对应阶段，这是流程设计，不是路径问题。
-
-## 快速开始
-
-```bash
-cd /Users/a58/Desktop/QA_Agent
-bash scripts/bootstrap_env.sh
-source .venv/bin/activate
-python -m qa_agent.cli --help
-```
-
-如果后续要从你本机的独立 skill 仓库继续同步最新内容，可以执行：
-
-```bash
-bash scripts/sync_bundled_assets.sh
-```
-
-也可以用环境变量覆盖同步源：
-
-```bash
-SENIOR_QA_SOURCE=/path/to/senior-qa-brain \
-PLAYWRIGHT_SOURCE=/path/to/playwright-test-generator \
-OK_UI_SOURCE=/path/to/ok_autotest_ui_skill \
-KNOWLEDGE_BASE_SOURCE=/path/to/knowledge_base \
-bash scripts/sync_bundled_assets.sh
-```
-
-## 架构
+## 完整逻辑图
 
 ```mermaid
 flowchart TD
-    A["输入: Figma + PRD/PDF + git diff + 模块/站点"] --> B["QA Conductor / 需求接入"]
-    B --> C["影响拆分"]
-    C -->|回归改动| R1["回归选择器构建"]
-    C -->|新需求| N1["senior-qa-brain: 01 Figma分析"]
-    C -->|混合| M1["并行启动: 回归支线 + 新需求支线"]
+    Input["用户输入"] --> Mode["用户手动选择模式<br/>A 新需求 / B 纯回归 / C 混合"]
+    Mode --> Run["qa-agent run<br/>doctor -> plan -> drive_to_action"]
 
-    N1 --> N2["senior-qa-brain: 02 分析报告"]
-    N2 --> N3["senior-qa-brain: 03 PRD Diff"]
-    N3 --> N4["人工确认门禁"]
-    N4 --> N5["senior-qa-brain: 04 Markdown用例生成"]
-    N5 --> N6["UI Probe 增强: 实测入口/选择器/真实行为"]
-    N6 --> N7["查重与映射"]
-    N7 --> N8["批次规划 <= 5 条用例"]
-    N8 --> N9["playwright-test-generator: CLI录制 + 实时验证"]
-    N9 --> N10["证明产物归档"]
-    N10 --> N11["代码生成"]
-    N11 --> N12["脚本规范化"]
-    N12 --> N13["提升守卫"]
-    N13 --> N14["提升到 ok_autotest_ui_skill 回归池"]
+    Run --> Split{"模式路径"}
+    Split -->|"新需求 / 混合"| SQB["senior-qa-brain<br/>分析报告 + 文本用例"]
+    SQB --> SQBGate["阶段1门禁<br/>结构校验 + 文本用例归档"]
+    SQBGate --> PTG["playwright-test-generator<br/>录制 + 生成脚本 + 自测"]
+    PTG --> PTGGate["阶段2门禁<br/>每条可自动化用例唯一 outcome"]
+    PTGGate --> Impact["影响分析与候选归并"]
 
-    R1 --> R2["module-map + 文本用例 + 现有脚本 选集合"]
-    R2 --> R3["ok_autotest_ui_skill 回归预演"]
+    Split -->|"纯回归"| Impact
 
-    N14 --> R3
-    M1 --> R3
-    R3 --> R4["ok_autotest_ui_skill 真实回归"]
-    R4 --> G1["视觉门禁: 运行截图 vs Figma 评分"]
-    G1 --> G2["UI 门禁: 用例断言 100%"]
-    G2 --> G3["API 门禁: 接口断言 100% 或 N/A"]
-    G3 --> D{"全部通过?"}
-    D -->|是| Z["最终报告 + 上线建议"]
-    D -->|否| F["缺陷回环 / 精准回跳"]
-    F --> N6
-    F --> N9
-    F --> N11
-    F --> R2
+    Impact --> Verify["影响回归与变更归因<br/>先跑受影响用例，不改测试代码"]
+    Verify --> Confirm["人工确认归因报告"]
+    Confirm --> Legacy["旧脚本更新循环 + 新脚本 promotion"]
+    Legacy --> OKUI["ok_autotest_ui_skill<br/>dry-run -> 确认 -> 真实回归"]
+    OKUI --> Final["最终报告 + 上线建议"]
+    Final --> KB["knowledge-base-manager<br/>预览 -> 确认 -> 写入"]
+    KB --> Done["完成"]
 ```
 
-## 命令
+## 你怎么开始
+
+在仓库根目录直接告诉 AI：
+
+- 你要跑哪种模式：`新需求`、`纯回归`、`混合`
+- 站点：比如 `ae`
+- 模块：比如 `car`
+- 功能点：比如 `列表`
+- 如果是新需求/混合，再给 `Figma`、`PRD`
+- 如果是纯回归/混合，再给改动描述
+
+常见说法：
+
+```text
+请用 QA Agent 跑一条新需求链路，站点 ae，模块 car，功能点 列表，PRD 在 /path/to/doc.pdf
+```
+
+```text
+请用 QA Agent 跑纯回归，站点 ae，模块 car，改动是“列表卡片样式改大卡”
+```
+
+```text
+请用 QA Agent 跑混合模式，站点 ae，模块 car，功能点 列表，PRD 在 /path/to/doc.pdf，另外列表卡片样式有改动
+```
+
+## 三种模式
+
+- `新需求`：先出分析报告和文本用例，再做自动化转译、影响验证、回归、知识库更新
+- `纯回归`：直接从影响分析开始，不生成新的文本用例草稿
+- `混合`：先走新需求支线，再把新脚本和旧脚本一起纳入回归
+
+模式不自动判断。你需要明确告诉 AI 选哪一种。
+
+## 推荐命令流
+
+最推荐用 `run` 创建并自动推进到第一个可操作点：
 
 ```bash
-qa-agent 计划 --figma链接 <url> --站点 sg --模块 zhaopin --功能 "job_preferences"
-qa-agent 运行 --运行ID <运行ID>
-qa-agent 状态 --运行ID <运行ID>
-qa-agent 恢复 --运行ID <运行ID>
-qa-agent 提升 --运行ID <运行ID>
+python -m qa_agent.cli run \
+  --change-mode 新需求 \
+  --site ae \
+  --module car \
+  --feature 列表 \
+  --prd-ref "/path/to/需求文档.pdf"
 ```
 
-英文命令和英文参数仍然保留，主要是为了兼容脚本化调用。
+纯回归示例：
 
-## 状态目录
+```bash
+python -m qa_agent.cli run \
+  --change-mode 纯回归 \
+  --site ae \
+  --module car \
+  --feature 列表 \
+  --change-description "列表卡片样式改大卡"
+```
 
-所有状态都保存在 `.qa_agent/` 下：
+查看下一步该做什么：
 
-- `.qa_agent/project-memory.json`
-- `.qa_agent/notepad.md`
-- `.qa_agent/runs/<运行ID>/`
+```bash
+python -m qa_agent.cli status --run-id <run_id> --next-action
+```
 
-## 说明
+提交阶段产物并触发门禁：
 
-- 外部 AI / 浏览器阶段会被视为显式阻塞阶段，并生成可恢复的产物。
-- 脚本提升遵循最新规范：
-  - `bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/docs/test-case-authoring-spec.md`
-  - `bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/docs/test-case-review-checklist.md`
-- 配置默认走项目内相对路径，定义在 [config/skills.yaml](/Users/a58/Desktop/QA_Agent/config/skills.yaml)。
+```bash
+python -m qa_agent.cli complete \
+  --run-id <run_id> \
+  --phase senior-qa-brain \
+  --artifact analysis_report=/path/to/analysis.md \
+  --artifact textcases=/path/to/textcases.md
+```
+
+人工确认后继续自动推进：
+
+```bash
+python -m qa_agent.cli next --run-id <run_id>
+```
+
+环境预检：
+
+```bash
+python -m qa_agent.cli doctor
+```
+
+调试时看完整 JSON：
+
+```bash
+python -m qa_agent.cli status --run-id <run_id> --json
+```
+
+`advance` 仍然保留，但它是低层单步推进命令；日常建议优先使用 `run / next / complete / status`。
+
+## 你会经历哪些确认点
+
+1. `senior-qa-brain`
+   AI 会先停在分析报告，等你确认后再继续生成文本用例。
+2. `playwright-test-generator`
+   AI 会要求产出逐条 case outcome，确认每条 `UI自动化=✅` 的用例都有唯一结局。
+3. `影响回归与变更归因`
+   AI 会先跑受影响用例，再给你一份简洁归因报告，等你确认后才允许改旧脚本或 promotion 新脚本。
+4. `旧脚本更新执行`
+   如果旧脚本无法安全 patch，QA Agent 会停下来生成重录子任务，让 AI 按 `playwright-test-generator` 重新录制候选脚本；不会自己盲猜修改旧脚本。
+   只要本阶段合并了 `test_cases/**/*.py` 脚本变更，QA Agent 会先刷新 ok_autotest_ui 的 catalog 并审计标识，成功后才进入阶段3。
+5. `ok_autotest_ui_skill`
+   AI 会先给你 dry-run 预览，等你确认后才真实执行回归。
+6. `knowledge-base-manager`
+   AI 会先给你知识库更新预览，等你确认后才写入。
+
+## 阶段完成时通常要交哪些产物
+
+如果你用 CLI 或要求 AI 手动 `complete` 某个阶段，常见产物是：
+
+- 阶段1：`analysis_report=<path>`、`textcases=<path>`
+- 阶段2：`playwright_case_outcomes=<path>`
+- 阶段3：`ok_ui_dry_run_preview=<path>`、`ok_ui_execution_report=<path>`、`release_recommendation=<path>`
+- 知识库阶段：`knowledge_base_update_preview=<path>`、`knowledge_base_update_result=<path>`
+
+常见 artifact key 示例：
+
+| 阶段 | artifact key |
+| --- | --- |
+| 阶段1 | `analysis_report`, `textcases`, `text_case_manifest`, `kb_text_case_draft_path` |
+| 阶段2 | `playwright_case_outcomes`, `generated_scripts_manifest` |
+| 影响分析 | `impact_candidates`, `overlap_report` |
+| 影响归因 | `impact_run_selector_plan`, `impact_run_results`, `change_attribution_report` |
+| 更新循环 | `legacy_update_tasks`, `legacy_update_gate`, `legacy_rerecord_request`, `legacy_rerecord_instruction`, `legacy_update_candidate_manifest`, `catalog_refresh_after_script_changes_round_XX`, `regression_selector_plan` |
+| 阶段3 | `ok_ui_dry_run_preview`, `ok_ui_execution_report`, `release_recommendation` |
+| 最终阶段 | `final_report`, `knowledge_base_update_context`, `knowledge_base_update_preview`, `knowledge_base_update_result` |
+
+## 文本用例会放哪里
+
+新需求 / 混合模式下，阶段1通过门禁后，文本用例会直接写到：
+
+`bundled/knowledge_base/文本用例/<目录桶>/`
+
+例如 `car` 会路由到：
+
+`bundled/knowledge_base/文本用例/test_car/`
+
+最终知识库更新阶段会优先回写这同一份草稿，不会默认新建第二份重复文本用例。
+
+## 产物去哪看
+
+每次运行都会落到：
+
+`/Users/a58/Desktop/QA_Agent/.qa_agent/runs/<run_id>/`
+
+重点看这些文件：
+
+- `run_state.json`
+- `analysis_report.*`
+- `text_case_manifest.json`
+- `playwright_case_outcomes.json`
+- `impact_candidates.json`
+- `change_attribution_report.md`
+- `legacy_update_tasks.json`
+- `regression_selector_plan.json`
+- `final_report.md`
+- `knowledge_base_update_context.md`
+
+## 卡住时怎么继续
+
+- 如果 AI 提示“等待确认”，说明这是正常门禁，确认后继续即可
+- 如果提示缺少某个 artifact，就把对应文件补齐后再次 `complete`
+- 如果 `next_action.kind=run_skill` 且阶段是 `旧脚本更新执行`，说明需要按 `legacy_rerecord_instruction.md` 调用 `playwright-test-generator`，产出 `legacy_update_candidate_manifest`
+- 如果停在 `manual-review`，说明自动循环已经到边界，需要人工介入
+
+查看状态：
+
+```bash
+python -m qa_agent.cli status --run-id <run_id> --next-action
+```
+
+推进下一阶段：
+
+```bash
+python -m qa_agent.cli next --run-id <run_id>
+```
+
+如果 `doctor` 报 fatal，需要先修复内嵌 skill、知识库或项目根目录；如果只有 warning，`run` 会继续创建任务，但会把预检结果保存到本次 run。
+
+完整内部编排契约、阶段门禁和状态持久化说明见 [AGENTS.md](/Users/a58/Desktop/QA_Agent/AGENTS.md)。

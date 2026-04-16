@@ -1,0 +1,418 @@
+from __future__ import annotations
+
+import ast
+import os
+import shutil
+import sys
+import uuid
+from dataclasses import asdict
+from pathlib import Path
+from typing import Any
+
+from qa_agent.config import AppConfig
+from qa_agent.io import read_text, write_text
+from qa_agent.models import (
+    LegacyUpdateGate,
+    LegacyUpdateRoundOutcome,
+    LegacyUpdateTask,
+    LegacyUpdateTaskStatus,
+    ValidationResult,
+)
+from qa_agent.utils import run_command
+
+from .promotion_guard import PromotionGuard
+
+PATCH_ACTIONS = {"update-assertion", "update-selector"}
+PLAYWRIGHT_REGEN_ACTIONS = {"re-record", "split-case"}
+REPLACE_ACTIONS = {*PLAYWRIGHT_REGEN_ACTIONS, "promote-new-script"}
+CATALOG_REFRESH_ACTIONS = {*PATCH_ACTIONS, *PLAYWRIGHT_REGEN_ACTIONS, "promote-new-script"}
+
+
+class OkUISkillRuntime:
+    def __init__(self, config: AppConfig) -> None:
+        commands = config.skills.get("commands", {}).get("ok_ui_skill", {})
+        paths = config.skills.get("paths", {})
+        self.script = Path(commands.get("script", ""))
+        configured_python = Path(commands.get("venv_python", ""))
+        self.python_bin = str(configured_python) if configured_python.exists() else sys.executable
+        self.project_root = Path(paths.get("regression_project_root", ""))
+
+    def _env(self) -> dict[str, str]:
+        env = os.environ.copy()
+        existing_pythonpath = env.get("PYTHONPATH", "")
+        env["PYTHONPATH"] = (
+            str(self.project_root)
+            if not existing_pythonpath
+            else f"{self.project_root}{os.pathsep}{existing_pythonpath}"
+        )
+        return env
+
+    def doctor(self):
+        return run_command(
+            [self.python_bin, str(self.script), "doctor"],
+            cwd=self.project_root,
+            env=self._env(),
+        )
+
+    def dry_run(self, module: str, relative_path: str):
+        return run_command(
+            [
+                self.python_bin,
+                str(self.script),
+                "run",
+                "--module",
+                module,
+                "--path",
+                relative_path,
+                "--dry-run",
+            ],
+            cwd=self.project_root,
+            env=self._env(),
+        )
+
+    def catalog_build(self):
+        return run_command(
+            [self.python_bin, str(self.script), "ops", "catalog-build"],
+            cwd=self.project_root,
+            env=self._env(),
+        )
+
+    def audit_identifiers(self):
+        return run_command(
+            [self.python_bin, str(self.script), "ops", "audit-identifiers"],
+            cwd=self.project_root,
+            env=self._env(),
+        )
+
+
+class LegacyUpdateValidator:
+    def validate(self, candidate_path: Path, task: LegacyUpdateTask) -> list[ValidationResult]:
+        raise NotImplementedError
+
+
+class DefaultLegacyUpdateValidator(LegacyUpdateValidator):
+    def __init__(self, config: AppConfig) -> None:
+        self.config = config
+        self.runtime = OkUISkillRuntime(config)
+        self.regression_root = Path(config.skills.get("paths", {}).get("regression_project_root", ""))
+        self.guard = PromotionGuard(
+            self.runtime,
+            max_wait_ms=int(config.thresholds.get("gates", {}).get("max_wait_timeout_ms", 300)),
+            require_runtime_checks=bool(config.thresholds.get("promotion", {}).get("require_dry_run", True)),
+        )
+
+    def validate(self, candidate_path: Path, task: LegacyUpdateTask) -> list[ValidationResult]:
+        results = [self._check_syntax(candidate_path)]
+        module = task.details.get("module") or self._infer_module(task.target_script)
+        if module and self.regression_root.exists():
+            try:
+                results.extend(self.guard.evaluate([str(candidate_path)], module)[str(candidate_path)])
+            except Exception as exc:  # pragma: no cover - best effort runtime validation
+                results.append(
+                    ValidationResult(
+                        ok=False,
+                        name="运行时校验",
+                        message=f"PromotionGuard 执行失败: {exc}",
+                    )
+                )
+        return results
+
+    def _infer_module(self, target_script: str) -> str:
+        target = Path(target_script)
+        parts = target.parts
+        if "test_cases" in parts:
+            index = parts.index("test_cases")
+            if index + 1 < len(parts):
+                return parts[index + 1]
+        return target.parent.name
+
+    def _check_syntax(self, candidate_path: Path) -> ValidationResult:
+        try:
+            ast.parse(read_text(candidate_path))
+            return ValidationResult(ok=True, name="语法校验", message="Python 语法有效")
+        except SyntaxError as exc:
+            return ValidationResult(ok=False, name="语法校验", message=f"Python 语法错误: {exc}")
+
+
+class LegacyUpdateExecutor:
+    def __init__(self, config: AppConfig, validator: LegacyUpdateValidator | None = None) -> None:
+        self.config = config
+        self.validator = validator or DefaultLegacyUpdateValidator(config)
+
+    def run_round(
+        self,
+        *,
+        run_dir: Path,
+        tasks: list[LegacyUpdateTask],
+        round_index: int,
+    ) -> LegacyUpdateRoundOutcome:
+        results: list[dict[str, Any]] = []
+        updated_tasks: list[LegacyUpdateTask] = []
+        for task in tasks:
+            if task.status in (LegacyUpdateTaskStatus.COMPLETED.value, LegacyUpdateTaskStatus.MANUAL_REVIEW.value):
+                updated_tasks.append(task)
+                continue
+            updated_tasks.append(self._run_task(run_dir, task, results))
+
+        gate = self._build_gate(updated_tasks, round_index)
+        return LegacyUpdateRoundOutcome(tasks=updated_tasks, gate=gate, results=results)
+
+    def refresh_catalog_after_script_changes(self, tasks: list[LegacyUpdateTask]) -> dict[str, Any]:
+        changed_tasks = [task for task in tasks if self._needs_catalog_refresh(task)]
+        if not changed_tasks:
+            return {
+                "needed": False,
+                "ok": True,
+                "changed_task_ids": [],
+                "promotion_task_ids": [],
+                "legacy_task_ids": [],
+            }
+
+        runtime = OkUISkillRuntime(self.config)
+        catalog_result = self._run_refresh_command("catalog_build", runtime.catalog_build)
+        audit_result = self._run_refresh_command("audit_identifiers", runtime.audit_identifiers)
+        ok = bool(catalog_result.get("ok")) and bool(audit_result.get("ok"))
+        promotion_task_ids = [task.task_id for task in changed_tasks if task.recommended_action == "promote-new-script"]
+        legacy_task_ids = [task.task_id for task in changed_tasks if task.recommended_action != "promote-new-script"]
+        return {
+            "needed": True,
+            "ok": ok,
+            "changed_task_ids": [task.task_id for task in changed_tasks],
+            "promotion_task_ids": promotion_task_ids,
+            "legacy_task_ids": legacy_task_ids,
+            "actions": {task.task_id: task.recommended_action for task in changed_tasks},
+            "commands": {
+                "catalog_build": catalog_result,
+                "audit_identifiers": audit_result,
+            },
+        }
+
+    def refresh_catalog_after_promotion(self, tasks: list[LegacyUpdateTask]) -> dict[str, Any]:
+        return self.refresh_catalog_after_script_changes(tasks)
+
+    def _needs_catalog_refresh(self, task: LegacyUpdateTask) -> bool:
+        if task.status != LegacyUpdateTaskStatus.COMPLETED.value:
+            return False
+        if task.recommended_action not in CATALOG_REFRESH_ACTIONS:
+            return False
+        if task.recommended_action == "promote-new-script":
+            return True
+        return self._is_test_case_script(task.target_script)
+
+    def _is_test_case_script(self, target_script: str) -> bool:
+        if not target_script:
+            return False
+        path_text = str(target_script).split("::", 1)[0]
+        target = Path(path_text)
+        return target.suffix == ".py" and "test_cases" in target.parts
+
+    def _run_refresh_command(self, name: str, command_fn) -> dict[str, Any]:
+        try:
+            proc = command_fn()
+        except Exception as exc:  # pragma: no cover - defensive process boundary
+            return {
+                "name": name,
+                "ok": False,
+                "returncode": None,
+                "stdout": "",
+                "stderr": f"{type(exc).__name__}: {exc}",
+            }
+        return {
+            "name": name,
+            "ok": proc.returncode == 0,
+            "returncode": proc.returncode,
+            "stdout": (proc.stdout or "")[-4000:],
+            "stderr": (proc.stderr or "")[-4000:],
+        }
+
+    def _run_task(
+        self,
+        run_dir: Path,
+        task: LegacyUpdateTask,
+        results: list[dict[str, Any]],
+    ) -> LegacyUpdateTask:
+        task.status = LegacyUpdateTaskStatus.RUNNING.value
+        task.attempts += 1
+        task.max_attempts = task.max_attempts or int(self.config.thresholds.get("gates", {}).get("max_fix_rounds", 3))
+
+        workspace = run_dir / "legacy_updates" / task.task_id
+        backup_dir = workspace / "backup"
+        candidate_path = workspace / "candidate.py"
+        backup_dir.mkdir(parents=True, exist_ok=True)
+
+        target_path = Path(task.target_script)
+        if target_path.exists():
+            shutil.copy2(target_path, backup_dir / target_path.name)
+
+        if task.recommended_action == "manual-review":
+            task.status = LegacyUpdateTaskStatus.MANUAL_REVIEW.value
+            results.append(self._result(task, False, candidate_path, "任务要求人工审阅，未进入自动循环"))
+            return task
+
+        ok, message = self._materialize_candidate(task, target_path, candidate_path, workspace)
+        if not ok:
+            return self._fail_or_retry(task, results, candidate_path, message)
+
+        validations = [asdict(item) for item in self.validator.validate(candidate_path, task)]
+        validation_ok = all(item["ok"] for item in validations) if validations else True
+        if validation_ok:
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(candidate_path, target_path)
+            task.status = LegacyUpdateTaskStatus.COMPLETED.value
+            results.append(self._result(task, True, candidate_path, "候选版本通过验收并已自动合并", validations))
+            return task
+
+        message = "; ".join(item["message"] for item in validations if not item["ok"]) or "候选版本未通过验收"
+        return self._fail_or_retry(task, results, candidate_path, message, validations)
+
+    def _materialize_candidate(
+        self,
+        task: LegacyUpdateTask,
+        target_path: Path,
+        candidate_path: Path,
+        workspace: Path,
+    ) -> tuple[bool, str]:
+        if task.recommended_action in PATCH_ACTIONS:
+            return self._patch_candidate(task, target_path, candidate_path)
+        if task.recommended_action in REPLACE_ACTIONS:
+            return self._replace_candidate(task, target_path, candidate_path, workspace)
+        return False, f"不支持的更新动作: {task.recommended_action}"
+
+    def _patch_candidate(self, task: LegacyUpdateTask, target_path: Path, candidate_path: Path) -> tuple[bool, str]:
+        if not target_path.exists():
+            return False, f"目标脚本不存在: {target_path}"
+        text = read_text(target_path)
+        replacements = list(task.details.get("replacements", []) or [])
+        if not replacements:
+            task.details["original_recommended_action"] = task.recommended_action
+            task.details["needs_playwright_rerecord"] = True
+            task.details["rerecord_reason"] = "缺少明确 replacements，不能由 QA Agent 盲猜 patch"
+            task.recommended_action = "re-record"
+            return False, "未提供可应用 patch，已升级为 re-record"
+
+        updated = text
+        applied = 0
+        for replacement in replacements:
+            old = str(replacement.get("old", ""))
+            new = str(replacement.get("new", ""))
+            count = replacement.get("count")
+            if not old or old not in updated:
+                continue
+            updated = updated.replace(old, new, int(count)) if count else updated.replace(old, new)
+            applied += 1
+
+        if applied == 0:
+            task.details["original_recommended_action"] = task.recommended_action
+            task.details["needs_playwright_rerecord"] = True
+            task.details["rerecord_reason"] = "patch 片段未命中旧脚本，不能由 QA Agent 盲猜 patch"
+            task.recommended_action = "re-record"
+            return False, "未命中任何 patch 片段，已升级为 re-record"
+
+        append_lines = task.details.get("append_lines", []) or []
+        if append_lines:
+            suffix = "\n".join(str(line) for line in append_lines)
+            updated = updated.rstrip() + "\n" + suffix + "\n"
+
+        write_text(candidate_path, updated)
+        return True, f"已应用 {applied} 处 patch"
+
+    def _replace_candidate(
+        self,
+        task: LegacyUpdateTask,
+        target_path: Path,
+        candidate_path: Path,
+        workspace: Path,
+    ) -> tuple[bool, str]:
+        replacement_source = task.details.get("replacement_source_path")
+        replacement_text = task.details.get("replacement_text")
+        proof_artifact = task.details.get("proof_artifact_path")
+        requires_proof = task.recommended_action in PLAYWRIGHT_REGEN_ACTIONS
+
+        if requires_proof and (not proof_artifact or not Path(proof_artifact).exists()):
+            task.details["needs_playwright_rerecord"] = True
+            task.details["rerecord_reason"] = "re-record/split-case 必须由 playwright-test-generator 提供 proof artifact"
+            return False, "缺少 playwright-test-generator proof artifact，无法完成 re-record/split-case"
+
+        if proof_artifact and Path(proof_artifact).exists():
+            proof_target = workspace / Path(proof_artifact).name
+            if not proof_target.exists():
+                shutil.copy2(proof_artifact, proof_target)
+
+        if replacement_source and Path(replacement_source).exists():
+            shutil.copy2(replacement_source, candidate_path)
+            return True, f"已使用候选替换文件: {replacement_source}"
+        if replacement_text:
+            write_text(candidate_path, str(replacement_text))
+            return True, "已写入候选替换文本"
+        if target_path.exists():
+            shutil.copy2(target_path, candidate_path)
+            if task.recommended_action in PLAYWRIGHT_REGEN_ACTIONS:
+                task.details["needs_playwright_rerecord"] = True
+            return False, "缺少替换内容，无法完成 re-record/split-case"
+        if task.recommended_action in PLAYWRIGHT_REGEN_ACTIONS:
+            task.details["needs_playwright_rerecord"] = True
+        return False, "缺少替换内容且目标脚本不存在"
+
+    def _fail_or_retry(
+        self,
+        task: LegacyUpdateTask,
+        results: list[dict[str, Any]],
+        candidate_path: Path,
+        message: str,
+        validations: list[dict[str, Any]] | None = None,
+    ) -> LegacyUpdateTask:
+        if task.recommended_action in PLAYWRIGHT_REGEN_ACTIONS:
+            task.details["needs_playwright_rerecord"] = True
+            task.details["rerecord_reason"] = message
+        if task.attempts >= task.max_attempts:
+            task.status = LegacyUpdateTaskStatus.MANUAL_REVIEW.value
+            final_message = f"{message}；超过最大轮次，升级为 manual-review"
+        else:
+            task.status = LegacyUpdateTaskStatus.RETRY.value
+            final_message = message
+        results.append(self._result(task, False, candidate_path, final_message, validations or []))
+        return task
+
+    def _result(
+        self,
+        task: LegacyUpdateTask,
+        ok: bool,
+        candidate_path: Path,
+        message: str,
+        validations: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
+        return {
+            "task_id": task.task_id,
+            "target_script": task.target_script,
+            "target_case_id": task.target_case_id,
+            "target_nodeid": task.target_nodeid,
+            "recommended_action": task.recommended_action,
+            "status": task.status,
+            "ok": ok,
+            "attempts": task.attempts,
+            "candidate_path": str(candidate_path),
+            "message": message,
+            "validations": validations or [],
+        }
+
+    def _build_gate(self, tasks: list[LegacyUpdateTask], round_index: int) -> LegacyUpdateGate:
+        pending_count = sum(task.status == LegacyUpdateTaskStatus.PENDING.value for task in tasks)
+        retry_count = sum(task.status == LegacyUpdateTaskStatus.RETRY.value for task in tasks)
+        completed_count = sum(task.status == LegacyUpdateTaskStatus.COMPLETED.value for task in tasks)
+        manual_review_count = sum(task.status == LegacyUpdateTaskStatus.MANUAL_REVIEW.value for task in tasks)
+        total_count = len(tasks)
+        all_completed = total_count == completed_count
+        return LegacyUpdateGate(
+            round_index=round_index,
+            total_count=total_count,
+            pending_count=pending_count,
+            retry_count=retry_count,
+            completed_count=completed_count,
+            manual_review_count=manual_review_count,
+            all_completed=all_completed,
+            has_manual_review=manual_review_count > 0,
+        )
+
+
+def make_task_id(prefix: str = "legacy") -> str:
+    return f"{prefix}-{uuid.uuid4().hex[:8]}"

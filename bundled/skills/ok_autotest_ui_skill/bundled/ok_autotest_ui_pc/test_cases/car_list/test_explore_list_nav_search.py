@@ -374,7 +374,7 @@ def test_tc010_search_long_string(page, config):
 # 模块三：车辆卡片数据校验
 # ======================================================================
 
-@pytest.mark.case_id_explore_list_tc011
+@pytest.mark.case_id_explore_list_tc072
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.ae
@@ -383,11 +383,11 @@ def test_tc010_search_long_string(page, config):
 @allure.title("列表页加载后至少展示 1 张车辆卡片")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证探索列表页加载后，至少返回 1 张车辆卡片，列表不为空")
-def test_tc011_card_list_not_empty(page, config):
-    """TC011: 列表页加载后至少展示 1 张车辆卡片"""
+def test_tc072_card_list_not_empty(page, config):
+    """TC072: 列表页加载后至少展示 1 张车辆卡片"""
 
     list_page = ExploreListPage(page)
-    logger.info("TC011: 卡片列表非空")
+    logger.info("TC072: 卡片列表非空")
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
@@ -397,10 +397,10 @@ def test_tc011_card_list_not_empty(page, config):
         assert count >= 1, f"列表应至少展示 1 张卡片，实际: {count}"
         logger.info(f"✓ 列表卡片数量: {count}")
 
-    logger.info("✅ TC011 通过")
+    logger.info("✅ TC072 通过")
 
 
-@pytest.mark.case_id_explore_list_tc012
+@pytest.mark.case_id_explore_list_tc073
 @pytest.mark.p0
 @pytest.mark.ae
 @allure.feature("OK")
@@ -408,11 +408,11 @@ def test_tc011_card_list_not_empty(page, config):
 @allure.title("每张卡片标题非空且包含车型信息")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证列表中每张卡片的标题不为空，且为有效车型名称文本")
-def test_tc012_card_title_not_empty(page, config):
-    """TC012: 每张卡片标题非空"""
+def test_tc073_card_title_not_empty(page, config):
+    """TC073: 每张卡片标题非空"""
 
     list_page = ExploreListPage(page)
-    logger.info("TC012: 卡片标题非空")
+    logger.info("TC073: 卡片标题非空")
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
@@ -426,10 +426,10 @@ def test_tc012_card_title_not_empty(page, config):
         logger.info(f"✓ 已验证 {len(titles)} 张卡片标题，均非空")
         logger.info(f"  首条: '{titles[0]}'")
 
-    logger.info("✅ TC012 通过")
+    logger.info("✅ TC073 通过")
 
 
-@pytest.mark.case_id_explore_list_tc013
+@pytest.mark.case_id_explore_list_tc074
 @pytest.mark.p0
 @pytest.mark.ae
 @allure.feature("OK")
@@ -437,11 +437,11 @@ def test_tc012_card_title_not_empty(page, config):
 @allure.title("每张卡片价格字段展示货币符号 AED")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证列表中每张卡片均显示价格，且包含 AED 货币符号")
-def test_tc013_card_price_shows_aed(page, config):
-    """TC013: 卡片价格包含 AED 货币符号"""
+def test_tc074_card_price_shows_aed(page, config):
+    """TC074: 卡片价格包含 AED 货币符号"""
 
     list_page = ExploreListPage(page)
-    logger.info("TC013: 卡片价格 AED")
+    logger.info("TC074: 卡片价格 AED")
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
@@ -460,16 +460,19 @@ def test_tc013_card_price_shows_aed(page, config):
         # 过滤掉空价格（某些卡片可能无价格）
         valid_prices = [p for p in prices if p.strip()]
         assert len(valid_prices) >= 1, "应至少获取到 1 条有效价格"
-        missing_aed = [p for p in valid_prices if "AED" not in p]
+        missing_aed = [p for p in valid_prices if "AED" not in p and p.strip().lower() != "free"]
         assert len(missing_aed) == 0, \
             f"以下卡片价格缺少 AED 符号: {missing_aed}"
-        logger.info(f"✓ 已验证 {len(valid_prices)} 张卡片价格均含 AED（共 {len(prices)} 张卡片）")
+        free_count = sum(1 for p in valid_prices if p.strip().lower() == "free")
+        if free_count:
+            logger.info(f"  ℹ 其中 {free_count} 张卡片价格为 Free，已兼容跳过")
+        logger.info(f"✓ 已验证 {len(valid_prices)} 张卡片价格均含 AED 或为 Free（共 {len(prices)} 张卡片）")
         logger.info(f"  首条价格: '{valid_prices[0]}'")
 
-    logger.info("✅ TC013 通过")
+    logger.info("✅ TC074 通过")
 
 
-@pytest.mark.case_id_explore_list_tc014
+@pytest.mark.case_id_explore_list_tc075
 @pytest.mark.p1
 @pytest.mark.ae
 @allure.feature("OK")
@@ -477,11 +480,11 @@ def test_tc013_card_price_shows_aed(page, config):
 @allure.title("每张卡片价格数值为正整数")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证列表中每张卡片显示的价格数值为正整数（>0）")
-def test_tc014_card_price_positive(page, config):
-    """TC014: 卡片价格数值为正整数"""
+def test_tc075_card_price_positive(page, config):
+    """TC075: 卡片价格数值为正整数"""
 
     list_page = ExploreListPage(page)
-    logger.info("TC014: 卡片价格为正数")
+    logger.info("TC075: 卡片价格为正数")
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
@@ -524,6 +527,10 @@ def test_tc014_card_price_positive(page, config):
         # 验证有价格的卡片
         for idx, price_text in enumerate(prices):
             if price_text.strip():
+                # 兼容 Free 帖子，跳过数值校验
+                if price_text.strip().lower() == "free":
+                    logger.info(f"  ℹ 卡片 #{idx+1}: 价格为 Free，跳过数值校验")
+                    continue
                 # 提取首个数字段（支持 123 / 1,234 / 166K+ 等格式）
                 numeric_str = _re.search(r"[\d,]+", price_text.replace("AED", "").strip())
                 assert numeric_str, f"价格中应包含数字，实际: '{price_text}'"
@@ -532,10 +539,10 @@ def test_tc014_card_price_positive(page, config):
         
         logger.info(f"✓ 已验证 {len(valid_prices)} 张卡片价格数值均 > 0（共 {len(prices)} 张卡片）")
 
-    logger.info("✅ TC014 通过")
+    logger.info("✅ TC075 通过")
 
 
-@pytest.mark.case_id_explore_list_tc015
+@pytest.mark.case_id_explore_list_tc076
 @pytest.mark.p1
 @pytest.mark.ae
 @allure.feature("OK")
@@ -543,11 +550,11 @@ def test_tc014_card_price_positive(page, config):
 @allure.title("第一张卡片详情参数包含年份、里程、城市三个字段")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证第一张卡片的详情参数区域展示年份、里程（含 km）、城市三个数据项")
-def test_tc015_card_detail_params_complete(page, config):
-    """TC015: 卡片详情参数包含年份、里程、城市"""
+def test_tc076_card_detail_params_complete(page, config):
+    """TC076: 卡片详情参数包含年份、里程、城市"""
 
     list_page = ExploreListPage(page)
-    logger.info("TC015: 卡片详情参数完整性")
+    logger.info("TC076: 卡片详情参数完整性")
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
@@ -565,10 +572,10 @@ def test_tc015_card_detail_params_complete(page, config):
         assert mileage_found, f"卡片详情应包含里程（含 km），实际: {details}"
         logger.info(f"✓ 卡片详情参数验证通过: {details}")
 
-    logger.info("✅ TC015 通过")
+    logger.info("✅ TC076 通过")
 
 
-@pytest.mark.case_id_explore_list_tc016
+@pytest.mark.case_id_explore_list_tc077
 @pytest.mark.p1
 @pytest.mark.ae
 @allure.feature("OK")
@@ -576,11 +583,11 @@ def test_tc015_card_detail_params_complete(page, config):
 @allure.title("第一张卡片封面图 src 非空且为有效 URL")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证第一张卡片的封面图 src 属性不为空，且为有效的 http/https URL")
-def test_tc016_card_image_src_valid(page, config):
-    """TC016: 卡片封面图 src 为有效 URL"""
+def test_tc077_card_image_src_valid(page, config):
+    """TC077: 卡片封面图 src 为有效 URL"""
 
     list_page = ExploreListPage(page)
-    logger.info("TC016: 卡片图片 src 有效性")
+    logger.info("TC077: 卡片图片 src 有效性")
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
@@ -592,10 +599,10 @@ def test_tc016_card_image_src_valid(page, config):
             f"封面图 src 应为 http/https URL，实际: '{src}'"
         logger.info(f"✓ 卡片封面图 src: '{src[:80]}'")
 
-    logger.info("✅ TC016 通过")
+    logger.info("✅ TC077 通过")
 
 
-@pytest.mark.case_id_explore_list_tc017
+@pytest.mark.case_id_explore_list_tc078
 @pytest.mark.p1
 @pytest.mark.ae
 @allure.feature("OK")
@@ -603,11 +610,11 @@ def test_tc016_card_image_src_valid(page, config):
 @allure.title("第一张卡片封面图 alt 与标题一致")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证第一张卡片的封面图 alt 属性包含卡片标题文本（利于 SEO 和可访问性）")
-def test_tc017_card_image_alt_matches_title(page, config):
-    """TC017: 卡片封面图 alt 包含车型标题"""
+def test_tc078_card_image_alt_matches_title(page, config):
+    """TC078: 卡片封面图 alt 包含车型标题"""
 
     list_page = ExploreListPage(page)
-    logger.info("TC017: 卡片图片 alt 与标题一致")
+    logger.info("TC078: 卡片图片 alt 与标题一致")
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
@@ -623,10 +630,10 @@ def test_tc017_card_image_alt_matches_title(page, config):
             f"alt 应包含标题 '{title_prefix}'，实际 alt: '{alt}'"
         logger.info(f"✓ 卡片图片 alt 验证通过，标题: '{titles[0]}'，alt: '{alt[:60]}'")
 
-    logger.info("✅ TC017 通过")
+    logger.info("✅ TC078 通过")
 
 
-@pytest.mark.case_id_explore_list_tc018
+@pytest.mark.case_id_explore_list_tc079
 @pytest.mark.p1
 @pytest.mark.ae
 @allure.feature("OK")
@@ -634,11 +641,11 @@ def test_tc017_card_image_alt_matches_title(page, config):
 @allure.title("第一张卡片链接指向详情页，URL 包含车型 slug")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证第一张卡片的 href 指向有效详情页，URL 含站点域名和车型路径")
-def test_tc018_card_href_valid(page, config):
-    """TC018: 卡片链接为有效详情页 URL"""
+def test_tc079_card_href_valid(page, config):
+    """TC079: 卡片链接为有效详情页 URL"""
 
     list_page = ExploreListPage(page)
-    logger.info("TC018: 卡片链接有效性")
+    logger.info("TC079: 卡片链接有效性")
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
@@ -652,10 +659,10 @@ def test_tc018_card_href_valid(page, config):
             f"卡片链接应包含 'cate-car' 路径，实际: '{href}'"
         logger.info(f"✓ 卡片链接验证通过: '{href}'")
 
-    logger.info("✅ TC018 通过")
+    logger.info("✅ TC079 通过")
 
 
-@pytest.mark.case_id_explore_list_tc019
+@pytest.mark.case_id_explore_list_tc080
 @pytest.mark.p1
 @pytest.mark.ae
 @allure.feature("OK")
@@ -663,12 +670,12 @@ def test_tc018_card_href_valid(page, config):
 @allure.title("关键词搜索后列表卡片标题均包含搜索词")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证搜索 Toyota 后，返回的卡片标题均包含 'Toyota'（品牌相关性过滤）")
-def test_tc019_search_result_cards_match_keyword(page, config):
-    """TC019: 关键词搜索后卡片与关键词相关"""
+def test_tc080_search_result_cards_match_keyword(page, config):
+    """TC080: 关键词搜索后卡片与关键词相关"""
 
     list_page = ExploreListPage(page)
     keyword = "Toyota"
-    logger.info(f"TC019: 搜索 '{keyword}' 后卡片相关性")
+    logger.info(f"TC080: 搜索 '{keyword}' 后卡片相关性")
 
     with allure.step("步骤1：导航并搜索关键词"):
         list_page.navigate_to_url(config["target_url"])
@@ -685,4 +692,4 @@ def test_tc019_search_result_cards_match_keyword(page, config):
                 f"搜索 '{keyword}' 后至少 1 张卡片标题应含关键词，实际标题: {titles}"
             logger.info(f"✓ 搜索结果中 {len(matched)}/{len(titles)} 张卡片包含 '{keyword}'")
 
-    logger.info("✅ TC019 通过")
+    logger.info("✅ TC080 通过")
