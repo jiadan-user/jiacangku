@@ -1,6 +1,27 @@
 # pages/explore_list_page.py
+from urllib.parse import urlparse, parse_qs
 from pages.base_page import BasePage
 from utils.logger import setup_logger
+
+
+def _urls_match(current_url: str, target_url: str) -> bool:
+    """判断当前 URL 与目标 URL 是否指向同一页面（path + 关键 query 相同）"""
+    cur = urlparse(current_url)
+    tgt = urlparse(target_url)
+    if cur.netloc != tgt.netloc or cur.path.rstrip('/') != tgt.path.rstrip('/'):
+        return False
+    cur_qs = parse_qs(cur.query)
+    tgt_qs = parse_qs(tgt.query)
+    # 目标 URL 的每个参数在当前 URL 中都要存在且一致
+    for key, val in tgt_qs.items():
+        if cur_qs.get(key) != val:
+            return False
+    # 当前 URL 不能有目标 URL 中没有的筛选参数（防止带着残留筛选跳过导航）
+    skip_keys = {'iconSource'}
+    for key in cur_qs:
+        if key not in tgt_qs and key not in skip_keys:
+            return False
+    return True
 
 
 class ExploreListPage(BasePage):
@@ -85,17 +106,31 @@ class ExploreListPage(BasePage):
         """导航到指定城市的 Cars 探索列表页"""
         try:
             url = f"{base_url}/en/city-{city}/cate-car/?iconSource=car"
-            self.page.goto(url, wait_until="domcontentloaded", timeout=30000)
-            self.page.wait_for_timeout(6000)
+            self.navigate_to_url(url)
         except Exception as e:
             self.logger.error(f"导航到 Cars 列表页失败: {e}")
             raise
 
     def navigate_to_url(self, url):
-        """直接导航到指定 URL"""
+        """直接导航到指定 URL，若当前页面已匹配则跳过加载"""
         try:
+            if _urls_match(self.page.url, url):
+                self.logger.info(f"当前页面已匹配目标 URL，跳过导航")
+                return
             self.page.goto(url, wait_until="domcontentloaded", timeout=30000)
-            self.page.wait_for_timeout(5000)
+            # 等待筛选栏渲染完成作为页面就绪信号，替代固定 5 秒等待
+            try:
+                self.page.locator(self.FILTER_ITEM_CONTENT).first.wait_for(
+                    state="visible", timeout=15000
+                )
+            except Exception:
+                # 某些极端筛选页面可能无筛选栏，兜底短等待
+                self.page.wait_for_timeout(2000)
+            # 等待 JS 水合完成，确保 React 事件处理器已绑定
+            try:
+                self.page.wait_for_load_state("load", timeout=10000)
+            except Exception:
+                pass
         except Exception as e:
             self.logger.error(f"导航失败: {e}")
             raise
@@ -551,7 +586,12 @@ class ExploreListPage(BasePage):
     def click_city_filter(self):
         """点击城市筛选下拉（如 Abu Dhabi）"""
         try:
-            self.page.locator(self.FILTER_ITEM_CONTENT).filter(has_text="Abu Dhabi").first.click()
+            city_el = self.page.locator(self.FILTER_ITEM_CONTENT).filter(has_text="Abu Dhabi").first
+            city_el.scroll_into_view_if_needed()
+            # 先移开鼠标避免 TopBar 下拉菜单遮挡筛选栏
+            self.page.mouse.move(0, 0)
+            self.page.wait_for_timeout(300)
+            city_el.click()
             self.page.wait_for_timeout(2000)
         except Exception as e:
             self.logger.error(f"点击城市筛选失败: {e}")
