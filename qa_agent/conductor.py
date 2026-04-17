@@ -1876,39 +1876,72 @@ class QAConductor:
         feature: str,
         keywords: list[str],
     ) -> list[str]:
-        scoped_reasons: list[str] = []
+        primary_reasons: list[str] = []
+        secondary_reasons: list[str] = []
         metadata_reasons: list[str] = []
-        normalized_path = normalize_text(script_path.as_posix())
-        if module and module in normalized_path:
-            scoped_reasons.append("路径命中 module")
+        if self._module_matches_path(script_path, module):
+            primary_reasons.append("路径命中 module")
         if site and re.search(rf"@pytest\.mark\.{re.escape(site)}\b", text):
-            scoped_reasons.append("pytest marker 命中 site")
-        if module and re.search(rf"@pytest\.mark\.{re.escape(module)}\b", text):
-            scoped_reasons.append("pytest marker 命中 module")
+            secondary_reasons.append("pytest marker 命中 site")
+        if module and self._has_module_marker(text, module):
+            primary_reasons.append("pytest marker 命中 module")
         if feature and normalize_text(feature) in searchable:
-            scoped_reasons.append("allure/title/text 命中 feature")
+            primary_reasons.append("allure/title/text 命中 feature")
         if re.search(r"@pytest\.mark\.case_id_[a-zA-Z0-9_]+", text):
             metadata_reasons.append("存在 case_id 元数据")
         if "::test_" in searchable or re.search(r"def test_[a-zA-Z0-9_]+\(", text):
             metadata_reasons.append("存在 nodeid/test 函数元数据")
         keyword_hits = [keyword for keyword in keywords if keyword in searchable]
         if keyword_hits:
-            scoped_reasons.append("关键字命中: " + ", ".join(keyword_hits[:5]))
-        if not scoped_reasons:
+            primary_reasons.append("关键字命中: " + ", ".join(keyword_hits[:5]))
+        if not primary_reasons:
             return []
-        return scoped_reasons + metadata_reasons
+        return primary_reasons + secondary_reasons + metadata_reasons
 
     def _impact_keywords(self, module: str, feature: str, change_desc: str) -> list[str]:
-        raw_tokens = [module, feature, change_desc]
+        module_terms = set(self._tokenize_impact_text(module))
+        stopwords = {"纯回归", "回归", "regression", "pure", "测试", "test", "module", "site"}
         tokens: set[str] = set()
-        for token_group in raw_tokens:
-            for token in re.split(r"[^a-zA-Z0-9\u4e00-\u9fff]+", token_group or ""):
-                normalized = normalize_text(token)
-                if not normalized:
+        for token_group in [feature, self._strip_module_aliases(change_desc, module)]:
+            for normalized in self._tokenize_impact_text(token_group):
+                if normalized in module_terms or normalized in stopwords:
                     continue
-                if len(normalized) >= 3 or re.search(r"[\u4e00-\u9fff]{2,}", normalized):
+                if self._is_meaningful_impact_keyword(normalized):
                     tokens.add(normalized)
         return sorted(tokens)
+
+    def _module_matches_path(self, script_path: Path, module: str) -> bool:
+        pattern = self._module_scope_pattern(module)
+        return bool(pattern and re.search(pattern, normalize_text(script_path.as_posix())))
+
+    def _has_module_marker(self, text: str, module: str) -> bool:
+        marker = re.sub(r"[^a-zA-Z0-9]+", "_", normalize_text(module)).strip("_")
+        return bool(marker and re.search(rf"@pytest\.mark\.{re.escape(marker)}\b", text, re.IGNORECASE))
+
+    def _module_scope_pattern(self, module: str) -> str:
+        parts = self._tokenize_impact_text(module)
+        if not parts:
+            return ""
+        body = r"[_\-\s/]+".join(re.escape(part) for part in parts)
+        return rf"(?<![a-z0-9]){body}(?![a-z0-9])"
+
+    def _strip_module_aliases(self, text: str, module: str) -> str:
+        stripped = text or ""
+        parts = self._tokenize_impact_text(module)
+        aliases = {module or "", "_".join(parts), "-".join(parts), " ".join(parts), "/".join(parts)}
+        for alias in sorted((item for item in aliases if item), key=len, reverse=True):
+            stripped = re.sub(re.escape(alias), " ", stripped, flags=re.IGNORECASE)
+        return stripped
+
+    def _tokenize_impact_text(self, value: str) -> list[str]:
+        return [
+            normalized
+            for token in re.split(r"[^a-zA-Z0-9\u4e00-\u9fff]+", value or "")
+            if (normalized := normalize_text(token))
+        ]
+
+    def _is_meaningful_impact_keyword(self, value: str) -> bool:
+        return len(value) >= 3 or bool(re.search(r"[\u4e00-\u9fff]{2,}", value))
 
     def _extract_case_refs(self, script_path: Path, text: str) -> list[dict[str, str]]:
         case_ids = re.findall(r"@pytest\.mark\.(case_id_[a-zA-Z0-9_]+)", text)

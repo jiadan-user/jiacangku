@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 from qa_agent.adapters.legacy_update import LegacyUpdateExecutor, LegacyUpdateValidator
-from qa_agent.config import load_config
+from qa_agent.config import _resolve_nested_paths, load_config
 from qa_agent.conductor import QAConductor
 from qa_agent.io import read_json, read_text
 from qa_agent.models import (
@@ -838,6 +838,21 @@ class ConductorSmokeTests(unittest.TestCase):
         self.assertTrue(result.has_fatal)
         self.assertTrue(any(check.name == "knowledge_base_manager_root" for check in result.fatals))
 
+    def test_config_path_resolution_preserves_venv_python_symlink(self) -> None:
+        project_root = self.temp_path / "project"
+        target_python = self.temp_path / "real" / "python3.13"
+        link_python = project_root / "venv" / "bin" / "python"
+        target_python.parent.mkdir(parents=True, exist_ok=True)
+        link_python.parent.mkdir(parents=True, exist_ok=True)
+        target_python.write_text("# fake interpreter\n", encoding="utf-8")
+        link_python.symlink_to(target_python)
+
+        resolved = Path(_resolve_nested_paths("venv/bin/python", project_root))
+
+        self.assertEqual(resolved, link_python)
+        self.assertTrue(resolved.is_symlink())
+        self.assertNotEqual(resolved, target_python.resolve())
+
     def test_impact_analysis_uses_scoped_reasons_not_generic_case_metadata(self) -> None:
         matching_script = self.regression_root / "test_cases" / "car" / "test_car_list.py"
         matching_script.parent.mkdir(parents=True, exist_ok=True)
@@ -875,6 +890,58 @@ class ConductorSmokeTests(unittest.TestCase):
         self.assertNotIn(str(unrelated_script), targets)
         reasons = candidates["existing_cases"][0]["details"]["impact_reasons"]
         self.assertIn("存在 case_id 元数据", reasons)
+
+    def test_marketplace_order_impact_analysis_ignores_split_module_keywords(self) -> None:
+        matching_script = self.regression_root / "test_cases" / "marketplace_order" / "test_order_flow_v2.py"
+        matching_script.parent.mkdir(parents=True, exist_ok=True)
+        matching_script.write_text(
+            "import pytest\n"
+            "@pytest.mark.case_id_order_flow_v2_tc001\n"
+            "@pytest.mark.marketplace\n"
+            "@pytest.mark.ae\n"
+            "def test_checkout_core_elements():\n"
+            "    assert True\n",
+            encoding="utf-8",
+        )
+        unrelated_marketplace = self.regression_root / "test_cases" / "marketplace" / "test_ae_marketplace_list.py"
+        unrelated_marketplace.parent.mkdir(parents=True, exist_ok=True)
+        unrelated_marketplace.write_text(
+            "import pytest\n"
+            "@pytest.mark.case_id_marketplace_list_tc001\n"
+            "@pytest.mark.marketplace\n"
+            "@pytest.mark.ae\n"
+            "def test_marketplace_list_cards():\n"
+            "    assert True\n",
+            encoding="utf-8",
+        )
+        unrelated_order = self.regression_root / "test_cases" / "ai" / "test_ai_order_copy.py"
+        unrelated_order.parent.mkdir(parents=True, exist_ok=True)
+        unrelated_order.write_text(
+            "import pytest\n"
+            "@pytest.mark.case_id_ai_order_copy_tc001\n"
+            "@pytest.mark.ae\n"
+            "def test_order_copy_is_visible():\n"
+            "    assert True\n",
+            encoding="utf-8",
+        )
+
+        conductor = self._make_conductor(impact_executor=FakeImpactVerificationExecutor(self._passed_verification_outcome()))
+        state = conductor.plan(
+            {
+                "change_mode": ChangeMode.REGRESSION.value,
+                "module": "marketplace_order",
+                "site": "ae",
+                "change_description": "marketplace_order纯回归",
+            }
+        )
+        state = conductor.advance(state.run_id)
+        candidates = read_json(state.artifacts["impact_candidates"], default={})
+        targets = {item["target"] for item in candidates["existing_cases"]}
+
+        self.assertEqual(targets, {str(matching_script)})
+        reasons = candidates["existing_cases"][0]["details"]["impact_reasons"]
+        self.assertIn("路径命中 module", reasons)
+        self.assertIn("pytest marker 命中 site", reasons)
 
     def test_mixed_mode_keeps_new_and_regression_sources_in_selector_plan(self) -> None:
         existing_script = self.regression_root / "test_cases" / "car" / "test_car_list_existing.py"

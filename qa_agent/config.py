@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -33,7 +34,9 @@ def _resolve_nested_paths(value: Any, project_root: Path) -> Any:
         if value.startswith("/") or "://" in value:
             return value
         if "/" in value or value.startswith("."):
-            return str((project_root / value).resolve())
+            # Keep virtualenv launcher symlinks intact. Path.resolve() dereferences
+            # venv/bin/python to the global interpreter and breaks installed deps.
+            return os.path.abspath(project_root / value)
     return value
 
 
