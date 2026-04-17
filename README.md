@@ -127,6 +127,39 @@ python -m qa_agent.cli status --run-id <run_id> --json
 
 `advance` 仍然保留，但它是低层单步推进命令；日常建议优先使用 `run / next / complete / status`。
 
+## 独立 Agent Memory
+
+项目内提供一个独立记忆系统，用来沉淀重要对话、用户纠错、协作偏好、设计决策和踩坑经验。它不是 QA Agent 状态机的一部分，只给 AI 提供提醒。
+
+初始化本地记忆目录：
+
+```bash
+python -m qa_agent.cli memory init
+```
+
+把一条纠错先放进候选区，不直接写成长期规则：
+
+```bash
+python -m qa_agent.cli memory suggest --text "QA Agent 不要自动判断模式，必须让用户选择"
+```
+
+查看和确认候选记忆：
+
+```bash
+python -m qa_agent.cli memory list-pending
+python -m qa_agent.cli memory promote --id <candidate_id>
+python -m qa_agent.cli memory reject --id <candidate_id>
+```
+
+搜索和导出记忆上下文：
+
+```bash
+python -m qa_agent.cli memory search "旧脚本更新"
+python -m qa_agent.cli memory export --target qa-agent --query "QA Agent 旧脚本更新"
+```
+
+记忆目录在 `.agent_memory/`，默认不会提交到 git。QA Agent 建 run 时会生成 `memory_context.md` artifact，skill instruction 会提示 AI 先读取这份上下文；但 memory 不能改变模式选择、不能跳过人工确认，也不能直接修改测试代码。
+
 ## 你会经历哪些确认点
 
 1. `senior-qa-brain`

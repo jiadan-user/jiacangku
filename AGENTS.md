@@ -482,6 +482,31 @@ warning 不阻止 `run` 创建任务，但会写入本次 run 的 `doctor_result
 
 `.qa_agent/project-memory.json` 和 `.qa_agent/notepad.md` 可以存在，但不作为推进逻辑的真相源。
 
+## 独立 Agent Memory
+
+`.agent_memory/` 是独立的本地记忆系统，用于记录用户纠错、重要对话、偏好、设计决策和踩坑经验。它可以被 QA Agent 读取，但不属于 QA Agent 状态机。
+
+关键规则：
+
+| 规则 | 说明 |
+| --- | --- |
+| 读取无感 | `plan/run` 会生成 `memory_context.md` advisory artifact |
+| 写入先候选 | `memory suggest` 只写入 `pending/candidates.jsonl` |
+| 正式写入需确认 | 使用 `memory promote` 才进入 `memories/*.jsonl` |
+| 只作提醒 | memory 不能改变 `change_mode`、phase graph、门禁或测试代码 |
+| 不进 git | `.agent_memory/` 是本地私有数据 |
+
+常用命令：
+
+```bash
+python -m qa_agent.cli memory init
+python -m qa_agent.cli memory suggest --text "..."
+python -m qa_agent.cli memory list-pending
+python -m qa_agent.cli memory promote --id <candidate_id>
+python -m qa_agent.cli memory search "..."
+python -m qa_agent.cli memory export --target qa-agent --query "..."
+```
+
 ## 并发与错误边界
 
 同一个 run 的写操作必须经过 per-run lock：
