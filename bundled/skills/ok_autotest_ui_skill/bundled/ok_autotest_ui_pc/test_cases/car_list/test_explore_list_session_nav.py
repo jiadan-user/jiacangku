@@ -211,6 +211,81 @@ def test_tc055_login_register_button(page, config):
         assert browser_title is not None, "点击登录/注册后页面不应崩溃"
         logger.info(f"✓ 登录/注册跳转验证通过，当前 URL: {current_url}")
 
+    # ========== Cleanup ==========
+    with allure.step("步骤4：关闭登录弹窗回到列表页"):
+        page.wait_for_timeout(1500)  # 等待弹窗完全展示
+        login_modal = ".LoginPC_loginModalPC___6EYR.modal.show"
+        
+        if page.locator(login_modal).count() > 0:
+            logger.info("✓ 检测到登录弹窗")
+            
+            # 方法1: 尝试点击关闭按钮
+            close_selectors = [
+                f"{login_modal} button.close",
+                f"{login_modal} .close",
+                f"{login_modal} [aria-label='Close']",
+                f"{login_modal} button[type='button']"
+            ]
+            
+            closed = False
+            for selector in close_selectors:
+                try:
+                    if page.locator(selector).count() > 0:
+                        page.locator(selector).first.click(timeout=2000)
+                        page.wait_for_timeout(1000)
+                        if page.locator(login_modal).count() == 0:
+                            logger.info("✓ 已点击弹窗关闭按钮")
+                            closed = True
+                            break
+                except Exception:
+                    continue
+            
+            # 方法2: 使用ESC键
+            if not closed and page.locator(login_modal).count() > 0:
+                for _ in range(3):
+                    page.keyboard.press("Escape")
+                    page.wait_for_timeout(800)
+                    if page.locator(login_modal).count() == 0:
+                        logger.info("✓ 已按ESC键关闭弹窗")
+                        closed = True
+                        break
+            
+            # 方法3: 使用JavaScript强制移除（最后手段）
+            if not closed and page.locator(login_modal).count() > 0:
+                try:
+                    page.evaluate("""
+                        () => {
+                            // 移除弹窗元素
+                            const modal = document.querySelector('.LoginPC_loginModalPC___6EYR.modal.show');
+                            if (modal) {
+                                modal.remove();
+                            }
+                            // 移除backdrop遮罩
+                            const backdrop = document.querySelector('.modal-backdrop');
+                            if (backdrop) {
+                                backdrop.remove();
+                            }
+                            // 恢复body滚动
+                            document.body.classList.remove('modal-open');
+                            document.body.style.overflow = '';
+                            document.body.style.paddingRight = '';
+                        }
+                    """)
+                    page.wait_for_timeout(500)
+                    logger.info("✓ 已使用JavaScript强制关闭弹窗")
+                    closed = True
+                except Exception as e:
+                    logger.error(f"JavaScript关闭弹窗失败: {e}")
+            
+            # 最终验证
+            page.wait_for_timeout(500)
+            if page.locator(login_modal).count() == 0:
+                logger.info("✓ 登录弹窗已关闭，回到列表页")
+            else:
+                logger.warning("⚠ 登录弹窗可能未完全关闭，但继续测试")
+        else:
+            logger.info("✓ 未检测到登录弹窗或已自动关闭")
+
     logger.info("✅ TC055 通过")
 
 
@@ -223,26 +298,41 @@ def test_tc055_login_register_button(page, config):
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证点击 Browse 下拉菜单后，展开分类导航列表")
 def test_tc056_browse_menu(page, config):
-    """TC056: 点击 Browse 导航菜单"""
+    """TC056: 点击 Browse 导航菜单，验证 Cars 选项存在并选中后 URL 含 cate-car"""
 
     # ========== Arrange ==========
     list_page = ExploreListPage(page)
-    logger.info("TC056: Browse 菜单")
+    logger.info("TC056: Browse 菜单 - Cars 选项验证")
 
     # ========== Act ==========
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
 
-    with allure.step("步骤2：点击 Browse 菜单"):
+    with allure.step("步骤2：点击 Browse 菜单展开下拉"):
         list_page.click_browse_menu()
-        logger.info("✓ 已点击 Browse")
+        page.wait_for_timeout(2000)
+        logger.info("✓ 已点击 Browse，下拉展开")
+
+    with allure.step("步骤3：验证下拉中存在 Cars 选项并点击"):
+        # 尝试多种选择器定位 Cars
+        cars_option = page.locator("[class*='ThirdLinkage'] a:has-text('Cars')").first
+        if not cars_option.is_visible(timeout=3000):
+            cars_option = page.locator("a[href*='cate-car']").first
+        if not cars_option.is_visible(timeout=3000):
+            cars_option = page.locator("a:has-text('Cars')").first
+        assert cars_option.is_visible(timeout=5000), \
+            "Browse 下拉中应存在 Cars 选项"
+        logger.info("✓ Cars 选项可见")
+        cars_option.click()
+        page.wait_for_timeout(2000)
+        logger.info("✓ 已选中 Cars")
 
     # ========== Assert ==========
-    with allure.step("验证页面正常（Browse 展开不崩溃）"):
+    with allure.step("验证 URL 中包含 cate-car"):
         current_url = list_page.get_current_url()
-        assert config["base_url"] in current_url, \
-            f"点击 Browse 后页面应正常，实际: {current_url}"
-        logger.info(f"✓ Browse 菜单验证通过: {current_url}")
+        assert "cate-car" in current_url, \
+            f"选中 Cars 后 URL 应包含 cate-car，实际: {current_url}"
+        logger.info(f"✓ URL 验证通过: {current_url}")
 
     logger.info("✅ TC056 通过")
 

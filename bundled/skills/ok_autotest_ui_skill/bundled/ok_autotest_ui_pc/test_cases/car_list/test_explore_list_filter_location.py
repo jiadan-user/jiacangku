@@ -661,7 +661,7 @@ def test_tc068_filter_fuel_type_petrol(page, config):
         assert "Petrol" in fuel_options or "Diesel" in fuel_options, \
             f"energyType 应包含 Petrol 或 Diesel，实际: {fuel_options}"
 
-    with allure.step("步骤2：重新导航后打开并选择 Petrol"):
+    with allure.step("步骤2：重新导航后打开 Filter 并选择 Petrol"):
         list_page.navigate_to_url(config["target_url"])
         list_page.click_filter()
         target = "Petrol" if "Petrol" in fuel_options else fuel_options[0]
