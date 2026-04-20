@@ -38,29 +38,149 @@ _CONFIG = {
 
 # ==================== Fixtures ====================
 
-@pytest.fixture(scope="function", autouse=True)
-def clear_login_state(page):
-    """
-    清除登录状态，确保每个测试用例都是访客身份
-    """
-    # 清除所有 cookies
-    page.context.clear_cookies()
-    yield
-
-
 @pytest.fixture(scope="module")
 def config():
     """测试配置（从 _CONFIG 读取）"""
     return _CONFIG
 
 
+@pytest.fixture(scope="function")
+def page(config):
+    """
+    Function 级浏览器 fixture：每个测试用例独立的访客浏览器实例
+    
+    访客场景特点：
+    1. 每个测试用例需要独立的浏览器上下文
+    2. 不加载任何认证状态，确保纯访客身份
+    3. 测试间完全隔离
+    """
+    from utils.browser_manager import BrowserManager
+    
+    browser_manager = BrowserManager()
+    _page = browser_manager.start_browser(
+        browser_type=config['browser']['type'],
+        headless=config['browser']['headless'],
+        base_url=config['base_url'],
+        viewport=config['browser']['viewport']
+    )
+    
+    # 强制清除所有登录状态
+    _page.context.clear_cookies()
+    
+    # 先访问一个页面，然后再清除storage（避免SecurityError）
+    try:
+        _page.goto(config['base_url'])
+        _page.evaluate("() => { localStorage.clear(); sessionStorage.clear(); }")
+        logger.info("✓ 已清除所有登录状态，确保访客身份")
+    except Exception as e:
+        logger.warning(f"清除storage时出错（可忽略）: {e}")
+    
+    browser_manager.mark_in_use()
+    
+    yield _page
+    
+    browser_manager.mark_released()
+    browser_manager.close_browser(_page)
+
+
 @pytest.fixture(scope="module")
-def detail_url():
+def detail_url(config):
     """
-    测试用的详情页 URL
-    使用录制时的帖子：Homemade LED Christmas hat
+    动态获取一个有效的详情页URL
+    
+    策略：
+    1. 使用预定义的候选URL列表（从safe分类手动收集）
+    2. 逐个验证URL是否有效（未删除且有Favourites按钮）
+    3. 返回第一个有效的URL
     """
-    return "https://us.ok.com/en/city-washington1/cate-home-decor/homemade-led-christmas-hat-creative-and-unique-design-enhance-the-festive-atmosphere-essential-for-f-6458646557837112/"
+    import re
+    from playwright.sync_api import sync_playwright
+    
+    logger.info("="*80)
+    logger.info("【智能URL查找】验证候选详情页URL...")
+    logger.info("="*80)
+    
+    # 候选URL列表（从非招聘/房产/车分类手动收集）
+    CANDIDATE_URLS = [
+        # Home Goods分类
+        "https://us.58v5.cn/en/city-washington1/cate-others127/40oz-tritan-bpa-free-large-tumbler-with-straw-and-handle-reusable-water-cup-6530384495922910/",
+        "https://us.58v5.cn/en/city-washington1/cate-others242/testcheng-6517268992063710/",
+        # Electronics分类
+        "https://us.58v5.cn/en/city-washington1/cate-electronics/gaming-laptop-6458646557837113/",
+    ]
+    
+    playwright = sync_playwright().start()
+    browser = playwright.chromium.launch(headless=True)
+    context = browser.new_context(viewport=config['browser']['viewport'])
+    temp_page = context.new_page()
+    
+    try:
+        # 处理Cookie（只需一次）
+        logger.info("访问首页处理Cookie...")
+        temp_page.goto("https://us.58v5.cn/en/", wait_until="domcontentloaded", timeout=30000)
+        try:
+            temp_page.get_by_role("button", name=re.compile("Accept|同意", re.I)).click(timeout=3000)
+            logger.info("✓ 已处理Cookie弹窗")
+        except:
+            logger.info("- 无Cookie弹窗")
+        temp_page.wait_for_timeout(1000)
+        
+        # 验证候选URL
+        for idx, candidate_url in enumerate(CANDIDATE_URLS):
+            logger.info(f"\n候选URL ({idx+1}/{len(CANDIDATE_URLS)}): {candidate_url}")
+            logger.info(f"  验证详情页有效性...")
+            
+            try:
+                temp_page.goto(candidate_url, wait_until="domcontentloaded", timeout=20000)
+                temp_page.wait_for_timeout(2000)
+                
+                # 检查是否显示"已删除"
+                deleted_indicator = temp_page.get_by_text("The content has been deleted")
+                if deleted_indicator.count() > 0 and deleted_indicator.is_visible(timeout=1000):
+                    logger.info(f"  ✗ 帖子已删除，跳过")
+                    continue
+                
+                # 检查Favourites按钮是否存在
+                fav_btn = temp_page.get_by_text("Favourites", exact=True)
+                if fav_btn.count() > 0:
+                    try:
+                        if fav_btn.first.is_visible(timeout=3000):
+                            logger.info(f"  ✓ 找到有效详情页！")
+                            logger.info(f"  ✓ URL: {candidate_url}")
+                            logger.info("="*80)
+                            return candidate_url
+                        else:
+                            logger.info(f"  ✗ Favourites按钮存在但不可见")
+                    except:
+                        logger.info(f"  ✗ Favourites按钮检查超时")
+                else:
+                    logger.info(f"  ✗ 未找到Favourites按钮")
+            
+            except Exception as e:
+                logger.warning(f"  访问失败: {str(e)[:100]}")
+                continue
+        
+        # 如果所有候选URL都失效
+        error_msg = f"所有 {len(CANDIDATE_URLS)} 个候选URL都无效"
+        logger.error(error_msg)
+        logger.error("可能原因：")
+        logger.error("  1. 候选URL的帖子都已被删除")
+        logger.error("  2. US站点网络问题")
+        logger.error("  3. 请更新CANDIDATE_URLS列表")
+        pytest.skip(f"智能URL查找失败: {error_msg}")
+        
+    except Exception as e:
+        error_msg = f"智能URL查找异常: {e}"
+        logger.error(error_msg)
+        import traceback
+        logger.error(traceback.format_exc())
+        pytest.skip(error_msg)
+    finally:
+        # 清理临时浏览器
+        temp_page.close()
+        context.close()
+        browser.close()
+        playwright.stop()
 
 
 @pytest.fixture(scope="function")
@@ -126,22 +246,22 @@ class TestDetailPageFavouritesVisitor:
     @pytest.mark.p0
     @pytest.mark.us
     @pytest.mark.case_id_favourites_tc002
-    @pytest.mark.order(1)  # 确保在登录测试之前执行
     def test_visitor_click_favourites_triggers_login_dialog(self, page, config, detail_url, favourites_page):
         """TC002: 访客点击收藏触发登录弹窗"""
         
         with allure.step("步骤1：访客状态下访问详情页"):
             page.goto(detail_url)
             page.wait_for_load_state("domcontentloaded")
+            page.wait_for_timeout(2000)  # 额外等待页面稳定
             favourites_page.handle_cookie_popup()
 
         with allure.step("步骤2：点击收藏按钮"):
             favourites_page.click_favourites_button()
-            page.wait_for_timeout(2000)
+            page.wait_for_timeout(3000)  # 增加等待时间
 
-        with allure.step("步骤3：验证登录弹窗弹出（如果已登录则跳过）"):
-            if not favourites_page.is_login_dialog_visible():
-                pytest.skip("当前已处于登录状态，跳过访客登录弹窗测试")
+        with allure.step("步骤3：验证登录弹窗弹出"):
+            # 使用更可靠的检测方法（邮箱输入框）
+            assert favourites_page.is_login_dialog_visible(), "登录弹窗未弹出"
             logger.info("✓ 登录弹窗已弹出")
 
         with allure.step("步骤4：验证登录弹窗包含必要元素"):
@@ -164,7 +284,6 @@ class TestDetailPageFavouritesVisitor:
     @pytest.mark.p0
     @pytest.mark.us
     @pytest.mark.case_id_favourites_tc003
-    @pytest.mark.order(4)  # 在其他访客测试之后执行（因为会登录）
     def test_visitor_login_in_dialog_and_auto_favourite(self, page, config, detail_url, favourites_page):
         """TC003: 访客在登录弹窗中登录并自动收藏"""
         
@@ -189,8 +308,8 @@ class TestDetailPageFavouritesVisitor:
             logger.info("✓ 登录弹窗已关闭")
 
         with allure.step("步骤5：验证登录成功并完成收藏"):
-            # 验证页面未刷新
-            assert "/cate-home-decor/" in page.url, f"页面 URL 异常：{page.url}"
+            # 验证页面未跳转到其他页面
+            assert detail_url in page.url, f"页面 URL 异常：{page.url}"
             logger.info(f"✓ 页面未刷新，URL 正确：{page.url}")
             
             # 注意：Toast 可能显示很快，不做强制断言
@@ -210,23 +329,23 @@ class TestDetailPageFavouritesVisitor:
     @pytest.mark.p1
     @pytest.mark.us
     @pytest.mark.case_id_favourites_tc004
-    @pytest.mark.order(2)  # 确保在登录测试之前执行
     def test_visitor_close_login_dialog(self, page, config, detail_url, favourites_page):
         """TC004: 访客取消登录弹窗（关闭按钮）"""
         
         with allure.step("步骤1：访客状态下访问详情页"):
             page.goto(detail_url)
             page.wait_for_load_state("domcontentloaded")
+            page.wait_for_timeout(2000)  # 额外等待页面稳定
             favourites_page.handle_cookie_popup()
             logger.info("✓ 访问详情页")
 
         with allure.step("步骤2：点击收藏按钮触发登录弹窗"):
             favourites_page.click_favourites_button()
-            page.wait_for_timeout(2000)
+            page.wait_for_timeout(3000)  # 增加等待时间
 
-        with allure.step("步骤3：验证登录弹窗弹出（如果已登录则跳过）"):
-            if not favourites_page.is_login_dialog_visible():
-                pytest.skip("当前已处于登录状态，跳过访客关闭登录弹窗测试")
+        with allure.step("步骤3：验证登录弹窗弹出"):
+            # 使用更可靠的检测方法（邮箱输入框）
+            assert favourites_page.is_login_dialog_visible(), "登录弹窗未弹出"
             logger.info("✓ 登录弹窗已弹出")
 
         with allure.step("步骤4：点击登录弹窗右上角关闭按钮"):
@@ -259,22 +378,22 @@ class TestDetailPageFavouritesVisitor:
     @pytest.mark.p2
     @pytest.mark.us
     @pytest.mark.case_id_favourites_tc016
-    @pytest.mark.order(3)  # 确保在登录测试之前执行
     def test_visitor_close_dialog_by_clicking_overlay(self, page, config, detail_url, favourites_page):
         """TC016: 登录弹窗点击遮罩层关闭"""
         
         with allure.step("步骤1：访客状态下访问详情页"):
             page.goto(detail_url)
             page.wait_for_load_state("domcontentloaded")
+            page.wait_for_timeout(2000)  # 额外等待页面稳定
             favourites_page.handle_cookie_popup()
 
         with allure.step("步骤2：点击收藏按钮触发登录弹窗"):
             favourites_page.click_favourites_button()
-            page.wait_for_timeout(2000)
+            page.wait_for_timeout(3000)  # 增加等待时间
 
-        with allure.step("步骤3：验证登录弹窗弹出（如果已登录则跳过）"):
-            if not favourites_page.is_login_dialog_visible():
-                pytest.skip("当前已处于登录状态，跳过访客遮罩层关闭测试")
+        with allure.step("步骤3：验证登录弹窗弹出"):
+            # 使用更可靠的检测方法（邮箱输入框）
+            assert favourites_page.is_login_dialog_visible(), "登录弹窗未弹出"
             logger.info("✓ 登录弹窗已弹出")
 
         with allure.step("步骤4：点击弹窗外的遮罩层"):

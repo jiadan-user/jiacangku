@@ -34,7 +34,7 @@ _CONFIG = {
     "site_name": "阿联酋站",
     "role": "visitor",
     "user_name": "visitor_ae",
-    "base_url": "https://ae.ok.com",
+    "base_url": "https://ae.58v5.cn",
     "test_account": None,  # 无需登录
     "locale": "en-AE",
     "currency": "AED",

@@ -259,7 +259,6 @@ class BrowserManager:
         viewport=None,
         geolocation=None,
         permissions=None,
-        storage_state=None,
     ):
         """
         启动浏览器并创建页面（静默执行）
@@ -273,7 +272,6 @@ class BrowserManager:
                          None 则使用默认纽约坐标
             permissions: 权限列表 ["geolocation", "notifications"]，
                          None 则默认只授予 ["notifications"]
-            storage_state: Storage state文件路径（用于恢复登录状态）
 
         Returns:
             Page: Playwright 页面对象
@@ -286,7 +284,6 @@ class BrowserManager:
             viewport=viewport,
             geolocation=geolocation,
             permissions=permissions,
-            storage_state=storage_state,
         )
 
     def _start_browser_core(
@@ -297,7 +294,6 @@ class BrowserManager:
         viewport=None,
         geolocation=None,
         permissions=None,
-        storage_state=None,
     ):
         """实际启动浏览器的核心逻辑（在当前线程中调用）"""
         try:
@@ -332,7 +328,6 @@ class BrowserManager:
             # 添加启动参数以减少被检测
             launch_options = {
                 'headless': headless,
-                'timeout': int(os.environ.get("PLAYWRIGHT_BROWSER_LAUNCH_TIMEOUT_MS", "300000")),
                 'args': [
                     '--disable-blink-features=AutomationControlled',  # 禁用自动化控制标志
                     '--disable-dev-shm-usage',
@@ -398,11 +393,6 @@ class BrowserManager:
                 geolocation if geolocation is not None
                 else {'longitude': -74.006, 'latitude': 40.7128}  # New York default
             )
-            
-            # 设置storage state（如果提供）
-            if storage_state:
-                context_options['storage_state'] = storage_state
-                logger.info(f"[AUTH] 使用storage state: {storage_state}")
             
             self.context = self.browser.new_context(**context_options)
             

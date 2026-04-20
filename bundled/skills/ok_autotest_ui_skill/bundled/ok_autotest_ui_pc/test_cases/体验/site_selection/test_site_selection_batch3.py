@@ -24,7 +24,7 @@ _CONFIG = {
     "site_name": "OK.com 地区选择页",
     "role": "visitor",
     "user_name": "guest",
-    "base_url": "https://www.ok.com/biz/en/site",
+    "base_url": "https://home.58v5.cn/biz/en/site",
     "test_account": None,
     "locale": "en",
     "currency": "USD",

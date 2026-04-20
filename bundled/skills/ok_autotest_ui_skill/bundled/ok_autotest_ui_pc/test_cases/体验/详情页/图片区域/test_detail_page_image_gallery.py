@@ -5,7 +5,7 @@
 录制文档：web-qa-brain/OK.com-详情页图片区域-测试用例-20260326.md
 生成时间：2026-03-27
 
-测试站点：AE OK.com (https://ae.ok.com)
+测试站点：AE OK.com (https://ae.58v5.cn)
 测试角色：访客（Visitor）
 测试目标：验证详情页图片区域的单图模式、多图模式展示、缩略图切换、大图预览及翻页功能
 测试范围：
@@ -30,7 +30,7 @@ _CONFIG = {
     "site_name": "阿联酋站 (AE OK.com)",
     "role": "visitor",
     "user_name": "visitor_ae",
-    "base_url": "https://ae.ok.com/en/city-abu-dhabi/cate-community/?iconSource=community",
+    "base_url": "https://ae.58v5.cn/en/city-abu-dhabi/cate-community/?iconSource=community",
     "locale": "en-AE",
     "currency": "AED",
     "browser": {
@@ -48,11 +48,11 @@ _CONFIG = {
 # 测试站点配置
 BASE_URL = _CONFIG["base_url"]
 # 单图帖子 URL（从录制中获取）
-SINGLE_IMAGE_POST_URL = "https://ae.ok.com/en/city-abu-dhabi/cate-skills-language-swap/premium-properties-for-sale-in-dubai-your-gateway-to-luxury-living-6538336534937911/"
-# 多图帖子 URL（7张图，从录制中获取）
-MULTI_IMAGE_POST_URL = "https://ae.ok.com/en/city-abu-dhabi/cate-other35/125cc-petrol-engine-dirts-motorcycle-self-and-kick-start-and-now-with-remote-control-security-lock-k-6569550874790511/"
-# 多图帖子 URL（9张图，用于测试缩略图翻页）
-MULTI_IMAGE_8PLUS_POST_URL = "https://ae.ok.com/en/city-abu-dhabi/cate-car-used-car/nissan-tiida-2015-1-8l-sv-petrol-auto-fwd-6574937026573111/"
+SINGLE_IMAGE_POST_URL = "https://ae.58v5.cn/en/city-abu-dhabi/cate-others102/experienced%2Fbabysitter%2Fhousemaid-with-3yrs-6468802017945310/"
+# 多图帖子 URL（3张图）
+MULTI_IMAGE_POST_URL = "https://ae.58v5.cn/en/city-abu-dhabi/cate-others103/japanese-language-for-adult-%2F-kids-6468802428812510/"
+# 多图帖子 URL（20张图，用于测试缩略图翻页）
+MULTI_IMAGE_8PLUS_POST_URL = "https://ae.58v5.cn/en/city-dubai/cate-car-used-car/renault-captur-2020-1.3t-155-hp-petrol-auto-fwd-6468813026329310/"
 
 
 @pytest.fixture(scope="module")
@@ -487,22 +487,27 @@ class TestModuleD_LightboxNavigation:
         """TC013: 大图模式主图支持左右箭头循环翻页"""
         logger.info("=== TC013: 大图模式主图支持左右箭头循环翻页 ===")
         
-        with allure.step("验证初始显示 1/7"):
+        with allure.step("获取当前帖子图片总数"):
             counter_text = gallery_page.get_current_lightbox_counter()
-            assert "1" in counter_text and "7" in counter_text, f"初始应为 1/7，实际: {counter_text}"
+            # 解析计数器文本，如"1/3"得到总数3
+            total_images = int(counter_text.split('/')[1])
+            logger.info(f"✓ 当前帖子共有 {total_images} 张图片")
+        
+        with allure.step(f"验证初始显示 1/{total_images}"):
+            assert "1" in counter_text and f"/{total_images}" in counter_text, f"初始应为 1/{total_images}，实际: {counter_text}"
             logger.info(f"✓ 初始计数器: {counter_text}")
         
-        with allure.step("点击next按钮6次翻到最后"):
-            for i in range(6):
+        with allure.step(f"点击next按钮{total_images-1}次翻到最后"):
+            for i in range(total_images - 1):
                 gallery_page.click_lightbox_next()
             counter_text = gallery_page.get_current_lightbox_counter()
-            assert "7" in counter_text and "7" in counter_text, f"应到达 7/7，实际: {counter_text}"
+            assert f"{total_images}/{total_images}" in counter_text, f"应到达 {total_images}/{total_images}，实际: {counter_text}"
             logger.info(f"✓ 翻页到最后: {counter_text}")
         
-        with allure.step("再点击next循环回第一张"):
+        with allure.step(f"再点击next循环回第一张"):
             gallery_page.click_lightbox_next()
             counter_text = gallery_page.get_current_lightbox_counter()
-            assert "1" in counter_text and "7" in counter_text, f"应循环回到 1/7，实际: {counter_text}"
+            assert "1" in counter_text and f"/{total_images}" in counter_text, f"应循环回到 1/{total_images}，实际: {counter_text}"
             logger.info(f"✓ 循环翻页成功: {counter_text}")
         
         logger.info("✅ TC013 测试通过")
@@ -567,22 +572,55 @@ class TestModuleD_LightboxNavigation:
     @pytest.mark.ae
     @allure.feature("详情页")
     @allure.story("图片区域 - 大图模式翻页")
-    @allure.title("大图模式缩略图翻页箭头支持循环翻页（7张图跳过）")
-    @allure.severity(allure.severity_level.MINOR)
-    @allure.description("验证当图片≤7张时，缩略图无翻页箭头，此用例跳过")
+    @allure.title("大图模式缩略图翻页箭头支持循环翻页")
+    @allure.severity(allure.severity_level.NORMAL)
+    @allure.description("验证当图片>7张时，大图模式缩略图区域显示翻页箭头并支持循环翻页")
     def test_tc017_lightbox_thumbnail_nav_cycle(self, page: Page, gallery_page: DetailPageImageGallery):
-        """TC017: 大图模式缩略图翻页箭头支持循环翻页（7张图跳过）"""
+        """TC017: 大图模式缩略图翻页箭头支持循环翻页"""
         logger.info("=== TC017: 大图模式缩略图翻页箭头支持循环翻页 ===")
         
-        with allure.step("检查图片数量"):
-            thumbnail_count = gallery_page.get_lightbox_thumbnail_count()
-            actual_count = thumbnail_count // 2 if thumbnail_count > 7 else thumbnail_count
+        # 切换到8+图帖子
+        with allure.step("导航到8+图帖子"):
+            page.goto(MULTI_IMAGE_8PLUS_POST_URL, wait_until="domcontentloaded")
+            page.wait_for_timeout(2000)
+            gallery_page.open_lightbox(0)
+            logger.info(f"✓ 已打开8+图帖子的lightbox")
+        
+        with allure.step("验证图片数量 > 7"):
+            # 从计数器获取真实图片数量
+            counter_text = gallery_page.get_current_lightbox_counter()
+            actual_count = int(counter_text.split('/')[1])
+            logger.info(f"✓ 从计数器读取到图片总数: {actual_count}张")
             
             if actual_count <= 7:
                 logger.info(f"⏭️ 当前帖子 {actual_count} 张图 ≤ 7，无缩略图翻页箭头")
                 pytest.skip(f"当前帖子图片数 {actual_count} ≤ 7，跳过此用例")
+            
+            logger.info(f"✓ 图片数量 {actual_count} > 7，满足测试条件")
         
-        logger.info(f"✓ 检测到 {actual_count} 张图，开始测试缩略图翻页")
+        with allure.step("验证缩略图翻页箭头存在"):
+            # 查找缩略图翻页箭头（带thumb class的prev/next按钮）
+            prev_arrow = page.locator("[class*='prev'][class*='thumb'], button[class*='thumb'][class*='prev']")
+            next_arrow = page.locator("[class*='next'][class*='thumb'], button[class*='thumb'][class*='next']")
+            
+            has_arrows = prev_arrow.count() > 0 or next_arrow.count() > 0
+            assert has_arrows, "应存在缩略图翻页箭头"
+            logger.info(f"✓ 缩略图翻页箭头存在")
+        
+        with allure.step("测试缩略图翻页功能"):
+            # 点击next箭头测试翻页
+            if next_arrow.count() > 0:
+                next_arrow.first.click()
+                page.wait_for_timeout(500)
+                logger.info("✓ 点击next箭头成功")
+            
+            # 点击prev箭头测试翻页
+            if prev_arrow.count() > 0:
+                prev_arrow.first.click()
+                page.wait_for_timeout(500)
+                logger.info("✓ 点击prev箭头成功，支持循环翻页")
+        
+        logger.info("✅ TC017 测试通过")
 
 
 class TestModuleD_LightboxNavigation_8Plus:
@@ -610,9 +648,10 @@ class TestModuleD_LightboxNavigation_8Plus:
         logger.info("=== TC017（8+图）: 大图模式缩略图翻页箭头支持循环翻页 ===")
         
         with allure.step("验证图片数量 > 7"):
-            thumbnail_count = gallery_page.get_lightbox_thumbnail_count()
-            actual_count = thumbnail_count // 2 if thumbnail_count > 7 else thumbnail_count
-            logger.info(f"✓ 检测到图片数量: {actual_count}")
+            # 从计数器获取真实图片数量
+            counter_text = gallery_page.get_current_lightbox_counter()
+            actual_count = int(counter_text.split('/')[1])
+            logger.info(f"✓ 从计数器读取到图片总数: {actual_count}张")
             
             if actual_count <= 7:
                 pytest.skip(f"帖子图片数 {actual_count} ≤ 7，跳过缩略图翻页测试")

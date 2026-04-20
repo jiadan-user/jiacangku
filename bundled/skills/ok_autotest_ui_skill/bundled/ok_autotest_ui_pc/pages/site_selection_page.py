@@ -15,7 +15,7 @@ class SiteSelectionPage(BasePage):
     def navigate_to_site_selection_page(self):
         """导航到地区选择页面"""
         try:
-            self.goto("https://www.ok.com/biz/en/site", timeout=30000)
+            self.goto("https://home.58v5.cn/biz/en/site", timeout=30000)
             self.wait_for_page_load()
         except Exception as e:
             self.logger.error(f"打开地区选择页面失败: {e}")
@@ -63,18 +63,18 @@ class SiteSelectionPage(BasePage):
             self.page.wait_for_load_state("domcontentloaded", timeout=10000)
             
             # 第2层：等待关键元素出现（至少有一个国家链接）
-            self.page.wait_for_selector("a[href*='ok.com']", state="visible", timeout=10000)
+            self.page.wait_for_selector("a[href*='58v5.cn']", state="visible", timeout=10000)
             
             # 第3层：额外等待确保所有元素渲染完成
             self.page.wait_for_timeout(800)
             
             result = self.page.evaluate("""
                 () => {
-                    const links = Array.from(document.querySelectorAll('a[href*="ok.com"]'));
+                    const links = Array.from(document.querySelectorAll('a[href*="58v5.cn"]'));
                     return links.map(link => ({
                         text: link.textContent.trim(),
                         url: link.href
-                    })).filter(item => item.url.match(/^https:\\/\\/[a-z]{2}\\.ok\\.com\\/?$/));
+                    })).filter(item => item.url.match(/^https:\\/\\/[a-z]{2}\\.58v5\\.cn\\/?$/));
                 }
             """)
             return result
@@ -103,7 +103,7 @@ class SiteSelectionPage(BasePage):
             True 如果格式正确，否则 False
         """
         try:
-            expected_pattern = f"https://{country_code}.ok.com"
+            expected_pattern = f"https://{country_code}.58v5.cn"
             return url.startswith(expected_pattern)
         except Exception as e:
             self.logger.error(f"验证URL格式失败: {e}")

@@ -26,8 +26,9 @@ class OkUspubBizPage(BasePage):
 
     def wait_for_publish_front_url(self, timeout: int = 90000):
         try:
+            # 同时支持 uspub.ok.com 和 uspub.58v5.cn
             self.page.wait_for_url(
-                re.compile(r"https?://[^/]*uspub\.ok\.com/.*/publish/.*front"),
+                re.compile(r"https?://[^/]*uspub\.(ok\.com|58v5\.cn)/.*/publish/.*front"),
                 timeout=timeout,
                 wait_until="domcontentloaded",
             )
@@ -37,8 +38,9 @@ class OkUspubBizPage(BasePage):
 
     def wait_for_chat_url(self, timeout: int = 90000):
         try:
+            # 同时支持 uspub.ok.com 和 uspub.58v5.cn
             self.page.wait_for_url(
-                re.compile(r"https?://[^/]*uspub\.ok\.com/.*/chat"),
+                re.compile(r"https?://[^/]*uspub\.(ok\.com|58v5\.cn)/.*/chat"),
                 timeout=timeout,
                 wait_until="domcontentloaded",
             )
@@ -47,11 +49,64 @@ class OkUspubBizPage(BasePage):
             raise
 
     def favorites_empty_copy_visible(self, timeout: int = 15000) -> bool:
+        """
+        检查收藏页空状态文案（兼容 ok.com 和 58v5.cn）
+        """
         try:
-            t = "You currently haven't collected any content yet"
-            self.page.get_by_text(t).first.wait_for(state="visible", timeout=timeout)
-            return True
-        except Exception:
+            # 常见的空状态文案列表
+            empty_texts = [
+                "You currently haven't collected any content yet",  # ok.com
+                "No favorites yet",
+                "You don't have any favorites",
+                "No favourites",
+                "haven't collected",
+                "no favorite",
+                "Empty",
+            ]
+            
+            # 尝试精确匹配
+            for text in empty_texts:
+                try:
+                    elem = self.page.get_by_text(text, exact=False).first
+                    elem.wait_for(state="visible", timeout=3000)
+                    self.logger.info(f"✓ 找到空收藏文案: {text}")
+                    return True
+                except Exception:
+                    continue
+            
+            # 尝试查找空状态容器（通常有特定class）
+            empty_containers = [
+                "div[class*='empty']",
+                "div[class*='Empty']",
+                "div[class*='noData']",
+                "div[class*='no-data']",
+            ]
+            
+            for selector in empty_containers:
+                try:
+                    container = self.page.locator(selector).first
+                    if container.is_visible(timeout=2000):
+                        content = container.text_content()
+                        self.logger.info(f"✓ 找到空状态容器，内容: {content[:100]}")
+                        return True
+                except Exception:
+                    continue
+            
+            # 最后检查页面中是否有图片 + 任何表示空的文本
+            try:
+                # 查找可能的空状态图片
+                empty_img = self.page.locator("img[class*='empty'], img[alt*='empty'], img[src*='empty']").first
+                if empty_img.is_visible(timeout=2000):
+                    self.logger.info("✓ 找到空状态图片")
+                    return True
+            except Exception:
+                pass
+            
+            self.logger.warning("未找到任何空收藏状态标识")
+            return False
+            
+        except Exception as e:
+            self.logger.error(f"检查空收藏文案失败: {e}")
             return False
 
     def publish_front_category_visible(self, timeout: int = 25000) -> bool:

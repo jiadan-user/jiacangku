@@ -5,7 +5,7 @@
 录制文档：web-qa-brain/OK.com-详情页核心信息区域-测试用例-20260327.md
 生成时间：2026-03-31
 
-测试站点：US OK.com (https://us.ok.com)
+测试站点：US OK.com (https://us.58v5.cn)
 测试角色：访客（Visitor）
 测试目标：验证详情页地点区域的展示、位置、图标
 测试范围：模块 C - 地点区域（TC012-TC018）
@@ -25,7 +25,7 @@ _CONFIG = {
     "site_name": "美国站 (US OK.com)",
     "role": "visitor",
     "user_name": "visitor_us",
-    "base_url": "https://us.ok.com/en/city-washington1/cate/",
+    "base_url": "https://us.58v5.cn/en/city-washington1/cate/",
     "locale": "en-US",
     "currency": "USD",
     "browser": {

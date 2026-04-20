@@ -21,7 +21,7 @@ _CONFIG = {
     "site_name": "美国站 (US OK.com)",
     "role": "visitor",
     "user_name": "us_visitor_rec",
-    "base_url": "https://us.ok.com",
+    "base_url": "https://us.58v5.cn",
     "test_account": {
         "username": "shenchang@58.com",
         "password": "123456Tt"
@@ -87,6 +87,29 @@ def page(config):
     playwright.stop()
 
 
+@pytest.fixture(scope="module")
+def valid_detail_url_with_recommendations():
+    """
+    提供一个有推荐模块的有效详情页URL
+    
+    策略：使用候选URL列表
+    """
+    # 候选详情页URL（从分享功能测试中复用）
+    CANDIDATE_URLS = [
+        "https://us.58v5.cn/en/city-washington1/cate-others242/testcheng-6517268992063710/",
+        "https://us.58v5.cn/en/city-washington1/cate-others127/40oz-tritan-bpa-free-large-tumbler-with-straw-and-handle-reusable-water-cup-6530384495922910/",
+    ]
+    
+    logger.info("="*80)
+    logger.info("【推荐模块】获取有效详情页URL...")
+    logger.info("="*80)
+    
+    url = CANDIDATE_URLS[0]
+    logger.info(f"✓ 使用详情页URL: {url}")
+    logger.info("="*80)
+    return url
+
+
 @pytest.fixture(scope="function", autouse=True)
 def reset_page_state(page):
     """
@@ -101,7 +124,6 @@ def reset_page_state(page):
 # Test Cases - Batch 2
 # ====================================================
 
-@pytest.mark.case_id_tiyan_tiyan_001
 @pytest.mark.case_id("TC-REC-007")
 @pytest.mark.p0
 @pytest.mark.smoke
@@ -135,7 +157,7 @@ def reset_page_state(page):
 - 弹窗右上角有关闭按钮
 - 背景页面不跳转
 """)
-def test_tc_rec_007_visitor_favorite_triggers_login_modal(page, config):
+def test_tc_rec_007_visitor_favorite_triggers_login_modal(page, config, valid_detail_url_with_recommendations):
     """
     TC-REC-007: 访客状态下点击推荐卡片收藏图标弹出登录弹窗
     """
@@ -143,14 +165,14 @@ def test_tc_rec_007_visitor_favorite_triggers_login_modal(page, config):
     logger.info("TC-REC-007: 点击收藏图标弹出登录弹窗（访客状态）")
     logger.info("=" * 80)
     logger.info(f"站点: {_CONFIG['site'].upper()} ({_CONFIG['site_name']})")
-    logger.info(f"详情页: https://us.ok.com/en/city-washington1/cate-other-home-garden/ultrasonic-pest-repeller-mosquito-repellent-household-plug-in-intelligent-night-light-1-pcs-6459468450636912/")
+    detail_url = valid_detail_url_with_recommendations  # 使用动态URL
+    logger.info(f"详情页: {detail_url}")
     logger.info("=" * 80)
     
     # 初始化 Page Object
     rec_page = DetailPageRecommendation(page)
     
     with allure.step("步骤1：访客身份打开详情页"):
-        detail_url = "https://us.ok.com/en/city-washington1/cate-other-home-garden/ultrasonic-pest-repeller-mosquito-repellent-household-plug-in-intelligent-night-light-1-pcs-6459468450636912/"
         rec_page.navigate_to_detail_page(detail_url)
         logger.info(f"✓ 打开详情页成功: {detail_url}")
     

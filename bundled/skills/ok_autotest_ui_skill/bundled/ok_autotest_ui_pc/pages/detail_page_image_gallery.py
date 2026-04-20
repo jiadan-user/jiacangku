@@ -19,27 +19,32 @@ class DetailPageImageGallery:
 
     @property
     def gallery_container(self) -> Locator:
-        """图片容器区域"""
-        return self.page.locator("div").filter(has=self.page.locator("img[alt*='65'][class*='']").first)
+        """图片容器区域（多图模式的MulPicture容器或单图的SiglePicture容器）"""
+        # 优先查找多图容器，如果没有则查找单图容器
+        mul_container = self.page.locator("[class*='MulPicture']").first
+        if mul_container.count() > 0:
+            return mul_container
+        return self.page.locator("[class*='SiglePicture'], [class*='SinglePicture']").first
 
     def thumbnail(self, index: int = 0) -> Locator:
-        """缩略图（支持索引）"""
-        return self.page.locator("img[alt*='65']").nth(index)
+        """缩略图（支持索引）- 多图容器内的img"""
+        return self.page.locator("[class*='MulPicture'] img").nth(index)
 
     @property
     def all_thumbnails(self) -> Locator:
-        """所有缩略图"""
-        return self.page.locator("img[alt*='65']")
+        """所有缩略图 - 多图容器内的所有img"""
+        return self.page.locator("[class*='MulPicture'] img")
 
     @property
     def single_image(self) -> Locator:
-        """单图模式的主图"""
-        return self.page.locator("img[alt*='65']").first
+        """单图模式的主图 - 在SiglePicture容器中"""
+        # 单图在SiglePicture或SinglePicture容器中（注意可能的拼写错误）
+        return self.page.locator("[class*='SiglePicture'] img, [class*='SinglePicture'] img").first
 
     @property
     def image_count_badge(self) -> Locator:
-        """图片数量徽章（多图模式）"""
-        return self.page.locator("generic:has-text('7')")
+        """图片数量徽章（多图模式）- 通常显示如"1/7"的文本"""
+        return self.page.locator("text=/\\d+\\/\\d+/")
 
     # ========== 大图模式（Lightbox）定位器 ==========
 
@@ -50,13 +55,13 @@ class DetailPageImageGallery:
 
     @property
     def lightbox_image(self) -> Locator:
-        """大图主图"""
-        return self.lightbox_dialog.locator("img[alt*='65']").first
+        """大图主图 - lightbox内的主要展示图片"""
+        return self.lightbox_dialog.locator("img").first
 
     @property
     def lightbox_close_button(self) -> Locator:
         """大图关闭按钮"""
-        return self.lightbox_dialog.locator("img[alt='close-icon']")
+        return self.lightbox_dialog.locator("img[alt='close-icon'], button[aria-label*='close'], button[aria-label*='Close']")
 
     @property
     def lightbox_prev_button(self) -> Locator:
@@ -77,10 +82,8 @@ class DetailPageImageGallery:
     @property
     def lightbox_thumbnails(self) -> Locator:
         """大图模式缩略图区域的所有缩略图"""
-        # 大图dialog内的所有缩略图（在第2个generic容器中）
-        # 从MCP录制看到，缩略图在 generic [ref=e239] 下
-        # 更通用的定位：dialog内所有img元素去除第一个（第一个是主图）
-        return self.lightbox_dialog.locator("img[alt*='65']")
+        # lightbox内的缩略图容器中的img
+        return self.lightbox_dialog.locator("[class*='thumb'] img, [class*='Thumb'] img")
 
     def lightbox_thumbnail(self, index: int) -> Locator:
         """大图模式指定缩略图"""
@@ -88,7 +91,7 @@ class DetailPageImageGallery:
 
     # ========== 交互方法 ==========
 
-    def wait_page_load(self, timeout: int = 15000):
+    def wait_page_load(self, timeout: int = 30000):
         """等待详情页加载完成"""
         logger.info("[DEBUG] 等待详情页加载完成...")
         self.page.wait_for_load_state("networkidle", timeout=timeout)
@@ -151,10 +154,23 @@ class DetailPageImageGallery:
         return text
 
     def get_thumbnail_count(self) -> int:
-        """获取详情页缩略图数量"""
-        count = self.all_thumbnails.count()
-        logger.info(f"[DEBUG] 详情页缩略图数量: {count}")
-        return count
+        """获取详情页缩略图数量（多图模式）或图片数量（单图模式）"""
+        # 先尝试获取多图模式的缩略图
+        mul_count = self.all_thumbnails.count()
+        
+        if mul_count > 0:
+            logger.info(f"[DEBUG] 详情页缩略图数量（多图）: {mul_count}")
+            return mul_count
+        
+        # 如果没有多图缩略图，检查是否有单图
+        single_count = self.page.locator("[class*='SiglePicture'] img, [class*='SinglePicture'] img").count()
+        
+        if single_count > 0:
+            logger.info(f"[DEBUG] 详情页图片数量（单图）: {single_count}")
+            return single_count
+        
+        logger.info(f"[DEBUG] 详情页图片数量: 0")
+        return 0
 
     def get_lightbox_thumbnail_count(self) -> int:
         """获取大图模式缩略图数量"""
@@ -165,9 +181,17 @@ class DetailPageImageGallery:
     def is_single_image_mode(self) -> bool:
         """判断是否为单图模式"""
         try:
-            count = self.get_thumbnail_count()
-            is_single = count == 1
-            logger.info(f"[DEBUG] 是否为单图模式: {is_single}")
+            # 检查是否有MulPicture容器（多图）
+            mul_count = self.all_thumbnails.count()
+            if mul_count > 0:
+                logger.info(f"[DEBUG] 是多图模式: {mul_count}张")
+                return False
+            
+            # 检查是否有SiglePicture容器（单图）
+            single_count = self.page.locator("[class*='SiglePicture'] img, [class*='SinglePicture'] img").count()
+            is_single = single_count == 1
+            
+            logger.info(f"[DEBUG] 是否为单图模式: {is_single} (单图数量: {single_count})")
             return is_single
         except Exception as e:
             logger.error(f"[ERROR] 判断单图模式失败: {e}")

@@ -1,5 +1,6 @@
 # pages/marketplace_list_page_ae.py
 import re
+from typing import Optional
 from urllib.parse import urljoin
 
 from pages.base_page import BasePage
@@ -964,7 +965,7 @@ class MarketplaceListPageAe(BasePage):
             self.logger.error(f"点击下一页失败: {e}")
             raise
     
-    def _marketplace_list_url_for_page(self, page_num: int) -> str | None:
+    def _marketplace_list_url_for_page(self, page_num: int) -> Optional[str]:
         """
         AE Marketplace 列表分页 URL：第1页 .../cate-marketplace/，第N页 .../cate-marketplace-pageN/
         保留原有 query 参数。
