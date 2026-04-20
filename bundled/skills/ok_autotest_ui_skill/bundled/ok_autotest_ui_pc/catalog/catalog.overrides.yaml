@@ -176,6 +176,54 @@ paths:
     baseline_set: car_publish_core
     risk_level: high
     owner: qa-ui
+  test_cases/ai/ai_publish/test_ai_publish_job.py:
+    module_id: ai
+    feature_id: ai_publish_job
+    aliases: [ai, ai_publish, job]
+    baseline_set: ai_core
+    owner: qa-ui
+  test_cases/ai/ai_publish/test_ai_publish_property.py:
+    module_id: ai
+    feature_id: ai_publish_property
+    aliases: [ai, ai_publish, property]
+    baseline_set: ai_core
+    owner: qa-ui
+  test_cases/ai/ai_publish/test_ai_publish_marketplace.py:
+    module_id: ai
+    feature_id: ai_publish_marketplace
+    aliases: [ai, ai_publish, marketplace]
+    baseline_set: ai_core
+    owner: qa-ui
+  test_cases/ai/ai_publish/test_ai_publish_community.py:
+    module_id: ai
+    feature_id: ai_publish_community
+    aliases: [ai, ai_publish, community]
+    baseline_set: ai_core
+    owner: qa-ui
+  test_cases/ai/ai_publish/test_ai_publish_services.py:
+    module_id: ai
+    feature_id: ai_publish_services
+    aliases: [ai, ai_publish, services]
+    baseline_set: ai_core
+    owner: qa-ui
+  test_cases/ai/ai_chat/test_ai_chat_job.py:
+    module_id: ai
+    feature_id: ai_chat_job
+    aliases: [ai, ai_chat, job, contact]
+    baseline_set: ai_core
+    owner: qa-ui
+  test_cases/ai/ai_chat/test_ai_chat_publish_success_job_Switch.py:
+    module_id: ai
+    feature_id: ai_chat_job_switch
+    aliases: [ai, ai_chat, easychat_switch, publish_success]
+    baseline_set: ai_core
+    owner: qa-ui
+  test_cases/ai/ai_chat/test_ai_chat_jobs_list_easychat_switch.py:
+    module_id: ai
+    feature_id: ai_chat_jobs_list
+    aliases: [ai, ai_chat, jobs_list, easychat]
+    baseline_set: ai_core
+    owner: qa-ui
 cases:
   test_cases/wallet/test_wallet_bank_account_binding.py::test_01_bound_bank_account_should_display_last_four_digits_and_unbind_entry:
     skill_excluded: true
