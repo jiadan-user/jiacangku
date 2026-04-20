@@ -446,9 +446,11 @@ class AiJobsListEasyChatPage(BasePage):
             raise
 
     def click_page_number(self, page_num: int):
-        """点击指定页码"""
+        """点击指定页码（使用精确匹配避免 strict mode violation）"""
         try:
-            self.page.get_by_role("button", name=str(page_num)).click()
+            # 使用 exact=True 精确匹配页码，避免匹配到包含该数字的其他页码（如 "1" 匹配到 "15"）
+            page_button = self.page.get_by_role("button", name=str(page_num), exact=True)
+            page_button.click()
             self.page.wait_for_load_state("domcontentloaded", timeout=10000)
             self.page.wait_for_timeout(1500)
         except Exception as e:
