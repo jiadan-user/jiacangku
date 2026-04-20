@@ -35,58 +35,56 @@ class KycIdentificationPage(BasePage):
 
     def upload_document_image(self, file_path: str, wait_for_dialog: bool = True):
         """
-        上传证件图片 - 直接设置文件输入而非点击按钮
+        上传证件图片 - 直接设置文件输入
         
         Args:
             file_path: 图片文件的绝对路径
             wait_for_dialog: 是否等待表单弹窗打开（默认 True）
         """
         try:
-            self.page.wait_for_load_state("domcontentloaded", timeout=10000)
-            self.page.wait_for_timeout(1000)
+            self.logger.info(f"开始上传文档: {file_path}")
             
-            # 验证上传按钮可见（确认在上传页）
-            upload_btn = self.page.get_by_role("button", name="Upload")
-            choose_file_btn = self.page.get_by_role("button", name="Choose File")
+            # 等待页面完全加载
+            self.page.wait_for_load_state("networkidle", timeout=20000)
+            self.page.wait_for_timeout(2000)
             
-            btn_found = False
-            try:
-                upload_btn.wait_for(state="visible", timeout=5000)
-                btn_found = True
-                self.logger.info("✓ 找到 Upload 按钮")
-            except Exception:
-                try:
-                    choose_file_btn.wait_for(state="visible", timeout=5000)
-                    btn_found = True
-                    self.logger.info("✓ 找到 Choose File 按钮")
-                except Exception as e:
-                    self.logger.error(f"上传按钮不可见: {e}")
-                    self.page.screenshot(path="reports/screenshots/debug_upload_no_button.png", full_page=True)
-                    raise
-            
-            if not btn_found:
-                raise AssertionError("未找到 Upload 或 Choose File 按钮")
-            
-            # 直接设置文件输入，避免按钮点击被 file input 覆盖
+            # 直接定位并设置文件输入
             file_input = self.page.locator('input[type="file"]').first
+            
+            # 检查文件输入框是否存在
+            input_count = self.page.locator('input[type="file"]').count()
+            if input_count == 0:
+                self.logger.error(f"页面上没有文件输入框 (URL: {self.page.url})")
+                self.page.screenshot(path="reports/screenshots/debug_no_file_input.png", full_page=True)
+                raise AssertionError(f"页面上没有文件输入框,请确认是否在上传页 (URL: {self.page.url})")
+            
+            self.logger.info(f"✓ 找到 {input_count} 个文件输入框")
+            
+            # 直接设置文件
             file_input.set_input_files(file_path)
             self.logger.info(f"✓ 已设置文件: {file_path}")
             
-            # 等待上传处理
+            # 等待上传和OCR处理
             self.page.wait_for_timeout(3000)
             
-            # 如果需要等待弹窗，尝试最多 15 秒
+            # 如果需要等待弹窗
             if wait_for_dialog:
                 try:
                     dialog = self.page.get_by_role("dialog").filter(has_text="Identity Verification")
                     dialog.wait_for(state="visible", timeout=15000)
                     self.logger.info("✓ 表单弹窗已打开")
                 except Exception as e:
-                    self.logger.warning(f"等待表单弹窗超时（可能上传失败或处理中）: {e}")
+                    self.logger.warning(f"等待表单弹窗超时: {e}")
+                    self.page.screenshot(path="reports/screenshots/debug_no_dialog.png", full_page=True)
             
             self.page.wait_for_timeout(2000)
+            
         except Exception as e:
             self.logger.error(f"上传证件图片失败: {e}")
+            try:
+                self.page.screenshot(path="reports/screenshots/debug_upload_failed.png", full_page=True)
+            except Exception:
+                pass
             raise
 
     def click_enter_manually(self):

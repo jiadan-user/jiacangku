@@ -57,7 +57,7 @@ _CONFIG = {
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证上传澳大利亚国民身份证图片后，OCR 能够成功识别并自动填充表单字段")
 def test_upload_valid_id_ocr_success(page, config):
-    """上传有效证件图片 - OCR 成功识别测试"""
+    """上传有效证件图片 - OCR 成功识别测试 (参考webqa版本重构)"""
     
     # ========== Arrange：准备测试数据和对象 ==========
     login_page = LoginPage(page)
@@ -165,18 +165,52 @@ def test_upload_valid_id_ocr_success(page, config):
                 # 继续执行，可能已经在 KYC 页面
                 pass
     
-    # ========== Act 阶段2：点击 Begin 按钮 ==========
-    with allure.step("步骤7：点击 Begin 按钮"):
-        # 检查是否在引导页（有 Begin 按钮）
+    # ========== Act 阶段2：进入上传页 (参考webqa版本的健壮导航策略) ==========
+    with allure.step("步骤7：确保进入上传页"):
+        page.goto(base_url, timeout=30000)
+        page.wait_for_load_state("domcontentloaded", timeout=10000)
+        page.wait_for_timeout(2000)
+        
+        # 检查是否在认证失败页,如果是则点击Retry
+        if page.get_by_role("button", name="Retry").is_visible(timeout=2000):
+            logger.info("检测到认证失败页,点击Retry")
+            kyc_page.click_retry_button()
+            page.wait_for_timeout(2000)
+        
+        # 检查是否在引导页,如果是则点击Begin
+        if page.get_by_role("button", name="Begin").is_visible(timeout=2000):
+            logger.info("检测到引导页,点击Begin进入上传页")
+            kyc_page.click_begin_button()
+            page.wait_for_timeout(3000)
+            page.wait_for_load_state("domcontentloaded", timeout=10000)
+        
+        page.wait_for_timeout(2000)
+        
+        # 验证已进入上传页
         try:
-            if page.get_by_role("button", name="Begin").is_visible(timeout=3000):
-                kyc_page.click_begin_button()
-                page.wait_for_timeout(1000)
-                logger.info("✓ 点击 Begin 按钮，进入上传页面")
-            else:
-                logger.info("✓ 已经在上传页面，无需点击 Begin")
+            page.get_by_text("Upload Document").wait_for(state="visible", timeout=10000)
+            logger.info("✓ 已进入上传页")
         except Exception:
-            logger.info("✓ 已经在上传页面，无需点击 Begin")
+            logger.warning("未找到Upload Document标题,可能已在上传页")
+        
+        # 验证上传按钮可见
+        btn_found = False
+        try:
+            page.get_by_role("button", name="Upload").wait_for(state="visible", timeout=5000)
+            btn_found = True
+            logger.info("✓ 找到Upload按钮")
+        except Exception:
+            try:
+                page.get_by_role("button", name="Choose File").wait_for(state="visible", timeout=5000)
+                btn_found = True
+                logger.info("✓ 找到Choose File按钮")
+            except Exception as e:
+                logger.error(f"等待上传按钮失败: {e}")
+                page.screenshot(path="reports/screenshots/debug_no_upload_button.png", full_page=True)
+                raise AssertionError(f"未找到Upload或Choose File按钮,当前URL: {page.url}")
+        
+        if not btn_found:
+            raise AssertionError("未找到上传按钮,无法继续测试")
     
     # ========== Act 阶段3：上传有效证件图片 ==========
     with allure.step(f"步骤8：上传澳大利亚国民身份证图片"):
@@ -230,7 +264,7 @@ def test_upload_valid_id_ocr_success(page, config):
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证上传非证件图片（风景照片）后，OCR 识别失败，所有字段为空，用户可以手动填写")
 def test_upload_invalid_image_ocr_fail(page, config):
-    """上传无效图片 - OCR 识别失败测试"""
+    """上传无效图片 - OCR 识别失败测试 (参考webqa版本重构)"""
     
     # ========== Arrange：准备测试数据和对象 ==========
     login_page = LoginPage(page)
@@ -240,6 +274,7 @@ def test_upload_invalid_image_ocr_fail(page, config):
     site = config['site']
     role = config['role']
     account_name = config['user_name']
+    base_url = config['base_url']
     username = config['test_account']['username']
     
     # 测试图片路径（风景照片）
@@ -257,7 +292,6 @@ def test_upload_invalid_image_ocr_fail(page, config):
     logger.info("="*80)
     
     # ========== Session 复用：直接使用已保存的登录状态 ==========
-    base_url = config['base_url']
     session_manager = SessionManager(page, base_url, session_name=f"{site}_{role}_{account_name}")
     
     with allure.step("加载已保存的 Session"):
@@ -269,25 +303,29 @@ def test_upload_invalid_image_ocr_fail(page, config):
             logger.info("⚠️ Session 加载失败，请先运行 TC001 完成登录")
             pytest.skip("需要先运行 TC001 完成登录并保存 Session")
     
-    # ========== Act 阶段1：访问 KYC 认证页面 ==========
-    with allure.step("步骤1：访问 KYC 认证页面"):
+    # ========== Act：进入上传页并上传无效图片 (参考webqa版本的导航策略) ==========
+    with allure.step("步骤1：确保进入上传页"):
         page.goto(base_url, timeout=30000)
+        page.wait_for_load_state("domcontentloaded", timeout=10000)
         page.wait_for_timeout(2000)
-        logger.info("✓ 访问 KYC 认证页面")
+        
+        # 检查是否在认证失败页
+        if page.get_by_role("button", name="Retry").is_visible(timeout=2000):
+            logger.info("检测到认证失败页,点击Retry")
+            kyc_page.click_retry_button()
+            page.wait_for_timeout(2000)
+        
+        # 检查是否在引导页
+        if page.get_by_role("button", name="Begin").is_visible(timeout=2000):
+            logger.info("检测到引导页,点击Begin进入上传页")
+            kyc_page.click_begin_button()
+            page.wait_for_timeout(3000)
+            page.wait_for_load_state("domcontentloaded", timeout=10000)
+        
+        page.wait_for_timeout(2000)
+        logger.info("✓ 已进入上传页")
     
-    with allure.step("步骤2：点击 Begin 按钮（如果在引导页）"):
-        try:
-            if page.get_by_role("button", name="Begin").is_visible(timeout=3000):
-                kyc_page.click_begin_button()
-                page.wait_for_timeout(1000)
-                logger.info("✓ 点击 Begin 按钮，进入上传页面")
-            else:
-                logger.info("✓ 已经在上传页面")
-        except Exception:
-            logger.info("✓ 已经在上传页面")
-    
-    # ========== Act 阶段2：上传无效图片（风景照片）==========
-    with allure.step(f"步骤3：上传风景照片"):
+    with allure.step(f"步骤2：上传风景照片（无效图片）"):
         kyc_page.upload_document_image(test_image_path)
         logger.info(f"✓ 上传图片: {test_image_path}")
         logger.info("✓ 等待 OCR 识别完成...")
@@ -338,7 +376,7 @@ def test_upload_invalid_image_ocr_fail(page, config):
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证不填写任何字段直接提交表单时，所有必填字段显示错误提示 'Cannot be empty'")
 def test_submit_empty_form_validation(page, config):
-    """提交空表单 - 所有必填字段校验测试"""
+    """提交空表单 - 所有必填字段校验测试 (参考webqa版本重构)"""
     
     # ========== Arrange：准备测试数据和对象 ==========
     login_page = LoginPage(page)
@@ -348,6 +386,7 @@ def test_submit_empty_form_validation(page, config):
     site = config['site']
     role = config['role']
     account_name = config['user_name']
+    base_url = config['base_url']
     username = config['test_account']['username']
     
     # 记录测试配置
@@ -361,7 +400,6 @@ def test_submit_empty_form_validation(page, config):
     logger.info("="*80)
     
     # ========== Session 复用：直接使用已保存的登录状态 ==========
-    base_url = config['base_url']
     session_manager = SessionManager(page, base_url, session_name=f"{site}_{role}_{account_name}")
     
     with allure.step("加载已保存的 Session"):
@@ -373,31 +411,39 @@ def test_submit_empty_form_validation(page, config):
             logger.info("⚠️ Session 加载失败，请先运行 TC001 完成登录")
             pytest.skip("需要先运行 TC001 完成登录并保存 Session")
     
-    # ========== Act 阶段1：访问 KYC 认证页面 ==========
-    with allure.step("步骤1：访问 KYC 认证页面"):
+    # ========== Act：进入上传页并打开表单 (参考webqa版本的导航策略) ==========
+    with allure.step("步骤1：确保进入上传页"):
         page.goto(base_url, timeout=30000)
+        page.wait_for_load_state("domcontentloaded", timeout=10000)
         page.wait_for_timeout(2000)
-        logger.info("✓ 访问 KYC 认证页面")
+        
+        # 检查是否在认证失败页
+        if page.get_by_role("button", name="Retry").is_visible(timeout=2000):
+            logger.info("检测到认证失败页,点击Retry")
+            kyc_page.click_retry_button()
+            page.wait_for_timeout(2000)
+        
+        # 检查是否在引导页
+        if page.get_by_role("button", name="Begin").is_visible(timeout=2000):
+            logger.info("检测到引导页,点击Begin进入上传页")
+            kyc_page.click_begin_button()
+            page.wait_for_timeout(3000)
+            page.wait_for_load_state("domcontentloaded", timeout=10000)
+        
+        page.wait_for_timeout(2000)
+        logger.info("✓ 已进入上传页")
     
-    with allure.step("步骤2：点击 Begin 按钮（如果在引导页）"):
-        try:
-            if page.get_by_role("button", name="Begin").is_visible(timeout=3000):
-                kyc_page.click_begin_button()
-                page.wait_for_timeout(1000)
-                logger.info("✓ 点击 Begin 按钮，进入上传页面")
-            else:
-                logger.info("✓ 已经在上传页面")
-        except Exception:
-            logger.info("✓ 已经在上传页面")
-    
-    # ========== Act 阶段2：点击 Enter Manually 打开手动输入表单 ==========
-    with allure.step("步骤3：点击 Enter Manually 链接"):
+    # ========== Act：点击 Enter Manually 打开手动输入表单 ==========
+    with allure.step("步骤2：点击 Enter Manually 链接"):
         kyc_page.click_enter_manually()
+        page.wait_for_timeout(1500)
+        assert kyc_page.is_form_dialog_visible(), "表单弹窗未打开"
         logger.info("✓ 点击 Enter Manually，打开手动输入表单")
     
-    # ========== Act 阶段3：不填写任何字段，直接提交 ==========
-    with allure.step("步骤4：不填写任何字段，直接点击 Submit 按钮"):
+    # ========== Act：不填写任何字段，直接提交 ==========
+    with allure.step("步骤3：不填写任何字段，直接点击 Submit 按钮"):
         kyc_page.click_submit_button()
+        page.wait_for_timeout(1000)
         logger.info("✓ 点击 Submit 按钮（未填写任何字段）")
         page.wait_for_timeout(1000)
     
