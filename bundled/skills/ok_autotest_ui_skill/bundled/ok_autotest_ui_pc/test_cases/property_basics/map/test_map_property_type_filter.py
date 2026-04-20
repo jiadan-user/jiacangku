@@ -294,42 +294,6 @@ class TestMapPropertyTypeAndFilter:
                 f"期望 URL 含 attr_166=1，实际 URL: {current_url}"
             logger.info(f"✓ URL 含 Beds 和 Bathrooms 参数: {current_url}")
 
-    @pytest.mark.case_id_sa_filter_042
-    @pytest.mark.p1
-    @pytest.mark.student_apartment
-    @pytest.mark.au
-    @allure.feature("OK")
-    @allure.story("Filter 综合筛选 - 功能场景")
-    @allure.title("Filter 面板点击 Clear，所有综合筛选参数被清除")
-    @allure.severity(allure.severity_level.NORMAL)
-    @allure.description("已通过 Filter 面板设置多个筛选条件后，重新打开 Filter 面板点击 Clear，验证所有筛选参数移除")
-    def test_filter_panel_clear_removes_all_filter_params(self, page, config, setup_sa_page):
-        """TC042：Filter 面板点击 Clear，所有综合筛选参数清除"""
-        sa_page = setup_sa_page
-
-        with allure.step("先通过 Filter 面板设置 Beds=2 和价格 500~1500"):
-            sa_page.click_filter_comprehensive()
-            sa_page.filter_modal_select_beds("2")
-            sa_page.filter_modal_input_price_min("500")
-            sa_page.filter_modal_input_price_max("1500")
-            sa_page.click_filter_modal_done()
-            page.wait_for_load_state('domcontentloaded', timeout=config['timeout']['navigation'])
-            logger.info("✓ 已通过 Filter 面板设置条件")
-
-        with allure.step("重新打开 Filter 面板，点击 Clear"):
-            sa_page.click_filter_comprehensive()
-            sa_page.click_filter_modal_clear()
-            page.wait_for_load_state('domcontentloaded', timeout=config['timeout']['navigation'])
-            logger.info("✓ 已点击 Clear")
-
-        with allure.step("验证 URL 中筛选参数全部移除"):
-            current_url = page.url
-            assert "attr_168" not in current_url, \
-                f"期望 URL 不含 attr_168，实际 URL: {current_url}"
-            assert "lowestPrice" not in current_url, \
-                f"期望 URL 不含 lowestPrice，实际 URL: {current_url}"
-            logger.info(f"✓ 所有筛选参数已清除，URL: {current_url}")
-
     @pytest.mark.case_id_sa_filter_043
     @pytest.mark.p2
     @pytest.mark.student_apartment

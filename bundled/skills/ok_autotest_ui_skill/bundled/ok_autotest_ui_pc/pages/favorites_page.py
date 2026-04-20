@@ -47,8 +47,9 @@ class FavoritesPage(BasePage):
         email_box.wait_for(state="visible", timeout=timeout)
 
     def listing_cards_locator(self):
-        """收藏帖子卡片链接（与页脚等链接区分：ae 站详情链 + 含图）。"""
-        return self.page.locator("a[href*='ae.ok.com'][href*='/cate-']").filter(
+        """收藏帖子卡片链接（与页脚等链接区分：ae 站详情链 + 含图）。支持ok.com和58v5.cn"""
+        # 匹配包含 /ae/ 或 ae. 域名，且包含 /cate- 的链接
+        return self.page.locator("a[href*='/cate-']").filter(
             has=self.page.locator("img")
         )
 
@@ -127,32 +128,33 @@ class FavoritesPage(BasePage):
             return ""
 
     def first_listing_card_link(self):
-        """首张帖子卡片（外链至 ae.ok.com 详情）。"""
+        """首张帖子卡片（外链至 ae 站详情，支持ok.com和58v5.cn）。"""
         return (
-            self.page.locator("a[href*='ae.ok.com'][href*='/cate-']")
+            self.page.locator("a[href*='/cate-']")
             .filter(has=self.page.locator("img"))
             .first
         )
 
     def listing_card_link_by_text(self, substring: str):
-        """包含指定文案的收藏列表主链接（优先无障碍名称，避免 has(img) 误排 DOM）。"""
+        """包含指定文案的收藏列表主链接（优先无障碍名称，避免 has(img) 误排 DOM）。支持双域名"""
         by_role = self.page.get_by_role(
             "link", name=re.compile(re.escape(substring), re.I)
         )
         if by_role.count() > 0:
             return by_role.first
-        return self.page.locator("a[href*='ae.ok.com'][href*='/cate-']").filter(
+        return self.page.locator("a[href*='/cate-']").filter(
             has_text=re.compile(re.escape(substring), re.I)
         ).first
 
     def listing_post_links_loose(self):
-        """列表帖子链（不强制 a 内含 img，用于计数/补位断言）。"""
-        return self.page.locator("a[href*='ae.ok.com'][href*='/cate-']")
+        """列表帖子链（不强制 a 内含 img，用于计数/补位断言）。支持双域名"""
+        return self.page.locator("a[href*='/cate-']")
 
     def favorites_grid_post_links(self):
-        """收藏网格内帖子卡链接（排除页脚等同域链）。"""
+        """收藏网格内帖子卡链接（排除页脚等同域链）。支持双域名"""
+        # 优先用class定位，回退到含图卡片
         by_class = self.page.locator(
-            "a[class*='list-components-item-card'][href*='ae.ok.com']"
+            "a[class*='list-components-item-card'][href*='/cate-']"
         )
         if by_class.count() > 0:
             return by_class
@@ -168,11 +170,11 @@ class FavoritesPage(BasePage):
         return self.listing_card_link_by_text(substring)
 
     def click_favorite_icon_unfavorite_card_containing(self, substring: str) -> bool:
-        """点击含 substring 的列表卡片上的心形（取消收藏）。自卡片链接向上查找 favorite-icon。"""
+        """点击含 substring 的列表卡片上的心形（取消收藏）。自卡片链接向上查找 favorite-icon。支持双域名"""
         return self.page.evaluate(
             """(t) => {
               const links = [...document.querySelectorAll(
-                'a[href*="ae.ok.com"][href*="/cate-"]')];
+                'a[href*="/cate-"]')];
               const a = links.find(x => x.innerText && x.innerText.includes(t));
               if (!a) return false;
               let el = a;

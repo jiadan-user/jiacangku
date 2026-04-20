@@ -5,12 +5,13 @@ OK.com 详情页分享功能测试 - 批次3异常场景
 测试用例文档：web-qa-brain/OK.com-详情页分享功能-测试用例-20260401.md
 生成时间：2026-04-01
 
-测试站点：US (https://us.ok.com)
+测试站点：US (https://us.58v5.cn)
 测试角色：Visitor (访客)
 测试目标：验证快速连续点击、弱网条件、防重复提交、链接可访问性等异常场景
 """
 import pytest
 import allure
+import re
 from urllib.parse import urlparse
 from pages.detail_page_share import DetailPageShare
 from utils.logger import setup_logger
@@ -25,7 +26,7 @@ _CONFIG = {
     "site_name": "美国站 (US OK.com)",
     "role": "visitor",
     "user_name": "us_visitor_share_batch3",
-    "base_url": "https://us.ok.com/en/city-washington1/cate/",
+    "base_url": "https://us.58v5.cn/en/city-washington1/cate/",
     "test_account": None,
     "locale": "en-US",
     "currency": "USD",
@@ -75,10 +76,92 @@ def page(config):
     logger.info("="*80)
     browser_manager.close_browser(_page)
 
-
-# ============================================
-# 测试用例 - 批次3
-# ============================================
+@pytest.fixture(scope="module")
+def valid_detail_url(page, config):
+    """
+    动态获取一个有效的详情页URL
+    
+    策略：
+    1. 使用预定义的候选URL列表（从safe分类手动收集）
+    2. 逐个验证URL是否有效（未删除且有Share按钮）
+    3. 返回第一个有效的URL
+    """
+    import re
+    
+    logger.info("="*80)
+    logger.info("【智能URL查找】验证候选详情页URL...")
+    logger.info("="*80)
+    
+    # 候选URL列表（从非招聘/房产/车分类手动收集）
+    CANDIDATE_URLS = [
+        # Home Goods分类
+        "https://us.58v5.cn/en/city-washington1/cate-others127/40oz-tritan-bpa-free-large-tumbler-with-straw-and-handle-reusable-water-cup-6530384495922910/",
+        "https://us.58v5.cn/en/city-washington1/cate-others242/testcheng-6517268992063710/",
+        # Electronics分类（可以后续添加）
+        # Health & Beauty分类（可以后续添加）
+    ]
+    
+    try:
+        # 处理Cookie（只需一次）
+        logger.info("访问首页处理Cookie...")
+        page.goto("https://us.58v5.cn/en/", wait_until="domcontentloaded", timeout=30000)
+        try:
+            page.get_by_role("button", name=re.compile("Accept|同意", re.I)).click(timeout=3000)
+            logger.info("✓ 已处理Cookie弹窗")
+        except:
+            logger.info("- 无Cookie弹窗")
+        page.wait_for_timeout(1000)
+        
+        # 验证候选URL
+        for idx, candidate_url in enumerate(CANDIDATE_URLS):
+            logger.info(f"\n候选URL ({idx+1}/{len(CANDIDATE_URLS)}): {candidate_url}")
+            logger.info(f"  验证详情页有效性...")
+            
+            try:
+                page.goto(candidate_url, wait_until="domcontentloaded", timeout=20000)
+                page.wait_for_timeout(2000)
+                
+                # 检查是否显示"已删除"
+                deleted_indicator = page.get_by_text("The content has been deleted")
+                if deleted_indicator.count() > 0 and deleted_indicator.is_visible(timeout=1000):
+                    logger.info(f"  ✗ 帖子已删除，跳过")
+                    continue
+                
+                # 检查Share按钮是否存在
+                share_btn = page.get_by_text("Share", exact=True)
+                if share_btn.count() > 0:
+                    try:
+                        if share_btn.first.is_visible(timeout=3000):
+                            logger.info(f"  ✓ 找到有效详情页！")
+                            logger.info(f"  ✓ URL: {candidate_url}")
+                            logger.info("="*80)
+                            return candidate_url
+                        else:
+                            logger.info(f"  ✗ Share按钮存在但不可见")
+                    except:
+                        logger.info(f"  ✗ Share按钮检查超时")
+                else:
+                    logger.info(f"  ✗ 未找到Share按钮")
+            
+            except Exception as e:
+                logger.warning(f"  访问失败: {str(e)[:100]}")
+                continue
+        
+        # 如果所有候选URL都失效
+        error_msg = f"所有 {len(CANDIDATE_URLS)} 个候选URL都无效"
+        logger.error(error_msg)
+        logger.error("可能原因：")
+        logger.error("  1. 候选URL的帖子都已被删除")
+        logger.error("  2. US站点网络问题")
+        logger.error("  3. 请更新CANDIDATE_URLS列表")
+        pytest.skip(f"智能URL查找失败: {error_msg}")
+        
+    except Exception as e:
+        error_msg = f"智能URL查找异常: {e}"
+        logger.error(error_msg)
+        import traceback
+        logger.error(traceback.format_exc())
+        pytest.skip(error_msg)
 
 @pytest.mark.case_id_detail_share_008
 @pytest.mark.regression
@@ -91,12 +174,12 @@ def page(config):
 @allure.title("TC008: 快速连续点击分享按钮")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证快速连续点击Share按钮时，Toast不重叠且剪贴板内容正确")
-def test_tc008_rapid_click_share_button(page, config):
+def test_tc008_rapid_click_share_button(page, config, valid_detail_url):
     """TC008: 快速连续点击分享按钮"""
     
     # ========== Arrange：准备测试对象 ==========
     detail_share_page = DetailPageShare(page)
-    detail_url = "https://us.ok.com/en/city-washington1/cate-home-decor/homemade-led-christmas-hat-creative-and-unique-design-enhance-the-festive-atmosphere-essential-for-f-6458646557837112/"
+    detail_url = valid_detail_url  # 使用动态获取的有效URL
     
     logger.info("="*80)
     logger.info("TC008: 快速连续点击分享按钮")
@@ -168,79 +251,80 @@ def test_tc008_rapid_click_share_button(page, config):
 @allure.title("TC015: 网络断开时点击分享按钮")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证在网络断开时，分享功能仍然正常工作（本地剪贴板操作不依赖网络）")
-def test_tc015_share_function_offline(page, config):
+def test_tc015_share_function_offline(page, config, valid_detail_url):
     """TC015: 网络断开时点击分享按钮"""
     
-    # ========== Arrange：准备测试对象 ==========
-    detail_share_page = DetailPageShare(page)
-    detail_url = "https://us.ok.com/en/city-washington1/cate-home-decor/homemade-led-christmas-hat-creative-and-unique-design-enhance-the-festive-atmosphere-essential-for-f-6458646557837112/"
-    
-    logger.info("="*80)
-    logger.info("TC015: 网络断开时点击分享按钮")
-    logger.info("="*80)
-    
-    # 确保在详情页上
-    current_url = page.url
-    if current_url == "about:blank" or "6458646557837112" not in current_url:
+    try:
+        # ========== Arrange：准备测试对象 ==========
+        detail_share_page = DetailPageShare(page)
+        detail_url = valid_detail_url  # 使用动态获取的有效URL
+        
+        logger.info("="*80)
+        logger.info("TC015: 网络断开时点击分享按钮")
+        logger.info("="*80)
+        
+        # 直接导航到详情页（valid_detail_url已保证是有效的详情页URL）
         with allure.step("步骤0：导航到详情页"):
             detail_share_page.navigate_to_detail_page(detail_url)
             detail_share_page.handle_cookie_popup()
             page.wait_for_load_state("load", timeout=30000)
             logger.info(f"✓ 导航到详情页: {detail_url}")
-    
-    with allure.step("步骤1：等待详情页完全加载"):
-        page.wait_for_load_state("load", timeout=30000)
-        logger.info("✓ 详情页完全加载")
-    
-    # ========== Act：模拟网络断开并测试 ==========
-    with allure.step("步骤2：模拟网络断开"):
-        # 使用 Playwright 的 offline 模式
-        page.context.set_offline(True)
-        logger.info("✓ 网络已断开（离线模式）")
-    
-    with allure.step("步骤3：点击 Share 按钮"):
+        
+        with allure.step("步骤1：等待详情页完全加载"):
+            page.wait_for_load_state("load", timeout=30000)
+            logger.info("✓ 详情页完全加载")
+        
+        # ========== Act：模拟网络断开并测试 ==========
+        with allure.step("步骤2：模拟网络断开"):
+            # 使用 Playwright 的 offline 模式
+            page.context.set_offline(True)
+            logger.info("✓ 网络已断开（离线模式）")
+        
+        with allure.step("步骤3：点击 Share 按钮"):
+            try:
+                detail_share_page.click_share_button()
+                page.wait_for_timeout(500)
+                logger.info("✓ 点击 Share 按钮成功")
+            except Exception as e:
+                logger.error(f"✗ 离线状态下点击 Share 按钮失败: {e}")
+                raise
+        
+        # ========== Assert：验证离线状态下的复制功能 ==========
+        with allure.step("验证1：复制功能正常工作（本地操作）"):
+            clipboard_content = detail_share_page.get_clipboard_content()
+            assert clipboard_content, "离线状态下剪贴板内容为空"
+            assert clipboard_content.startswith("https://"), \
+                f"离线状态下复制的内容不是有效URL: {clipboard_content}"
+            logger.info(f"✓ 离线状态下复制功能正常: {clipboard_content[:100]}...")
+        
+        with allure.step("验证2：Toast 提示正常显示"):
+            toast_visible = detail_share_page.is_toast_visible(timeout=2000)
+            assert toast_visible, "离线状态下 Toast 提示未显示"
+            logger.info("✓ 离线状态下 Toast 提示正常显示")
+        
+        with allure.step("验证3：复制的链接完整且正确"):
+            # 验证URL包含详情页ID（数字）
+            import re
+            assert re.search(r'-\d+/', clipboard_content), \
+                "离线状态下复制的URL不完整（缺少详情页ID）"
+            logger.info("✓ 离线状态下复制的链接完整且正确")
+        
+        with allure.step("验证4：无网络错误提示"):
+            # 分享功能不需要网络请求，所以不应该有错误提示
+            # 通过页面仍然正常运行来验证
+            logger.info("✓ 无网络错误提示（分享操作不依赖网络）")
+        
+        logger.info("="*80)
+        logger.info("✅ TC015: 网络断开时点击分享按钮 - 测试通过！")
+        logger.info("="*80)
+        
+    finally:
+        # ========== 确保恢复网络（即使测试失败） ==========
         try:
-            detail_share_page.click_share_button()
-            page.wait_for_timeout(500)
-            logger.info("✓ 点击 Share 按钮成功")
-        except Exception as e:
-            logger.error(f"✗ 离线状态下点击 Share 按钮失败: {e}")
-            # 恢复网络后再抛出异常
             page.context.set_offline(False)
-            raise
-    
-    # ========== Assert：验证离线状态下的复制功能 ==========
-    with allure.step("验证1：复制功能正常工作（本地操作）"):
-        clipboard_content = detail_share_page.get_clipboard_content()
-        assert clipboard_content, "离线状态下剪贴板内容为空"
-        assert clipboard_content.startswith("https://"), \
-            f"离线状态下复制的内容不是有效URL: {clipboard_content}"
-        logger.info(f"✓ 离线状态下复制功能正常: {clipboard_content[:100]}...")
-    
-    with allure.step("验证2：Toast 提示正常显示"):
-        toast_visible = detail_share_page.is_toast_visible(timeout=2000)
-        assert toast_visible, "离线状态下 Toast 提示未显示"
-        logger.info("✓ 离线状态下 Toast 提示正常显示")
-    
-    with allure.step("验证3：复制的链接完整且正确"):
-        # 验证URL包含详情页ID
-        assert "6458646557837112" in clipboard_content, \
-            "离线状态下复制的URL不完整"
-        logger.info("✓ 离线状态下复制的链接完整且正确")
-    
-    with allure.step("验证4：无网络错误提示"):
-        # 分享功能不需要网络请求，所以不应该有错误提示
-        # 通过页面仍然正常运行来验证
-        logger.info("✓ 无网络错误提示（分享操作不依赖网络）")
-    
-    # ========== Cleanup：恢复网络 ==========
-    with allure.step("步骤4：恢复网络连接"):
-        page.context.set_offline(False)
-        logger.info("✓ 网络已恢复")
-    
-    logger.info("="*80)
-    logger.info("✅ TC015: 网络断开时点击分享按钮 - 测试通过！")
-    logger.info("="*80)
+            logger.info("✓ 网络已恢复（finally块）")
+        except Exception as e:
+            logger.warning(f"恢复网络失败: {e}")
 
 
 @pytest.mark.case_id_detail_share_018
@@ -255,12 +339,12 @@ def test_tc015_share_function_offline(page, config):
 @allure.title("TC018: 分享按钮防重复提交")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证在100ms内连续点击10次Share按钮，系统能正常处理且无性能问题")
-def test_tc018_share_button_anti_duplicate_submit(page, config):
+def test_tc018_share_button_anti_duplicate_submit(page, config, valid_detail_url):
     """TC018: 分享按钮防重复提交"""
     
     # ========== Arrange：准备测试对象 ==========
     detail_share_page = DetailPageShare(page)
-    detail_url = "https://us.ok.com/en/city-washington1/cate-home-decor/homemade-led-christmas-hat-creative-and-unique-design-enhance-the-festive-atmosphere-essential-for-f-6458646557837112/"
+    detail_url = valid_detail_url  # 使用动态获取的有效URL
     
     logger.info("="*80)
     logger.info("TC018: 分享按钮防重复提交")
@@ -332,89 +416,97 @@ def test_tc018_share_button_anti_duplicate_submit(page, config):
 @allure.title("TC019: 复制的链接可访问性验证")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证复制的链接可以在新标签页中正常访问，且打开相同的详情页内容")
-def test_tc019_copied_link_accessibility_verification(page, config):
+def test_tc019_copied_link_accessibility_verification(page, config, valid_detail_url):
     """TC019: 复制的链接可访问性验证"""
     
-    # ========== Arrange：准备测试对象 ==========
-    detail_share_page = DetailPageShare(page)
-    detail_url = "https://us.ok.com/en/city-washington1/cate-home-decor/homemade-led-christmas-hat-creative-and-unique-design-enhance-the-festive-atmosphere-essential-for-f-6458646557837112/"
-    
-    logger.info("="*80)
-    logger.info("TC019: 复制的链接可访问性验证")
-    logger.info("="*80)
-    
-    # 确保在详情页上
-    current_url = page.url
-    if current_url == "about:blank" or "6458646557837112" not in current_url:
+    try:
+        # 确保网络在线（防止被TC015影响）
+        page.context.set_offline(False)
+        
+        # ========== Arrange：准备测试对象 ==========
+        detail_share_page = DetailPageShare(page)
+        detail_url = valid_detail_url  # 使用动态获取的有效URL
+        
+        logger.info("="*80)
+        logger.info("TC019: 复制的链接可访问性验证")
+        logger.info("="*80)
+        
+        # 直接导航到详情页（valid_detail_url已保证是有效的详情页URL）
         with allure.step("步骤0：导航到详情页"):
             detail_share_page.navigate_to_detail_page(detail_url)
             detail_share_page.handle_cookie_popup()
             page.wait_for_load_state("load", timeout=30000)
             logger.info(f"✓ 导航到详情页: {detail_url}")
-    
-    # ========== Act：获取分享链接并在新标签页打开 ==========
-    with allure.step("步骤1：记录原始页面内容"):
-        # 记录原始页面的关键信息（用于后续对比）
-        original_title = page.locator("h1").first.inner_text()
-        original_price = page.locator("text=/\\$[0-9.]+/").first.inner_text()
-        logger.info(f"✓ 原始页面标题: {original_title[:50]}...")
-        logger.info(f"✓ 原始页面价格: {original_price}")
-    
-    with allure.step("步骤2：点击 Share 按钮获取链接"):
-        detail_share_page.click_share_button()
-        page.wait_for_timeout(500)
-        clipboard_url = detail_share_page.get_clipboard_content()
-        assert clipboard_url, "剪贴板内容为空"
-        logger.info(f"✓ 获取到分享链接: {clipboard_url}")
-    
-    with allure.step("步骤3：在新标签页中打开复制的链接"):
-        # 创建新标签页
-        new_page = page.context.new_page()
-        new_page.goto(clipboard_url, wait_until="domcontentloaded", timeout=60000)
-        new_page.wait_for_load_state("load", timeout=30000)
-        logger.info(f"✓ 新标签页打开成功: {new_page.url}")
-    
-    # ========== Assert：验证链接可访问性 ==========
-    with allure.step("验证1：链接可正常访问"):
-        new_url = new_page.url
-        assert new_url, "新标签页URL为空"
-        # 验证不是错误页面
-        assert "error" not in new_url.lower(), f"打开的是错误页面: {new_url}"
-        assert "404" not in new_url, f"打开的是404页面: {new_url}"
-        logger.info(f"✓ 链接可正常访问: {new_url}")
-    
-    with allure.step("验证2：打开相同的详情页内容"):
-        # 验证标题一致
-        new_title = new_page.locator("h1").first.inner_text()
-        assert original_title == new_title, \
-            f"标题不一致，原始: {original_title[:30]}, 新页面: {new_title[:30]}"
-        logger.info(f"✓ 标题一致: {new_title[:50]}...")
         
-        # 验证价格一致
-        new_price = new_page.locator("text=/\\$[0-9.]+/").first.inner_text()
-        assert original_price == new_price, \
-            f"价格不一致，原始: {original_price}, 新页面: {new_price}"
-        logger.info(f"✓ 价格一致: {new_price}")
-    
-    with allure.step("验证3：分享参数不影响页面内容"):
-        # 验证页面ID一致
-        assert "6458646557837112" in new_url, \
-            f"新页面URL不包含详情页ID: {new_url}"
+        # ========== Act：获取分享链接并在新标签页打开 ==========
+        with allure.step("步骤1：记录原始页面内容"):
+            # 记录原始页面的关键信息（用于后续对比）
+            original_title = page.locator("h1").first.inner_text()
+            original_price = page.locator("text=/\\$[0-9.]+/").first.inner_text()
+            logger.info(f"✓ 原始页面标题: {original_title[:50]}...")
+            logger.info(f"✓ 原始页面价格: {original_price}")
+        
+        with allure.step("步骤2：点击 Share 按钮获取链接"):
+            detail_share_page.click_share_button()
+            page.wait_for_timeout(500)
+            clipboard_url = detail_share_page.get_clipboard_content()
+            assert clipboard_url, "剪贴板内容为空"
+            logger.info(f"✓ 获取到分享链接: {clipboard_url}")
+        
+        with allure.step("步骤3：在新标签页中打开复制的链接"):
+            # 创建新标签页
+            new_page = page.context.new_page()
+            new_page.goto(clipboard_url, wait_until="domcontentloaded", timeout=60000)
+            new_page.wait_for_load_state("load", timeout=30000)
+            logger.info(f"✓ 新标签页打开成功: {new_page.url}")
+        
+        # ========== Assert：验证链接可访问性 ==========
+        with allure.step("验证1：链接可正常访问"):
+            new_url = new_page.url
+            assert new_url, "新标签页URL为空"
+            # 验证不是错误页面
+            assert "error" not in new_url.lower(), f"打开的是错误页面: {new_url}"
+            assert "404" not in new_url, f"打开的是404页面: {new_url}"
+            logger.info(f"✓ 链接可正常访问: {new_url}")
+        
+        with allure.step("验证2：打开相同的详情页内容"):
+            # 验证标题一致
+            new_title = new_page.locator("h1").first.inner_text()
+            assert original_title == new_title, \
+                f"标题不一致，原始: {original_title[:30]}, 新页面: {new_title[:30]}"
+            logger.info(f"✓ 标题一致: {new_title[:50]}...")
+            
+            # 验证价格一致
+            new_price = new_page.locator("text=/\\$[0-9.]+/").first.inner_text()
+            assert original_price == new_price, \
+                f"价格不一致，原始: {original_price}, 新页面: {new_price}"
+            logger.info(f"✓ 价格一致: {new_price}")
+        
+        with allure.step("验证3：分享参数不影响页面内容"):
+            # 验证新页面URL包含详情页ID（数字）
+            import re
+            assert re.search(r'-\d+/', new_url), \
+                f"新页面URL不包含有效的详情页ID: {new_url}"
         logger.info("✓ 分享参数不影响页面内容，显示相同的详情")
     
-    with allure.step("验证4：新页面功能正常"):
-        # 验证新页面的 Share 按钮也存在
-        new_detail_share_page = DetailPageShare(new_page)
-        new_share_button_visible = new_detail_share_page.is_share_button_visible(timeout=3000)
-        assert new_share_button_visible, "新页面的 Share 按钮不可见"
-        logger.info("✓ 新页面的 Share 按钮正常显示，功能完整")
-    
-    # ========== Cleanup：关闭新标签页并恢复网络 ==========
-    with allure.step("步骤4：清理和恢复"):
-        new_page.close()
-        page.context.set_offline(False)
-        logger.info("✓ 新标签页已关闭，网络已恢复")
-    
-    logger.info("="*80)
-    logger.info("✅ TC019: 复制的链接可访问性验证 - 测试通过！")
-    logger.info("="*80)
+        with allure.step("验证4：新页面功能正常"):
+            # 验证新页面的 Share 按钮也存在
+            new_detail_share_page = DetailPageShare(new_page)
+            new_share_button_visible = new_detail_share_page.is_share_button_visible(timeout=3000)
+            assert new_share_button_visible, "新页面的 Share 按钮不可见"
+            logger.info("✓ 新页面的 Share 按钮正常显示，功能完整")
+        
+        logger.info("="*80)
+        logger.info("✅ TC019: 复制的链接可访问性验证 - 测试通过！")
+        logger.info("="*80)
+        
+    finally:
+        # ========== 确保清理资源（即使测试失败） ==========
+        try:
+            if 'new_page' in locals():
+                new_page.close()
+                logger.info("✓ 新标签页已关闭（finally块）")
+            page.context.set_offline(False)
+            logger.info("✓ 网络已恢复（finally块）")
+        except Exception as e:
+            logger.warning(f"清理资源失败: {e}")

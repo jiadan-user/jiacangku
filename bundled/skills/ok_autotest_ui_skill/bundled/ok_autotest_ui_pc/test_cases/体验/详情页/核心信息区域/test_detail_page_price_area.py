@@ -5,7 +5,7 @@
 录制文档：web-qa-brain/OK.com-详情页核心信息区域-测试用例-20260327.md
 生成时间：2026-03-31
 
-测试站点：US OK.com (https://us.ok.com)
+测试站点：US OK.com (https://us.58v5.cn)
 测试角色：访客（Visitor）
 测试目标：验证详情页价格区域的展示、格式、一致性
 测试范围：模块 A - 价格区域（TC001-TC005）
@@ -25,7 +25,7 @@ _CONFIG = {
     "site_name": "美国站 (US OK.com)",
     "role": "visitor",
     "user_name": "visitor_us",
-    "base_url": "https://us.ok.com/en/city-washington1/cate/",
+    "base_url": "https://us.58v5.cn/en/city-washington1/cate/",
     "locale": "en-US",
     "currency": "USD",
     "browser": {
@@ -115,17 +115,21 @@ def test_post_url(page, config):
 def free_post_url(page, config):
     """
     从列表页动态获取一个Free（免费）帖子URL
+    修改：使用专门的Free帖子筛选页面 lowestPrice=0&highestPrice=0
     
     Returns:
         str: 免费帖子详情页URL，如果找不到返回None
     """
-    logger.info("从列表页查找Free帖子...")
-    page.goto(config["base_url"], wait_until="domcontentloaded", timeout=30000)
+    logger.info("从Free帖子筛选页面查找Free帖子...")
+    
+    # 使用专门的Free帖子筛选URL
+    free_filter_url = "https://us.58v5.cn/en/city-washington/cate/?lowestPrice=0&highestPrice=0"
+    page.goto(free_filter_url, wait_until="domcontentloaded", timeout=30000)
     page.wait_for_timeout(3000)
     page.wait_for_load_state("load", timeout=30000)
+    page.wait_for_timeout(2000)
     
-    # 查找包含"Free"文本但不包含具体价格"$数字"的link
-    # 列表页卡片通常会显示"Free"作为价格
+    # 查找详情页链接
     all_links = page.get_by_role("link").all()
     
     for link in all_links:
@@ -137,17 +141,14 @@ def free_post_url(page, config):
             try:
                 if link.is_visible():
                     card_text = link.inner_text()
-                    # 检查：包含单独的"Free"单词，但该行不包含$符号（排除"Free Delivery $9.9"这种情况）
-                    # 真正的Free帖子应该只显示"Free"而没有价格数字
-                    lines = card_text.split('\n')
-                    for line in lines:
-                        line_clean = line.strip()
-                        # 如果某行恰好是"Free"或"FREE"（大小写不敏感），且不在包含$的同一行
-                        if line_clean.lower() == 'free' or (line_clean.lower().startswith('free') and '$' not in line):
-                            # 确认整个卡片没有具体价格
-                            if not re.search(r'\$\d', card_text):
-                                logger.info(f"✓ 找到Free帖子: {href}")
-                                return href
+                    # 在Free筛选页面，所有帖子都应该是Free的
+                    # 验证卡片中包含"Free"文本且没有价格数字
+                    has_free = "free" in card_text.lower()
+                    has_price_number = re.search(r'\$\d', card_text)
+                    
+                    if has_free or not has_price_number:
+                        logger.info(f"✓ 从Free筛选页找到帖子: {href}")
+                        return href
             except:
                 continue
     

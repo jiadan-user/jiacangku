@@ -155,6 +155,17 @@ class OkCityHeaderPage(BasePage):
                 self._topbar_item_regex(
                     re.compile(r"Log\s*in\s*/\s*Register", re.I)
                 ).wait_for(state="visible", timeout=timeout)
+            elif text == "English":
+                # 58v5.cn 使用图标而非文本，检查图标是否存在
+                try:
+                    lang_icon = self.page.locator("div[class*='TopBarRightContent'] div[class*='iconList'] img").first
+                    if lang_icon.is_visible(timeout=2000):
+                        self.logger.info("语言选择器为图标形式（58v5.cn）")
+                        return
+                except Exception:
+                    pass
+                # 兜底：检查文本
+                self._topbar_item_exact(text).wait_for(state="visible", timeout=timeout)
             else:
                 self._topbar_item_exact(text).wait_for(
                     state="visible", timeout=timeout
@@ -177,9 +188,47 @@ class OkCityHeaderPage(BasePage):
             raise
 
     def click_header_english(self):
-        """MCP: await page.getByText('English').click()"""
+        """
+        触发语言选择器下拉面板（ok.com是点击"English"文本，58v5.cn是悬停图标）
+        """
         try:
             self._close_floating_layers()
+            
+            # 优先尝试图标悬停方式（58v5.cn）
+            try:
+                # 查找顶部右侧区域的语言图标（通常是第一个或前几个图标）
+                lang_icon = self.page.locator("div[class*='TopBarRightContent'] div[class*='iconList'] img").first
+                if lang_icon.is_visible(timeout=2000):
+                    self.logger.info("使用悬停方式触发语言面板（58v5.cn）")
+                    lang_icon.hover()  # 悬停而不是点击
+                    self.page.wait_for_timeout(1000)  # 增加等待时间
+                    
+                    # 检查是否有任何浮层出现
+                    try:
+                        # 先检查是否有任何tooltip或dropdown可见
+                        visible_check = self.page.wait_for_function(
+                            """() => {
+                                const tooltips = document.querySelectorAll('[role="tooltip"], [id*="tooltip"], div[class*="dropdown"], div[class*="panel"]');
+                                for (let el of tooltips) {
+                                    if (el.offsetParent !== null) {
+                                        return true;
+                                    }
+                                }
+                                return false;
+                            }""",
+                            timeout=5000,
+                        )
+                        self.logger.info("✓ 悬停后检测到浮层")
+                        # 悬停成功，直接返回，不再尝试点击文本
+                        return
+                    except Exception as e:
+                        self.logger.warning(f"悬停后未检测到浮层: {e}")
+                        # 继续尝试传统方式
+            except Exception as e:
+                self.logger.info(f"图标悬停方式失败，尝试文本点击方式: {e}")
+            
+            # 兜底：文本点击方式（ok.com）
+            self.logger.info("使用点击方式触发语言面板（ok.com）")
             self._topbar_item_exact("English").click()
             try:
                 self._wait_dropdown_visible(12000)
@@ -187,26 +236,48 @@ class OkCityHeaderPage(BasePage):
                 self.dismiss_ok_cookie_banner()
                 self._topbar_item_exact("English").click()
                 self._wait_dropdown_visible(25000)
+                
         except Exception as e:
-            self.logger.error(f"点击 English 失败: {e}")
+            self.logger.error(f"触发语言选择器失败: {e}")
             raise
 
     def click_language_español(self):
-        """MCP: await page.getByText('Español').click()"""
+        """
+        点击语言浮层中的 Español 选项
+        需要确保浮层保持打开状态
+        """
         try:
-            last_err = None
-            for container in (
-                self.page.get_by_role("tooltip"),
-                self.page.locator(self._TOOLTIP_PANEL),
-            ):
+            # 在点击前确保浮层依然打开（可能需要重新悬停）
+            try:
+                # 先检查浮层是否可见
+                tooltip_visible = self.page.get_by_role("tooltip").is_visible(timeout=2000)
+                if not tooltip_visible:
+                    self.logger.warning("浮层已消失，重新悬停...")
+                    # 重新悬停以打开浮层
+                    lang_icon = self.page.locator("div[class*='TopBarRightContent'] div[class*='iconList'] img").first
+                    lang_icon.hover()
+                    self.page.wait_for_timeout(1000)
+            except Exception:
+                pass
+            
+            # 直接尝试点击全局可见的 Español（最简单有效）
+            try:
+                self.page.get_by_text("Español", exact=True).first.click(timeout=10000)
+                self.page.wait_for_load_state("domcontentloaded", timeout=45000)
+                self.logger.info("✓ 成功点击 Español")
+                return
+            except Exception as e:
+                self.logger.warning(f"全局点击 Español 失败: {e}")
+                
+                # 兜底：在tooltip中查找
                 try:
-                    container.get_by_text(re.compile(r"Español")).first.click(timeout=8000)
+                    self.page.get_by_role("tooltip").get_by_text("Español").first.click(timeout=8000)
                     self.page.wait_for_load_state("domcontentloaded", timeout=45000)
+                    self.logger.info("✓ 在tooltip中点击 Español 成功")
                     return
-                except Exception as e:
-                    last_err = e
-                    continue
-            raise last_err if last_err else RuntimeError("Español 未点击")
+                except Exception as e2:
+                    self.logger.error(f"在tooltip中点击 Español 也失败: {e2}")
+                    raise
         except Exception as e:
             self.logger.error(f"点击 Español 失败: {e}")
             raise
@@ -253,6 +324,23 @@ class OkCityHeaderPage(BasePage):
             self.logger.error(f"点击 Messages 失败: {e}")
             raise
 
+    def get_logged_in_display_name(self, timeout: int = 10000) -> str:
+        """
+        获取登录后顶栏显示的用户昵称（动态获取，避免硬编码）
+        返回昵称文本，如果未找到则返回空字符串
+        """
+        try:
+            # 查找顶部右侧区域中以"OKer"开头的文本（用户昵称模式）
+            # 58v5.cn 和 ok.com 都使用 OKer 前缀
+            user_locator = self.page.locator("div[class*='TopBarRightContent'] >> text=/^OKer/").first
+            user_locator.wait_for(state="visible", timeout=timeout)
+            display_name = user_locator.text_content().strip()
+            self.logger.info(f"✓ 获取到登录用户昵称: {display_name}")
+            return display_name
+        except Exception as e:
+            self.logger.warning(f"获取用户昵称失败: {e}")
+            return ""
+    
     def click_account_display_name(self, display_name: str):
         """MCP: await page.getByText('OKerUS_xxx').click()"""
         try:

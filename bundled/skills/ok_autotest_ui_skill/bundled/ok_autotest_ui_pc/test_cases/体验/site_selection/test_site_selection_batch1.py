@@ -24,7 +24,7 @@ _CONFIG = {
     "site_name": "OK.com 地区选择页",
     "role": "visitor",
     "user_name": "guest",
-    "base_url": "https://www.ok.com/biz/en/site",
+    "base_url": "https://home.58v5.cn/biz/en/site",
     "test_account": None,
     "locale": "en",
     "currency": "USD",
@@ -75,7 +75,7 @@ def test_tc001_click_united_states_should_redirect_to_us_site(page, config):
     # ==================== Assert ====================
     with allure.step("验证：URL跳转到美国站"):
         current_url = site_selection_page.get_current_url()
-        assert "us.ok.com" in current_url, f"URL未跳转到美国站，当前URL: {current_url}"
+        assert "us.58v5.cn" in current_url, f"URL未跳转到美国站，当前URL: {current_url}"
         assert "city-washington1" in current_url, f"URL路径不正确，当前URL: {current_url}"
         logger.info(f"✓ URL验证通过: {current_url}")
     
@@ -124,7 +124,7 @@ def test_tc002_click_uae_should_redirect_to_ae_site(page, config):
     # ==================== Assert ====================
     with allure.step("验证：URL跳转到阿联酋站"):
         current_url = site_selection_page.get_current_url()
-        assert "ae.ok.com" in current_url, f"URL未跳转到阿联酋站，当前URL: {current_url}"
+        assert "ae.58v5.cn" in current_url, f"URL未跳转到阿联酋站，当前URL: {current_url}"
         assert "city-abu-dhabi" in current_url, f"URL路径不正确，当前URL: {current_url}"
         logger.info(f"✓ URL验证通过: {current_url}")
     
@@ -173,7 +173,7 @@ def test_tc003_click_hong_kong_should_redirect_to_hk_site(page, config):
     # ==================== Assert ====================
     with allure.step("验证：URL跳转到香港站"):
         current_url = site_selection_page.get_current_url()
-        assert "hk.ok.com" in current_url, f"URL未跳转到香港站，当前URL: {current_url}"
+        assert "hk.58v5.cn" in current_url, f"URL未跳转到香港站，当前URL: {current_url}"
         logger.info(f"✓ URL验证通过: {current_url}")
     
     with allure.step("验证：页面标题包含香港站点信息"):
@@ -221,14 +221,14 @@ def test_tc004_click_brasil_should_redirect_to_br_site(page, config):
     # ==================== Assert ====================
     with allure.step("验证：URL跳转到巴西站"):
         current_url = site_selection_page.get_current_url()
-        assert "br.ok.com" in current_url, f"URL未跳转到巴西站，当前URL: {current_url}"
+        assert "br.58v5.cn" in current_url, f"URL未跳转到巴西站，当前URL: {current_url}"
         logger.info(f"✓ URL验证通过: {current_url}")
     
     with allure.step("验证：页面标题包含巴西站点信息或跳转到巴西首页"):
         page_title = site_selection_page.get_page_title()
         # 巴西站可能直接跳转到首页，标题可能为空或为默认标题
         # 只要URL正确即可，放宽标题验证
-        assert current_url.startswith("https://br.ok.com"), \
+        assert current_url.startswith("https://br.58v5.cn"), \
             f"URL未正确跳转到巴西站，当前URL: {current_url}"
         logger.info(f"✓ URL验证通过（巴西站）: {current_url}, 标题: {page_title if page_title else '(空)'}")
     
@@ -291,7 +291,7 @@ def test_tc005_verify_all_country_links_url_format(page, config):
             
             # 验证URL格式
             assert url.startswith("https://"), f"URL格式错误（缺少https）: {url}"
-            assert ".ok.com" in url, f"URL格式错误（不包含.ok.com）: {url}"
+            assert ".58v5.cn" in url, f"URL格式错误（不包含.58v5.cn）: {url}"
             
             # 提取国家代码
             country_code = url.split("//")[1].split(".")[0]
