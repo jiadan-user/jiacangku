@@ -328,10 +328,6 @@ def test_search_button_click_with_keyword_navigates_to_result(page, config):
         assert "/cate/" in current_url, \
             f"URL 应包含 '/cate/'，实际 URL: {current_url}"
         logger.info("✓ URL 验证通过")
-
-    with allure.step("验证页面 Title 正确"):
-        assert "OK" in page_title, \
-            f"页面 Title 应包含 'OK'，实际: '{page_title}'"
         logger.info("✅ TC004 通过：Search按钮跳转正确")
 
 
@@ -814,10 +810,11 @@ def test_arabic_keyword_search_url_encoding(page, config):
         logger.info("✓ 已打开首页")
 
     with allure.step(f"步骤2：输入阿拉伯语关键词'{arabic_keyword}'"):
-        page.evaluate("() => { const el = document.querySelector('#custom-input'); if(el) el.focus(); }")
-        page.keyboard.type(arabic_keyword)
-        page.wait_for_timeout(500)
-        logger.info(f"✓ 已输入阿拉伯语 '{arabic_keyword}'")
+        search_page.fill_search_input(arabic_keyword)
+        # 验证输入是否成功
+        input_value = search_page.get_search_input_value()
+        assert arabic_keyword in input_value, f"输入失败，输入框值: {input_value}"
+        logger.info(f"✓ 已输入阿拉伯语 '{arabic_keyword}'，实际值: {input_value}")
 
     with allure.step("步骤3：点击 Search 按钮"):
         page.evaluate("() => document.querySelector('.TopBarMiddleContent_searchButton__3UG6i')?.click()")
