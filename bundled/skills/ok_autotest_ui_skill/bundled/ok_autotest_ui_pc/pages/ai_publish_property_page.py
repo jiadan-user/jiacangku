@@ -85,35 +85,111 @@ class AiPublishPropertyPage(BasePage):
     
     def input_title(self, title):
         """
-        输入Title（通过id="title"的input元素）
+        输入Title（多种定位策略）
         
         Args:
             title: Title内容
         """
         try:
-            # 直接通过id定位Title输入框
+            # 策略1: 通过id定位
             title_input = self.page.locator('input#title').first
-            
-            if not title_input.is_visible(timeout=3000):
-                raise Exception("未找到input#title元素")
-            title_input.click()
-            self.page.wait_for_timeout(500)
-            title_input.clear()
-            title_input.fill(title)
-            self.page.wait_for_timeout(1000)
-                
-        except Exception as e:
-            self.logger.error(f"输入Title失败: {e}")
-            raise
+            if title_input.count() > 0 and title_input.is_visible(timeout=2000):
+                title_input.click()
+                self.page.wait_for_timeout(500)
+                title_input.clear()
+                title_input.fill(title)
+                self.page.wait_for_timeout(1000)
+                return
+        except Exception:
+            pass
+        
+        try:
+            # 策略2: 通过placeholder文本定位
+            title_input = self.page.get_by_placeholder('e.g. Modern 2BR apartment near city center').first
+            if title_input.count() > 0 and title_input.is_visible(timeout=2000):
+                title_input.click()
+                self.page.wait_for_timeout(500)
+                title_input.clear()
+                title_input.fill(title)
+                self.page.wait_for_timeout(1000)
+                return
+        except Exception:
+            pass
+        
+        try:
+            # 策略3: 通过Label "Title" 关联的input
+            title_label = self.page.locator('text=Title').first
+            title_container = title_label.locator('..')
+            title_input = title_container.locator('input[type="text"]').first
+            if title_input.count() > 0 and title_input.is_visible(timeout=2000):
+                title_input.click()
+                self.page.wait_for_timeout(500)
+                title_input.clear()
+                title_input.fill(title)
+                self.page.wait_for_timeout(1000)
+                return
+        except Exception:
+            pass
+        
+        # 所有策略都失败
+        self.logger.error("所有Title定位策略均失败")
+        raise Exception("未找到Title输入框元素")
     
     def click_title_outside(self):
-        """点击Title字段外部触发失焦（录制：getByText Description *）"""
+        """
+        点击Title字段外部触发失焦
+        
+        多种策略尝试：
+        1. 点击 Description * 标签
+        2. 点击 Description textarea
+        3. 点击 Body 元素（兜底方案）
+        """
+        # 策略1: 尝试点击 Description * 文本
         try:
-            self.page.get_by_text("Description *").first.click()
-            self.page.wait_for_timeout(3000)
+            desc_label = self.page.get_by_text("Description *").first
+            if desc_label.is_visible(timeout=2000):
+                desc_label.click()
+                self.page.wait_for_timeout(1000)
+                return
+        except Exception:
+            pass
+        
+        # 策略2: 尝试点击 Description 区域的 textarea
+        try:
+            desc_textarea = self.page.locator('textarea.limited-textarea-input').first
+            if desc_textarea.is_visible(timeout=2000):
+                desc_textarea.click()
+                self.page.wait_for_timeout(1000)
+                return
+        except Exception:
+            pass
+        
+        # 策略3: 尝试点击 Description 容器
+        try:
+            desc_container = self.page.locator('div').filter(has_text='Description').first
+            if desc_container.is_visible(timeout=2000):
+                desc_container.click()
+                self.page.wait_for_timeout(1000)
+                return
+        except Exception:
+            pass
+        
+        # 策略4: 兜底方案 - 直接触发 Title 输入框的 blur 事件
+        try:
+            self.page.evaluate("""
+                const titleInput = document.querySelector('input#title') || 
+                                 document.querySelector('input[placeholder*="Modern"]');
+                if (titleInput) {
+                    titleInput.blur();
+                }
+            """)
+            self.page.wait_for_timeout(1000)
+            self.logger.info("✓ 使用 blur 事件触发失焦")
+            return
         except Exception as e:
-            self.logger.error(f"点击Title外部失败: {e}")
-            raise
+            self.logger.warning(f"所有失焦策略均失败: {e}")
+            # 不抛出异常，因为失焦操作可能不是必须的
+            pass
     
     def click_write_with_ai(self):
         """点击 Write with AI 按钮"""
@@ -124,20 +200,92 @@ class AiPublishPropertyPage(BasePage):
             self.logger.error(f"点击Write with AI按钮失败: {e}")
             raise
     
-    def is_write_with_ai_button_visible(self):
+    def is_write_with_ai_button_visible(self) -> bool:
         """
-        判断 Write with AI 按钮是否显示且可点击
+        检查 Write with AI 按钮是否可见
+        
+        按照 ai-description-retry-pattern 规则实现：
+        - 必须捕获所有异常
+        - 超时返回 False，不抛出异常
+        - 使用简短的超时（2秒）
         
         Returns:
-            bool: True表示按钮可见且可点击，False表示不可见或不可点击
+            bool: True表示按钮可见，False表示不可见
         """
         try:
-            button = self.page.get_by_role("button", name="Write with AI")
-            if button.count() > 0:
-                return button.is_visible(timeout=1000) and button.is_enabled(timeout=1000)
-            return False
+            button = self.page.get_by_role("button", name="Write with AI").first
+            return button.is_visible(timeout=2000)
         except Exception:
             return False
+    
+    def is_ai_working(self) -> bool:
+        """
+        检查 AI 是否正在工作（通过检测 "AI is working on it" 文本）
+        
+        Returns:
+            bool: True表示AI正在工作，False表示不在工作
+        """
+        try:
+            # 检查 "AI is working on it" 文本
+            ai_working = self.page.get_by_text("AI is working on it").first
+            return ai_working.is_visible(timeout=1000)
+        except Exception:
+            return False
+    
+    def wait_for_ai_description_generation(self, timeout: int = 100000) -> bool:
+        """
+        等待 AI 描述生成完成（带智能重试机制）
+        
+        优化逻辑：
+        - 当显示 Write with AI 按钮 → 重新点击，继续操作
+        - 当显示 "AI is working on it" → AI 正在生成，继续下次循环判断
+        - 否则 → 代表生成完成，停止循环
+        
+        Args:
+            timeout: 最大等待时间(毫秒)，默认100000ms（100秒）
+            
+        Returns:
+            bool: True表示AI成功生成内容，False表示超时未生成
+        """
+        # 循环检查模式：最多10次，每次等待10秒
+        max_retries = 10
+        for i in range(max_retries):
+            # 1. 等待间隔
+            self.page.wait_for_timeout(10000)
+            self.logger.info(f"⏳ 已等待 10 秒 (第 {i+1}/{max_retries} 次)")
+            
+            # 2. 优先检查 Write with AI 按钮是否可见
+            if self.is_write_with_ai_button_visible():
+                self.logger.info(f"⚠️ 检测到 Write with AI 按钮，重新点击 (第 {i+1}/{max_retries} 次)")
+                try:
+                    self.click_write_with_ai()
+                    continue  # 点击后继续下次循环
+                except Exception as e:
+                    self.logger.warning(f"重新点击失败: {e}，继续下次循环...")
+                    continue
+            
+            # 3. 检查是否显示 "AI is working on it"
+            if self.is_ai_working():
+                self.logger.info(f"⏳ 检测到 'AI is working on it'，AI 正在生成中，继续等待... (第 {i+1}/{max_retries} 次)")
+                continue  # 继续下次循环
+            
+            # 4. 既不显示按钮也不显示工作状态 → 代表生成完成
+            self.logger.info(f"✓ 未检测到按钮或工作状态，判断为生成完成 (第 {i+1} 次检查)")
+            
+            # 额外等待3秒确保描述内容完全填充
+            self.page.wait_for_timeout(3000)
+            
+            description = self.get_description_value()
+            if len(description) > 0:
+                self.logger.info(f"✅ AI描述生成完成，长度: {len(description)}字符")
+                return True
+            else:
+                self.logger.warning(f"⚠️ 判断为生成完成但描述为空或过短(长度: {len(description)})，继续等待...")
+                continue
+        
+        # 超时返回
+        self.logger.warning(f"⚠️ AI描述未在 {max_retries * 10}秒 内生成")
+        return False
     
     def click_suggested_category_first(self):
         """点击第一个AI推荐类目"""
@@ -203,50 +351,80 @@ class AiPublishPropertyPage(BasePage):
         获取已上传图片数量
         
         Returns:
-            str: 上传计数（如 "1/9"）
+            str: 上传计数（如 "1/20" 或 "1/9"）
         """
         try:
-            # 定位Upload计数显示（更精确的选择器）
-            # 查找包含"Upload"和数字的文本
-            upload_area = self.page.locator('div').filter(has_text='Pictures').first
-            upload_text = upload_area.locator('div').filter(has_text='/9').first.inner_text()
-            return upload_text.strip()
+            # 方法1: 直接查找匹配 "数字/数字" 格式的文本(最简单有效)
+            count_elem = self.page.locator('text=/\\d+\\/\\d+/').first
+            return count_elem.inner_text(timeout=3000).strip()
         except Exception as e:
-            self.logger.error(f"获取上传计数失败: {e}")
-            # 尝试备选方案：直接查找包含/9的文本
+            self.logger.error(f"获取上传计数失败(方法1): {e}")
+            # 方法2: 通过Pictures区域定位
             try:
-                count_elem = self.page.locator('text=/9').first
-                return count_elem.inner_text().strip()
-            except Exception:
-                return "0/9"
+                pictures_area = self.page.locator('text=Pictures').first
+                parent = pictures_area.locator('..')
+                count_text = parent.locator('text=/\\d+\\/\\d+/').first.inner_text(timeout=2000)
+                return count_text.strip()
+            except Exception as e2:
+                self.logger.error(f"获取上传计数失败(方法2): {e2}")
+                return "0/20"
     
-    def get_description_value(self):
+    def get_description_value(self) -> str:
         """
-        获取Description字段的值，兼容 textarea 和 contenteditable 两种形态。
+        获取Description字段的值
+        
+        实际 HTML 结构：
+        <textarea autocomplete="off" placeholder="..." maxlength="10000" 
+                  class="limited-textarea-input form-control" ...>内容</textarea>
+        
+        按照 ai-description-retry-pattern 规则实现：
+        - 必须有容错处理
+        - 失败时返回空字符串 ""，不抛出异常
         
         Returns:
-            str: Description内容
+            str: Description内容，获取失败返回空字符串
         """
-        # 优先尝试 textarea
+        # 方法1: 通过 class "limited-textarea-input form-control"
         try:
-            desc_textarea = self.page.locator('textarea#description').first
+            desc_textarea = self.page.locator('textarea.limited-textarea-input.form-control').first
             if desc_textarea.count() > 0 and desc_textarea.is_visible(timeout=1000):
                 val = desc_textarea.input_value()
                 if val:
-                    return val
+                    return val.strip()
         except Exception:
             pass
 
+        # 方法2: 通过 maxlength="10000"
+        try:
+            desc_textarea = self.page.locator('textarea[maxlength="10000"]').first
+            if desc_textarea.count() > 0 and desc_textarea.is_visible(timeout=1000):
+                val = desc_textarea.input_value()
+                if val:
+                    return val.strip()
+        except Exception:
+            pass
+        
+        # 方法3: 通过 Description * 容器下的 textarea
         try:
             desc_textarea = self.page.locator('div').filter(has_text='Description *').locator('textarea').first
             if desc_textarea.count() > 0 and desc_textarea.is_visible(timeout=1000):
                 val = desc_textarea.input_value()
                 if val:
-                    return val
+                    return val.strip()
+        except Exception:
+            pass
+        
+        # 方法4: 通过 id (备用)
+        try:
+            desc_textarea = self.page.locator('textarea#description').first
+            if desc_textarea.count() > 0 and desc_textarea.is_visible(timeout=1000):
+                val = desc_textarea.input_value()
+                if val:
+                    return val.strip()
         except Exception:
             pass
 
-        # 兜底：尝试 contenteditable div
+        # 方法5: 兜底 - contenteditable (旧版本可能使用)
         try:
             desc_editable = self.page.locator('[contenteditable="true"]').first
             if desc_editable.count() > 0 and desc_editable.is_visible(timeout=1000):
@@ -255,18 +433,6 @@ class AiPublishPropertyPage(BasePage):
                     return val
         except Exception:
             pass
-
-        try:
-            self.logger.debug("尝试通过 Description 标签附近查找内容区域")
-            desc_container = self.page.locator('div').filter(has_text='Description *').first
-            # 查找同级或子级的 contenteditable
-            editable = desc_container.locator('[contenteditable]').first
-            if editable.count() > 0 and editable.is_visible(timeout=1000):
-                val = editable.inner_text().strip()
-                if val:
-                    return val
-        except Exception as e:
-            self.logger.error(f"获取Description值失败: {e}")
 
         return ""
     
@@ -307,7 +473,7 @@ class AiPublishPropertyPage(BasePage):
     def parse_upload_count(self, upload_count_str):
         """
         解析上传计数字符串为当前已上传数量。
-        例如 "0/9" -> 0, "Upload 1/9" -> 1, "3/9" -> 3
+        例如 "0/20" -> 0, "Upload 1/20" -> 1, "3/20" -> 3, "1/9" -> 1
         
         Args:
             upload_count_str: get_upload_count() 返回值
@@ -319,7 +485,8 @@ class AiPublishPropertyPage(BasePage):
             if not upload_count_str:
                 return 0
             import re
-            match = re.search(r'(\d+)/9', upload_count_str)
+            # 动态匹配 "数字/数字" 格式,不限制总数
+            match = re.search(r'(\d+)/(\d+)', upload_count_str)
             if match:
                 return int(match.group(1))
             return 0

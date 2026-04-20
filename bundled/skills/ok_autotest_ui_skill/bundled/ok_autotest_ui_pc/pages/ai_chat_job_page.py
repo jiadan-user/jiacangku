@@ -269,8 +269,10 @@ class AiChatJobPage(ChatPage):
     def verify_ai_reply_after_send(self):
         """验证 AI Auto Reply 的时间戳在发送消息时间之后
         
+        由于页面显示的时间只精确到分钟，允许同一分钟内的消息（时间差 < 60秒）
+        
         Returns:
-            bool: True 如果 AI 回复时间在发送时间之后，否则 False
+            bool: True 如果 AI 回复时间在发送时间之后或在同一分钟内，否则 False
         """
         if self.send_time is None:
             self.logger.error("❌ 未记录消息发送时间，无法验证")
@@ -280,14 +282,20 @@ class AiChatJobPage(ChatPage):
             ai_reply_time = self.get_ai_reply_timestamp()
             time_diff = (ai_reply_time - self.send_time).total_seconds()
             
+            self.logger.info(f"✓ 发送时间: {self.send_time.strftime('%H:%M:%S.%f')[:-3]}")
             self.logger.info(f"✓ AI 回复时间: {ai_reply_time.strftime('%H:%M:%S.%f')[:-3]}")
             self.logger.info(f"✓ 时间差: {time_diff:.3f} 秒")
             
-            if time_diff >= 0:
-                self.logger.info(f"✅ AI 回复时间在发送时间之后（延迟 {time_diff:.3f} 秒）")
+            # 由于页面时间只精确到分钟，允许 -60秒 到 +∞ 的范围
+            # 即：如果 AI 回复时间和发送时间在同一分钟内，认为是合理的
+            if time_diff >= -60:
+                if time_diff < 0:
+                    self.logger.info(f"✅ AI 回复时间与发送时间在同一分钟内（时间差 {time_diff:.3f} 秒，允许范围）")
+                else:
+                    self.logger.info(f"✅ AI 回复时间在发送时间之后（延迟 {time_diff:.3f} 秒）")
                 return True
             else:
-                self.logger.error(f"❌ AI 回复时间早于发送时间（差值 {time_diff:.3f} 秒）")
+                self.logger.error(f"❌ AI 回复时间早于发送时间超过1分钟（差值 {time_diff:.3f} 秒）")
                 return False
         except Exception as e:
             self.logger.error(f"验证 AI 回复时间失败: {e}")
