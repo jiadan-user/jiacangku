@@ -5,6 +5,8 @@ OK美国站 - News 模块测试
 生成时间：2026-03-05
 总用例数：24 条可自动化用例
 """
+import re
+
 import pytest
 import allure
 from playwright.sync_api import Page, expect
@@ -12,6 +14,38 @@ from datetime import datetime
 from utils.logger import setup_logger
 
 logger = setup_logger()
+
+
+def _is_us_site_logged_in(page: Page) -> bool:
+    """
+    检测当前是否已登录（仅「正面信号」为 True）。
+
+    module 级 page 在 TC002 登录后仍带会话；但若仅凭「未扫到访客文案」判 True，
+    会在未登录时跳过登录（假阳性）。因此必须先看到访客入口，或看到顶栏用户信息区。
+    """
+    page.wait_for_timeout(500)
+    try:
+        guest = page.get_by_text(re.compile(r"Log\s*in\s*/\s*Register", re.I)).first
+        if guest.is_visible(timeout=5000):
+            return False
+    except Exception:
+        pass
+
+    positive_selectors = [
+        "header [class*='PcUserInfo_userInfoArea']",
+        "header [class*='userInfoArea']",
+        "[class*='PcUserInfo_userInfoArea']",
+        "[class*='PcUserInfo'] [class*='avatar']",
+        "header img[alt*='avatar' i]",
+        "header img[alt*='user' i]",
+    ]
+    for sel in positive_selectors:
+        try:
+            if page.locator(sel).first.is_visible(timeout=3000):
+                return True
+        except Exception:
+            continue
+    return False
 
 
 # ============================================
@@ -131,15 +165,30 @@ def logged_in_page(page, config):
     
     login_page = LoginPage(page)
     
-    # 访问首页
-    page.goto(config["base_url"], wait_until="domcontentloaded", timeout=60000)
+    # 与用例一致打开 News 列表（module 级 page 在 ask_news 上更易稳定识别顶栏登录态；纯首页偶发结构与频道不一致）
+    entry = config.get("news_url") or config["base_url"]
+    page.goto(entry, wait_until="domcontentloaded", timeout=60000)
     page.wait_for_load_state("load")
     
     # 处理 Cookie 弹窗
     handle_cookie_popup(page)
     
-    # 打开登录对话框
-    login_page.click_login_register_button()
+    # module 级 page 共享：若同文件内先前用例已登录，跳过重复点击登录入口
+    if _is_us_site_logged_in(page):
+        logger.info("✓ 检测到已登录状态（共享浏览器上下文），跳过登录流程")
+        yield page
+        return
+    
+    # 打开登录对话框（已登录但顶栏特征未命中时，点击会超时，需二次确认）
+    try:
+        login_page.click_login_register_button()
+    except Exception as e:
+        logger.warning(f"点击登录入口异常，重试判断是否已登录: {e}")
+        if _is_us_site_logged_in(page):
+            logger.info("✓ 重试确认已登录，跳过表单步骤")
+            yield page
+            return
+        raise
     
     # 输入邮箱
     login_page.input_email(config["test_account"]["username"])
@@ -678,12 +727,12 @@ def test_tc021_user_menu_toggle(logged_in_page, config):
         user_avatar = page.locator("[class*='PcUserInfo_userInfoArea'], [class*='userInfoArea']").first
         expect(user_avatar).to_be_visible(timeout=10000)
         user_avatar.click()
-        page.wait_for_timeout(1000)
+        page.wait_for_timeout(500)
     
     with allure.step("验证菜单展开"):
-        # 等待菜单可见
-        menu = page.locator("[class*='userInfoTooltip']").first
-        expect(menu).to_be_visible(timeout=5000)
+        # 使用单一容器，避免 or_ 组合在 strict mode 下命中多个节点
+        menu_panel = page.locator("[class*='PcUserInfo_userInfoTooltip'], [class*='userInfoTooltip']").first
+        expect(menu_panel).to_be_visible(timeout=8000)
         logger.info("✓ TC021 通过：用户菜单展开成功")
 
 
@@ -709,10 +758,11 @@ def test_tc022_user_menu_profile_navigation(logged_in_page, config):
         page.wait_for_timeout(1000)
     
     with allure.step("点击 Profile"):
-        # 使用 get_by_text 精确匹配
-        profile_link = page.get_by_text("Profile", exact=True)
-        expect(profile_link).to_be_visible(timeout=3000)
-        profile_link.click()
+        # Profile 可能为 span/div，非 link；在 userInfoTooltip 容器内点文案
+        menu_root = page.locator("[class*='PcUserInfo_userInfoTooltip'], [class*='userInfoTooltip']").first
+        profile_item = menu_root.get_by_text(re.compile(r"^Profile$", re.I))
+        expect(profile_item).to_be_visible(timeout=8000)
+        profile_item.click()
         page.wait_for_load_state("load")
     
     with allure.step("验证跳转到个人中心"):
