@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-16T13:13:45Z",
+  "generated_at": "2026-04-20T03:21:50Z",
   "root_dir": "/Users/shenchang/Documents/workspace/igit/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc",
   "case_count": 1963,
   "governed_case_count": 1962,
@@ -57336,12 +57336,11 @@
       ],
       "allure_feature": "详情页",
       "allure_story": "图片区域 - 大图模式翻页",
-      "allure_title": "大图模式缩略图翻页箭头支持循环翻页（7张图跳过）",
-      "severity": "minor",
+      "allure_title": "大图模式缩略图翻页箭头支持循环翻页",
+      "severity": "normal",
       "module_id": "tiyan",
       "feature_id": "tiyan_",
       "aliases": [
-        "7",
         "experience",
         "tiyan",
         "tiyan_"
@@ -57626,9 +57625,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_cancel_favourite[chromium]",
+      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_cancel_favourite",
       "file_path": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py",
-      "test_name": "test_logged_user_cancel_favourite[chromium]",
+      "test_name": "test_logged_user_cancel_favourite",
       "case_id": "case_id_favourites_tc006",
       "priority": "p0",
       "site": "us",
@@ -57658,9 +57657,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_favourite_appears_in_list[chromium]",
+      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_favourite_appears_in_list",
       "file_path": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py",
-      "test_name": "test_logged_user_favourite_appears_in_list[chromium]",
+      "test_name": "test_logged_user_favourite_appears_in_list",
       "case_id": "case_id_favourites_tc013",
       "priority": "p0",
       "site": "us",
@@ -57690,9 +57689,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_favourite_persists_after_navigation[chromium]",
+      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_favourite_persists_after_navigation",
       "file_path": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py",
-      "test_name": "test_logged_user_favourite_persists_after_navigation[chromium]",
+      "test_name": "test_logged_user_favourite_persists_after_navigation",
       "case_id": "case_id_favourites_tc011",
       "priority": "p0",
       "site": "us",
@@ -57722,9 +57721,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_favourite_persists_after_refresh[chromium]",
+      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_favourite_persists_after_refresh",
       "file_path": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py",
-      "test_name": "test_logged_user_favourite_persists_after_refresh[chromium]",
+      "test_name": "test_logged_user_favourite_persists_after_refresh",
       "case_id": "case_id_favourites_tc010",
       "priority": "p0",
       "site": "us",
@@ -57754,9 +57753,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_first_favourite[chromium]",
+      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_first_favourite",
       "file_path": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py",
-      "test_name": "test_logged_user_first_favourite[chromium]",
+      "test_name": "test_logged_user_first_favourite",
       "case_id": "case_id_favourites_tc005",
       "priority": "p0",
       "site": "us",
@@ -57786,9 +57785,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_toggle_favourite_multiple_times[chromium]",
+      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_toggle_favourite_multiple_times",
       "file_path": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py",
-      "test_name": "test_logged_user_toggle_favourite_multiple_times[chromium]",
+      "test_name": "test_logged_user_toggle_favourite_multiple_times",
       "case_id": "case_id_favourites_tc007",
       "priority": "p1",
       "site": "us",
@@ -57827,7 +57826,6 @@
       "markers": [
         "allure_description",
         "case_id_favourites_tc002",
-        "order",
         "p0",
         "smoke",
         "us"
@@ -57860,7 +57858,6 @@
       "markers": [
         "allure_description",
         "case_id_favourites_tc016",
-        "order",
         "p2",
         "regression",
         "us"
@@ -57893,7 +57890,6 @@
       "markers": [
         "allure_description",
         "case_id_favourites_tc004",
-        "order",
         "p1",
         "regression",
         "us"
@@ -57958,7 +57954,6 @@
       "markers": [
         "allure_description",
         "case_id_favourites_tc003",
-        "order",
         "p0",
         "smoke",
         "us"
