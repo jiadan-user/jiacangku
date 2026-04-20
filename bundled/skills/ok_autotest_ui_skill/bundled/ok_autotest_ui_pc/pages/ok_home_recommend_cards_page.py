@@ -303,6 +303,65 @@ class OkHomeRecommendCardsPage(BasePage):
             self.logger.error(f"读取首张卡片摘要失败: {e}")
             raise
 
+    def is_top_picks_carousel_scrollable(self) -> bool:
+        """
+        检查 Top Picks 横滑区是否支持横滑（容器内容宽度 > 容器可见宽度）
+        返回 True 表示可以横滑，False 表示无需横滑
+        """
+        try:
+            # 检查横滑容器是否真的可滚动
+            can_scroll = self.page.evaluate("""() => {
+                const all = [...document.querySelectorAll('a')];
+                const vm = all.find(a => {
+                    const t = (a.innerText || '');
+                    return t.includes('Top Picks') && t.includes('View more');
+                });
+                if (!vm) return { canScroll: false, reason: 'View more not found' };
+                
+                let n = vm.closest('div');
+                for (let d = 0; d < 14 && n; d++) {
+                    const cardLinks = [...n.querySelectorAll('a')].filter(
+                        x => /\\/cate-/.test(x.getAttribute('href') || '')
+                    );
+                    if (cardLinks.length >= 2) {
+                        const cand = [n, n.firstElementChild, ...n.querySelectorAll('div')];
+                        for (const el of cand) {
+                            const scrollWidth = el.scrollWidth;
+                            const clientWidth = el.clientWidth;
+                            // 容器内容宽度必须显著大于可见宽度（至少10px）
+                            if (scrollWidth > clientWidth + 10) {
+                                return {
+                                    canScroll: true,
+                                    scrollWidth: scrollWidth,
+                                    clientWidth: clientWidth,
+                                    cardCount: cardLinks.length
+                                };
+                            }
+                        }
+                    }
+                    n = n.parentElement;
+                }
+                return {
+                    canScroll: false,
+                    reason: 'Container width equals content width (no overflow)'
+                };
+            }""")
+            
+            if can_scroll.get('canScroll'):
+                self.logger.info(
+                    f"✓ Top Picks 支持横滑（内容:{can_scroll['scrollWidth']}px > 容器:{can_scroll['clientWidth']}px, "
+                    f"{can_scroll['cardCount']}张卡片）"
+                )
+                return True
+            else:
+                reason = can_scroll.get('reason', 'Unknown')
+                self.logger.info(f"Top Picks 无需横滑：{reason}")
+                return False
+            
+        except Exception as e:
+            self.logger.warning(f"检查横滑可用性失败: {e}，默认返回 False")
+            return False  # 出错时默认不可滚动，跳过测试
+    
     def top_picks_carousel_scroll_left(self) -> int:
         """
         Top Picks 横滑位移：优先 scrollLeft，否则取 transform translateX（与实测横滑只改位移、不改 DOM 顺序一致）。

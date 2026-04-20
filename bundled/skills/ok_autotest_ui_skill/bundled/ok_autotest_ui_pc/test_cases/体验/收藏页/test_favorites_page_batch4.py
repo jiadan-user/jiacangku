@@ -21,7 +21,7 @@ _CONFIG = {
     "site_name": "阿联酋站 (AE OK.com)",
     "role": "buyer",
     "user_name": "ae_buyer_sc",
-    "base_url": "https://aepub.ok.com",
+    "base_url": "https://aepub.58v5.cn",
     "test_account": {
         "username": "shenchang@58.com",
         "password": "123456Tt",
@@ -42,7 +42,7 @@ _CONFIG = {
 def _grid_hrefs(page):
     return page.evaluate(
         """() => {
-          const sel = "a[class*='list-components-item-card'][href*='ae.ok.com']";
+          const sel = "a[class*='list-components-item-card'][href*='ae.58v5.cn']";
           const nodes = document.querySelectorAll(sel);
           return [...nodes].map(a => a.href).filter(Boolean);
         }"""

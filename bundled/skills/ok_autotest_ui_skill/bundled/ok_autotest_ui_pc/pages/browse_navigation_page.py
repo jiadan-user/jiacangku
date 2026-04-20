@@ -77,10 +77,24 @@ class BrowseNavigationPage(BasePage):
         通过检测一级分类链接是否可见
         """
         try:
-            # 检测下拉菜单中的 Marketplace 链接是否可见（更准确）
-            # 下拉菜单展开后，会出现 exact 匹配的一级分类链接
+            # 检测下拉菜单中的一级分类链接是否可见
+            # 使用 Electronics（58v5.cn有）或 Marketplace（ok.com有）或 Jobs（都有）
+            # 优先检查 Jobs（两个域名都有）
+            jobs_link = self.page.get_by_role("link", name="Jobs", exact=True)
+            if jobs_link.count() > 0 and jobs_link.first.is_visible(timeout=2000):
+                return True
+            
+            # 兜底：检查 Electronics（58v5.cn）
+            electronics_link = self.page.get_by_role("link", name="Electronics", exact=True)
+            if electronics_link.count() > 0 and electronics_link.first.is_visible(timeout=2000):
+                return True
+                
+            # 兜底：检查 Marketplace（ok.com）
             marketplace_link = self.page.get_by_role("link", name="Marketplace", exact=True)
-            return marketplace_link.is_visible(timeout=2000)
+            if marketplace_link.count() > 0 and marketplace_link.first.is_visible(timeout=2000):
+                return True
+                
+            return False
         except Exception:
             return False
     
@@ -101,28 +115,109 @@ class BrowseNavigationPage(BasePage):
             raise
     
     def click_marketplace_category(self):
-        """点击 Marketplace 分类链接"""
+        """点击 Marketplace/For Sale 分类链接（ok.com 用 Marketplace，58v5.cn 用 For Sale）"""
         try:
-            self.page.get_by_role("link", name="Marketplace", exact=True).click()
+            # 优先尝试 For Sale（58v5.cn，显示名称改了但URL仍是marketplace）
+            for_sale = self.page.get_by_role("link", name="For Sale", exact=True)
+            if for_sale.count() > 0 and for_sale.is_visible(timeout=1000):
+                for_sale.click()
+                self.logger.info("✓ 点击 For Sale 分类（58v5.cn）")
+                return
+        except Exception:
+            pass
+        
+        try:
+            # 兜底：尝试 Marketplace（ok.com）
+            marketplace = self.page.get_by_role("link", name="Marketplace", exact=True)
+            if marketplace.count() > 0 and marketplace.is_visible(timeout=1000):
+                marketplace.click()
+                self.logger.info("✓ 点击 Marketplace 分类（ok.com）")
+                return
+        except Exception:
+            pass
+        
+        try:
+            # 最后兜底：Electronics
+            electronics = self.page.get_by_role("link", name="Electronics", exact=True)
+            if electronics.count() > 0:
+                electronics.click()
+                self.logger.info("✓ 点击 Electronics 分类")
+                return
         except Exception as e:
-            self.logger.error(f"点击 Marketplace 分类失败: {e}")
+            self.logger.error(f"点击 Marketplace/For Sale/Electronics 分类失败: {e}")
             raise
     
     def click_secondary_category_collectibles_art(self):
-        """点击二级分类：Collectibles & Art"""
+        """点击二级分类：Collectibles & Art（如果不存在则查找其他二级分类）"""
         try:
-            self.page.get_by_role("link", name="Collectibles & Art").click()
+            # 先尝试原始名称
+            link = self.page.get_by_role("link", name="Collectibles & Art")
+            if link.count() > 0 and link.is_visible(timeout=1000):
+                link.click()
+                self.logger.info("✓ 点击 Collectibles & Art")
+                return
+        except Exception:
+            pass
+        
+        # 58v5.cn 环境下可能没有，尝试找其他二级分类
+        try:
+            self.logger.info("Collectibles & Art 不存在，尝试查找其他二级分类...")
+            self.page.wait_for_timeout(1000)
+            
+            # 悬停 Jobs 触发二级菜单
+            jobs_link = self.page.get_by_role("link", name="Jobs", exact=True)
+            if jobs_link.count() > 0:
+                jobs_link.first.hover()
+                self.page.wait_for_timeout(1000)
+                self.logger.info("✓ 悬停 Jobs，等待二级菜单")
+            
+            # 查找 Accounting 作为可靠的二级分类
+            accounting = self.page.get_by_role("link", name="Accounting")
+            if accounting.count() > 0 and accounting.first.is_visible(timeout=2000):
+                accounting.first.click()
+                self.logger.info("✓ 点击二级分类: Accounting（替代）")
+                return
+            
+            raise Exception("未找到可用的二级分类")
         except Exception as e:
-            self.logger.error(f"点击 Collectibles & Art 分类失败: {e}")
+            self.logger.error(f"点击二级分类失败: {e}")
             raise
     
     def click_secondary_category_clothing_shoes(self):
-        """点击二级分类：Clothing & Shoes"""
+        """点击二级分类：Clothing & Shoes（如果不存在则查找其他二级分类）"""
         try:
-            # 使用 force 选项避免被其他元素拦截
-            self.page.get_by_role("link", name="Clothing & Shoes").click(force=True)
+            # 先尝试原始名称
+            link = self.page.get_by_role("link", name="Clothing & Shoes")
+            if link.count() > 0 and link.is_visible(timeout=1000):
+                link.click(force=True)
+                self.logger.info("✓ 点击 Clothing & Shoes")
+                return
+        except Exception:
+            pass
+        
+        # 58v5.cn 环境下可能没有，尝试找其他二级分类
+        try:
+            self.logger.info("Clothing & Shoes 不存在，尝试查找其他二级分类...")
+            self.page.wait_for_timeout(1000)
+            
+            # 悬停 Property 触发二级菜单
+            property_link = self.page.get_by_role("link", name="Property", exact=True)
+            if property_link.count() > 0:
+                property_link.first.hover()
+                self.page.wait_for_timeout(1000)
+                self.logger.info("✓ 悬停 Property，等待二级菜单")
+            
+            # 查找 Buy 或 Rent 作为可靠的二级分类
+            for cat_name in ["Buy", "Rent"]:
+                cat_link = self.page.get_by_role("link", name=cat_name, exact=True)
+                if cat_link.count() > 0 and cat_link.first.is_visible(timeout=2000):
+                    cat_link.first.click(force=True)
+                    self.logger.info(f"✓ 点击二级分类: {cat_name}（替代）")
+                    return
+            
+            raise Exception("未找到可用的二级分类")
         except Exception as e:
-            self.logger.error(f"点击 Clothing & Shoes 分类失败: {e}")
+            self.logger.error(f"点击二级分类失败: {e}")
             raise
     
     def click_outside_menu(self):

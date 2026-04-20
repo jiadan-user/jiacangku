@@ -77,10 +77,45 @@ class DetailPageFavourites:
         except Exception:
             pass
 
-    def click_favourites_button(self):
-        """点击收藏按钮"""
-        self.favourites_button.click()
-        logger.info("✓ 点击收藏按钮")
+    def click_favourites_button(self, force_click=False):
+        """
+        点击收藏按钮
+        
+        Args:
+            force_click: 是否强制点击（绕过遮挡元素）。
+                        访客场景不应使用force，以便正常触发登录弹窗。
+                        登录场景可能需要force来绕过意外弹窗。
+        """
+        if force_click:
+            # 先强制关闭任何可能存在的登录弹窗
+            try:
+                # 尝试多种方式关闭弹窗
+                # 方法1: 按Escape键
+                self.page.keyboard.press("Escape")
+                self.page.wait_for_timeout(300)
+                
+                # 方法2: 如果弹窗仍然存在，点击关闭按钮
+                close_btn = self.page.locator("img[src*='close-black']")
+                if close_btn.count() > 0 and close_btn.is_visible(timeout=500):
+                    close_btn.first.click(timeout=1000)
+                    self.page.wait_for_timeout(300)
+                    logger.info("✓ 已关闭阻挡的登录弹窗")
+            except Exception:
+                pass
+            
+            # 使用 force=True 强制点击，即使有元素遮挡
+            try:
+                self.favourites_button.click(force=True, timeout=5000)
+                logger.info("✓ 点击收藏按钮（强制）")
+            except Exception as e:
+                logger.warning(f"强制点击失败，尝试普通点击: {e}")
+                # 如果强制点击失败，尝试普通点击
+                self.favourites_button.click()
+                logger.info("✓ 点击收藏按钮")
+        else:
+            # 普通点击，不强制，让登录弹窗正常触发
+            self.favourites_button.click()
+            logger.info("✓ 点击收藏按钮")
 
     def close_login_dialog(self):
         """关闭登录弹窗（点击右上角X按钮）"""
@@ -123,16 +158,45 @@ class DetailPageFavourites:
         return self.favourites_button.is_visible()
 
     def is_login_dialog_visible(self) -> bool:
-        """验证登录弹窗是否可见"""
+        """
+        验证登录弹窗是否可见
+        
+        检测策略：
+        1. 优先检测dialog[open]元素（最可靠）
+        2. 备用：检测邮箱输入框是否在可见且包含"Email or phone"文字
+        """
         try:
-            return self.login_dialog.is_visible(timeout=3000)
+            # 方案1: 检测dialog[open]元素
+            dialogs = self.page.locator("dialog[open]")
+            if dialogs.count() > 0:
+                for i in range(dialogs.count()):
+                    try:
+                        if dialogs.nth(i).is_visible(timeout=500):
+                            # 确认这个dialog包含登录相关元素
+                            email_in_dialog = dialogs.nth(i).locator("input[type='text'], input[type='email']")
+                            if email_in_dialog.count() > 0:
+                                return True
+                    except:
+                        continue
         except Exception:
-            return False
+            pass
+        
+        try:
+            # 方案2: 检测邮箱输入框（但必须确保它在弹窗中）
+            if self.email_input.count() > 0 and self.email_input.is_visible(timeout=1000):
+                # 额外验证：确保Continue按钮也存在（登录弹窗的特征）
+                if self.continue_button.count() > 0:
+                    return True
+        except Exception:
+            pass
+        
+        return False
 
     def is_login_dialog_closed(self) -> bool:
-        """验证登录弹窗是否已关闭"""
+        """验证登录弹窗是否已关闭（通过检测邮箱输入框不可见）"""
         try:
-            return not self.login_dialog.is_visible(timeout=2000)
+            # 检测邮箱输入框是否不可见
+            return not self.email_input.is_visible(timeout=1000)
         except Exception:
             return True
 

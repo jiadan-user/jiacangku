@@ -7,9 +7,10 @@ from utils.logger import setup_logger
 
 
 class OkKingkongNavPage(BasePage):
-    """金刚位：Marketplace / Free / Jobs / Property / Cars / Services / Community / All"""
+    """金刚位：Marketplace/For Sale / Free / Jobs / Property / Cars / Services / Community / All"""
 
     LINK_MARKETPLACE = "Marketplace Marketplace"
+    LINK_FOR_SALE = "For Sale For Sale"  # 58v5.cn 使用
     LINK_FREE = "Free Free"
     LINK_JOBS = "Jobs Jobs"
     LINK_PROPERTY = "Property Property"
@@ -25,6 +26,20 @@ class OkKingkongNavPage(BasePage):
     def kingkong_link(self, link_name: str):
         """金刚位入口链接（与 MCP 返回的 getByRole('link', { name }) 一致）"""
         return self.page.get_by_role("link", name=link_name)
+    
+    def kingkong_marketplace_or_for_sale_link(self):
+        """
+        金刚位 Marketplace/For Sale 链接（兼容58v5.cn和ok.com）
+        优先尝试 For Sale (58v5.cn)，兜底 Marketplace (ok.com)
+        """
+        try:
+            for_sale = self.kingkong_link(self.LINK_FOR_SALE)
+            if for_sale.count() > 0 and for_sale.is_visible(timeout=2000):
+                return for_sale
+        except Exception:
+            pass
+        
+        return self.kingkong_link(self.LINK_MARKETPLACE)
 
     def goto_nyc_home(self, base_url: str):
         """打开纽约城市首页（金刚位所在页）"""

@@ -11,6 +11,7 @@ AE Marketplace - 订单流转 v2 测试脚本
 执行规则：每条 TC 独立，按文档顺序执行，前置条件复用已有订单数据，无数据则自动构造
 """
 import re
+from typing import Optional
 from urllib.parse import quote, urlparse
 
 import pytest
@@ -55,7 +56,7 @@ _CONFIG = {
 }
 
 
-def _marketplace_search_url(config, keyword: str | None = None):
+def _marketplace_search_url(config, keyword: Optional[str] = None):
     """根据配置生成 Marketplace 搜索 URL。keyword 非空时优先，否则用 marketplace_search_keyword。"""
     kw = keyword if keyword is not None else config.get("marketplace_search_keyword", "iphone pays postage aitest")
     return f"{config['base_url']}/en/city/cate-marketplace/?keyword={quote(kw)}"

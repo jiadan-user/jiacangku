@@ -21,13 +21,13 @@ _CONFIG = {
     "site_name": "阿联酋站 (AE OK.com)",
     "role": "buyer",
     "user_name": "ae_buyer_sc",
-    "base_url": "https://aepub.ok.com",
+    "base_url": "https://aepub.58v5.cn",
     "test_account": {
         "username": "shenchang@58.com",
         "password": "123456Tt",
     },
     "empty_favorites_account": {
-        "username": "shencccccccc@outlook.com",
+        "username": "shencccccc@gmail.com",
         "password": "123456Tt",
     },
     "browser": {

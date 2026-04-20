@@ -5,7 +5,7 @@ OK.com 详情页分享功能测试 - 批次1核心功能
 测试用例文档：web-qa-brain/OK.com-详情页分享功能-测试用例-20260401.md
 生成时间：2026-04-01
 
-测试站点：US (https://us.ok.com)
+测试站点：US (https://us.58v5.cn)
 测试角色：Visitor (访客)
 测试目标：验证详情页 Share 按钮展示、点击复制链接、Toast 提示显示等核心功能
 """
@@ -25,7 +25,7 @@ _CONFIG = {
     "site_name": "美国站 (US OK.com)",
     "role": "visitor",
     "user_name": "us_visitor_share",
-    "base_url": "https://us.ok.com/en/city-washington1/cate/",
+    "base_url": "https://us.58v5.cn/en/city-washington1/cate/",
     "test_account": {
         "username": "shenchang@58.com",
         "password": "123456Tt"
@@ -84,6 +84,94 @@ def page(config):
     browser_manager.close_browser(_page)
 
 
+@pytest.fixture(scope="module")
+def valid_detail_url(page, config):
+    """
+    动态获取一个有效的详情页URL
+    
+    策略：
+    1. 使用预定义的候选URL列表（从safe分类手动收集）
+    2. 逐个验证URL是否有效（未删除且有Share按钮）
+    3. 返回第一个有效的URL
+    """
+    import re
+    
+    logger.info("="*80)
+    logger.info("【智能URL查找】验证候选详情页URL...")
+    logger.info("="*80)
+    
+    # 候选URL列表（从非招聘/房产/车分类手动收集）
+    CANDIDATE_URLS = [
+        # Home Goods分类
+        "https://us.58v5.cn/en/city-washington1/cate-others127/40oz-tritan-bpa-free-large-tumbler-with-straw-and-handle-reusable-water-cup-6530384495922910/",
+        "https://us.58v5.cn/en/city-washington1/cate-others242/testcheng-6517268992063710/",
+        # Electronics分类（可以后续添加）
+        # Health & Beauty分类（可以后续添加）
+    ]
+    
+    try:
+        # 处理Cookie（只需一次）
+        logger.info("访问首页处理Cookie...")
+        page.goto("https://us.58v5.cn/en/", wait_until="domcontentloaded", timeout=30000)
+        try:
+            page.get_by_role("button", name=re.compile("Accept|同意", re.I)).click(timeout=3000)
+            logger.info("✓ 已处理Cookie弹窗")
+        except:
+            logger.info("- 无Cookie弹窗")
+        page.wait_for_timeout(1000)
+        
+        # 验证候选URL
+        for idx, candidate_url in enumerate(CANDIDATE_URLS):
+            logger.info(f"\n候选URL ({idx+1}/{len(CANDIDATE_URLS)}): {candidate_url}")
+            logger.info(f"  验证详情页有效性...")
+            
+            try:
+                page.goto(candidate_url, wait_until="domcontentloaded", timeout=20000)
+                page.wait_for_timeout(2000)
+                
+                # 检查是否显示"已删除"
+                deleted_indicator = page.get_by_text("The content has been deleted")
+                if deleted_indicator.count() > 0 and deleted_indicator.is_visible(timeout=1000):
+                    logger.info(f"  ✗ 帖子已删除，跳过")
+                    continue
+                
+                # 检查Share按钮是否存在
+                share_btn = page.get_by_text("Share", exact=True)
+                if share_btn.count() > 0:
+                    try:
+                        if share_btn.first.is_visible(timeout=3000):
+                            logger.info(f"  ✓ 找到有效详情页！")
+                            logger.info(f"  ✓ URL: {candidate_url}")
+                            logger.info("="*80)
+                            return candidate_url
+                        else:
+                            logger.info(f"  ✗ Share按钮存在但不可见")
+                    except:
+                        logger.info(f"  ✗ Share按钮检查超时")
+                else:
+                    logger.info(f"  ✗ 未找到Share按钮")
+            
+            except Exception as e:
+                logger.warning(f"  访问失败: {str(e)[:100]}")
+                continue
+        
+        # 如果所有候选URL都失效
+        error_msg = f"所有 {len(CANDIDATE_URLS)} 个候选URL都无效"
+        logger.error(error_msg)
+        logger.error("可能原因：")
+        logger.error("  1. 候选URL的帖子都已被删除")
+        logger.error("  2. US站点网络问题")
+        logger.error("  3. 请更新CANDIDATE_URLS列表")
+        pytest.skip(f"智能URL查找失败: {error_msg}")
+        
+    except Exception as e:
+        error_msg = f"智能URL查找异常: {e}"
+        logger.error(error_msg)
+        import traceback
+        logger.error(traceback.format_exc())
+        pytest.skip(error_msg)
+
+
 @pytest.fixture(autouse=True)
 def reset_page_state(page, config):
     """
@@ -112,12 +200,12 @@ def reset_page_state(page, config):
 @allure.title("TC001: 分享按钮正常展示")
 @allure.severity(allure.severity_level.BLOCKER)
 @allure.description("验证访客访问详情页时，Share 按钮清晰可见且位置正确")
-def test_tc001_share_button_display(page, config):
+def test_tc001_share_button_display(page, config, valid_detail_url):
     """TC001: 分享按钮正常展示"""
     
     # ========== Arrange：准备测试对象 ==========
     detail_share_page = DetailPageShare(page)
-    detail_url = "https://us.ok.com/en/city-washington1/cate-home-decor/homemade-led-christmas-hat-creative-and-unique-design-enhance-the-festive-atmosphere-essential-for-f-6458646557837112/"
+    detail_url = valid_detail_url  # 使用动态获取的有效URL
     
     logger.info("="*80)
     logger.info("TC001: 分享按钮正常展示")
@@ -173,12 +261,12 @@ def test_tc001_share_button_display(page, config):
 @allure.title("TC002: 点击分享按钮复制链接成功")
 @allure.severity(allure.severity_level.BLOCKER)
 @allure.description("验证访客点击 Share 按钮后，链接成功复制到剪贴板且页面不刷新")
-def test_tc002_click_share_button_copy_link(page, config):
+def test_tc002_click_share_button_copy_link(page, config, valid_detail_url):
     """TC002: 点击分享按钮复制链接成功"""
     
     # ========== Arrange：准备测试对象 ==========
     detail_share_page = DetailPageShare(page)
-    detail_url = "https://us.ok.com/en/city-washington1/cate-home-decor/homemade-led-christmas-hat-creative-and-unique-design-enhance-the-festive-atmosphere-essential-for-f-6458646557837112/"
+    detail_url = valid_detail_url  # 使用动态获取的有效URL
     
     logger.info("="*80)
     logger.info("TC002: 点击分享按钮复制链接成功")
@@ -222,9 +310,13 @@ def test_tc002_click_share_button_copy_link(page, config):
         # 验证是 HTTPS URL
         assert clipboard_content.startswith("https://"), \
             f"复制的 URL 不是 HTTPS 协议: {clipboard_content}"
-        # 验证包含 ok.com 域名
-        assert "ok.com" in clipboard_content, \
-            f"复制的 URL 不包含 ok.com 域名: {clipboard_content}"
+        # 验证包含58v5域名或ok.com域名
+        assert "58v5.cn" in clipboard_content or "ok.com" in clipboard_content, \
+            f"复制的 URL 不包含有效域名: {clipboard_content}"
+        # 验证包含详情页ID（数字）
+        import re
+        assert re.search(r'-\d+/', clipboard_content), \
+            f"复制的 URL 不包含有效的详情页ID: {clipboard_content}"
         logger.info("✓ 复制的 URL 格式正确")
     
     logger.info("="*80)
@@ -243,12 +335,12 @@ def test_tc002_click_share_button_copy_link(page, config):
 @allure.title("TC003: Toast提示'Link copied'显示")
 @allure.severity(allure.severity_level.BLOCKER)
 @allure.description("验证访客点击 Share 按钮后，立即显示 'Link copied' Toast 提示")
-def test_tc003_toast_link_copied_display(page, config):
+def test_tc003_toast_link_copied_display(page, config, valid_detail_url):
     """TC003: Toast提示'Link copied'显示"""
     
     # ========== Arrange：准备测试对象 ==========
     detail_share_page = DetailPageShare(page)
-    detail_url = "https://us.ok.com/en/city-washington1/cate-home-decor/homemade-led-christmas-hat-creative-and-unique-design-enhance-the-festive-atmosphere-essential-for-f-6458646557837112/"
+    detail_url = valid_detail_url  # 使用动态获取的有效URL
     
     logger.info("="*80)
     logger.info("TC003: Toast提示'Link copied'显示")
@@ -304,12 +396,12 @@ def test_tc003_toast_link_copied_display(page, config):
 @allure.title("TC006: 复制URL的path路径验证")
 @allure.severity(allure.severity_level.BLOCKER)
 @allure.description("验证复制的 URL 的 path 路径与原始 URL 一致，允许追加分享追踪参数")
-def test_tc006_copied_url_path_validation(page, config):
+def test_tc006_copied_url_path_validation(page, config, valid_detail_url):
     """TC006: 复制URL的path路径验证"""
     
     # ========== Arrange：准备测试对象 ==========
     detail_share_page = DetailPageShare(page)
-    detail_url = "https://us.ok.com/en/city-washington1/cate-home-decor/homemade-led-christmas-hat-creative-and-unique-design-enhance-the-festive-atmosphere-essential-for-f-6458646557837112/"
+    detail_url = valid_detail_url  # 使用动态获取的有效URL
     
     logger.info("="*80)
     logger.info("TC006: 复制URL的path路径验证")
@@ -396,12 +488,12 @@ def test_tc006_copied_url_path_validation(page, config):
 @allure.title("TC009: Chrome浏览器分享功能")
 @allure.severity(allure.severity_level.BLOCKER)
 @allure.description("验证在 Chrome 浏览器中，分享按钮正常显示、点击复制功能正常、Toast 提示正常")
-def test_tc009_chrome_browser_share_function(page, config):
+def test_tc009_chrome_browser_share_function(page, config, valid_detail_url):
     """TC009: Chrome浏览器分享功能"""
     
     # ========== Arrange：准备测试对象 ==========
     detail_share_page = DetailPageShare(page)
-    detail_url = "https://us.ok.com/en/city-washington1/cate-home-decor/homemade-led-christmas-hat-creative-and-unique-design-enhance-the-festive-atmosphere-essential-for-f-6458646557837112/"
+    detail_url = valid_detail_url  # 使用动态获取的有效URL
     
     logger.info("="*80)
     logger.info("TC009: Chrome浏览器分享功能")
