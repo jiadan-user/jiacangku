@@ -11,3 +11,5 @@ bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/reports/allure-rep
 bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/reports/allure-results/
 bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/reports/screenshots/
 bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/reports/ok_test_runs/
+bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/.venv_ci/
+bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/screenshots/
