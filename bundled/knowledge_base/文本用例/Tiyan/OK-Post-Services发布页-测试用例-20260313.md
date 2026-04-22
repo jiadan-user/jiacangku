@@ -1211,6 +1211,14 @@
 - **测试类型**: 正向 / 导航
 - **UI自动化**: ✅ 可自动化
 
+#### 🤖 自动化同编号（TC053）不同路径（2026-04-22 与脚本同步）
+
+本文上一节为「**在独立成功页**点击 *Identity Verification* 跳转 KYC」。
+
+**另有** 自动化用例 `test_post_services.py::test_success_identity_verification`：Allure 亦标为 **TC053**，但路径为 **Services 发帖后直达帖子详情**（URL 常含 `?from=publish`），断言**详情正文**含 *Service* / 标题等关键词；读取页面正文时须在 **domcontentloaded** 后并采用 **`document.body` 可空** 的读取方式，避免重绘瞬间 `body` 为 `null` 导致脚本异常。
+
+两路径**业务不同**，仅 TC 编号在文档与 Allure 中重名，维护时以 **脚本 allure 标题** 与 **用例名** 区分。
+
 ---
 
 ### TC054: 发布成功页 - EasyChat AI Auto-Reply开关开启
@@ -1375,6 +1383,7 @@
 
 | 版本 | 日期 | 说明 |
 |------|------|------|
+| v1.5 | 2026-04-22 | 补充 TC053：与 `test_success_identity_verification`（详情页 `?from=publish` 断言）的脚本实现说明及 DOM 读正文安全要求 |
 | v1.0 | 2026-03-13 | 初版，基于web-qa-brain三阶段实测，TC001-TC020共20条 |
 | v1.1 | 2026-03-13 | 扩充实测：新增TC021-TC035共15条，覆盖Pictures/Title边界/Description校验/Shuffle/No delivery required/Draft/完整主链路/Price校验/Condition等 |
 | v1.2 | 2026-03-13 | 草稿模块扩充：新增TC036-TC042共7条，完整覆盖Draft·N计数/Draft Box列表/恢复草稿/删除+二次确认/取消删除/关闭弹窗 |

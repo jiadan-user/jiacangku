@@ -6647,12 +6647,14 @@ Item 9: Jan 13 → dubizzle         (最旧)
 
 ## TC028: 免打扰会话icon展示测试
 
+> **编号与脚本说明**：同一条用例在自动化中 Allure 标题为 **TC027**、`pytest` 标记为 `case_id_messages_mute_icon_027`、入口函数 `test_muted_conversation_icon`；本文仍保留 **TC028** 作为历史章节编号。维护时**以 `case_id` 与代码为准**。
+
 ### 📌 测试信息
-- **用例ID**: `case_id_messages_mute_icon_028`
+- **用例ID（自动化）**: `case_id_messages_mute_icon_027`（与本文 TC028 对应同一场景）
 - **优先级**: P0 (Critical)
 - **测试类型**: functional
 - **模块标记**: messages, conversation, mute, ae
-- **实测状态**: ✅ 实测通过（2026-03-12）
+- **实测状态**: ✅ 实测通过（2026-03-12，脚本逻辑 2026-04-22 同步强化）
 
 ### 🎯 测试目标
 验证免打扰操作后，会话列表中出现静音图标，菜单显示 Unmute 选项。
@@ -6663,10 +6665,16 @@ Item 9: Jan 13 → dubizzle         (最旧)
 |------|------|
 | 静音入口 | 与置顶相同：`.c-d-img-menu` → `.c-d-menu` |
 | 菜单选项 | Pin / Mute / Block（未静音时） |
-| 菜单选项 | Pin / Unmute / Block（已静音时） |
+| 菜单选项 | Pin / Unmute / Block（已静音时；实际 DOM 常将多选项**无空格拼成一段**，如 `PinUnmuteBlock`、`UnpinUnmuteBlock`，勿依赖「整段中是否含子串 `Unmute`」与「是否已免打扰」的朴素包含判断，应以 **免打扰态整段** 如含 **`UnpinUnmute`** 或等价为已静音） |
 | 静音icon图片 | `listMute@2x.e432d57b.png` |
 | 静音icon位置 | 会话item内 `justify-content-between align-items-center hstack` 容器中 |
 | 测试账号预置 | 账号已有6条静音会话（OKer_z5y8tml、dubizzle等） |
+
+### 🤖 自动化要点（与脚本同步，2026-04-22）
+- 点击 **Mute** 须 **精确匹配**（如 Playwright `get_by_text("Mute", exact=True)`），**禁止**依赖会匹配到 `Unmute` 内子串的 `has-text("Mute")` 类选择器。
+- 点 **Mute** 后**轮询**「…」菜单，直至出现**免打扰态**（如整段出现 **`UnpinUnmute`** 或等价的 `UnpinUnmuteBlock`）；若出现确认层，需点 OK/Confirm 使操作生效；步骤间可先 `Escape` 再开菜单，避免状态串台。
+- **不要**在验证阶段**再次点选**同一列表会话再开「…」——易致列表 `listMute` 与聊天头菜单（Mute/Unmute）**不同步**；应在当前已打开的会话详情上直接重新打开 `…` 做断言。
+- Messages 首屏过慢时等待 `.list-group.list-group-flush` 超时 30s；仍失败时保存全页截图便于排查（如 `tc027_FAIL_messages_not_loaded.png` 命名体系）。
 
 ### 测试步骤
 1. 导航到Messages页面，记录第2条会话初始静音状态
@@ -6674,7 +6682,7 @@ Item 9: Jan 13 → dubizzle         (最旧)
 3. 若已静音先 Unmute 确保从未静音开始
 4. 执行 Mute 操作
 5. 验证列表中出现静音icon（img src 含 "listMute"）
-6. 验证菜单变为 "Unmute"
+6. **在当前详情**再次打开 `…`（不重复点列表同一会话），验证菜单为免打扰态（见上「`UnpinUnmute` / Unmute 项」）
 7. 还原：执行 Unmute 操作
 
 ### 验证点
@@ -7095,6 +7103,7 @@ Item 9: Jan 13 → dubizzle         (最旧)
 | | | | - 新增TC028: 免打扰会话icon展示测试（✅实测） |
 | | | | - 实测发现：置顶icon=toplist@2x.png，静音icon=listMute@2x.png |
 | | | | - 当前用例数：25个（TC001-TC014A + TC018-TC028）|
+| v2.6 | 2026-04-22 | AI Assistant | 同步 `test_muted_conversation_icon` 实现：免打扰菜单拼接串与精确点击 Mute、验菜单勿重复点列表、Messages 首屏等待与失败截图；注明 `case_id_messages_mute_icon_027` 与文内 TC028 的对应关系 |
 | v2.5 | 2026-03-16 | AI Assistant | 新增消息输入区功能用例 - TC029-TC037 |
 | | | | - TC029: 发送附件（PDF）✅实测 |
 | | | | - TC030: 附件 accept 格式校验（9种格式）✅实测 |
@@ -7115,4 +7124,4 @@ Item 9: Jan 13 → dubizzle         (最旧)
 **📋 文档类型**: 功能探索测试用例  
 **🎯 测试目标**: 全面探索Messages页面所有功能  
 **📊 当前用例数**: 34个测试用例（TC001-TC014A + TC018-TC037）  
-**📝 最后更新**: 2026-03-16
+**📝 最后更新**: 2026-04-22
