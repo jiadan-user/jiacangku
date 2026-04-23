@@ -35,8 +35,8 @@ _CONFIG = {
     "user_name": "ae_seller",
     "base_url": "https://aepub.58v5.cn/biz/en/wallet/home",
     "test_account": {
-        "username": "ae_seller_wallet@test.com",
-        "password": "Test@123456"
+        "username": "wangyongli@58.com",
+        "password": "Qwer1234"
     },
     "browser": {
         "type": "chromium",
@@ -86,19 +86,83 @@ def test_bank_account_binding_complete_flow(page, config):
         session_name=f"{config['site']}_{config['role']}_{config['user_name']}_wallet"
     )
     
-    if not session_manager.load_session():
-        # 首次运行，执行登录
+    session_loaded = session_manager.load_session()
+    
+    if session_loaded:
+        # Session 加载成功，访问页面并验证登录状态
         page.goto(base_url)
-        page.wait_for_timeout(1000)
-        page.get_by_role('textbox', name='Email or phone number').fill(username)
-        page.get_by_role('button', name='Continue').click()
-        page.wait_for_timeout(1000)
-        page.get_by_role('textbox', name='Enter password').fill(password)
-        page.get_by_role('button', name='Log in').click()
-        page.wait_for_timeout(3000)
-        session_manager.save_session()
-    else:
+        page.wait_for_timeout(2000)
+        try:
+            from pages.login_page import LoginPage
+            LoginPage(page).handle_cookie_popup()
+        except Exception:
+            pass
+        
+        # 验证 Session 是否有效
+        try:
+            if page.get_by_text(config['user_name']).is_visible(timeout=3000):
+                logger.info("✓ Session 有效，已登录")
+            else:
+                logger.warning("⚠️ Session 已过期，需要重新登录")
+                session_loaded = False
+        except Exception:
+            logger.warning("⚠️ Session 验证失败，需要重新登录")
+            session_loaded = False
+    
+    if not session_loaded:
+        # 首次运行或 Session 失效，执行登录
+        logger.info("开始登录/注册流程")
         page.goto(base_url)
+        page.wait_for_timeout(2000)
+        
+        # 处理 Cookie 弹窗
+        try:
+            from pages.login_page import LoginPage
+            LoginPage(page).handle_cookie_popup()
+        except Exception:
+            pass
+        
+        # 检查是否显示登录/注册弹窗
+        if page.get_by_role('textbox', name='Email or phone number').is_visible(timeout=5000):
+            logger.info("检测到登录/注册弹窗")
+            page.get_by_role('textbox', name='Email or phone number').fill(username)
+            page.get_by_role('button', name='Continue').click()
+            page.wait_for_timeout(2000)
+            
+            # 判断是登录还是注册页面
+            is_register_page = False
+            try:
+                if page.get_by_text("Hi new friend!").is_visible(timeout=2000):
+                    logger.info("检测到注册页面：Hi new friend!")
+                    is_register_page = True
+            except Exception:
+                pass
+            
+            if is_register_page:
+                # 注册流程：Add a password
+                logger.info("执行注册流程")
+                page.get_by_placeholder('Add a password').fill(password)
+                page.get_by_role('button', name='Register').click()
+                page.wait_for_timeout(5000)
+                logger.info("✓ 注册完成")
+            else:
+                # 登录流程：Enter password
+                logger.info("执行登录流程")
+                page.get_by_role('textbox', name='Enter password').fill(password)
+                page.get_by_role('button', name='Log in').click()
+                page.wait_for_timeout(3000)
+                logger.info("✓ 登录完成")
+            
+            # 登录/注册后，保存 Session 并访问目标页面
+            if session_manager.save_session():
+                logger.info("✓ Session 已保存")
+            
+            # 重新访问钱包页面
+            page.goto(base_url)
+            page.wait_for_timeout(3000)
+        else:
+            logger.info("✓ 已登录状态，无需登录")
+        
         try:
             page.wait_for_load_state("load", timeout=10000)
         except Exception:
