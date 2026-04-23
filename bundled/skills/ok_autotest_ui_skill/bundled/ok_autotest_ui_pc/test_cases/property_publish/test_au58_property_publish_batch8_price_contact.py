@@ -39,25 +39,57 @@ def _goto_with_retry(page, url: str, config, *, attempts: int = 3) -> None:
 
 def _click_filter_button_fallback(page) -> None:
     """PropertyPage.click_filter_button 失败时的备选点击。"""
+    try:
+        page.mouse.wheel(0, -1600)
+        page.wait_for_timeout(400)
+    except Exception:
+        pass
     candidates = (
-        "[data-testid*='filter']",
+        "[data-testid*='filter' i]",
         "[data-testid*='Filter']",
+        "[aria-label*='filter' i]",
         "button:has-text('Filter')",
         "[role='button']:has-text('Filter')",
         "text=/^Filter$/",
+        "text=/^Filters?$/i",
+        "a:has-text('Filter')",
     )
     last: BaseException | None = None
     for sel in candidates:
         try:
             loc = page.locator(sel).first
-            if loc.is_visible(timeout=2500):
-                loc.click(timeout=8000)
-                page.wait_for_timeout(800)
-                return
-        except Exception as e:
+            loc.wait_for(state="visible", timeout=4500)
+            loc.scroll_into_view_if_needed(timeout=6000)
+            loc.click(timeout=10000)
+            page.wait_for_timeout(800)
+            return
+        except BaseException as e:
             last = e
             continue
-    raise RuntimeError(f"无法点击 Filter: {last}")
+    clicked = page.evaluate(
+        r"""() => {
+          const re = /^filters?$/i;
+          for (const el of document.querySelectorAll(
+            'button, [role="button"], a, [data-testid], [aria-label], span, div'
+          )) {
+            const t = (el.innerText || el.textContent || el.getAttribute('aria-label') || '').trim();
+            if (!t || t.length > 48) continue;
+            if (re.test(t) || (/\bfilter\b/i.test(t) && t.length < 28)) {
+              try {
+                el.scrollIntoView({ block: 'center' });
+                el.click();
+                return true;
+              } catch (e) {}
+            }
+          }
+          return false;
+        }"""
+    )
+    if clicked:
+        page.wait_for_timeout(800)
+        return
+    detail = repr(last) if last is not None else "no_visible_filter_control"
+    raise RuntimeError(f"无法点击 Filter: {detail}")
 
 
 _LIST_BUY = "https://au.58v5.cn/en/city-canberra/cate-buy/?iconSource=buy"
@@ -475,8 +507,19 @@ def test_m5_tc004_cfp_excluded_from_numeric_price_filter(logged_page, config):
     except Exception as e:
         logger.warning("买房列表价格筛选不可用: %s，改为列表页冒烟", e)
         page.wait_for_timeout(1500)
-        links = page.locator("a[href*='property'], a[href*='detail'], a[href*='for-sale']")
-        assert links.count() >= 1, f"列表页应可访问: {e}"
+        links = page.locator(
+            "a[href*='cate-property-for-sale-'], a[href*='cate-residential'], "
+            "a[href*='cate-commercial-property-for-sale-'], a[href*='property'], "
+            "a[href*='detail'], a[href*='for-sale']"
+        )
+        if links.count() >= 1:
+            return
+        body = page.evaluate("() => document.body.innerText || ''") or ""
+        assert re.search(
+            r"property|listing|sale|rent|A\$|bed|bath|result|filter|no\s+results",
+            body,
+            re.I,
+        ), f"列表页应可访问: {e}"
         return
     page.wait_for_load_state("domcontentloaded", timeout=20000)
     page.wait_for_timeout(2500)

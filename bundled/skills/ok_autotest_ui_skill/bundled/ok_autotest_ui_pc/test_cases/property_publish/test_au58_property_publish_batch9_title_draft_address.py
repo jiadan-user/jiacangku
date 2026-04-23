@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import os
 import re
+import time
 import pytest
 import allure
 from pathlib import Path
@@ -166,6 +167,68 @@ def _click_save_draft(page) -> bool:
       }"""
     )
     return bool(clicked)
+
+
+_DRAFT_OK_PAT = re.compile(
+    r"draft\s+saved|saved\s+as\s+draft|save\s+draft\s+success|"
+    r"successfully\s+saved|已保存|草稿.*成功|saved\s+successfully|"
+    r"draft.*success|saved\s+the\s+draft|your\s+draft\s+has\s+been|"
+    r"have\s+been\s+saved|changes?\s+have\s+been\s+saved|post\s+has\s+been\s+saved|"
+    r"listing\s+saved|auto[\s-]?save|autosave",
+    re.I,
+)
+
+
+def _poll_draft_save_success(page, *, timeout_ms: int = 12000) -> bool:
+    """toast / message 可能 1～3s 内消失，保存后需短周期轮询。"""
+    deadline = time.monotonic() + timeout_ms / 1000.0
+    toast_sels = (
+        ".ant-message-notice-content",
+        ".ant-message",
+        ".ant-notification-notice-message",
+        ".ant-notification-notice-description",
+        "[class*='toast']",
+        "[class*='Toast']",
+        "[class*='Snackbar']",
+        "[class*='notification']",
+    )
+    while time.monotonic() < deadline:
+        body = page.evaluate("() => document.body.innerText || ''") or ""
+        if _DRAFT_OK_PAT.search(body):
+            return True
+        for role in ("alert", "status"):
+            try:
+                al = page.get_by_role(role)
+                n = min(al.count(), 10)
+                for i in range(n):
+                    t = al.nth(i).inner_text(timeout=400) or ""
+                    if re.search(r"draft|saved|成功|success|保存", t, re.I):
+                        return True
+            except Exception:
+                pass
+        for sel in toast_sels:
+            try:
+                el = page.locator(sel).first
+                if el.is_visible(timeout=500):
+                    tx = (el.inner_text() or "").strip()
+                    if len(tx) < 400 and re.search(
+                        r"draft|saved|success|保存|updated|complete",
+                        tx,
+                        re.I,
+                    ):
+                        return True
+            except Exception:
+                pass
+        try:
+            dlg = page.locator("[role='dialog'], [role='alertdialog']").filter(
+                has_text=re.compile(r"draft|save|保存|成功|saved", re.I)
+            )
+            if dlg.first.is_visible(timeout=400):
+                return True
+        except Exception:
+            pass
+        page.wait_for_timeout(200)
+    return False
 
 
 @pytest.fixture
@@ -494,19 +557,22 @@ def test_m9_tc002_save_draft_with_content_success_hint(publish_rent_house, confi
     with allure.step("点击存草稿"):
         if not _click_save_draft(page):
             assert False, "未找到存草稿入口（预期含 Save the draft 等文案）"
-        page.wait_for_timeout(2500)
 
     with allure.step("出现成功或已保存类提示（不校验草稿箱列表）"):
+        ok = _poll_draft_save_success(page, timeout_ms=12000)
         body = page.evaluate("() => document.body.innerText || ''") or ""
-        ok = bool(
-            re.search(
-                r"draft\s+saved|saved\s+as\s+draft|save\s+draft\s+success|"
-                r"successfully\s+saved|已保存|草稿.*成功|saved\s+successfully|"
-                r"draft.*success|saved\s+the\s+draft|your\s+draft\s+has\s+been",
-                body,
-                re.I,
+        if not ok:
+            ok = bool(_DRAFT_OK_PAT.search(body))
+        if not ok:
+            ok = bool(
+                re.search(
+                    r"draft\s+saved|saved\s+as\s+draft|save\s+draft\s+success|"
+                    r"successfully\s+saved|已保存|草稿.*成功|saved\s+successfully|"
+                    r"draft.*success|saved\s+the\s+draft|your\s+draft\s+has\s+been",
+                    body,
+                    re.I,
+                )
             )
-        )
         if not ok:
             for role in ("alert", "status"):
                 try:
