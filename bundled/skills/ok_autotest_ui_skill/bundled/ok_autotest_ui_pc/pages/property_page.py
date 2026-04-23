@@ -1,4 +1,6 @@
 # pages/property_page.py
+import re
+
 from pages.base_page import BasePage
 from utils.logger import setup_logger
 
@@ -814,23 +816,42 @@ class PropertyPage(BasePage):
         兼容未激活 "Price" 和已激活 "Price 500-2000 ×" 两种文本状态
         """
         try:
-            # 等待页面加载完成
-            self.page.wait_for_timeout(1000)
-            
-            # 前缀匹配 "Price"（兼容未激活和已激活状态）
-            # 未激活: "Price"
-            # 已激活: "Price 500-2000 ×"
-            price_filter = self.page.locator("text=/^Price/").first
-            # 显式等待 Price 筛选器可见（避免页面未完全加载导致超时）
-            price_filter.wait_for(state="visible", timeout=10000)
-            # 滚动到元素可见区域（如果元素在视口外）
-            price_filter.scroll_into_view_if_needed(timeout=5000)
-            self.page.wait_for_timeout(500)  # 额外等待确保元素可交互
-            price_filter.click()
-            
-            # 等待下拉框展开
-            self.page.wait_for_timeout(1000)
-            
+            self.page.wait_for_timeout(800)
+            # 列表卡片晚于筛条渲染时，先等列表区有锚点（与 property_list 用例 href 规则一致）
+            try:
+                self.page.locator(
+                    "a[href*='cate-property-for-sale-'], a[href*='cate-residential'], "
+                    "a[href*='cate-commercial-property-for-sale-']"
+                ).first.wait_for(state="visible", timeout=20000)
+            except Exception:
+                self.logger.warning("列表卡片未在超时内出现，仍尝试点击价格筛选项")
+
+            last_err: BaseException | None = None
+            price_candidates: list = [
+                self.page.locator("text=/^Price/i").first,
+                self.page.get_by_text(re.compile(r"^Price\b", re.I)).first,
+                self.page.locator("button, [role='button'], a, div, span").filter(
+                    has_text=re.compile(r"^Price\b", re.I)
+                ).first,
+                self.page.get_by_role("button", name=re.compile(r"^price\b", re.I)).first,
+                self.page.locator("[class*='filter'], [class*='Filter'], [class*='chip']").filter(
+                    has_text=re.compile(r"price", re.I)
+                ).first,
+            ]
+            for price_filter in price_candidates:
+                try:
+                    price_filter.wait_for(state="visible", timeout=6000)
+                    price_filter.scroll_into_view_if_needed(timeout=5000)
+                    self.page.wait_for_timeout(400)
+                    price_filter.click(timeout=8000)
+                    self.page.wait_for_timeout(1000)
+                    self.logger.info("✓ 点击 Price 筛选项成功")
+                    return
+                except Exception as e:
+                    last_err = e
+                    continue
+            raise last_err if last_err else RuntimeError("未找到可点击的 Price 筛选项")
+
         except Exception as e:
             self.logger.error(f"点击 Price 筛选项失败: {e}")
             raise
@@ -1665,15 +1686,54 @@ class PropertyPage(BasePage):
         按照手动执行方式：直接定位并点击 Filter 按钮
         """
         try:
-            # 按照手动执行方式：直接定位 Filter 按钮
-            # 手动执行时定位的是：generic [ref=e62] 包含 text: Filter
-            filter_button = self.page.locator(self.FILTER_BUTTON).first
-            filter_button.wait_for(state="visible", timeout=5000)
-            filter_button.click()
-            self.logger.info("✓ 点击 Filter 按钮成功")
-            
-            # 等待弹窗打开
-            self.page.wait_for_timeout(1000)
+            self.page.mouse.wheel(0, -1200)
+            self.page.wait_for_timeout(400)
+            last_err: BaseException | None = None
+            candidates = [
+                self.page.locator(self.FILTER_BUTTON).first,
+                self.page.get_by_text(re.compile(r"^Filters?$", re.I)).first,
+                self.page.get_by_role("button", name=re.compile(r"filter", re.I)).first,
+                self.page.locator("[data-testid*='filter' i], [aria-label*='filter' i]").first,
+                self.page.locator("button:has-text('Filter'), [role='button']:has-text('Filter')").first,
+            ]
+            for filter_button in candidates:
+                try:
+                    filter_button.wait_for(state="visible", timeout=5000)
+                    filter_button.scroll_into_view_if_needed(timeout=5000)
+                    self.page.wait_for_timeout(300)
+                    filter_button.click(timeout=9000)
+                    self.logger.info("✓ 点击 Filter 按钮成功")
+                    self.page.wait_for_timeout(1000)
+                    return
+                except Exception as e:
+                    last_err = e
+                    continue
+            clicked = self.page.evaluate(
+                r"""() => {
+                  const re = /^filters?$/i;
+                  const nodes = document.querySelectorAll(
+                    'button, [role="button"], a, [data-testid], [aria-label]'
+                  );
+                  for (const el of nodes) {
+                    const t = (el.innerText || el.textContent || el.getAttribute('aria-label') || '').trim();
+                    if (!t || t.length > 48) continue;
+                    if (re.test(t) || (/\bfilter\b/i.test(t) && t.length < 24)) {
+                      try {
+                        el.scrollIntoView({ block: 'center' });
+                        el.click();
+                        return true;
+                      } catch (e) {}
+                    }
+                  }
+                  return false;
+                }"""
+            )
+            if clicked:
+                self.logger.info("✓ 通过脚本兜底点击 Filter 成功")
+                self.page.wait_for_timeout(1000)
+                return
+            raise last_err if last_err else RuntimeError("未找到 Filter 按钮")
+
         except Exception as e:
             self.logger.error(f"点击 Filter 按钮失败: {e}")
             raise
