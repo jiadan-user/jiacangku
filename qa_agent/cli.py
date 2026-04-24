@@ -98,8 +98,8 @@ def build_parser() -> argparse.ArgumentParser:
 def _add_input_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--figma-url", "--figma链接", dest="figma_url")
     parser.add_argument("--prd-ref", "--需求文档", dest="prd_refs", action="append", default=[])
-    parser.add_argument("--site", "--站点", dest="site")
-    parser.add_argument("--module", "--模块", dest="module")
+    parser.add_argument("--site", "--站点", dest="site", action="append")
+    parser.add_argument("--module", "--模块", dest="module", action="append")
     parser.add_argument("--feature", "--功能", dest="feature")
     parser.add_argument("--change-description", "--改动描述", dest="change_description")
     parser.add_argument("--change-mode", "--变更模式", dest="change_mode")

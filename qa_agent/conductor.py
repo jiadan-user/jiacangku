@@ -560,22 +560,50 @@ class QAConductor:
         for key in ("change_mode", "site", "module", "feature", "change_description", "figma_url"):
             value = inputs.get(key)
             if value:
-                parts.append(str(value))
+                parts.extend(self._split_scope_values(value) if key in {"site", "module"} else [str(value)])
         for ref in inputs.get("prd_refs", []) or []:
             parts.append(str(ref))
         return " ".join(parts)
+
+    def _split_scope_values(self, value: Any) -> list[str]:
+        raw_values = value if isinstance(value, list) else [value]
+        values: list[str] = []
+        seen: set[str] = set()
+        for raw in raw_values:
+            if raw is None:
+                continue
+            for item in re.split(r"[,，]+", str(raw)):
+                normalized = item.strip()
+                if not normalized or normalized in seen:
+                    continue
+                seen.add(normalized)
+                values.append(normalized)
+        return values
+
+    def _requested_modules(self, packet: dict[str, Any]) -> list[str]:
+        return self._split_scope_values(packet.get("requested_modules") or packet.get("candidate_modules") or [])
+
+    def _requested_sites(self, packet: dict[str, Any]) -> list[str]:
+        sites = self._split_scope_values(packet.get("requested_sites") or [])
+        if sites:
+            return sites
+        return self._split_scope_values(packet.get("site", ""))
 
     def _phase_intake(self, state: RunState, inputs: dict[str, Any]) -> RunState:
         if state.artifacts.get("requirement_packet"):
             self._mark(state, Phase.INTAKE, PhaseStatus.COMPLETED)
             return state
         self._mark(state, Phase.INTAKE, PhaseStatus.RUNNING)
+        modules = self._split_scope_values(inputs.get("module"))
+        sites = self._split_scope_values(inputs.get("site"))
         packet = RequirementPacket(
             change_mode=state.change_mode,
             figma_url=inputs.get("figma_url", ""),
             prd_refs=list(inputs.get("prd_refs", []) or []),
-            candidate_modules=[m for m in [inputs.get("module")] if m],
-            site=inputs.get("site", ""),
+            candidate_modules=modules,
+            site=sites[0] if sites else "",
+            requested_modules=modules,
+            requested_sites=sites,
             feature_name=inputs.get("feature", ""),
             change_description=inputs.get("change_description", ""),
         )
@@ -1410,6 +1438,8 @@ class QAConductor:
             "module": task.details.get("module", ""),
             "site": task.details.get("site", ""),
             "rerecord_reason": task.details.get("rerecord_reason", ""),
+            "matched_nodeids": list(task.details.get("matched_nodeids", []) or []),
+            "executed_nodeids": list(task.details.get("executed_nodeids", []) or []),
         }
 
     def _render_legacy_rerecord_instruction(self, request: dict[str, Any]) -> str:
@@ -1662,6 +1692,9 @@ class QAConductor:
                     "",
                     "## 要求",
                     "- 优先消费 regression_selector_plan.json",
+                    "- 若 selector 计划包含 execution_tasks，请按列表顺序逐个子任务 dry-run，汇总预览后等待确认，再按同一顺序真实执行",
+                    "- execution_tasks 中 selected_count=0 的子任务只写入 dry-run 预览和 warning，不进入真实执行",
+                    "- 若 selector 计划中的 catalog_status.stale=true，请先刷新 catalog 并审计标识，再继续 dry-run",
                     "- 先 dry-run 预览，等用户确认后再真实执行",
                     "- 若 selector_plan 缺少必要信息，再退回 module-map.md 做补充",
                     "- complete 当前阶段时必须回传 dry-run 预览、真实回归报告、上线建议",
@@ -1722,7 +1755,9 @@ class QAConductor:
         return read_json(state.artifacts.get("requirement_packet", ""), default={}) or {}
 
     def _build_impact_payload(self, state: RunState, packet: dict[str, Any]) -> dict[str, Any]:
-        module = (packet.get("candidate_modules") or [""])[0]
+        requested_modules = self._requested_modules(packet)
+        requested_sites = self._requested_sites(packet)
+        module = (packet.get("candidate_modules") or requested_modules or [""])[0]
         site = packet.get("site", "")
         feature = packet.get("feature_name", "")
         new_cases = self._discover_new_cases(state, module, site, feature)
@@ -1738,6 +1773,8 @@ class QAConductor:
         return {
             "module": module,
             "site": site,
+            "requested_modules": requested_modules,
+            "requested_sites": requested_sites,
             "feature_name": feature,
             "change_mode": state.change_mode,
             "new_cases": [asdict(item) for item in new_cases],
@@ -1793,62 +1830,94 @@ class QAConductor:
         return []
 
     def _discover_existing_cases(self, packet: dict[str, Any]) -> list[ImpactCandidate]:
-        module = (packet.get("candidate_modules") or [""])[0]
+        modules = self._requested_modules(packet)
+        primary_module = (packet.get("candidate_modules") or modules or [""])[0]
+        requested_sites = [normalize_text(site) for site in self._requested_sites(packet)]
         feature = packet.get("feature_name", "")
         change_desc = packet.get("change_description", "")
         regression_root = Path(self.config.skills.get("paths", {}).get("regression_project_root", "")) / "test_cases"
-        if not module or not regression_root.exists():
+        if not modules or not regression_root.exists():
             return []
 
-        keywords = self._impact_keywords(module, feature, change_desc)
+        all_module_terms = {term for module in modules for term in self._tokenize_impact_text(module)}
+        keywords_by_module = {
+            module: [keyword for keyword in self._impact_keywords(module, feature, change_desc) if keyword not in all_module_terms]
+            for module in modules
+        }
         matches: list[ImpactCandidate] = []
         for script_path in sorted(regression_root.rglob("test_*.py")):
-            normalized_path = normalize_text(script_path.as_posix())
             text = read_text(script_path)
             searchable = normalize_text(f"{script_path.as_posix()} {text}")
-            reasons = self._script_impact_reasons(
-                script_path=script_path,
-                text=text,
-                searchable=searchable,
-                module=module,
-                site=packet.get("site", ""),
-                feature=feature,
-                keywords=keywords,
-            )
-            if not reasons:
+            detected_sites = self._detect_script_sites(script_path, text)
+            if requested_sites and detected_sites and not (set(requested_sites) & detected_sites):
                 continue
+
+            matched_modules: list[str] = []
+            all_reasons: list[str] = []
+            for module in modules:
+                reasons = self._script_impact_reasons(
+                    script_path=script_path,
+                    text=text,
+                    searchable=searchable,
+                    module=module,
+                    site=packet.get("site", ""),
+                    feature=feature,
+                    keywords=keywords_by_module[module],
+                )
+                if reasons:
+                    matched_modules.append(module)
+                    all_reasons.extend(reasons)
+            if not all_reasons:
+                continue
+            reasons = sorted(dict.fromkeys(all_reasons))
             case_refs = self._extract_case_refs(script_path, text)
+            related_case_id = case_refs[0]["case_id"] if len(case_refs) == 1 else ""
+            related_nodeid = case_refs[0]["nodeid"] if len(case_refs) == 1 else ""
+            nodeid_case_ids = {
+                case_ref["nodeid"]: case_ref["case_id"]
+                for case_ref in case_refs
+                if case_ref.get("nodeid") and case_ref.get("case_id")
+            }
+            details = {
+                "impact_reasons": reasons,
+                "matched_modules": matched_modules,
+                "matched_sites": sorted(detected_sites),
+                "matched_nodeids": [case_ref["nodeid"] for case_ref in case_refs if case_ref.get("nodeid")],
+                "matched_case_ids": [case_ref["case_id"] for case_ref in case_refs if case_ref.get("case_id")],
+                "test_names": [case_ref["test_name"] for case_ref in case_refs if case_ref.get("test_name")],
+                "allure_titles": [case_ref.get("allure_title", "") for case_ref in case_refs if case_ref.get("allure_title")],
+                "nodeid_case_ids": nodeid_case_ids,
+                "match_count": len(case_refs),
+            }
             if case_refs:
-                for case_ref in case_refs:
-                    matches.append(
-                        ImpactCandidate(
-                            source_type="existing-script",
-                            target=str(script_path),
-                            module=module,
-                            site=packet.get("site", ""),
-                            feature_key=feature,
-                            source_group="regression",
-                            reason="; ".join(reasons),
-                            related_case_id=case_ref["case_id"],
-                            related_nodeid=case_ref["nodeid"],
-                            details={
-                                "test_name": case_ref["test_name"],
-                                "allure_title": case_ref.get("allure_title", ""),
-                                "impact_reasons": reasons,
-                            },
-                        )
+                if len(case_refs) == 1:
+                    details["test_name"] = case_refs[0]["test_name"]
+                    details["allure_title"] = case_refs[0].get("allure_title", "")
+                matches.append(
+                    ImpactCandidate(
+                        source_type="existing-script",
+                        target=str(script_path),
+                        module=matched_modules[0] if matched_modules else primary_module,
+                        site=packet.get("site", ""),
+                        feature_key=feature,
+                        source_group="regression",
+                        reason="; ".join(reasons),
+                        related_case_id=related_case_id,
+                        related_nodeid=related_nodeid,
+                        details=details,
                     )
+                )
             else:
                 matches.append(
                     ImpactCandidate(
                         source_type="existing-script",
                         target=str(script_path),
-                        module=module,
+                        module=matched_modules[0] if matched_modules else primary_module,
                         site=packet.get("site", ""),
                         feature_key=feature,
                         source_group="regression",
                         reason="; ".join(reasons),
-                        details={"impact_reasons": reasons},
+                        details=details,
                     )
                 )
         return matches
@@ -1897,6 +1966,21 @@ class QAConductor:
         if not primary_reasons:
             return []
         return primary_reasons + secondary_reasons + metadata_reasons
+
+    def _detect_script_sites(self, script_path: Path, text: str) -> set[str]:
+        detected = {
+            normalize_text(item)
+            for item in re.findall(r"@pytest\.mark\.([a-zA-Z][a-zA-Z0-9_]*)\b", text or "")
+            if normalize_text(item) in {"ae", "us", "sg", "au"}
+        }
+        config_match = re.search(r'["\']site["\']\s*:\s*["\']([^"\']+)["\']', text or "")
+        if config_match:
+            detected.add(normalize_text(config_match.group(1)))
+        path_text = normalize_text(script_path.as_posix())
+        for site in ("ae", "us", "sg", "au"):
+            if re.search(rf"(?<![a-z0-9]){site}(?![a-z0-9])", path_text):
+                detected.add(site)
+        return {site for site in detected if site}
 
     def _impact_keywords(self, module: str, feature: str, change_desc: str) -> list[str]:
         module_terms = set(self._tokenize_impact_text(module))
@@ -1968,11 +2052,14 @@ class QAConductor:
         decisions: list[OverlapDecision] = []
         for new_case in new_cases:
             new_target = new_case.get("target", "")
-            new_case_id = new_case.get("related_case_id", "")
+            new_case_ids = set(filter(None, [new_case.get("related_case_id", "")]))
+            new_case_ids.update(new_case.get("details", {}).get("matched_case_ids", []) or [])
             for existing_case in existing_cases:
                 existing_target = existing_case.get("target", "")
-                existing_case_id = existing_case.get("related_case_id", "")
-                same_case = new_case_id and existing_case_id and new_case_id == existing_case_id
+                existing_case_ids = set(filter(None, [existing_case.get("related_case_id", "")]))
+                existing_case_ids.update(existing_case.get("details", {}).get("matched_case_ids", []) or [])
+                overlapping_case_ids = sorted(new_case_ids & existing_case_ids)
+                same_case = bool(overlapping_case_ids)
                 same_path = new_target and existing_target and Path(new_target).name == Path(existing_target).name
                 if not (same_case or same_path):
                     continue
@@ -1982,8 +2069,9 @@ class QAConductor:
                         existing_target=existing_target,
                         decision="overlap",
                         reason="新旧脚本命中同名脚本或相同 case_id，需先执行影响回归再裁决",
-                        related_case_id=existing_case_id,
-                        related_nodeid=existing_case.get("related_nodeid", ""),
+                        related_case_id=overlapping_case_ids[0] if overlapping_case_ids else existing_case.get("related_case_id", ""),
+                        related_nodeid=existing_case.get("related_nodeid", "")
+                        or (existing_case.get("details", {}).get("matched_nodeids", []) or [""])[0],
                     )
                 )
         return decisions
@@ -2053,6 +2141,31 @@ class QAConductor:
             if record.category != AttributionCategory.LATEST_CHANGE.value:
                 continue
 
+            failed_nodeids = self._record_failed_nodeids(record)
+            if failed_nodeids:
+                nodeid_case_ids = dict(record.details.get("nodeid_case_ids", {}) or {})
+                for nodeid in failed_nodeids:
+                    legacy_tasks.append(
+                        LegacyUpdateTask(
+                            task_id=make_task_id("legacy"),
+                            target_script=self._script_from_nodeid(nodeid) or record.target,
+                            target_case_id=nodeid_case_ids.get(nodeid, record.related_case_id),
+                            target_nodeid=nodeid,
+                            impact_type="change-attribution",
+                            recommended_action=self._recommended_action(record),
+                            reason=record.reason or "影响回归判定为本次变更引起",
+                            max_attempts=max_rounds,
+                            details={
+                                "module": record.module or module,
+                                "site": record.site or site,
+                                "source_type": record.source_type,
+                                "executed_nodeids": list(record.details.get("executed_nodeids", []) or []),
+                                "matched_nodeids": list(record.details.get("matched_nodeids", []) or []),
+                            },
+                        )
+                    )
+                continue
+
             legacy_tasks.append(
                 LegacyUpdateTask(
                     task_id=make_task_id("legacy"),
@@ -2064,15 +2177,27 @@ class QAConductor:
                     reason=record.reason or "影响回归判定为本次变更引起",
                     max_attempts=max_rounds,
                     details={
-                        "module": module,
-                        "site": site,
+                        "module": record.module or module,
+                        "site": record.site or site,
                         "source_type": record.source_type,
+                        "matched_nodeids": list(record.details.get("matched_nodeids", []) or []),
                     },
                 )
             )
         tasks.extend(promotion_tasks)
         tasks.extend(legacy_tasks)
         return tasks
+
+    def _record_failed_nodeids(self, record: ImpactVerificationRecord) -> list[str]:
+        failed = list(record.details.get("failed_nodeids", []) or [])
+        if failed:
+            return sorted(dict.fromkeys(str(item) for item in failed if item))
+        if record.related_nodeid:
+            return [record.related_nodeid]
+        return []
+
+    def _script_from_nodeid(self, nodeid: str) -> str:
+        return nodeid.split("::", 1)[0] if nodeid else ""
 
     def _build_new_script_promotion_task(
         self,
@@ -2272,15 +2397,185 @@ class QAConductor:
         for task in tasks:
             if task.status != LegacyUpdateTaskStatus.MANUAL_REVIEW.value:
                 candidate_paths.add(task.target_script)
+        candidate_paths = {self._script_from_nodeid(path) or path for path in candidate_paths if path}
+        requested_modules = self._requested_modules(packet)
+        requested_sites = self._requested_sites(packet)
+        nodeids = self._selector_nodeids(impact_payload, tasks)
+        case_ids = self._selector_case_ids(impact_payload, tasks)
+        execution_tasks = self._build_execution_tasks(packet, impact_payload, tasks, sorted(candidate_paths))
+        task_limit = int(self.config.thresholds.get("execution", {}).get("max_execution_tasks", 50))
+        nodeid_limit = int(self.config.thresholds.get("execution", {}).get("max_resolved_nodeids", 500))
+        warnings: list[str] = []
+        if len(execution_tasks) > task_limit:
+            warnings.append(f"execution_tasks 数量 {len(execution_tasks)} 超过建议上限 {task_limit}，建议拆分执行")
+        resolved_nodeid_count = len({nodeid for task in execution_tasks for nodeid in task.get("resolved_nodeids", [])})
+        if resolved_nodeid_count > nodeid_limit:
+            warnings.append(f"resolved_nodeids 数量 {resolved_nodeid_count} 超过建议上限 {nodeid_limit}，建议拆分执行")
         return {
             "module": (packet.get("candidate_modules") or [""])[0],
             "site": packet.get("site", ""),
+            "requested_modules": requested_modules,
+            "requested_sites": requested_sites,
             "feature_name": packet.get("feature_name", ""),
             "candidate_paths": sorted(path for path in candidate_paths if path),
-            "case_ids": sorted({task.target_case_id for task in tasks if task.target_case_id}),
-            "nodeids": sorted({task.target_nodeid for task in tasks if task.target_nodeid}),
+            "case_ids": case_ids,
+            "nodeids": nodeids,
             "selectors": [{"kind": "path", "value": path} for path in sorted(path for path in candidate_paths if path)],
+            "execution_tasks": execution_tasks,
+            "catalog_status": self._catalog_status(sorted(candidate_paths)),
+            "warnings": warnings,
             "sources": self._selector_sources(impact_payload, tasks),
+        }
+
+    def _selector_nodeids(self, impact_payload: dict[str, Any], tasks: list[LegacyUpdateTask]) -> list[str]:
+        values: list[str] = []
+        for item in [*(impact_payload.get("new_cases", []) or []), *(impact_payload.get("existing_cases", []) or [])]:
+            values.extend(item.get("details", {}).get("matched_nodeids", []) or [])
+            if item.get("related_nodeid"):
+                values.append(item["related_nodeid"])
+        for task in tasks:
+            if task.target_nodeid:
+                values.append(task.target_nodeid)
+            values.extend(task.details.get("matched_nodeids", []) or [])
+        return sorted(dict.fromkeys(value for value in values if value))
+
+    def _selector_case_ids(self, impact_payload: dict[str, Any], tasks: list[LegacyUpdateTask]) -> list[str]:
+        values: list[str] = []
+        for item in [*(impact_payload.get("new_cases", []) or []), *(impact_payload.get("existing_cases", []) or [])]:
+            values.extend(item.get("details", {}).get("matched_case_ids", []) or [])
+            if item.get("related_case_id"):
+                values.append(item["related_case_id"])
+        for task in tasks:
+            if task.target_case_id:
+                values.append(task.target_case_id)
+        return sorted(dict.fromkeys(value for value in values if value))
+
+    def _build_execution_tasks(
+        self,
+        packet: dict[str, Any],
+        impact_payload: dict[str, Any],
+        tasks: list[LegacyUpdateTask],
+        candidate_paths: list[str],
+    ) -> list[dict[str, Any]]:
+        modules = self._requested_modules(packet) or [((packet.get("candidate_modules") or [""])[0])]
+        sites = self._requested_sites(packet) or [""]
+        metadata = self._selector_metadata_by_path(impact_payload, tasks)
+        seen_nodeids: set[str] = set()
+        seen_paths: set[str] = set()
+        execution_tasks: list[dict[str, Any]] = []
+        for module in [item for item in modules if item]:
+            for site in sites:
+                selected_paths: list[str] = []
+                selected_nodeids: list[str] = []
+                selected_case_ids: list[str] = []
+                for path in candidate_paths:
+                    item_metadata = metadata.get(path, {})
+                    if not self._path_matches_execution_scope(path, item_metadata, module, site):
+                        continue
+                    path_nodeids = [nodeid for nodeid in item_metadata.get("nodeids", []) if nodeid not in seen_nodeids]
+                    if path_nodeids:
+                        selected_nodeids.extend(path_nodeids)
+                        seen_nodeids.update(path_nodeids)
+                    elif path not in seen_paths:
+                        selected_paths.append(path)
+                        seen_paths.add(path)
+                    selected_case_ids.extend(item_metadata.get("case_ids", []))
+                selected_paths = sorted(dict.fromkeys(selected_paths))
+                selected_nodeids = sorted(dict.fromkeys(selected_nodeids))
+                selected_case_ids = sorted(dict.fromkeys(selected_case_ids))
+                selectors = [{"kind": "path", "value": path} for path in selected_paths]
+                selectors.extend({"kind": "nodeid", "value": nodeid} for nodeid in selected_nodeids)
+                execution_tasks.append(
+                    {
+                        "module": module,
+                        "site": site,
+                        "candidate_paths": selected_paths,
+                        "resolved_nodeids": selected_nodeids,
+                        "case_ids": selected_case_ids,
+                        "selectors": selectors,
+                        "selected_count": len(selected_paths) + len(selected_nodeids),
+                        "warning": "" if selectors else "当前 module/site 组合没有解析到候选用例，dry-run 时应展示但跳过真实执行",
+                    }
+                )
+        return execution_tasks
+
+    def _selector_metadata_by_path(
+        self,
+        impact_payload: dict[str, Any],
+        tasks: list[LegacyUpdateTask],
+    ) -> dict[str, dict[str, Any]]:
+        metadata: dict[str, dict[str, Any]] = {}
+        for item in [*(impact_payload.get("new_cases", []) or []), *(impact_payload.get("existing_cases", []) or [])]:
+            path = item.get("target", "")
+            if not path:
+                continue
+            entry = metadata.setdefault(path, {"modules": set(), "sites": set(), "nodeids": set(), "case_ids": set()})
+            entry["modules"].update(item.get("details", {}).get("matched_modules", []) or [])
+            if item.get("module"):
+                entry["modules"].add(item["module"])
+            matched_sites = item.get("details", {}).get("matched_sites", []) or []
+            entry["sites"].update(matched_sites)
+            if item.get("site") and not matched_sites:
+                entry["sites"].add(item["site"])
+            entry["nodeids"].update(item.get("details", {}).get("matched_nodeids", []) or [])
+            if item.get("related_nodeid"):
+                entry["nodeids"].add(item["related_nodeid"])
+            entry["case_ids"].update(item.get("details", {}).get("matched_case_ids", []) or [])
+            if item.get("related_case_id"):
+                entry["case_ids"].add(item["related_case_id"])
+        for task in tasks:
+            path = self._script_from_nodeid(task.target_script) or task.target_script
+            if not path:
+                continue
+            entry = metadata.setdefault(path, {"modules": set(), "sites": set(), "nodeids": set(), "case_ids": set()})
+            if task.details.get("module"):
+                entry["modules"].add(task.details["module"])
+            if task.details.get("site"):
+                entry["sites"].add(task.details["site"])
+            if task.target_nodeid:
+                entry["nodeids"].add(task.target_nodeid)
+            entry["nodeids"].update(task.details.get("matched_nodeids", []) or [])
+            if task.target_case_id:
+                entry["case_ids"].add(task.target_case_id)
+        return {
+            path: {
+                "modules": sorted(values["modules"]),
+                "sites": sorted(values["sites"]),
+                "nodeids": sorted(values["nodeids"]),
+                "case_ids": sorted(values["case_ids"]),
+            }
+            for path, values in metadata.items()
+        }
+
+    def _path_matches_execution_scope(self, path: str, metadata: dict[str, Any], module: str, site: str) -> bool:
+        modules = set(metadata.get("modules", []) or [])
+        if module and module not in modules and not self._module_matches_path(Path(path), module):
+            return False
+        sites = {normalize_text(item) for item in metadata.get("sites", []) or [] if item}
+        if site and sites and normalize_text(site) not in sites:
+            return False
+        return True
+
+    def _catalog_status(self, candidate_paths: list[str]) -> dict[str, Any]:
+        regression_root = Path(self.config.skills.get("paths", {}).get("regression_project_root", ""))
+        catalog_path = regression_root / "catalog" / "catalog.generated.json"
+        if not catalog_path.exists():
+            return {"path": str(catalog_path), "exists": False, "stale": True, "reason": "catalog.generated.json 不存在"}
+        try:
+            catalog_mtime = catalog_path.stat().st_mtime
+            stale_paths = [
+                path
+                for path in candidate_paths
+                if Path(path).exists() and Path(path).stat().st_mtime > catalog_mtime
+            ]
+        except OSError as exc:
+            return {"path": str(catalog_path), "exists": True, "stale": True, "reason": f"catalog 检查失败: {exc}"}
+        return {
+            "path": str(catalog_path),
+            "exists": True,
+            "stale": bool(stale_paths),
+            "reason": "候选脚本晚于 catalog.generated.json" if stale_paths else "",
+            "stale_paths": stale_paths,
         }
 
     def _selector_sources(self, impact_payload: dict[str, Any], tasks: list[LegacyUpdateTask]) -> list[dict[str, str]]:

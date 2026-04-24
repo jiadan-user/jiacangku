@@ -134,6 +134,8 @@ class RequirementPacket:
     prd_refs: list[str] = field(default_factory=list)
     candidate_modules: list[str] = field(default_factory=list)
     site: str = ""
+    requested_modules: list[str] = field(default_factory=list)
+    requested_sites: list[str] = field(default_factory=list)
     feature_name: str = ""
     change_description: str = ""
     created_at: str = field(default_factory=utc_now_iso)

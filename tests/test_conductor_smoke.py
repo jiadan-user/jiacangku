@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
+from qa_agent.adapters.impact_verification import ImpactVerificationExecutor
 from qa_agent.adapters.legacy_update import LegacyUpdateExecutor, LegacyUpdateValidator
 from qa_agent.config import _resolve_nested_paths, load_config
 from qa_agent.conductor import QAConductor
@@ -812,6 +815,23 @@ class ConductorSmokeTests(unittest.TestCase):
         self.assertEqual(data["run_id"], state.run_id)
         self.assertEqual(data["change_mode"], ChangeMode.REGRESSION.value)
 
+    def test_plan_records_requested_multi_module_and_site_scope(self) -> None:
+        conductor = self._make_conductor()
+        state = conductor.plan(
+            {
+                "change_mode": ChangeMode.REGRESSION.value,
+                "module": ["wallet,car", "wallet"],
+                "site": ["ae,sg"],
+                "change_description": "多模块纯回归",
+            }
+        )
+        packet = read_json(state.artifacts["requirement_packet"], default={})
+
+        self.assertEqual(packet["candidate_modules"], ["wallet", "car"])
+        self.assertEqual(packet["requested_modules"], ["wallet", "car"])
+        self.assertEqual(packet["site"], "ae")
+        self.assertEqual(packet["requested_sites"], ["ae", "sg"])
+
     def test_impact_split_is_idempotent_and_complete_uses_phase_value_key(self) -> None:
         conductor = self._make_conductor(impact_executor=FakeImpactVerificationExecutor(self._passed_verification_outcome()))
         state = self._plan_and_enter_stage1(conductor)
@@ -890,6 +910,48 @@ class ConductorSmokeTests(unittest.TestCase):
         self.assertNotIn(str(unrelated_script), targets)
         reasons = candidates["existing_cases"][0]["details"]["impact_reasons"]
         self.assertIn("存在 case_id 元数据", reasons)
+
+    def test_impact_analysis_groups_multiple_tests_in_one_script_candidate(self) -> None:
+        script = self.regression_root / "test_cases" / "car" / "test_favorites_page_batch5.py"
+        script.parent.mkdir(parents=True, exist_ok=True)
+        script.write_text(
+            "import pytest\n"
+            "@pytest.mark.car\n"
+            "@pytest.mark.ae\n"
+            "@pytest.mark.case_id_fav_tc001\n"
+            "def test_fav_001():\n"
+            "    assert True\n"
+            "@pytest.mark.case_id_fav_tc002\n"
+            "def test_fav_002():\n"
+            "    assert True\n"
+            "@pytest.mark.case_id_fav_tc003\n"
+            "def test_fav_003():\n"
+            "    assert True\n"
+            "@pytest.mark.case_id_fav_tc004\n"
+            "def test_fav_004():\n"
+            "    assert True\n"
+            "@pytest.mark.case_id_fav_tc005\n"
+            "def test_fav_005():\n"
+            "    assert True\n",
+            encoding="utf-8",
+        )
+        conductor = self._make_conductor(impact_executor=FakeImpactVerificationExecutor(self._passed_verification_outcome()))
+        state = conductor.plan(
+            {
+                "change_mode": ChangeMode.REGRESSION.value,
+                "module": "car",
+                "site": "ae",
+                "change_description": "car favorites 纯回归",
+            }
+        )
+        state = conductor.advance(state.run_id)
+        candidates = read_json(state.artifacts["impact_candidates"], default={})
+
+        self.assertEqual(len(candidates["existing_cases"]), 1)
+        details = candidates["existing_cases"][0]["details"]
+        self.assertEqual(details["match_count"], 5)
+        self.assertEqual(len(details["matched_nodeids"]), 5)
+        self.assertEqual(candidates["merged_regression_candidates"], [str(script)])
 
     def test_marketplace_order_impact_analysis_ignores_split_module_keywords(self) -> None:
         matching_script = self.regression_root / "test_cases" / "marketplace_order" / "test_order_flow_v2.py"
@@ -972,6 +1034,117 @@ class ConductorSmokeTests(unittest.TestCase):
         selector_sources = {item["source_group"] for item in selector_plan["sources"]}
         self.assertIn("new_feature", selector_sources)
         self.assertIn("regression", selector_sources)
+
+    def test_regression_selector_plan_expands_multi_scope_execution_tasks(self) -> None:
+        car_script = self.regression_root / "test_cases" / "car" / "test_car_list.py"
+        wallet_script = self.regression_root / "test_cases" / "wallet" / "test_wallet_balance.py"
+        car_script.parent.mkdir(parents=True, exist_ok=True)
+        wallet_script.parent.mkdir(parents=True, exist_ok=True)
+        car_script.write_text(
+            "import pytest\n"
+            "@pytest.mark.car\n"
+            "@pytest.mark.ae\n"
+            "@pytest.mark.case_id_car_tc001\n"
+            "def test_car_card():\n"
+            "    assert True\n",
+            encoding="utf-8",
+        )
+        wallet_script.write_text(
+            "import pytest\n"
+            "@pytest.mark.wallet\n"
+            "@pytest.mark.sg\n"
+            "@pytest.mark.case_id_wallet_tc001\n"
+            "def test_wallet_balance():\n"
+            "    assert True\n",
+            encoding="utf-8",
+        )
+        conductor = self._make_conductor(impact_executor=FakeImpactVerificationExecutor(self._passed_verification_outcome()))
+        state = conductor.plan(
+            {
+                "change_mode": ChangeMode.REGRESSION.value,
+                "module": "car,wallet",
+                "site": "ae,sg",
+                "change_description": "car wallet 纯回归",
+            }
+        )
+        state = conductor.drive_to_action(state.run_id)
+        state = conductor.complete_phase(state.run_id, Phase.IMPACT_VERIFICATION.value)
+        selector_plan = read_json(state.artifacts["regression_selector_plan"], default={})
+
+        self.assertEqual(selector_plan["requested_modules"], ["car", "wallet"])
+        self.assertEqual(selector_plan["requested_sites"], ["ae", "sg"])
+        tasks = selector_plan["execution_tasks"]
+        self.assertEqual([(task["module"], task["site"]) for task in tasks], [
+            ("car", "ae"),
+            ("car", "sg"),
+            ("wallet", "ae"),
+            ("wallet", "sg"),
+        ])
+        selected = {(task["module"], task["site"]): task["selected_count"] for task in tasks}
+        self.assertGreater(selected[("car", "ae")], 0)
+        self.assertGreater(selected[("wallet", "sg")], 0)
+        self.assertEqual(selected[("car", "sg")], 0)
+        self.assertEqual(selected[("wallet", "ae")], 0)
+
+    def test_impact_verification_batches_matched_nodeids_in_one_pytest_call(self) -> None:
+        script = self.regression_root / "test_cases" / "car" / "test_favorites_page_batch5.py"
+        script.parent.mkdir(parents=True, exist_ok=True)
+        script.write_text("def test_fav_001():\n    assert True\n\ndef test_fav_002():\n    assert False\n", encoding="utf-8")
+        nodeids = [f"{script}::test_fav_001", f"{script}::test_fav_002"]
+        commands: list[list[str]] = []
+
+        def fake_run_command(command, cwd=None, env=None, check=False):
+            del cwd, env, check
+            commands.append(list(command))
+            junit_path = Path(command[command.index("--junitxml") + 1])
+            junit_path.parent.mkdir(parents=True, exist_ok=True)
+            junit_path.write_text(
+                '<testsuite><testcase name="test_fav_001" />'
+                '<testcase name="test_fav_002"><failure>boom</failure></testcase></testsuite>',
+                encoding="utf-8",
+            )
+            return subprocess.CompletedProcess(command, 1, stdout="FAILED test_fav_002", stderr="")
+
+        executor = ImpactVerificationExecutor(self._make_conductor().config)
+        impact_payload = {
+            "existing_cases": [
+                {
+                    "source_type": "existing-script",
+                    "target": str(script),
+                    "module": "car",
+                    "site": "ae",
+                    "source_group": "regression",
+                    "reason": "路径命中 module",
+                    "details": {
+                        "matched_nodeids": nodeids,
+                        "matched_case_ids": ["case_id_fav_tc001", "case_id_fav_tc002"],
+                        "nodeid_case_ids": {
+                            nodeids[0]: "case_id_fav_tc001",
+                            nodeids[1]: "case_id_fav_tc002",
+                        },
+                    },
+                }
+            ]
+        }
+
+        with patch("qa_agent.adapters.impact_verification.run_command", side_effect=fake_run_command):
+            outcome = executor.verify(
+                run_dir=self.temp_path / "run",
+                packet={
+                    "change_mode": ChangeMode.REGRESSION.value,
+                    "candidate_modules": ["car"],
+                    "site": "ae",
+                    "change_description": "favorites 改动",
+                },
+                impact_payload=impact_payload,
+            )
+
+        self.assertEqual(len(commands), 1)
+        self.assertIn(nodeids[0], commands[0])
+        self.assertIn(nodeids[1], commands[0])
+        self.assertEqual(outcome.records[0].details["failed_nodeids"], [nodeids[1]])
+        self.assertEqual(outcome.records[0].related_nodeid, nodeids[1])
+        self.assertEqual(outcome.records[0].related_case_id, "case_id_fav_tc002")
 
     def test_status_warns_for_stale_blocked_without_changing_state(self) -> None:
         conductor = self._make_conductor()
