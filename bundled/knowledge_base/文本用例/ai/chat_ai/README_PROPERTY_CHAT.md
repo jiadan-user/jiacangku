@@ -20,41 +20,59 @@ https://au.58v5.cn/en/city-new-south-wales/cate-property-student-apartment/%5BOr
 
 房产信息：2卧2浴1车位，Sydney Zetland区学生公寓
 
-## 测试流程（共17条消息）
+## 测试流程（共19条用例）
 
-### 第一阶段：回答AI的主动询问（1-3）
-- **TC001**: 回答租期需求 - "I'm looking for a 12-month lease, starting from April 2026."
-- **TC002**: 回答预算范围 - "My budget is around $600-800 per week."
-- **TC003**: 回答入住时间 - "I plan to move in around mid-April, flexible on the exact date."
+### 模块一：进入聊天页面（1）
+- **TC001**: 点击学生公寓详情页 Contact 按钮应跳转到聊天页面
+  - 验证Contact按钮点击后能成功进入聊天页面
 
-### 第二阶段：提供联系方式（4-5）
-- **TC004**: 提供邮箱地址（优先）- "You can reach me at john.smith@example.com"
-- **TC005**: 提供电话号码 - "My phone number is +61 412 345 678, feel free to call me anytime."
+### 模块二：AI多轮对话 - 房屋配置询问（2-8）
+- **TC002**: 询问卫浴数量 - "How many bathrooms does this apartment have?"
+  - 验证AI能基于帖子信息正确回复卫浴数量
+- **TC003**: 询问卧室数量 - "How many bedrooms are there in this student apartment?"
+  - 验证AI能基于帖子信息正确回复卧室数量
+- **TC004**: 询问装潢程度 - "Is the apartment furnished or unfurnished? What furniture is included?"
+  - 验证AI能基于帖子信息正确回复装潢程度和家具配置
+- **TC005**: 询问实用面积 - "What is the usable area or size of this apartment in square meters?"
+  - 验证AI能基于帖子信息正确回复实用面积
+- **TC006**: 询问楼龄和楼层 - "How old is the building and which floor is this apartment on?"
+  - 验证AI能基于帖子信息正确回复楼龄和楼层
+- **TC007**: 询问车位配置 - "Is there a parking space included with this apartment?"
+  - 验证AI能基于帖子信息正确回复车位配置
+- **TC008**: 询问物业管理 - "What property management services are included? Are there maintenance fees?"
+  - 验证AI能基于帖子信息正确回复物业管理信息
 
-### 第三阶段：询问地理位置（6）
-- **TC006**: 询问具体地址和周边设施 - "Where exactly is this apartment located? What facilities are nearby like shops, universities, or transport?"
+### 模块三：AI多轮对话 - 地理位置和交通（9）
+- **TC009**: 询问具体地址和周边设施 - "Where exactly is this apartment located? What facilities are nearby like shops, universities, or transport?"
+  - 验证AI能正确提供地理位置和周边设施信息
 
-### 第四阶段：主动询问房屋配置（7-11）
-- **TC007**: 询问卧室数量 - "How many bedrooms are there in this student apartment?"
-- **TC008**: 询问实用面积 - "What is the usable area or size of this apartment in square meters?"
-- **TC009**: 询问楼龄和楼层 - "How old is the building and which floor is this apartment on?"
-- **TC010**: 询问车位配置 - "Is there a parking space included with this apartment?"
-- **TC011**: 询问物业管理 - "What property management services are included? Are there maintenance fees?"
+### 模块四：AI多轮对话 - 看房和付款（10-12）
+- **TC010**: 询问看房时间 - "When can I schedule a viewing for this apartment?"
+  - 验证AI能提供合理的回复或引导联系房东
+- **TC011**: 询问付款方式 - "What payment methods are accepted? Do you require a deposit?"
+  - 验证AI能提供付款方式相关信息
+- **TC012**: 询问租金价格 - "What is the weekly or monthly rental price for this apartment?"
+  - 验证AI能基于帖子信息正确回复租金价格
 
-### 第五阶段：看房和租金详情（12-14）
-- **TC012**: 询问看房时间 - "When can I schedule a viewing for this apartment?"
-- **TC013**: 询问租金价格 - "What is the weekly or monthly rental price for this apartment?"
-- **TC014**: 询问付款方式 - "What payment methods are accepted? Do you require a deposit?"
+### 模块五：AI对话 - 无关问题测试（13）
+- **TC013**: 询问敏感无关问题（宗教信仰）- "What is your religious belief? Do you believe in God?"
+  - 验证AI能识别并做出合理回应（引导回主题或礼貌拒绝）
 
-### 第六阶段：综合深入询问（15）
-- **TC015**: 综合询问 - "Can you tell me about the lease term, utilities included, and if pets are allowed?"
+### 模块六：AI询问联系方式（14-17）
+- **TC014**: 提供邮箱地址（优先联系方式）- "You can reach me at john.smith@example.com"
+  - 验证AI能正确接收并回复邮箱地址
+- **TC015**: 提供WhatsApp号码 - "My WhatsApp is +61 423 456 789"
+  - 验证AI能正确接收并回复WhatsApp号码
+- **TC016**: 提供微信号 - "You can add me on WeChat: johnsmith2026"
+  - 验证AI能正确接收并回复微信号
+- **TC017**: 提供手机号码（最后联系方式）- "My phone number is +61 412 345 678, feel free to call me anytime."
+  - 验证AI能正确接收并回复手机号码
 
-### 第七阶段：测试AI引导能力（16）
-- **TC016**: 询问敏感无关问题（宗教信仰）- "What is your religious belief? Do you believe in God?"
-  - 验证AI能否识别并礼貌地引导回房产话题
-
-### 第八阶段：结束对话（17）
-- **TC017**: 告知没有其他问题 - "Thank you for all the information. I don't have any other questions at the moment."
+### 模块七：综合对话验证（18-19）
+- **TC018**: 综合询问多个问题 - "I'm very interested in this apartment. Can you tell me about the lease term, utilities included, and if pets are allowed?"
+  - 验证AI能理解并作出全面回复
+- **TC019**: 结束对话 - "Thank you for all the information. I don't have any other questions at the moment."
+  - 验证AI能给出礼貌的结束回复
 
 ## 运行测试
 
@@ -134,20 +152,36 @@ allure serve reports/allure-results
 ## 测试特点
 
 - ✅ 模拟真实用户与AI的完整对话流程
-- ✅ 优先回答AI询问，建立信任关系
-- ✅ 覆盖房屋租赁的核心咨询场景
+- ✅ 覆盖房屋租赁的核心咨询场景（房屋配置、地理位置、价格、看房等）
 - ✅ 验证AI对不同类型问题的处理能力
-- ✅ 测试联系方式交换的完整流程
+- ✅ 测试联系方式交换的完整流程（邮箱、WhatsApp、微信、电话）
 - ✅ 验证无关/敏感问题的引导能力
 - ✅ 礼貌结束对话，测试AI的礼仪回应
+- ✅ 所有用例共享同一浏览器session，提升执行效率
 
-## 对话设计理念
+## 测试优化说明
 
-测试流程遵循真实租户的心理路径：
-1. **建立信任**：先回应AI的询问（租期、预算、入住时间）
-2. **提供联系方式**：表明诚意，便于后续沟通
-3. **了解位置**：地理位置是租房的首要考虑因素
-4. **详细了解**：深入询问房屋配置、租金、付款等细节
-5. **综合评估**：询问租赁条款、水电、宠物等综合问题
-6. **测试边界**：验证AI对无关话题的处理能力
-7. **礼貌结束**：正常结束对话
+本测试使用 **module 级 fixture**，整个测试模块共享同一个浏览器和聊天页面：
+- 仅在模块初始化时登录并进入聊天页面一次
+- 所有用例共享同一个聊天会话，避免重复导航
+- 显著提升测试执行效率和稳定性
+
+## 用例优先级说明
+
+- **P0（Critical）**：核心功能，必须通过（7条）
+  - TC001: 进入聊天页面
+  - TC002: 询问卫浴数量
+  - TC003: 询问卧室数量
+  - TC009: 询问地理位置
+  - TC010-TC012: 看房和付款
+  - TC014: 提供联系方式
+  - TC018: 综合问题
+
+- **P1（Normal）**：重要功能（8条）
+  - TC004-TC008: 房屋配置详细询问
+  - TC013: 无关问题测试
+  - TC015-TC017: 其他联系方式
+  - TC019: 结束对话
+
+- **P2（Minor）**：次要功能（4条）
+  - TC017: 提供手机号码
