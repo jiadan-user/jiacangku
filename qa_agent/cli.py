@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 from qa_agent.agent_memory import MemoryExporter, MemoryRetriever, MemoryStore
@@ -150,6 +151,51 @@ def _format_next_action(state_data: dict) -> str:
     if action.get("resume_command"):
         lines.append(f"- resume: {action['resume_command']}")
     return "\n".join(lines)
+
+
+def _format_duration(seconds) -> str:
+    try:
+        total = int(round(float(seconds or 0)))
+    except (TypeError, ValueError):
+        total = 0
+    minutes, secs = divmod(total, 60)
+    hours, minutes = divmod(minutes, 60)
+    if hours:
+        return f"{hours}h{minutes}m{secs}s"
+    if minutes:
+        return f"{minutes}m{secs}s"
+    return f"{secs}s"
+
+
+def _format_phase_timings(state_data: dict) -> str:
+    timings = state_data.get("phase_timings", {}) or {}
+    if not isinstance(timings, dict):
+        return ""
+    lines = ["阶段耗时:"]
+    for phase_name, timing in timings.items():
+        if not isinstance(timing, dict) or not timing.get("started_at"):
+            continue
+        blocked_seconds = float(timing.get("blocked_seconds") or 0)
+        wall_seconds = float(timing.get("wall_seconds") or 0)
+        now = datetime.now(timezone.utc)
+        if timing.get("blocked_at"):
+            try:
+                blocked_seconds += max(0.0, (now - datetime.fromisoformat(timing["blocked_at"])).total_seconds())
+            except (TypeError, ValueError):
+                pass
+        if timing.get("started_at") and not timing.get("completed_at"):
+            try:
+                wall_seconds = max(wall_seconds, (now - datetime.fromisoformat(timing["started_at"])).total_seconds())
+            except (TypeError, ValueError):
+                pass
+        lines.append(
+            "  "
+            f"{phase_name}: active={_format_duration(timing.get('active_seconds'))}, "
+            f"wait={_format_duration(blocked_seconds)}, "
+            f"wall={_format_duration(wall_seconds)}, "
+            f"status={timing.get('last_status', '')}"
+        )
+    return "\n".join(lines) if len(lines) > 1 else ""
 
 
 def _format_doctor(result) -> str:
@@ -312,7 +358,11 @@ def main() -> int:
             return 1
         try:
             state = conductor.plan(inputs)
-            print(_format_brief(conductor.status(state.run_id)))
+            data = conductor.status(state.run_id)
+            print(_format_brief(data))
+            timing_text = _format_phase_timings(data)
+            if timing_text:
+                print(timing_text)
         except Exception as exc:
             print(f"错误: {exc}")
             return 1
@@ -335,6 +385,9 @@ def main() -> int:
             state = conductor.drive_to_action(state.run_id, max_steps=args.max_steps)
             data = conductor.status(state.run_id)
             print(_format_brief(data))
+            timing_text = _format_phase_timings(data)
+            if timing_text:
+                print(timing_text)
             print(_format_next_action(data))
         except Exception as exc:
             print(f"错误: {exc}")
@@ -344,7 +397,11 @@ def main() -> int:
     if cmd in ("advance", "推进", "继续"):
         try:
             state = conductor.advance(args.run_id)
-            print(_format_brief(conductor.status(state.run_id)))
+            data = conductor.status(state.run_id)
+            print(_format_brief(data))
+            timing_text = _format_phase_timings(data)
+            if timing_text:
+                print(timing_text)
         except FileNotFoundError as exc:
             print(f"错误: {exc}")
             return 1
@@ -360,6 +417,9 @@ def main() -> int:
             state = conductor.drive_to_action(args.run_id, max_steps=args.max_steps)
             data = conductor.status(state.run_id)
             print(_format_brief(data))
+            timing_text = _format_phase_timings(data)
+            if timing_text:
+                print(timing_text)
             print(_format_next_action(data))
         except FileNotFoundError as exc:
             print(f"错误: {exc}")
@@ -374,7 +434,11 @@ def main() -> int:
                 artifacts[k] = v
         try:
             state = conductor.complete_phase(args.run_id, args.phase, artifacts or None)
-            print(_format_brief(conductor.status(state.run_id)))
+            data = conductor.status(state.run_id)
+            print(_format_brief(data))
+            timing_text = _format_phase_timings(data)
+            if timing_text:
+                print(timing_text)
         except FileNotFoundError as exc:
             print(f"错误: {exc}")
             return 1
@@ -394,6 +458,9 @@ def main() -> int:
                 print("\n阶段状态:")
                 for name, st in phases.items():
                     print(f"  {name}: {st}")
+            timing_text = _format_phase_timings(data)
+            if timing_text:
+                print("\n" + timing_text)
             if args.verbose:
                 artifacts = data.get("artifacts", {})
                 if artifacts:

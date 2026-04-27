@@ -1158,6 +1158,18 @@ class ConductorSmokeTests(unittest.TestCase):
         self.assertEqual(data["status"], RunStatus.BLOCKED.value)
         self.assertIn("stale_warning", data)
 
+    def test_phase_timings_are_recorded_for_auto_and_blocked_phases(self) -> None:
+        conductor = self._make_conductor()
+        state = conductor.plan(self._new_feature_inputs())
+        state = conductor.drive_to_action(state.run_id)
+
+        timings = state.phase_timings
+        self.assertEqual(timings[Phase.INTAKE.value]["last_status"], "completed")
+        self.assertEqual(timings[Phase.IMPACT_SPLIT.value]["last_status"], "completed")
+        self.assertEqual(timings[Phase.SENIOR_QA_BRAIN.value]["last_status"], "blocked")
+        self.assertGreaterEqual(timings[Phase.SENIOR_QA_BRAIN.value]["attempts_count"], 1)
+        self.assertTrue(timings[Phase.SENIOR_QA_BRAIN.value]["blocked_at"])
+
     def test_run_state_loads_legacy_payload_with_next_action_defaults(self) -> None:
         payload = {
             "run_id": "legacy",
@@ -1168,6 +1180,7 @@ class ConductorSmokeTests(unittest.TestCase):
         state = RunState(**payload)
         self.assertEqual(state.version, 0)
         self.assertEqual(state.next_action.kind, "")
+        self.assertEqual(state.phase_timings, {})
 
 
 if __name__ == "__main__":

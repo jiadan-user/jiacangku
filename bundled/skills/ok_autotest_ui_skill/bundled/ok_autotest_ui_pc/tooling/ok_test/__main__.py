@@ -31,6 +31,13 @@ def build_parser() -> argparse.ArgumentParser:
         command_parser.add_argument("--nodeid")
     add_selection_arguments(run_parser)
     run_parser.add_argument("--dry-run", action="store_true")
+    run_parser.add_argument("--workers", help="并发 worker 数，支持 1、正整数或 auto；默认 1")
+    run_parser.add_argument("--max-workers", type=int, help="auto/N 的安全上限，默认 4")
+    run_parser.add_argument(
+        "--artifact-retention",
+        choices=["full", "lean"],
+        help="运行产物保留策略；lean 仅在真实执行通过后清理重复中间件",
+    )
     run_parser.set_defaults(handler=handle_run)
 
     ops_parser = subparsers.add_parser("ops", help="Maintenance commands for catalog and identifier governance")

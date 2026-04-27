@@ -152,6 +152,7 @@ class RunState:
     updated_at: str = field(default_factory=utc_now_iso)
     phase_statuses: dict[str, str] = field(default_factory=dict)
     artifacts: dict[str, str] = field(default_factory=dict)
+    phase_timings: dict[str, Any] = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)
     blocked_since: str = ""
     next_action: NextAction = field(default_factory=NextAction)
@@ -163,6 +164,8 @@ class RunState:
             self.next_action = NextAction()
         elif isinstance(self.next_action, dict):
             self.next_action = NextAction(**self.next_action)
+        if not isinstance(self.phase_timings, dict):
+            self.phase_timings = {}
 
     def touch(self) -> None:
         self.updated_at = utc_now_iso()

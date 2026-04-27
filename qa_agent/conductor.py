@@ -144,7 +144,12 @@ class QAConductor:
             phase_state = state.phase_statuses.get(phase.value, PhaseStatus.PENDING.value)
             if phase_state in (PhaseStatus.COMPLETED.value, PhaseStatus.SKIPPED.value):
                 continue
-            state = self._execute_phase(state, phase, inputs)
+            try:
+                state = self._execute_phase(state, phase, inputs)
+            except Exception as exc:
+                self._set_error_state(state, exc)
+                self.store.save(state)
+                raise
             phase_state = state.phase_statuses.get(phase.value, PhaseStatus.PENDING.value)
             if phase_state == PhaseStatus.COMPLETED.value:
                 continue
@@ -176,6 +181,7 @@ class QAConductor:
         if artifacts:
             state.artifacts.update(artifacts)
         phase = self._phase_from_name(phase_name)
+        self._phase_resumed(state, phase)
         if phase == Phase.SENIOR_QA_BRAIN:
             state = self._complete_senior_qa_brain(state)
         elif phase == Phase.PLAYWRIGHT_GENERATOR:
@@ -203,6 +209,7 @@ class QAConductor:
         state.current_phase = phase.value
         state.blocked_reason = ""
         state.status = RunStatus.RUNNING.value
+        self._phase_completed(state, phase)
         self._refresh_next_action(state)
         self.store.save(state)
         return self._advance_unlocked(run_id)
@@ -235,8 +242,9 @@ class QAConductor:
                 state = self._advance_unlocked(run_id, inputs)
             except Exception as exc:
                 state = self.store.load(run_id)
-                self._set_error_state(state, exc)
-                self.store.save(state)
+                if state.status != RunStatus.ERROR.value:
+                    self._set_error_state(state, exc)
+                    self.store.save(state)
                 return state
             if self._is_actionable(state):
                 self._refresh_next_action(state)
@@ -519,6 +527,10 @@ class QAConductor:
         state.phase_statuses[state.current_phase] = PhaseStatus.ERROR.value
         state.error_reason = f"{type(exc).__name__}: {exc}"
         state.blocked_reason = "自动推进时发生错误，请查看 error_reason"
+        try:
+            self._phase_error(state, self._phase_from_name(state.current_phase))
+        except ValueError:
+            pass
         self._refresh_next_action(state)
 
     def _stale_blocked_warning(self, state: RunState) -> str:
@@ -548,12 +560,6 @@ class QAConductor:
         path = self.store.artifact_path(state.run_id, "memory_context.md")
         write_text(path, content)
         state.artifacts["memory_context"] = str(path)
-        if memory_root.exists():
-            try:
-                exported = exporter.export("qa-agent", query=query, limit=8)
-                state.artifacts["memory_context_export"] = str(exported)
-            except Exception as exc:
-                state.notes.append(f"memory export skipped: {type(exc).__name__}: {exc}")
 
     def _memory_query_from_inputs(self, inputs: dict[str, Any]) -> str:
         parts: list[str] = []
@@ -1559,12 +1565,23 @@ class QAConductor:
         ]:
             if state.artifacts.get(key):
                 lines.append(f"- {key}: {state.artifacts[key]}")
+        run_state_path = self.store.run_dir(state.run_id) / "run_state.json"
         lines.extend(["", "## 完整产物清单"])
-        for key, value in sorted(state.artifacts.items()):
-            lines.append(f"- {key}: {value}")
+        lines.append(f"- 完整 artifact 清单见: {run_state_path}")
         lines.extend(["", "## 阶段状态"])
         for phase_name, status in state.phase_statuses.items():
             lines.append(f"- {phase_name}: {status}")
+        if state.phase_timings:
+            lines.extend(["", "## 阶段耗时"])
+            for phase_name, timing in state.phase_timings.items():
+                if not isinstance(timing, dict):
+                    continue
+                lines.append(
+                    f"- {phase_name}: active={timing.get('active_seconds', 0)}s, "
+                    f"blocked={timing.get('blocked_seconds', 0)}s, "
+                    f"wall={timing.get('wall_seconds', 0)}s, "
+                    f"status={timing.get('last_status', '')}"
+                )
 
         path = self.store.artifact_path(state.run_id, "final_report.md")
         write_text(path, "\n".join(lines) + "\n")
@@ -1572,9 +1589,6 @@ class QAConductor:
         context_path = self.store.artifact_path(state.run_id, "knowledge_base_update_context.md")
         write_text(context_path, self._render_knowledge_base_update_context(state))
         state.artifacts["knowledge_base_update_context"] = str(context_path)
-        candidates_path = self._write_memory_candidates(state)
-        if candidates_path:
-            state.artifacts["memory_candidates"] = str(candidates_path)
         self._mark(state, Phase.FINAL_REPORT, PhaseStatus.COMPLETED)
         state.status = RunStatus.RUNNING.value
         state.blocked_reason = ""
@@ -1749,7 +1763,130 @@ class QAConductor:
         state.phase_statuses[phase.value] = status.value
         if status == PhaseStatus.RUNNING:
             state.status = RunStatus.RUNNING.value
+            self._phase_started(state, phase)
+        elif status == PhaseStatus.BLOCKED:
+            self._phase_blocked(state, phase)
+        elif status in (PhaseStatus.COMPLETED, PhaseStatus.SKIPPED):
+            self._phase_completed(state, phase)
+        elif status == PhaseStatus.ERROR:
+            self._phase_error(state, phase)
         state.touch()
+
+    def _phase_timing(self, state: RunState, phase: Phase) -> dict[str, Any]:
+        if not isinstance(state.phase_timings, dict):
+            state.phase_timings = {}
+        timing = state.phase_timings.setdefault(phase.value, {})
+        if not isinstance(timing, dict):
+            timing = {}
+            state.phase_timings[phase.value] = timing
+        timing.setdefault("active_seconds", 0.0)
+        timing.setdefault("blocked_seconds", 0.0)
+        timing.setdefault("wall_seconds", 0.0)
+        timing.setdefault("attempts_count", 0)
+        timing.setdefault("events", [])
+        return timing
+
+    def _phase_started(self, state: RunState, phase: Phase) -> None:
+        now = utc_now_iso()
+        timing = self._phase_timing(state, phase)
+        if not timing.get("started_at"):
+            timing["started_at"] = now
+        if timing.get("blocked_at"):
+            timing["blocked_seconds"] = round(
+                float(timing.get("blocked_seconds", 0.0)) + self._seconds_between(timing["blocked_at"], now),
+                3,
+            )
+            timing["blocked_at"] = ""
+        if timing.get("last_status") != "running":
+            timing["attempts_count"] = int(timing.get("attempts_count", 0)) + 1
+        timing["active_started_at"] = now
+        timing["last_status"] = "running"
+        self._append_timing_event(timing, "running", now)
+        self._refresh_wall_seconds(timing, now)
+
+    def _phase_resumed(self, state: RunState, phase: Phase) -> None:
+        timing = self._phase_timing(state, phase)
+        if timing.get("last_status") == "blocked" or timing.get("blocked_at"):
+            self._phase_started(state, phase)
+
+    def _phase_blocked(self, state: RunState, phase: Phase) -> None:
+        now = utc_now_iso()
+        timing = self._phase_timing(state, phase)
+        self._accumulate_active_seconds(timing, now)
+        if not timing.get("started_at"):
+            timing["started_at"] = now
+        timing["blocked_at"] = now
+        timing["last_status"] = "blocked"
+        self._append_timing_event(timing, "blocked", now)
+        self._refresh_wall_seconds(timing, now)
+
+    def _phase_completed(self, state: RunState, phase: Phase) -> None:
+        now = utc_now_iso()
+        timing = self._phase_timing(state, phase)
+        self._accumulate_active_seconds(timing, now)
+        if timing.get("blocked_at"):
+            timing["blocked_seconds"] = round(
+                float(timing.get("blocked_seconds", 0.0)) + self._seconds_between(timing["blocked_at"], now),
+                3,
+            )
+            timing["blocked_at"] = ""
+        if not timing.get("started_at"):
+            timing["started_at"] = now
+        timing["completed_at"] = now
+        timing["last_status"] = "completed"
+        self._append_timing_event(timing, "completed", now)
+        self._refresh_wall_seconds(timing, now)
+
+    def _phase_error(self, state: RunState, phase: Phase) -> None:
+        now = utc_now_iso()
+        timing = self._phase_timing(state, phase)
+        self._accumulate_active_seconds(timing, now)
+        if timing.get("blocked_at"):
+            timing["blocked_seconds"] = round(
+                float(timing.get("blocked_seconds", 0.0)) + self._seconds_between(timing["blocked_at"], now),
+                3,
+            )
+            timing["blocked_at"] = ""
+        if not timing.get("started_at"):
+            timing["started_at"] = now
+        timing["completed_at"] = now
+        timing["last_status"] = "error"
+        self._append_timing_event(timing, "error", now)
+        self._refresh_wall_seconds(timing, now)
+
+    def _accumulate_active_seconds(self, timing: dict[str, Any], now: str) -> None:
+        active_started_at = timing.get("active_started_at")
+        if not active_started_at:
+            return
+        timing["active_seconds"] = round(
+            float(timing.get("active_seconds", 0.0)) + self._seconds_between(active_started_at, now),
+            3,
+        )
+        timing["active_started_at"] = ""
+
+    def _refresh_wall_seconds(self, timing: dict[str, Any], now: str) -> None:
+        started_at = timing.get("started_at")
+        if started_at:
+            timing["wall_seconds"] = round(self._seconds_between(started_at, now), 3)
+
+    def _append_timing_event(self, timing: dict[str, Any], status: str, timestamp: str) -> None:
+        events = timing.setdefault("events", [])
+        if not isinstance(events, list):
+            events = []
+            timing["events"] = events
+        if events and events[-1].get("status") == status and events[-1].get("at") == timestamp:
+            return
+        events.append({"status": status, "at": timestamp})
+        if len(events) > 50:
+            del events[:-50]
+
+    def _seconds_between(self, start: str, end: str) -> float:
+        try:
+            start_dt = datetime.fromisoformat(start)
+            end_dt = datetime.fromisoformat(end)
+        except (TypeError, ValueError):
+            return 0.0
+        return max(0.0, (end_dt - start_dt).total_seconds())
 
     def _requirement_packet(self, state: RunState) -> dict[str, Any]:
         return read_json(state.artifacts.get("requirement_packet", ""), default={}) or {}
@@ -2383,8 +2520,18 @@ class QAConductor:
                 "## Artifacts",
             ]
         )
-        for key, value in sorted(state.artifacts.items()):
-            lines.append(f"- {key}: {value}")
+        for key in [
+            "final_report",
+            "impact_candidates",
+            "change_attribution_report",
+            "regression_selector_plan",
+            "text_case_manifest",
+            "playwright_case_outcomes",
+        ]:
+            value = state.artifacts.get(key, "")
+            if value:
+                lines.append(f"- {key}: {value}")
+        lines.append(f"- 完整 artifact 清单见: {self.store.run_dir(state.run_id) / 'run_state.json'}")
         return "\n".join(lines) + "\n"
 
     def _build_selector_plan(
