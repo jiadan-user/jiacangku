@@ -79,6 +79,9 @@ brew install allure
 | `--path`     | 否    | 按测试文件或目录子串筛选，适合功能映射不细的模块              | `--path test_cases/wallet/test_wallet_withdrawal.py`                        |
 | `--nodeid`   | 否    | 按单条 pytest nodeid 筛选                  | `--nodeid test_cases/test_car/test_ae_car_publish.py::test_publish_success` |
 | `--dry-run`  | 否    | 只预览，不真实执行                             | `--dry-run`                                                                 |
+| `--workers`  | 否    | 真实执行并发 worker，支持 `1`、正整数或 `auto`；默认 `1`，有前置映射时强制串行 | `--workers auto`                                                            |
+| `--max-workers` | 否 | `auto` 或显式并发的安全上限，默认 `4` | `--max-workers 4` |
+| `--artifact-retention` | 否 | 产物保留策略，`lean` 仅在真实执行通过后清理重复中间件，失败/阻塞不清理 | `--artifact-retention lean` |
 
 ### `ops catalog-build`
 
