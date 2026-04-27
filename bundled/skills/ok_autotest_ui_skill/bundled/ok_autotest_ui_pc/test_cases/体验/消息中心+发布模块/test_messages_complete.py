@@ -20,6 +20,8 @@ OK阿联酋站 - Messages页面完整测试套件
 - 新增列表滚动与消息统计（现 TC038、TC039）
 - 详见: docs/MESSAGES_PAGE_SELECTOR_UPDATE_20260403.md
 """
+import os
+import re
 import pytest
 import allure
 import platform
@@ -62,6 +64,60 @@ _CONFIG = {
 }
 
 logger = setup_logger()
+
+
+def _tc027_screenshots_dir():
+    os.makedirs("screenshots", exist_ok=True)
+
+
+def _tc027_confirm_mute_dialog_if_present(page) -> bool:
+    """若出现「静音/免打扰」确认层，点确认使 Mute 生效（避免只点了菜单但未确认）。"""
+    page.wait_for_timeout(400)
+    for name in ("OK", "Confirm", "Yes", "Mute", "Enable"):
+        loc = page.get_by_role("button", name=name, exact=True)
+        if loc.count() and loc.first.is_visible(timeout=400):
+            loc.first.click()
+            page.wait_for_timeout(800)
+            return True
+    dlg = page.locator("[role='dialog'], .modal").first
+    if dlg.is_visible(timeout=500):
+        primary = dlg.locator("button").filter(has_text=re.compile(r"^(OK|Confirm|Yes|Mute|Enable)$", re.I))
+        if primary.count() and primary.first.is_visible(timeout=400):
+            primary.first.click()
+            page.wait_for_timeout(800)
+            return True
+    return False
+
+
+def _tc027_menu_blob_muted_dnd_state(menu_blob: str) -> bool:
+    """
+    三点菜单**整段**无空格拼接，例如：
+    - 已静音(免打扰)：Unpin + Unmute + Block → 含子串 "Unmute"
+    - 未静音：        Unpin + Mute  + Block → 不含 "Unmute"（勿与 UnpinMuteBlock 混淆，子串 "Unmute" 不存在）
+    因此用 `'Unmute' in menu_text` 判断即可；不能用单节点 trim()==='Unmute'（常为一个父节点内拼整串文案）。
+    """
+    return "Unmute" in (menu_blob or "")
+
+
+def _tc027_wait_mute_reflected_in_menu(page, max_wait_s: int = 16) -> str:
+    """点击 Mute 后，轮询「…」直到整段为已免打扰（含子串 Unmute 且 不是 UnpinMuteBlock）。"""
+    last = ""
+    for i in range(max(1, max_wait_s * 2)):
+        page.keyboard.press("Escape")
+        page.wait_for_timeout(350)
+        m = page.locator(".c-d-img-menu").first
+        if m.is_visible(timeout=2000):
+            m.click()
+        page.wait_for_timeout(450)
+        page.locator(".c-d-menu").first.wait_for(state="visible", timeout=5000)
+        blob = (page.locator(".c-d-menu").first.text_content() or "").strip()
+        last = blob
+        # 未免打扰: UnpinMuteBlock；已免打扰: UnpinUnmuteBlock（子串 "Unmute" 与未静音不同）
+        if "UnpinUnmute" in blob or (blob and "Unmute" in blob and "UnpinMuteBlock" not in blob):
+            logger.info(f"✓ 第 {i + 1} 次打开菜单，已检测到免打扰态: {blob!r}")
+            return blob
+        page.wait_for_timeout(500)
+    return last
 
 
 # ==================== TC001-TC007: 基础探索测试 ====================
@@ -4147,12 +4203,19 @@ def test_muted_conversation_icon(page, config):
         login_page.login(config['test_account']['username'], config['test_account']['password'])
         session_manager.save_session()
 
+    _tc027_screenshots_dir()
+
     try:
         messages_page.navigate_to_messages_directly(_CONFIG['target_page'])
         page.wait_for_timeout(5000)
-        page.wait_for_selector('.list-group.list-group-flush', timeout=15000)
+        page.wait_for_selector(".list-group.list-group-flush", timeout=30000)
     except Exception as e:
         logger.error(f"✗ Messages页面加载失败: {e}")
+        _tc027_screenshots_dir()
+        try:
+            page.screenshot(path="screenshots/tc027_FAIL_messages_not_loaded.png", timeout=60000)
+        except Exception as shot_e:
+            logger.warning(f"失败截图未保存: {shot_e}")
         pytest.skip(f"Messages页面加载失败，可能是网络问题: {str(e)[:100]}")
 
     # 步骤1：记录第2条会话信息
@@ -4185,27 +4248,43 @@ def test_muted_conversation_icon(page, config):
     page.wait_for_timeout(1000)
 
     menu_text = page.locator('.c-d-menu').first.text_content()
-    logger.info(f"✓ 当前菜单: '{menu_text}'")
+    logger.info(f"✓ 当前菜单(整段): '{menu_text}'")
+    page.screenshot(path="screenshots/tc027_step2_menu_initial.png", timeout=60000)
 
-    if 'Unmute' in menu_text:
-        logger.info("  ⚠ 当前已静音，先执行Unmute")
-        page.locator('.c-d-menu-item span:has-text("Unmute")').first.click()
+    if _tc027_menu_blob_muted_dnd_state(menu_text or ""):
+        logger.info("  ⚠ 当前已静音（子串 Unmute），先执行 Unmute（精确点击）")
+        page.locator(".c-d-menu").get_by_text("Unmute", exact=True).first.click()
+        _tc027_confirm_mute_dialog_if_present(page)
         page.wait_for_timeout(2000)
+        page.screenshot(path="screenshots/tc027_step2_after_unmute.png", timeout=60000)
         # 重新打开菜单
         items[1].click()
         page.wait_for_timeout(1500)
         menu_img.click()
         page.wait_for_timeout(1000)
-        menu_text = page.locator('.c-d-menu').first.text_content()
-        logger.info(f"  ✓ 取消静音后菜单: '{menu_text}'")
+        menu_text = page.locator(".c-d-menu").first.text_content()
+        logger.info(f"  ✓ 取消静音后菜单(整段): '{menu_text}'")
 
-    # 步骤3：执行Mute操作
-    logger.info("\n--- 步骤3: 执行Mute操作 ---")
-    mute_btn = page.locator('.c-d-menu-item span:has-text("Mute")').first
-    assert mute_btn.is_visible(), "Mute按钮不可见"
-    mute_btn.click()
-    page.wait_for_timeout(2000)
-    logger.info("✓ 已执行Mute操作")
+    # 步骤3：执行 Mute 操作（必须用 get_by_text(exact)：`has-text("Mute")` 会误匹配 "Unmute" 中的 Mute 子串）
+    logger.info("\n--- 步骤3: 执行 Mute 操作 ---")
+    # 先收起菜单再点「…」打开，避免上一步与本轮菜单状态串台
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(400)
+    page.locator(".c-d-img-menu").first.wait_for(state="visible", timeout=10000)
+    page.locator(".c-d-img-menu").first.click()
+    page.wait_for_timeout(500)
+    page.locator(".c-d-menu").first.wait_for(state="visible", timeout=10000)
+    mute_target = page.locator(".c-d-menu").get_by_text("Mute", exact=True)
+    assert mute_target.first.is_visible(), "Mute 项不可见"
+    mute_target.first.click()
+    _tc027_confirm_mute_dialog_if_present(page)
+    # 等菜单反映为已静音：整段会变为 Unpin + Unmute + Block（子串 "Unmute" 出现）
+    after_blob = _tc027_wait_mute_reflected_in_menu(page)
+    page.screenshot(path="screenshots/tc027_step3_after_mute_resolved.png", timeout=60000)
+    assert "UnpinUnmute" in (after_blob or "") or _tc027_menu_blob_muted_dnd_state(
+        after_blob
+    ), f"点击 Mute 后应为已免打扰菜单（如 UnpinUnmuteBlock），当前: {after_blob!r}"
+    logger.info("✓ Mute 已反映到「…」菜单")
 
     # 步骤4：验证会话列表中出现静音icon
     logger.info("\n--- 步骤4: 验证静音icon出现 ---")
@@ -4238,69 +4317,52 @@ def test_muted_conversation_icon(page, config):
 
     page.screenshot(path='screenshots/tc027_after_mute.png', timeout=60000)
 
-    # 步骤5：验证菜单变为Unmute
-    logger.info("\n--- 步骤5: 验证菜单变为Unmute ---")
-    
-    # 关闭当前菜单（如果打开）
-    page.keyboard.press('Escape')
+    # 步骤5：再次打开「…」验证免打扰态（不重复点列表，避免同一会话二次点击导致头菜单与 listMute 不同步）
+    logger.info("\n--- 步骤5: 再次打开「…」验证为 UnpinUnmuteBlock（免打扰态） ---")
+    page.keyboard.press("Escape")
     page.wait_for_timeout(500)
-    
-    # 重新获取会话列表并找到刚才静音的会话
-    items = page.query_selector_all('.list-group.list-group-flush > div')
-    target_name = before_info['texts'][0] if before_info else None
-    
-    # 确保点击正确的会话
-    clicked = False
-    for item in items:
-        item_text = item.text_content()
-        if target_name and target_name in item_text:
-            item.click()
-            page.wait_for_timeout(1500)
-            clicked = True
-            logger.info(f"✓ 点击会话: {target_name}")
-            break
-    
-    if not clicked:
-        logger.warning("⚠ 未找到目标会话，点击第2条")
-        items[1].click()
-        page.wait_for_timeout(1500)
 
-    # 打开菜单
-    menu_img = page.locator('.c-d-img-menu').first
-    menu_img.click()
-    page.wait_for_timeout(1500)
-    
-    menu_after_mute = page.locator('.c-d-menu').first.text_content()
-    logger.info(f"✓ 静音后菜单: '{menu_after_mute}'")
-    
-    # 检查是否有Unmute菜单项
+    # 打开菜单（当前仍为步骤3/4 所在会话，勿再点选列表项）
+    menu_img = page.locator(".c-d-img-menu").first
     try:
-        unmute_item = page.locator('.c-d-menu-item span:has-text("Unmute")').first
-        has_unmute_item = unmute_item.is_visible(timeout=2000)
-        logger.info(f"✓ Unmute菜单项可见: {has_unmute_item}")
-        
-        if has_unmute_item:
-            logger.info("✓ 菜单正确显示Unmute选项")
-        else:
-            # 如果定位器找不到，检查文本
-            if 'Unmute' not in menu_after_mute:
-                logger.warning(f"⚠ 静音后菜单未显示Unmute: '{menu_after_mute}'")
-                pytest.skip(f"静音后菜单文本可能已变更，未找到Unmute选项: '{menu_after_mute}'")
-            logger.info("✓ 菜单文本包含Unmute")
-    except Exception as e:
-        logger.warning(f"⚠ 检查Unmute菜单项时出错: {e}")
-        if 'Unmute' not in menu_after_mute:
-            pytest.skip(f"静音后菜单文本可能已变更，未找到Unmute选项: '{menu_after_mute}'")
+        menu_img.wait_for(state="visible", timeout=15000)
+    except Exception as w:
+        _tc027_screenshots_dir()
+        page.screenshot(path="screenshots/tc027_step5_FAIL_dots_not_visible.png", timeout=60000)
+        raise AssertionError("会话内三点菜单 .c-d-img-menu 未出现") from w
+    menu_img.click()
+    try:
+        page.locator(".c-d-menu").first.wait_for(state="visible", timeout=20000)
+    except Exception as w2:
+        _tc027_screenshots_dir()
+        page.screenshot(path="screenshots/tc027_step5_FAIL_menu_not_opened.png", timeout=60000)
+        raise AssertionError("点击「…」后 .c-d-menu 未在 20s 内出现") from w2
+    page.wait_for_timeout(400)
+    menu_after_mute = page.locator(".c-d-menu").first.text_content() or ""
+    logger.info(f"✓ 静音后菜单(整段): '{menu_after_mute}'")
+    page.screenshot(path="screenshots/tc027_step5_menu_opened.png", timeout=60000)
 
-    # 步骤6：还原 - 执行Unmute
-    logger.info("\n--- 步骤6: 还原 - 执行Unmute ---")
-    unmute_btn = page.locator('.c-d-menu-item span:has-text("Unmute")').first
+    has_unmute_item = _tc027_menu_blob_muted_dnd_state(menu_after_mute)
+    logger.info(f"✓ 整段菜单含 'Unmute' 子串(免打扰态): {has_unmute_item}")
+    if not has_unmute_item:
+        page.screenshot(path="screenshots/tc027_step5_FAIL_not_muted_dnd_in_menu.png", timeout=60000)
+    assert has_unmute_item, f"已静音时整段菜单应含 'Unmute' (例 UnpinUnmuteBlock)。当前: {menu_after_mute!r}"
+    unmute_loc = page.locator(".c-d-menu").get_by_text("Unmute", exact=True).first
+    if unmute_loc.is_visible(timeout=2000):
+        logger.info("✓ Unmute 菜单项可见 (Playwright exact)")
+
+    # 步骤6：还原 - 执行 Unmute
+    logger.info("\n--- 步骤6: 还原 - 执行 Unmute ---")
+    unmute_btn = page.locator(".c-d-menu").get_by_text("Unmute", exact=True).first
     if unmute_btn.is_visible():
         unmute_btn.click()
+        _tc027_confirm_mute_dialog_if_present(page)
         page.wait_for_timeout(2000)
-        logger.info("✓ Unmute还原完成")
+        page.screenshot(path="screenshots/tc027_step6_after_unmute.png", timeout=60000)
+        logger.info("✓ Unmute 还原完成")
     else:
-        logger.warning("⚠ Unmute按钮不可见，跳过还原")
+        page.screenshot(path="screenshots/tc027_step6_unmute_not_visible.png", timeout=60000)
+        logger.warning("⚠ Unmute 不可见，跳过还原")
 
     logger.info("✓ TC027 测试通过 ✅ 实测")
 

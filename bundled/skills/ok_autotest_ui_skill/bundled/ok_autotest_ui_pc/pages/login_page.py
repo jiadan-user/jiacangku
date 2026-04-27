@@ -8,9 +8,10 @@ from utils.logger import setup_logger
 class LoginPage(BasePage):
     """OK.com 登录页面对象（静默执行）"""
     
-    def __init__(self, page):
+    def __init__(self, page, base_url=None):
         super().__init__(page)
         self.logger = setup_logger()
+        self.base_url = base_url
     
     # ========== 页面操作方法（静默执行）==========
     
@@ -19,10 +20,10 @@ class LoginPage(BasePage):
         导航到首页
         
         Args:
-            base_url: 站点基础URL，不传则使用默认美国站
+            base_url: 站点基础 URL，不传则使用构造器中的 default，再否则默认美国站
         """
         try:
-            url = base_url or "https://us.58v5.cn"
+            url = base_url or self.base_url or "https://us.58v5.cn"
             self.page.goto(url, wait_until="domcontentloaded", timeout=60000)
             self.page.wait_for_load_state("load")
             try:

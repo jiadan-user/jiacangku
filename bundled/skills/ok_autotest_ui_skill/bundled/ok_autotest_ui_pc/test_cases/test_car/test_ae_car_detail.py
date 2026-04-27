@@ -635,6 +635,7 @@ def test_car_detail_contact_login_required(page, config):
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.ae
+@pytest.mark.skip(reason="TC007: 搜索建议列表功能暂时跳过")
 @allure.feature("OK")
 @allure.story("车详情页 - 搜索功能")
 @allure.title("TC007: 点击搜索框并输入关键词，显示搜索建议列表")

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import re
 import shutil
 from pathlib import Path
 from typing import Any
+import xml.etree.ElementTree as ET
 
 from qa_agent.config import AppConfig
 from qa_agent.models import (
@@ -42,15 +44,35 @@ class ImpactVerificationExecutor:
     def _candidate_objects(self, impact_payload: dict[str, Any]) -> list[ImpactCandidate]:
         raw_candidates = [*(impact_payload.get("new_cases", []) or []), *(impact_payload.get("existing_cases", []) or [])]
         candidates: list[ImpactCandidate] = []
-        seen: set[tuple[str, str]] = set()
+        by_key: dict[tuple[str, str], ImpactCandidate] = {}
         for item in raw_candidates:
             candidate = item if isinstance(item, ImpactCandidate) else ImpactCandidate(**item)
-            key = (candidate.target, candidate.related_nodeid)
-            if key in seen:
+            key = (candidate.source_type, candidate.target)
+            existing = by_key.get(key)
+            if existing:
+                self._merge_candidate_details(existing, candidate)
                 continue
-            seen.add(key)
+            by_key[key] = candidate
             candidates.append(candidate)
         return candidates
+
+    def _merge_candidate_details(self, target: ImpactCandidate, source: ImpactCandidate) -> None:
+        details = target.details
+        matched_nodeids = list(details.get("matched_nodeids", []) or [])
+        matched_case_ids = list(details.get("matched_case_ids", []) or [])
+        if source.related_nodeid:
+            matched_nodeids.append(source.related_nodeid)
+        if source.related_case_id:
+            matched_case_ids.append(source.related_case_id)
+        matched_nodeids.extend(source.details.get("matched_nodeids", []) or [])
+        matched_case_ids.extend(source.details.get("matched_case_ids", []) or [])
+        details["matched_nodeids"] = sorted(dict.fromkeys(nodeid for nodeid in matched_nodeids if nodeid))
+        details["matched_case_ids"] = sorted(dict.fromkeys(case_id for case_id in matched_case_ids if case_id))
+        nodeid_case_ids = dict(details.get("nodeid_case_ids", {}) or {})
+        nodeid_case_ids.update(source.details.get("nodeid_case_ids", {}) or {})
+        if source.related_nodeid and source.related_case_id:
+            nodeid_case_ids[source.related_nodeid] = source.related_case_id
+        details["nodeid_case_ids"] = nodeid_case_ids
 
     def _verify_candidate(
         self,
@@ -81,7 +103,11 @@ class ImpactVerificationExecutor:
             record.reason = "未找到可执行的 staged/original 脚本"
             return record
 
-        command = [self.runtime.python_bin, "-m", "pytest", str(executable_path), "-q"]
+        candidate_nodeids = self._candidate_nodeids(candidate)
+        executable_nodeids = self._nodeids_for_executable(candidate_nodeids, target_path, executable_path)
+        junit_path = self._junit_path(staging_root, candidate)
+        command_targets = executable_nodeids or [str(executable_path)]
+        command = [self.runtime.python_bin, "-m", "pytest", *command_targets, "-q", "--junitxml", str(junit_path)]
         record.command = command
         env = {"PYTHONPATH": str(self.regression_root)} if self.regression_root.exists() else None
         proc = run_command(command, cwd=self.regression_root if self.regression_root.exists() else staging_root, env=env)
@@ -90,6 +116,22 @@ class ImpactVerificationExecutor:
         record.stdout_excerpt = self._excerpt(proc.stdout)
         record.stderr_excerpt = self._excerpt(proc.stderr)
         record.summary = self._summary(proc.stdout, proc.stderr, proc.returncode)
+        failed_nodeids = self._failed_nodeids(junit_path, executable_nodeids or candidate_nodeids, target_path, executable_path)
+        executed_nodeids = candidate_nodeids or executable_nodeids
+        passed_nodeids = [nodeid for nodeid in executed_nodeids if nodeid not in set(failed_nodeids)]
+        nodeid_case_ids = dict(candidate.details.get("nodeid_case_ids", {}) or {})
+        record.details.update(
+            {
+                "executed_nodeids": executed_nodeids,
+                "failed_nodeids": failed_nodeids,
+                "passed_nodeids": passed_nodeids,
+                "junit_path": str(junit_path),
+                "nodeid_case_ids": nodeid_case_ids,
+            }
+        )
+        if len(failed_nodeids) == 1:
+            record.related_nodeid = failed_nodeids[0]
+            record.related_case_id = nodeid_case_ids.get(failed_nodeids[0], record.related_case_id)
         if proc.returncode == 0:
             record.run_status = ImpactRunStatus.PASSED.value
             record.category = AttributionCategory.PASSED.value
@@ -115,6 +157,62 @@ class ImpactVerificationExecutor:
         staged_path = target_dir / target_path.name
         shutil.copy2(target_path, staged_path)
         return staged_path
+
+    def _candidate_nodeids(self, candidate: ImpactCandidate) -> list[str]:
+        nodeids = list(candidate.details.get("matched_nodeids", []) or [])
+        if candidate.related_nodeid:
+            nodeids.append(candidate.related_nodeid)
+        return sorted(dict.fromkeys(str(nodeid) for nodeid in nodeids if nodeid))
+
+    def _nodeids_for_executable(self, nodeids: list[str], original_path: Path, executable_path: Path) -> list[str]:
+        if not nodeids:
+            return []
+        if original_path == executable_path:
+            return nodeids
+        converted: list[str] = []
+        for nodeid in nodeids:
+            suffix = nodeid.split("::", 1)[1] if "::" in nodeid else ""
+            converted.append(f"{executable_path}::{suffix}" if suffix else str(executable_path))
+        return converted
+
+    def _junit_path(self, staging_root: Path, candidate: ImpactCandidate) -> Path:
+        junit_root = staging_root / "junit"
+        junit_root.mkdir(parents=True, exist_ok=True)
+        slug = re.sub(r"[^a-zA-Z0-9_.-]+", "_", f"{candidate.source_type}_{Path(candidate.target).name}")[:120]
+        return junit_root / f"{slug or 'impact'}.xml"
+
+    def _failed_nodeids(
+        self,
+        junit_path: Path,
+        requested_nodeids: list[str],
+        original_path: Path,
+        executable_path: Path,
+    ) -> list[str]:
+        if not junit_path.exists():
+            return []
+        try:
+            root = ET.parse(junit_path).getroot()
+        except ET.ParseError:
+            return []
+        failed_names = {
+            testcase.attrib.get("name", "")
+            for testcase in root.iter("testcase")
+            if testcase.find("failure") is not None or testcase.find("error") is not None
+        }
+        if not failed_names:
+            return []
+        failed: list[str] = []
+        for nodeid in requested_nodeids:
+            test_name = nodeid.split("::")[-1]
+            base_name = test_name.split("[", 1)[0]
+            if test_name in failed_names or base_name in failed_names:
+                failed.append(nodeid)
+        if executable_path != original_path:
+            failed = [
+                self._nodeids_for_executable([nodeid], executable_path, original_path)[0]
+                for nodeid in failed
+            ]
+        return sorted(dict.fromkeys(failed))
 
     def _classify_failure(
         self,
@@ -215,20 +313,46 @@ class ImpactVerificationExecutor:
     ) -> dict[str, Any]:
         selectors: list[dict[str, str]] = []
         candidate_paths: set[str] = set()
+        nodeids: set[str] = set()
+        case_ids: set[str] = set()
+        execution_units: list[dict[str, Any]] = []
         for record in records:
             path = record.staged_target or record.target
             if not path:
                 continue
             candidate_paths.add(path)
             selectors.append({"kind": "path", "value": path})
+            record_nodeids = list(record.details.get("executed_nodeids", []) or [])
+            nodeids.update(record_nodeids)
+            if record.related_nodeid:
+                nodeids.add(record.related_nodeid)
+            if record.related_case_id:
+                case_ids.add(record.related_case_id)
+            case_ids.update(record.details.get("nodeid_case_ids", {}).values())
+            execution_units.append(
+                {
+                    "target": record.target,
+                    "staged_target": record.staged_target,
+                    "source_type": record.source_type,
+                    "module": record.module,
+                    "site": record.site,
+                    "executed_nodeids": record_nodeids,
+                    "failed_nodeids": list(record.details.get("failed_nodeids", []) or []),
+                    "run_status": record.run_status,
+                    "junit_path": record.details.get("junit_path", ""),
+                }
+            )
         return {
             "module": (packet.get("candidate_modules") or [""])[0],
             "site": packet.get("site", ""),
+            "requested_modules": packet.get("requested_modules", packet.get("candidate_modules", [])),
+            "requested_sites": packet.get("requested_sites", [packet.get("site", "")] if packet.get("site") else []),
             "feature_name": packet.get("feature_name", ""),
             "candidate_paths": sorted(candidate_paths),
             "selectors": selectors,
-            "nodeids": sorted({record.related_nodeid for record in records if record.related_nodeid}),
-            "case_ids": sorted({record.related_case_id for record in records if record.related_case_id}),
+            "execution_units": execution_units,
+            "nodeids": sorted(nodeid for nodeid in nodeids if nodeid),
+            "case_ids": sorted(case_id for case_id in case_ids if case_id),
         }
 
     def _is_under_regression_project(self, target_path: Path) -> bool:

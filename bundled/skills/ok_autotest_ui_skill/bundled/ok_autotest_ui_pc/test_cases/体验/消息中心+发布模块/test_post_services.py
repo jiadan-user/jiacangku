@@ -1935,8 +1935,15 @@ def test_success_identity_verification(publish_page):
 
     with allure.step("验证帖子详情页内容"):
         assert '?from=publish' in page.url, "应在帖子详情页"
-        body = page.evaluate("() => document.body.innerText")
-        
+        try:
+            page.wait_for_load_state("domcontentloaded", timeout=20000)
+        except Exception:
+            pass
+        page.wait_for_timeout(800)
+        # 导航/重绘瞬间 document.body 可能为 null，避免对 null 取 innerText
+        body = page.evaluate(
+            "() => (document.body && document.body.innerText) || ''"
+        ) or ""
         # 验证帖子详情页的关键信息
         assert 'Service' in body or 'Success Page Test Service' in body, \
             "应显示服务相关内容"

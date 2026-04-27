@@ -12,14 +12,68 @@ class AiPublishJobPage(BasePage):
     
     # ========== 页面操作方法（静默执行）==========
     
+
+    def close_login_modal_if_exists(self):
+        """关闭登录弹窗（如果存在）"""
+        try:
+            # 尝试多种关闭方式
+            # 方式1: 点击关闭按钮
+            close_selectors = [
+                '.modal .close',
+                '.modal button[aria-label="Close"]',
+                'button.close',
+                '[data-dismiss="modal"]'
+            ]
+            
+            for selector in close_selectors:
+                try:
+                    close_btn = self.page.locator(selector).first
+                    if close_btn.is_visible(timeout=1000):
+                        close_btn.click()
+                        self.page.wait_for_timeout(1000)
+                        self.logger.info("✓ 通过按钮关闭登录弹窗")
+                        return True
+                except:
+                    continue
+            
+            # 方式2: 按ESC键
+            self.page.keyboard.press('Escape')
+            self.page.wait_for_timeout(1000)
+            self.logger.info("✓ 通过ESC键关闭登录弹窗")
+            
+            # 方式3: 等待弹窗消失
+            try:
+                self.page.wait_for_selector('.modal.show', state='detached', timeout=2000)
+                self.logger.info("✓ 登录弹窗已消失")
+            except:
+                pass
+            
+            return True
+        except Exception as e:
+            self.logger.warning(f"关闭登录弹窗时出错（可能不存在）: {e}")
+            return False
+
     def click_jobs_category(self):
         """点击Jobs类目，进入Job发布页面"""
         try:
-            self.page.locator('span').filter(has_text='Jobs').click()
+            # 先关闭可能存在的登录弹窗
+            self.close_login_modal_if_exists()
+            self.page.wait_for_timeout(500)
+            
+            # 使用更可靠的定位器点击Jobs
+            jobs_locator = self.page.locator('span:has-text("Jobs")').first
+            jobs_locator.click(force=True)  # 使用 force=True 确保能点击
             self.page.wait_for_timeout(1000)
             self.page.wait_for_load_state("domcontentloaded", timeout=15000)
+            self.logger.info("✓ 成功点击Jobs类目")
         except Exception as e:
             self.logger.error(f"点击Jobs类目失败: {e}")
+            # 保存错误截图
+            try:
+                self.page.screenshot(path="reports/screenshots/click_jobs_error.png")
+                self.logger.info("已保存错误截图")
+            except:
+                pass
             raise
     
     def click_job_title(self):

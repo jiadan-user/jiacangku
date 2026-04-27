@@ -106,7 +106,27 @@ def published_success_url(page, config):
             page.wait_for_timeout(1000)
 
         with allure.step(f"登录账号 {username}"):
-            login_page.click_login_register_button()
+            # 等待页面 DOM 加载完成（避免 networkidle 超时）
+            page.wait_for_load_state("domcontentloaded", timeout=15000)
+            page.wait_for_timeout(2000)
+            
+            # 手动点击登录按钮（避免调用 click_login_register_button 的 networkidle 等待）
+            try:
+                login_btn = page.get_by_text('Log in / Register', exact=True).first
+                if login_btn.is_visible(timeout=5000):
+                    login_btn.click(timeout=10000)
+                    page.wait_for_timeout(1000)
+            except:
+                # 尝试其他选择器
+                try:
+                    login_btn = page.get_by_text('Log in').first
+                    login_btn.click(timeout=10000)
+                    page.wait_for_timeout(1000)
+                except Exception as e:
+                    logger.error(f"点击登录按钮失败: {e}")
+                    page.screenshot(path="debug_login_button_failed.png")
+                    raise
+            
             login_page.input_email(username)
             login_page.click_continue_button()
             login_page.input_password(password)
@@ -128,13 +148,106 @@ def published_success_url(page, config):
         page.wait_for_selector("#title", state="visible", timeout=30000)
 
     with allure.step("填写 Job Basics 并 Continue"):
-        success_page.fill_job_basics_and_continue()
+        # 手动填写 Job Title，增加等待时间避免超时
+        try:
+            page.locator("#title").click()
+            page.locator("#title").fill("Software")
+            page.wait_for_timeout(3000)  # 增加等待时间让联想建议加载
+            
+            # 等待并点击联想建议（增加重试机制）
+            try:
+                page.get_by_text("Software Architect", exact=True).first.click(timeout=10000)
+            except:
+                # 如果联想建议没出现，直接填写完整标题并按回车
+                page.locator("#title").fill("Software Architect")
+                page.keyboard.press("Enter")
+            
+            page.wait_for_timeout(1000)
+            
+            # 关键修复：关闭 Job Title 的联想弹窗，点击页面其他区域
+            page.keyboard.press("Escape")
+            page.wait_for_timeout(500)
+            
+            logger.info("✓ Job Title 填写完成")
+        except Exception as e:
+            logger.error(f"填写 Job Title 失败: {e}")
+            page.screenshot(path="debug_job_title_failed.png")
+            raise
+        
+        # 调用 Page Object 方法完成剩余填写（需要手动填完 Job Function 和 Salary）
+        try:
+            # Job Function - 这是一个级联选择器，需要先选择一级分类，再选择二级选项
+            # 打开下拉框
+            page.locator("div").filter(has_text="Select Job Functions").nth(4).click(force=True)
+            page.wait_for_timeout(2000)
+            
+            # 第一步：点击一级分类 "Accounting"
+            page.locator(".item-label-text").filter(has_text="Accounting").first.click(force=True)
+            page.wait_for_timeout(1500)
+            logger.info("✓ 已选择一级分类: Accounting")
+            
+            # 第二步：点击二级选项 "Accounts Officers/Clerks"
+            page.locator(".item-label-text").filter(has_text="Accounts Officers/Clerks").first.click(force=True)
+            page.wait_for_timeout(1000)
+            logger.info("✓ 已选择二级选项: Accounts Officers/Clerks")
+            
+            # 关闭级联菜单 - 点击页面空白区域
+            page.locator("body").click(position={"x": 10, "y": 10}, force=True)
+            page.wait_for_timeout(800)
+            
+            logger.info("✓ Job Function 选择完成")
+        except Exception as e:
+            logger.error(f"选择 Job Function 失败: {e}")
+            page.screenshot(path="debug_job_function_selection.png")
+            raise
+        
+        # Salary Min/Max
+        try:
+            salary_selectors = page.locator(".pc-select-text")
+            salary_selectors.nth(1).click(force=True)
+            page.wait_for_timeout(500)
+            page.get_by_text("5000", exact=True).first.click(force=True)
+            page.wait_for_timeout(300)
+            
+            salary_selectors.nth(2).click(force=True)
+            page.wait_for_timeout(500)
+            page.get_by_text("10000", exact=True).first.click(force=True)
+            page.wait_for_timeout(300)
+            logger.info("✓ Salary 填写完成")
+            
+            # Continue
+            page.get_by_role("button", name="Continue").click(force=True)
+            page.wait_for_load_state("domcontentloaded", timeout=15000)
+            page.wait_for_timeout(1000)
+            logger.info("✓ Job Basics 步骤完成")
+        except Exception as e:
+            logger.error(f"填写 Salary 失败: {e}")
+            page.screenshot(path="debug_salary_failed.png")
+            raise
 
     with allure.step("填写 Job Description 并 Continue"):
-        success_page.fill_job_description_and_continue(
-            "We are looking for an experienced Software Architect to design "
-            "and implement scalable software solutions."
-        )
+        try:
+            # 增加更长的等待让页面完全加载
+            page.wait_for_timeout(3000)
+            
+            # 不等待元素可见，直接强制填写（元素存在但hidden）
+            page.locator("#content").fill(
+                "We are looking for an experienced Software Architect to design "
+                "and implement scalable software solutions.",
+                force=True
+            )
+            page.wait_for_timeout(500)
+            logger.info("✓ Job Description 填写完成")
+            
+            # 强制点击 Continue（可能被级联菜单遮挡）
+            page.get_by_role("button", name="Continue").click(force=True)
+            page.wait_for_load_state("domcontentloaded", timeout=15000)
+            page.wait_for_timeout(1000)
+            logger.info("✓ Job Description 步骤完成")
+        except Exception as e:
+            logger.error(f"填写 Job Description 失败: {e}")
+            page.screenshot(path="debug_job_description_failed.png")
+            raise
 
     with allure.step("点击 Post 发布，等待跳转成功页"):
         success_page.click_post_button()
