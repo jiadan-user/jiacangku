@@ -1,5 +1,7 @@
 # UI 自动化覆盖 Dashboard
 
+> 注意：本文件是随 skill 发布的历史静态快照，只用于对照旧覆盖口径；最新覆盖度请以 `ui_test_management` 中 OK 项目的 `用例覆盖度` 页签为准。该页签数据来自 QA Agent publish 的结构化覆盖快照，不再依赖本 Markdown 自动更新。
+
 - 口径说明：本页基于 `/Users/a58/Desktop/knowledge_base/文本用例` 的文本用例，以及当前 skill 内自动化脚本现状做人工分析整理
 - 更新方式：静态随 skill 版本发布，不在日常执行中自动刷新
 - 当前快照时间：2026-04-09
@@ -154,4 +156,3 @@
 - `references/dashboard-modules/car.md`
 - `references/dashboard-modules/wallet.md`
 - `references/dashboard-modules/zhaopin.md`
-

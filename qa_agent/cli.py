@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -10,6 +11,8 @@ from qa_agent.agent_memory.candidate import build_candidate_from_text
 from qa_agent.agent_memory.models import to_data as memory_to_data
 from qa_agent.config import load_config
 from qa_agent.conductor import QAConductor
+from qa_agent.dashboard_publish import publish_coverage, publish_run
+from qa_agent.io import write_json
 from qa_agent.models import RunStatus, to_data
 
 
@@ -92,6 +95,20 @@ def build_parser() -> argparse.ArgumentParser:
     export.add_argument("--target", required=True, choices=["qa-agent", "claude", "cursor"])
     export.add_argument("--query", default="")
     export.add_argument("--limit", type=int, default=8)
+
+    dashboard = sub.add_parser("dashboard", help="QA Agent Dashboard 发布")
+    dashboard_sub = dashboard.add_subparsers(dest="dashboard_command", required=True)
+    dashboard_publish = dashboard_sub.add_parser("publish", help="发布本地 run 到 ui_test_management")
+    dashboard_publish.add_argument("--run-id", required=True)
+    dashboard_publish.add_argument("--url", help="ui_test_management 地址，默认 http://10.192.35.53:8001，可用 QA_AGENT_DASHBOARD_URL 覆盖")
+    dashboard_publish.add_argument("--api-key", help="发布 API Key，默认读取 QA_AGENT_DASHBOARD_API_KEY")
+    dashboard_publish.add_argument("--allow-incomplete", action="store_true", help="允许手动发布未完成 run，用于调试")
+    dashboard_publish.add_argument("--json", action="store_true")
+    dashboard_coverage = dashboard_sub.add_parser("publish-coverage", help="只刷新项目用例覆盖度快照")
+    dashboard_coverage.add_argument("--url", help="ui_test_management 地址，默认 http://10.192.35.53:8001，可用 QA_AGENT_DASHBOARD_URL 覆盖")
+    dashboard_coverage.add_argument("--api-key", help="发布 API Key，默认读取 QA_AGENT_DASHBOARD_API_KEY")
+    dashboard_coverage.add_argument("--project-key", default="OK", help="目标项目名，默认 OK")
+    dashboard_coverage.add_argument("--json", action="store_true")
 
     return parser
 
@@ -209,6 +226,28 @@ def _format_doctor(result) -> str:
 
 def _doctor_has_fatal(result) -> bool:
     return bool(getattr(result, "has_fatal", False))
+
+
+def _maybe_publish_dashboard(config, state_data: dict) -> None:
+    if state_data.get("status") != RunStatus.COMPLETED.value:
+        return
+    if os.getenv("QA_AGENT_DASHBOARD_ENABLED", "true").lower() not in {"1", "true", "yes", "on"}:
+        result = {
+            "success": False,
+            "skipped": True,
+            "reason": "QA_AGENT_DASHBOARD_ENABLED disabled",
+        }
+        result_path = config.project_root / ".qa_agent" / "runs" / state_data["run_id"] / "dashboard_publish_result.json"
+        write_json(result_path, result)
+        print(f"Dashboard 发布跳过: {result['reason']}")
+        return
+    result = publish_run(config.project_root, state_data["run_id"])
+    if result.get("success"):
+        print(f"Dashboard 发布成功: {result.get('run_uid', state_data['run_id'])}")
+    elif result.get("skipped"):
+        print(f"Dashboard 发布跳过: {result.get('reason')}")
+    else:
+        print(f"Dashboard 发布失败，可稍后补发: {result.get('error') or result.get('reason')}")
 
 
 def _memory_root(config) -> Path:
@@ -348,6 +387,47 @@ def main() -> int:
             print(f"错误: {exc}")
             return 1
 
+    if cmd == "dashboard":
+        if args.dashboard_command == "publish":
+            try:
+                result = publish_run(
+                    config.project_root,
+                    args.run_id,
+                    base_url=args.url,
+                    api_key=args.api_key,
+                    allow_incomplete=args.allow_incomplete,
+                )
+                if args.json:
+                    print(json.dumps(result, ensure_ascii=False, indent=2))
+                elif result.get("success"):
+                    print(f"Dashboard 发布成功: {result.get('run_uid', args.run_id)}")
+                    if result.get("report_url"):
+                        print(f"报告: {result['report_url']}")
+                else:
+                    print(f"Dashboard 发布失败: {result.get('error') or result.get('reason')}")
+                return 0 if result.get("success") else 1
+            except Exception as exc:
+                print(f"错误: {exc}")
+                return 1
+        if args.dashboard_command == "publish-coverage":
+            try:
+                result = publish_coverage(
+                    config.project_root,
+                    base_url=args.url,
+                    api_key=args.api_key,
+                    project_key=args.project_key,
+                )
+                if args.json:
+                    print(json.dumps(result, ensure_ascii=False, indent=2))
+                elif result.get("success"):
+                    print(f"覆盖度发布成功: project_id={result.get('project_id')}")
+                else:
+                    print(f"覆盖度发布失败: {result.get('error') or result.get('reason')}")
+                return 0 if result.get("success") else 1
+            except Exception as exc:
+                print(f"错误: {exc}")
+                return 1
+
     conductor = QAConductor(config)
 
     if cmd in ("plan", "计划"):
@@ -389,6 +469,7 @@ def main() -> int:
             if timing_text:
                 print(timing_text)
             print(_format_next_action(data))
+            _maybe_publish_dashboard(config, data)
         except Exception as exc:
             print(f"错误: {exc}")
             return 1
@@ -402,6 +483,7 @@ def main() -> int:
             timing_text = _format_phase_timings(data)
             if timing_text:
                 print(timing_text)
+            _maybe_publish_dashboard(config, data)
         except FileNotFoundError as exc:
             print(f"错误: {exc}")
             return 1
@@ -421,6 +503,7 @@ def main() -> int:
             if timing_text:
                 print(timing_text)
             print(_format_next_action(data))
+            _maybe_publish_dashboard(config, data)
         except FileNotFoundError as exc:
             print(f"错误: {exc}")
             return 1
@@ -439,6 +522,7 @@ def main() -> int:
             timing_text = _format_phase_timings(data)
             if timing_text:
                 print(timing_text)
+            _maybe_publish_dashboard(config, data)
         except FileNotFoundError as exc:
             print(f"错误: {exc}")
             return 1

@@ -13,7 +13,7 @@ description: 当需要根据站点、模块、功能或脚本路径选择并执�
 - AI 先 `--dry-run` 预览，再真实执行
 - 如果目标 case 有已配置前置，CLI 会先自动补跑前置再回到目标执行
 - AI 直接返回 Allure、执行结果和上线建议
-- `coverage-dashboard.md` 是随 skill 发布的静态汇报快照，不在日常执行中改写
+- `coverage-dashboard.md` 只保留为历史静态快照；最新覆盖度以 QA Agent publish 到 `ui_test_management` 的结构化覆盖快照为准
 
 ## 首次环境准备
 
@@ -110,13 +110,13 @@ python3 scripts/ok_test.py ops audit-identifiers
 - `bundled/ok_autotest_ui_pc/reports/junit.xml`
 - `bundled/ok_autotest_ui_pc/reports/screenshots/`
 - `bundled/ok_autotest_ui_pc/reports/ok_test_runs/<run_id>/`
-- `references/coverage-dashboard.md`
+- `references/coverage-dashboard.md`（历史静态快照，仅用于对照旧口径）
 - `references/dashboard-modules/`
 
 ## 何时读取 References
 
 - 需要功能名到 `run` 参数的映射时，读 `references/module-map.md`
 - 需要看 3 个 AI 执行示例时，读 `references/usage.md`
-- 需要看自动化覆盖汇报时，读静态的 `references/coverage-dashboard.md`
+- 需要看最新自动化覆盖汇报时，优先看 `ui_test_management` 的 OK 项目 `用例覆盖度` 页签；`references/coverage-dashboard.md` 只作为历史静态快照
 - 新增、修改或 promotion 脚本后，读 `references/new-script-onboarding.md`
 - 需要维护 catalog 或标识治理时，读 `references/governance.md` 和 `references/identifier-rules.md`

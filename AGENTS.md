@@ -482,6 +482,26 @@ warning 不阻止 `run` 创建任务，但会写入本次 run 的 `doctor_result
 
 `.qa_agent/project-memory.json` 和 `.qa_agent/notepad.md` 可以存在，但不作为推进逻辑的真相源。
 
+## Dashboard 发布与覆盖快照
+
+QA Agent 完成态 run 会尝试发布到 `ui_test_management`。默认发布地址是 `http://10.192.35.53:8001`，可用 `QA_AGENT_DASHBOARD_URL` 覆盖；如需临时关闭发布，使用 `QA_AGENT_DASHBOARD_ENABLED=false`，并在本次 run 的 `dashboard_publish_result.json` 中记录跳过原因。
+
+发布规则：
+
+- 默认项目归属是 `OK`，可用 `QA_AGENT_DASHBOARD_PROJECT_KEY` 覆盖。
+- OK 业务回归记录必须落在 OK 项目内，不应创建或写入独立的 `QA Agent` 业务项目。
+- 历史本地 DB 中如果存在 `QA Agent` 项目，只视作早期映射遗留数据；不要在未得到用户明确确认时删除。
+- 发布内容包括执行记录、Allure 报告入口、最终报告、OK UI summary 和覆盖快照。
+- Allure 报告用于页面内嵌查看，最终报告用于追溯 QA Agent 编排结论。
+
+覆盖快照规则：
+
+- 覆盖快照来自 `bundled/knowledge_base/文本用例` 的 Markdown 文本用例扫描。
+- 所有 `### TC` 标题都必须纳入文本用例总数，不允许因为旧格式缺字段而 silent drop。
+- 缺少 `优先级` 或 `UI自动化` 的 TC 标记为“字段待补齐”；这些 TC 已计入总数，但会影响优先级归因和自动化率判断。
+- 页面首屏应优先展示模块覆盖总览、优先级缺口、字段待补齐诊断和高风险功能缺口；模块明细按需加载，不要首屏展开全部 TC。
+- `ok_autotest_ui_skill/references/coverage-dashboard.md` 是历史静态快照，不作为最新覆盖数据源；最新页面数据以 publish 入库的覆盖快照为准。
+
 ## 独立 Agent Memory
 
 `.agent_memory/` 是独立的本地记忆系统，用于记录用户纠错、重要对话、偏好、设计决策和踩坑经验。它可以被 QA Agent 读取，但不属于 QA Agent 状态机。
