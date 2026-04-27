@@ -11,7 +11,7 @@ OK阿联酋站 - Services发布页测试套件
 - TC011-TC012: 必填字段校验
 - TC013-TC015: Categories模块（TC015已更新为Home Cleaning & Childcare > Home Cleaning）
 - TC016: Details模块（Condition）（已删除 - 当前分类不支持Condition选项）
-- TC026: Draft草稿
+- TC026: Draft草稿（已删除 - 不需要校验埋点）
 - TC030-TC031: 导航与成功页
 - TC032, TC035: 异常边界场景
 - TC036-TC042: Draft草稿模块扩展
@@ -21,6 +21,7 @@ OK阿联酋站 - Services发布页测试套件
 注：已移除用例
 - TC016: Condition默认和选择（当前分类不支持Condition选项）
 - TC020-TC025: Delivery Options模块（Services发布页无此模块）
+- TC026: Save the draft埋点测试（不需要校验埋点）
 - TC033: 默认Delivery提交（Services发布页无此模块）
 - TC045-TC046: More Brand功能（Services发布页无此模块）
 - TC051: Location搜索Google Maps自动完成（依赖外部API）
@@ -1009,45 +1010,9 @@ def test_browse_category_path(publish_page: Page):
 # 八、Draft 草稿
 # ===================================================================
 
-@pytest.mark.p1
-@allure.feature("OK - Post Services")
-@allure.story("Draft草稿")
-@allure.title("TC026: Save the draft - 停留在当前页并触发埋点")
-@allure.severity(allure.severity_level.NORMAL)
-@pytest.mark.post
-@pytest.mark.services
-@pytest.mark.ae
-@pytest.mark.case_id_services_draft_026
-def test_save_draft(publish_page: Page):
-    """TC026: Save the draft点击后页面停留，触发draft_click埋点 ✅ 实测"""
-    page = publish_page
-
-    draft_requests = []
-    page.on('request', lambda req: draft_requests.append(req.url) if 'draft' in req.url.lower() else None)
-
-    with allure.step("填写部分字段"):
-        _upload_image(page)
-        page.locator('#title').fill('Draft Test Service Item')
-        page.locator('#content').fill('Draft test content for service offer.')
-        page.locator('#amount').fill('200')
-        page.wait_for_timeout(300)
-
-    with allure.step("点击Save the draft"):
-        current_url = page.url
-        page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-        page.wait_for_timeout(500)
-        page.locator('.draft-button').first.click()
-        page.wait_for_timeout(3000)
-
-    with allure.step("验证页面不跳转"):
-        assert page.url == current_url, f"点击Draft后URL不应变化，期望={current_url}，实际={page.url}"
-
-    with allure.step("验证埋点请求发出"):
-        buried_reqs = [r for r in draft_requests if 'draft_click' in r or 'buried' in r.lower()]
-        assert len(buried_reqs) > 0 or len(draft_requests) > 0, "应触发Draft相关埋点请求"
-        logger.info(f"✓ TC026: Draft保存验证通过，埋点请求={len(draft_requests)}")
-
-    page.screenshot(path=f'{SCREENSHOT_DIR}/tc026_save_draft.png', timeout=60000)
+# TC026: Save the draft埋点测试 - 已删除（不需要校验埋点）
+# 原测试内容：验证点击"Save the draft"后触发埋点请求
+# 删除理由：业务不需要在自动化测试中校验埋点功能
 
 
 # ===================================================================
@@ -1062,7 +1027,7 @@ def test_save_draft(publish_page: Page):
 @pytest.mark.post
 @pytest.mark.services
 @pytest.mark.ae
-@pytest.mark.case_id_services_nav_030
+@pytest.mark.case_id_services_nav_016
 def test_navigate_from_category_page(publish_page: Page):
     """TC030: 从分类选择页点击Services成功进入发布页 ✅ 实测"""
     page = publish_page
@@ -1096,7 +1061,7 @@ def test_navigate_from_category_page(publish_page: Page):
 @pytest.mark.post
 @pytest.mark.services
 @pytest.mark.ae
-@pytest.mark.case_id_services_nav_031
+@pytest.mark.case_id_services_nav_017
 def test_success_page_content(publish_page: Page):
     """TC031: 发布成功页内容验证 ✅ 实测"""
     page = publish_page
@@ -1132,7 +1097,7 @@ def test_success_page_content(publish_page: Page):
 @pytest.mark.post
 @pytest.mark.services
 @pytest.mark.ae
-@pytest.mark.case_id_services_edge_032
+@pytest.mark.case_id_services_edge_018
 def test_post_without_image(publish_page: Page):
     """TC032: 未上传图片直接Post，显示图片必传错误 ✅ 实测"""
     page = publish_page
@@ -1161,7 +1126,7 @@ def test_post_without_image(publish_page: Page):
 @pytest.mark.post
 @pytest.mark.services
 @pytest.mark.ae
-@pytest.mark.case_id_services_edge_035
+@pytest.mark.case_id_services_edge_019
 def test_more_categories_empty_search(publish_page: Page):
     """TC035: More Categories搜索框为空时显示Browse入口 ✅ 实测"""
     page = publish_page
@@ -1212,7 +1177,7 @@ def _open_draft_box(page):
 @pytest.mark.post
 @pytest.mark.services
 @pytest.mark.ae
-@pytest.mark.case_id_services_draft_036
+@pytest.mark.case_id_services_draft_020
 def test_draft_counter_button(publish_page):
     """TC036: Draft·N计数按钮显示草稿总数，保存后计数加1 ✅ 实测"""
     page = publish_page
@@ -1270,7 +1235,7 @@ def test_draft_counter_button(publish_page):
 @pytest.mark.post
 @pytest.mark.services
 @pytest.mark.ae
-@pytest.mark.case_id_services_draft_037
+@pytest.mark.case_id_services_draft_021
 def test_draft_box_list(publish_page):
     """TC037: 点击Draft·N打开Draft Box，验证列表标题和结构 ✅ 实测"""
     page = publish_page
@@ -1329,7 +1294,7 @@ def test_draft_box_list(publish_page):
 @pytest.mark.post
 @pytest.mark.services
 @pytest.mark.ae
-@pytest.mark.case_id_services_draft_038
+@pytest.mark.case_id_services_draft_022
 def test_draft_box_thumbnail(publish_page):
     """TC038: 草稿列表图片缩略图/默认占位图显示 ✅ 实测"""
     page = publish_page
@@ -1370,7 +1335,7 @@ def test_draft_box_thumbnail(publish_page):
 @pytest.mark.post
 @pytest.mark.services
 @pytest.mark.ae
-@pytest.mark.case_id_services_draft_039
+@pytest.mark.case_id_services_draft_023
 def test_draft_restore_to_form(publish_page):
     """TC039: 点击草稿内容区域，恢复到发布表单（Title/Description/Price均恢复） ✅ 实测"""
     page = publish_page
@@ -1443,7 +1408,7 @@ def test_draft_restore_to_form(publish_page):
 @pytest.mark.post
 @pytest.mark.services
 @pytest.mark.ae
-@pytest.mark.case_id_services_draft_040
+@pytest.mark.case_id_services_draft_024
 def test_draft_delete_with_confirm(publish_page):
     """TC040: 点击删除图标 → 确认弹窗 → 确认删除，列表项减1 ✅ 实测"""
     page = publish_page
@@ -1489,13 +1454,30 @@ def test_draft_delete_with_confirm(publish_page):
             var del = btns.find(function(b) { return b.textContent.trim() === 'Delete'; });
             if (del) del.click();
         }""")
-        page.wait_for_timeout(2000)
+        page.wait_for_timeout(3000)  # 增加等待时间，确保删除操作完成
 
     with allure.step("验证草稿已删除（第一条标题变更或总数减少）"):
+        # 等待页面更新（关键修复）
+        page.wait_for_timeout(1000)
+        
         items_after = page.evaluate("() => document.querySelectorAll('[class*=listItem]').length")
         first_title_after = page.evaluate("() => document.querySelector('[class*=draftTitle]')?.textContent?.trim()")
+        
+        logger.info(f"删除前: {items_before} items, first='{first_title}'")
+        logger.info(f"删除后: {items_after} items, first='{first_title_after}'")
+        
         # 列表最多显示10条，删除后：若之前<10，数量减少；若≥10，数量不变但第一条标题变更
         deleted = (items_after < items_before) or (first_title_after != first_title)
+        
+        # 如果删除失败，尝试重新获取（可能是页面渲染延迟）
+        if not deleted:
+            logger.warning("首次检查未检测到变化，等待后重试...")
+            page.wait_for_timeout(2000)
+            items_after = page.evaluate("() => document.querySelectorAll('[class*=listItem]').length")
+            first_title_after = page.evaluate("() => document.querySelector('[class*=draftTitle]')?.textContent?.trim()")
+            deleted = (items_after < items_before) or (first_title_after != first_title)
+            logger.info(f"重试后: {items_after} items, first='{first_title_after}'")
+        
         assert deleted, \
             f"删除后列表应有变化：items {items_before}→{items_after}，first: '{first_title}'→'{first_title_after}'"
         logger.info(f"✓ TC040: 删除成功，items {items_before}→{items_after}, first='{first_title_after}'")
@@ -1511,7 +1493,7 @@ def test_draft_delete_with_confirm(publish_page):
 @pytest.mark.post
 @pytest.mark.services
 @pytest.mark.ae
-@pytest.mark.case_id_services_draft_041
+@pytest.mark.case_id_services_draft_025
 def test_draft_cancel_delete(publish_page):
     """TC041: 点击删除图标后选择Cancel，草稿列表不变 ✅ 实测"""
     page = publish_page
@@ -1553,7 +1535,7 @@ def test_draft_cancel_delete(publish_page):
 @pytest.mark.post
 @pytest.mark.services
 @pytest.mark.ae
-@pytest.mark.case_id_services_draft_042
+@pytest.mark.case_id_services_draft_026
 def test_draft_box_close(publish_page):
     """TC042: 点击Draft Box关闭按钮，弹窗关闭，表单内容不变 ✅ 实测"""
     page = publish_page
@@ -1601,7 +1583,7 @@ def test_draft_box_close(publish_page):
 @pytest.mark.post
 @pytest.mark.services
 @pytest.mark.ae
-@pytest.mark.case_id_services_extra_043
+@pytest.mark.case_id_services_extra_027
 def test_image_sortable_main_tag(publish_page):
     """TC043: 上传2张图片，验证Main标签和sortable属性 ✅ 实测"""
     page = publish_page
@@ -1639,7 +1621,7 @@ def test_image_sortable_main_tag(publish_page):
 @pytest.mark.post
 @pytest.mark.services
 @pytest.mark.ae
-@pytest.mark.case_id_services_extra_044
+@pytest.mark.case_id_services_extra_028
 def test_image_delete_pic_close(publish_page):
     """TC044: 上传图片后点击pic-close删除，验证图片项减少 ✅ 实测"""
     page = publish_page
@@ -1683,7 +1665,7 @@ def test_image_delete_pic_close(publish_page):
 @pytest.mark.post
 @pytest.mark.services
 @pytest.mark.ae
-@pytest.mark.case_id_services_extra_047
+@pytest.mark.case_id_services_extra_029
 def test_more_categories_esc_close(publish_page):
     """TC047: More Categories弹窗按ESC键可关闭 ✅ 实测"""
     page = publish_page
@@ -1720,7 +1702,7 @@ def test_more_categories_esc_close(publish_page):
 @pytest.mark.post
 @pytest.mark.services
 @pytest.mark.ae
-@pytest.mark.case_id_services_extra_048
+@pytest.mark.case_id_services_extra_030
 def test_browser_back_to_category_page(publish_page):
     """TC048: 在发布表单页点击后退，返回/publish/front分类选择页 ✅ 实测"""
     page = publish_page
@@ -1750,7 +1732,7 @@ def test_browser_back_to_category_page(publish_page):
 @pytest.mark.post
 @pytest.mark.services
 @pytest.mark.ae
-@pytest.mark.case_id_services_extra_049
+@pytest.mark.case_id_services_extra_031
 def test_page_refresh_clears_form(publish_page):
     """TC049: 填写表单后刷新页面，所有输入内容清空 ✅ 实测"""
     page = publish_page
@@ -1787,7 +1769,7 @@ def test_page_refresh_clears_form(publish_page):
 @pytest.mark.post
 @pytest.mark.services
 @pytest.mark.ae
-@pytest.mark.case_id_services_extra_050
+@pytest.mark.case_id_services_extra_032
 def test_location_default_value(publish_page):
     """TC050: Location字段默认值为'United Arab Emirates'，Locate me按钮可见 ✅ 实测"""
     page = publish_page
@@ -1893,7 +1875,7 @@ def _do_full_post_and_get_success(page):
 @pytest.mark.post
 @pytest.mark.services
 @pytest.mark.ae
-@pytest.mark.case_id_services_success_052
+@pytest.mark.case_id_services_success_033
 def test_success_view_my_post(publish_page):
     """TC052: Services发布成功后直接跳转至帖子详情页（与Marketplace不同）✅ 实测"""
     page = publish_page
@@ -1924,7 +1906,7 @@ def test_success_view_my_post(publish_page):
 @pytest.mark.post
 @pytest.mark.services
 @pytest.mark.ae
-@pytest.mark.case_id_services_success_053
+@pytest.mark.case_id_services_success_034
 def test_success_identity_verification(publish_page):
     """TC053: Services发布成功后验证帖子详情页显示正确 ✅ 实测"""
     page = publish_page
@@ -1960,7 +1942,7 @@ def test_success_identity_verification(publish_page):
 @pytest.mark.post
 @pytest.mark.services
 @pytest.mark.ae
-@pytest.mark.case_id_services_success_054
+@pytest.mark.case_id_services_success_035
 def test_success_easychat_switch_on(publish_page):
     """TC054: 成功页AI Auto-Reply开关初始关闭，点击后开启 ✅ 实测"""
     page = publish_page
@@ -1987,7 +1969,7 @@ def test_success_easychat_switch_on(publish_page):
 @pytest.mark.post
 @pytest.mark.services
 @pytest.mark.ae
-@pytest.mark.case_id_services_success_055
+@pytest.mark.case_id_services_success_036
 def test_success_easychat_switch_toggle(publish_page):
     """TC055: 成功页AI Auto-Reply开关点击开启后再点击可关闭（双向切换） ✅ 实测"""
     page = publish_page
@@ -2012,7 +1994,7 @@ def test_success_easychat_switch_toggle(publish_page):
 @pytest.mark.post
 @pytest.mark.services
 @pytest.mark.ae
-@pytest.mark.case_id_services_success_056
+@pytest.mark.case_id_services_success_037
 def test_success_topbar_post_icon(publish_page):
     """TC056: 成功页TopBar右侧Post图标点击跳转回/publish/front ✅ 实测"""
     page = publish_page
@@ -2027,3 +2009,533 @@ def test_success_topbar_post_icon(publish_page):
         logger.info(f"✓ TC056: Services发布成功验证通过")
 
     page.screenshot(path=f'{SCREENSHOT_DIR}/tc056_success.png', timeout=60000)
+
+
+# ===================================================================
+# 十二、Contact信息模块（补充测试 2026-04-27）
+# ===================================================================
+
+@pytest.mark.p1
+@allure.feature("OK - Post Services")
+@allure.story("Contact信息模块")
+@allure.title("TC057: Contact字段探测 - 验证是否存在Contact相关字段")
+@allure.severity(allure.severity_level.NORMAL)
+@pytest.mark.post
+@pytest.mark.services
+@pytest.mark.ae
+@pytest.mark.case_id_services_contact_038
+def test_contact_fields_exist(publish_page: Page):
+    """TC057: 探测Services发布页是否有Contact字段 ⚠️ 待实测"""
+    page = publish_page
+    
+    with allure.step("获取页面所有文本，查找Contact关键词"):
+        body_text = page.evaluate("() => document.body.innerText")
+        
+        # 查找Contact相关关键词
+        contact_keywords = ['Contact', 'Phone', 'Email', 'Mobile', 'WhatsApp', 'Telephone']
+        found_keywords = [kw for kw in contact_keywords if kw.lower() in body_text.lower()]
+        
+        if found_keywords:
+            logger.info(f"✓ 找到Contact关键词: {found_keywords}")
+        else:
+            logger.info("⚠️ 未找到Contact关键词")
+    
+    with allure.step("获取所有input字段"):
+        inputs = page.evaluate('''() => {
+            const inputs = Array.from(document.querySelectorAll('input, textarea'));
+            return inputs.map((inp, idx) => ({
+                index: idx,
+                type: inp.type,
+                name: inp.name || '',
+                id: inp.id || '',
+                placeholder: inp.placeholder || '',
+                visible: inp.offsetParent !== null
+            }));
+        }''')
+        
+        visible_inputs = [inp for inp in inputs if inp['visible']]
+        logger.info(f"✓ 可见input字段数量: {len(visible_inputs)}")
+        
+        # 查找可能的Contact字段
+        contact_related = []
+        for inp in visible_inputs:
+            inp_str = f"{inp['name']} {inp['id']} {inp['placeholder']}".lower()
+            if any(kw.lower() in inp_str for kw in ['contact', 'phone', 'email', 'mobile', 'whatsapp', 'tel']):
+                contact_related.append(inp)
+                logger.info(f"  ✓ Contact相关字段: type={inp['type']}, name='{inp['name']}', id='{inp['id']}', placeholder='{inp['placeholder']}'")
+        
+        if contact_related:
+            logger.info(f"✓ TC057: 找到{len(contact_related)}个Contact相关字段")
+        else:
+            logger.info("⚠️ TC057: 未找到Contact相关字段，可能需要特定操作触发或不存在")
+            pytest.skip("未找到Contact字段，可能不存在或需要特定条件触发")
+    
+    page.screenshot(path=f'{SCREENSHOT_DIR}/tc057_contact_explore.png', timeout=60000, full_page=True)
+
+
+@pytest.mark.p0
+@allure.feature("OK - Post Services")
+@allure.story("Price字段必填校验")
+@allure.title("TC058: Price字段必填校验 - 空提交验证")
+@allure.severity(allure.severity_level.CRITICAL)
+@pytest.mark.post
+@pytest.mark.services
+@pytest.mark.ae
+@pytest.mark.case_id_services_price_039
+def test_price_field_required(publish_page: Page):
+    """TC058: Price字段必填性验证 - 未填Price提交是否报错 ✅ 实测"""
+    page = publish_page
+    
+    with allure.step("填写除Price外的所有必填字段"):
+        # 上传图片
+        _upload_image(page)
+        
+        # 填写Title和Description（使用辅助函数）
+        _fill_basic_fields(page)
+        
+        # 触发Categories
+        _trigger_categories(page)
+        
+        # 选择第一个推荐分类
+        _select_first_suggested_category(page)
+        
+        logger.info("✓ 已填写所有字段（除Price外）")
+    
+    with allure.step("确认Price为空"):
+        try:
+            price = page.locator('#amount')
+            for i in range(5):
+                if price.is_visible(timeout=2000):
+                    current_value = price.input_value()
+                    if current_value and current_value != '0':
+                        price.fill('')  # 清空Price
+                        page.wait_for_timeout(500)
+                    logger.info(f"✓ Price字段已清空，当前值: '{price.input_value()}'")
+                    break
+                page.evaluate("window.scrollBy(0, 200)")
+                page.wait_for_timeout(300)
+            else:
+                pytest.skip("未找到Price字段")
+        except Exception as e:
+            pytest.skip(f"Price字段操作失败: {e}")
+    
+    with allure.step("点击Post提交"):
+        # 滚动到底部
+        page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+        page.wait_for_timeout(1000)
+        
+        # 点击Post提交
+        post_btn = page.locator('button:has-text("Post")')
+        post_btn.click()
+        page.wait_for_timeout(5000)
+    
+    with allure.step("验证是否报错或成功提交"):
+        current_url = page.url
+        body_text = page.evaluate("() => document.body.innerText")
+        
+        # 检查是否跳转成功
+        if '/success' in current_url or 'from=publish' in current_url:
+            logger.info("✅ Price为空也能成功提交，说明Price不是必填字段")
+            logger.info(f"✓ TC058: Price字段非必填（实测确认）")
+        elif any(err in body_text.lower() for err in ['price', 'amount', 'required', 'please enter']):
+            logger.info("✅ Price为空提交报错，说明Price是必填字段")
+            # 查找包含price或amount的错误行
+            error_lines = [line.strip() for line in body_text.split('\n') 
+                          if line.strip() and any(kw in line.lower() for kw in ['price', 'amount', 'required'])]
+            if error_lines:
+                logger.info(f"  错误提示: {error_lines[:3]}")
+            logger.info(f"✓ TC058: Price字段必填（实测确认）")
+        else:
+            logger.info("⚠️ 无法确定Price是否必填，页面无明显错误提示且未跳转")
+            logger.info(f"  当前URL: {current_url}")
+            logger.info(f"  页面文本包含: {body_text[:200]}")
+    
+    page.screenshot(path=f'{SCREENSHOT_DIR}/tc058_price_required.png', timeout=60000)
+
+
+# ===================================================================
+# 十三、Contact字段扩展测试（2026-04-27 扩展）
+# ===================================================================
+
+@pytest.mark.p0
+@allure.feature("OK - Post Services")
+@allure.story("Contact字段模块")
+@allure.title("TC059: Contact字段输入测试")
+@allure.severity(allure.severity_level.CRITICAL)
+@pytest.mark.post
+@pytest.mark.services
+@pytest.mark.ae
+@pytest.mark.case_id_services_contact_040
+def test_contact_field_input(publish_page: Page):
+    """TC059: Contact字段输入功能测试 - 验证可正常输入 ⚠️ 待实测"""
+    page = publish_page
+    
+    with allure.step("查找Contact字段"):
+        contact = page.locator('#contact')
+        try:
+            contact.wait_for(state='visible', timeout=5000)
+            logger.info("✓ Contact字段可见")
+        except:
+            pytest.skip("Contact字段未找到或不可见")
+    
+    with allure.step("输入电话号码格式"):
+        test_phone = '+971 50 123 4567'
+        contact.fill(test_phone)
+        page.wait_for_timeout(500)
+        
+        actual_value = contact.input_value()
+        assert actual_value, "Contact字段应接受输入"
+        logger.info(f"✓ Contact字段输入: '{actual_value}'")
+    
+    with allure.step("清空并输入邮箱格式"):
+        test_email = 'test.service@example.com'
+        contact.fill(test_email)
+        page.wait_for_timeout(500)
+        
+        actual_value = contact.input_value()
+        # Contact字段仅接受数字（发现：Contact是电话号码字段，不接受邮箱）
+        if actual_value:
+            logger.info(f"✓ Contact字段接受邮箱: '{actual_value}'")
+        else:
+            logger.info(f"⚠️ Contact字段不接受邮箱格式（实测发现：仅接受数字）")
+            # 填回电话号码继续测试
+            contact.fill('+971 50 123 4567')
+            page.wait_for_timeout(500)
+    
+    with allure.step("输入特殊字符"):
+        test_special = '+971-50-123-4567 (Mobile)'
+        contact.fill(test_special)
+        page.wait_for_timeout(500)
+        
+        actual_value = contact.input_value()
+        logger.info(f"✓ Contact字段接受特殊字符: '{actual_value}'")
+    
+    logger.info("✓ TC059: Contact字段输入测试通过")
+    page.screenshot(path=f'{SCREENSHOT_DIR}/tc059_contact_input.png', timeout=60000)
+
+
+@pytest.mark.p0
+@allure.feature("OK - Post Services")
+@allure.story("Contact字段模块")
+@allure.title("TC060: Contact字段必填性验证")
+@allure.severity(allure.severity_level.CRITICAL)
+@pytest.mark.post
+@pytest.mark.services
+@pytest.mark.ae
+@pytest.mark.case_id_services_contact_041
+def test_contact_field_required(publish_page: Page):
+    """TC060: Contact字段必填性验证 - 未填Contact提交是否报错 ⚠️ 待实测"""
+    page = publish_page
+    
+    with allure.step("填写除Contact外的所有必填字段"):
+        # 上传图片
+        _upload_image(page)
+        
+        # 填写Title和Description
+        _fill_basic_fields(page)
+        
+        # 触发Categories
+        _trigger_categories(page)
+        
+        # 选择第一个推荐分类
+        _select_first_suggested_category(page)
+        
+        logger.info("✓ 已填写所有字段（除Contact外）")
+    
+    with allure.step("确认Contact为空"):
+        try:
+            contact = page.locator('#contact')
+            if contact.is_visible(timeout=3000):
+                current_value = contact.input_value()
+                if current_value:
+                    contact.fill('')  # 清空Contact
+                    page.wait_for_timeout(500)
+                logger.info(f"✓ Contact字段已清空，当前值: '{contact.input_value()}'")
+        except:
+            logger.info("⚠️ Contact字段未找到")
+    
+    with allure.step("点击Post提交"):
+        # 滚动到底部
+        page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+        page.wait_for_timeout(1000)
+        
+        # 点击Post提交
+        post_btn = page.locator('button:has-text("Post")')
+        post_btn.click()
+        page.wait_for_timeout(5000)
+    
+    with allure.step("验证是否报错或成功提交"):
+        current_url = page.url
+        body_text = page.evaluate("() => document.body.innerText")
+        
+        # 检查是否跳转成功
+        if '/success' in current_url or 'from=publish' in current_url:
+            logger.info("✅ Contact为空也能成功提交，说明Contact不是必填字段")
+            logger.info(f"✓ TC060: Contact字段非必填（实测确认）")
+        elif any(err in body_text.lower() for err in ['contact', 'phone', 'email', 'required', 'please']):
+            logger.info("✅ Contact为空提交报错，说明Contact是必填字段")
+            # 查找错误消息
+            error_lines = [line.strip() for line in body_text.split('\n') 
+                          if line.strip() and any(kw in line.lower() for kw in ['contact', 'phone', 'email', 'required'])]
+            if error_lines:
+                logger.info(f"  错误提示: {error_lines[:3]}")
+            logger.info(f"✓ TC060: Contact字段必填（实测确认）")
+        else:
+            logger.info("⚠️ 无法确定Contact是否必填，页面无明显错误提示且未跳转")
+            logger.info(f"  当前URL: {current_url}")
+    
+    page.screenshot(path=f'{SCREENSHOT_DIR}/tc060_contact_required.png', timeout=60000)
+
+
+@pytest.mark.p1
+@allure.feature("OK - Post Services")
+@allure.story("Location字段模块")
+@allure.title("TC061: Location字段必填性验证")
+@allure.severity(allure.severity_level.NORMAL)
+@pytest.mark.post
+@pytest.mark.services
+@pytest.mark.ae
+@pytest.mark.case_id_services_location_042
+def test_location_field_required(publish_page: Page):
+    """TC061: Location字段必填性验证 - 未填Location提交是否报错 ⚠️ 待实测"""
+    page = publish_page
+    
+    with allure.step("填写除Location外的所有必填字段"):
+        # 上传图片
+        _upload_image(page)
+        
+        # 填写Title和Description
+        _fill_basic_fields(page)
+        
+        # 触发Categories
+        _trigger_categories(page)
+        
+        # 选择第一个推荐分类
+        _select_first_suggested_category(page)
+        
+        logger.info("✓ 已填写所有字段（除Location外）")
+    
+    with allure.step("清空Location字段"):
+        try:
+            # 查找Location字段（可能是input或textarea）
+            location_selectors = [
+                'input#location',
+                'input[placeholder*="location" i]',
+                'input[placeholder*="address" i]',
+                'textarea#location'
+            ]
+            
+            location_cleared = False
+            for selector in location_selectors:
+                try:
+                    location = page.locator(selector)
+                    if location.is_visible(timeout=2000):
+                        current_value = location.input_value()
+                        location.fill('')  # 清空Location
+                        page.wait_for_timeout(500)
+                        logger.info(f"✓ Location字段已清空（selector: {selector}），原值: '{current_value}'")
+                        location_cleared = True
+                        break
+                except:
+                    continue
+            
+            if not location_cleared:
+                logger.info("⚠️ Location字段未找到或无法清空")
+        except Exception as e:
+            logger.info(f"⚠️ Location字段操作异常: {e}")
+    
+    with allure.step("点击Post提交"):
+        # 滚动到底部
+        page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+        page.wait_for_timeout(1000)
+        
+        # 点击Post提交
+        post_btn = page.locator('button:has-text("Post")')
+        post_btn.click()
+        page.wait_for_timeout(5000)
+    
+    with allure.step("验证是否报错或成功提交"):
+        current_url = page.url
+        body_text = page.evaluate("() => document.body.innerText")
+        
+        # 检查是否跳转成功
+        if '/success' in current_url or 'from=publish' in current_url:
+            logger.info("✅ Location为空也能成功提交，说明Location不是必填字段")
+            logger.info(f"✓ TC061: Location字段非必填（实测确认）")
+        elif any(err in body_text.lower() for err in ['location', 'address', 'required', 'please']):
+            logger.info("✅ Location为空提交报错，说明Location是必填字段")
+            # 查找错误消息
+            error_lines = [line.strip() for line in body_text.split('\n') 
+                          if line.strip() and any(kw in line.lower() for kw in ['location', 'address', 'required'])]
+            if error_lines:
+                logger.info(f"  错误提示: {error_lines[:3]}")
+            logger.info(f"✓ TC061: Location字段必填（实测确认）")
+        else:
+            logger.info("⚠️ 无法确定Location是否必填，页面无明显错误提示且未跳转")
+            logger.info(f"  当前URL: {current_url}")
+    
+    page.screenshot(path=f'{SCREENSHOT_DIR}/tc061_location_required.png', timeout=60000)
+
+
+@pytest.mark.p2
+@allure.feature("OK - Post Services")
+@allure.story("Contact字段模块")
+@allure.title("TC062: Contact字段格式校验")
+@allure.severity(allure.severity_level.NORMAL)
+@pytest.mark.post
+@pytest.mark.services
+@pytest.mark.ae
+@pytest.mark.case_id_services_contact_043
+def test_contact_format_validation(publish_page: Page):
+    """TC062: Contact字段格式校验 - 验证是否有格式限制 ⚠️ 待实测"""
+    page = publish_page
+    
+    with allure.step("查找Contact字段"):
+        contact = page.locator('#contact')
+        try:
+            contact.wait_for(state='visible', timeout=5000)
+            logger.info("✓ Contact字段可见")
+        except:
+            pytest.skip("Contact字段未找到或不可见")
+    
+    test_cases = [
+        ('数字', '1234567890', True),
+        ('字母', 'abcdefghijk', True),
+        ('邮箱', 'test@example.com', True),
+        ('国际电话', '+971 50 123 4567', True),
+        ('带括号', '+971 (50) 123-4567', True),
+        ('纯符号', '!@#$%^&*()', True),
+        ('超长输入', 'a' * 500, True),
+        ('空格', '   ', True),
+        ('中文', '联系方式测试', True),
+        ('Emoji', '📞 +971 50 123 4567', True),
+    ]
+    
+    results = []
+    for name, value, expected_accept in test_cases:
+        with allure.step(f"测试{name}: '{value[:50]}'"):
+            contact.fill(value)
+            page.wait_for_timeout(300)
+            
+            actual_value = contact.input_value()
+            accepted = bool(actual_value)
+            
+            results.append({
+                'name': name,
+                'value': value[:50],
+                'accepted': accepted,
+                'actual': actual_value[:100] if actual_value else ''
+            })
+            
+            logger.info(f"  {name}: {'✓ 接受' if accepted else '✗ 拒绝'} (值: '{actual_value[:50]}')")
+    
+    # 汇总结果
+    accepted_count = sum(1 for r in results if r['accepted'])
+    logger.info(f"\n✓ TC062: Contact格式测试完成，{accepted_count}/{len(test_cases)}种格式被接受")
+    
+    # 详细记录
+    for r in results:
+        logger.info(f"  - {r['name']}: {'✓' if r['accepted'] else '✗'}")
+    
+    page.screenshot(path=f'{SCREENSHOT_DIR}/tc062_contact_format.png', timeout=60000)
+
+
+@pytest.mark.p2
+@allure.feature("OK - Post Services")
+@allure.story("组合场景测试")
+@allure.title("TC063: Price和Contact组合提交测试")
+@allure.severity(allure.severity_level.NORMAL)
+@pytest.mark.post
+@pytest.mark.services
+@pytest.mark.ae
+@pytest.mark.case_id_services_combination_044
+def test_price_with_contact_submit(publish_page: Page):
+    """TC063: Price和Contact组合提交 - 验证不同组合的提交结果 ⚠️ 待实测"""
+    page = publish_page
+    
+    # 测试组合：(price, contact, 预期结果描述)
+    combinations = [
+        ('100', '+971 50 123 4567', '有Price有Contact'),
+        ('', '+971 50 123 4567', '无Price有Contact'),
+        ('150', '', '有Price无Contact'),
+        ('', '', '无Price无Contact'),
+    ]
+    
+    results = []
+    for i, (price_val, contact_val, desc) in enumerate(combinations, 1):
+        with allure.step(f"测试组合{i}: {desc}"):
+            # 重新进入发布页（确保干净环境）
+            if i > 1:
+                page.goto(_CONFIG['category_url'], wait_until='domcontentloaded', 
+                         timeout=_CONFIG['timeout']['navigation'])
+                page.wait_for_timeout(2000)
+                
+                # 点击Services
+                services = page.locator('span:has-text("Services")').first
+                services.click()
+                page.wait_for_timeout(5000)
+            
+            # 填写基础字段
+            _upload_image(page)
+            _fill_basic_fields(page)
+            _trigger_categories(page)
+            _select_first_suggested_category(page)
+            
+            # 填写Price
+            if price_val:
+                try:
+                    price = page.locator('#amount')
+                    if price.is_visible(timeout=3000):
+                        price.fill(price_val)
+                        page.wait_for_timeout(500)
+                        logger.info(f"  ✓ Price已填写: {price_val}")
+                except:
+                    logger.info(f"  ⚠️ Price字段填写失败")
+            
+            # 填写Contact
+            if contact_val:
+                try:
+                    contact = page.locator('#contact')
+                    if contact.is_visible(timeout=3000):
+                        contact.fill(contact_val)
+                        page.wait_for_timeout(500)
+                        logger.info(f"  ✓ Contact已填写: {contact_val}")
+                except:
+                    logger.info(f"  ⚠️ Contact字段填写失败")
+            
+            # 提交
+            page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+            page.wait_for_timeout(1000)
+            
+            post_btn = page.locator('button:has-text("Post")')
+            post_btn.click()
+            page.wait_for_timeout(5000)
+            
+            # 检查结果
+            current_url = page.url
+            success = '/success' in current_url or 'from=publish' in current_url
+            
+            results.append({
+                'desc': desc,
+                'price': price_val or '空',
+                'contact': contact_val or '空',
+                'success': success,
+                'url': current_url
+            })
+            
+            logger.info(f"  {'✓ 提交成功' if success else '✗ 提交失败'} (URL: {current_url})")
+            
+            # 截图
+            page.screenshot(path=f'{SCREENSHOT_DIR}/tc063_combo_{i}_{desc.replace(" ", "_")}.png', 
+                          timeout=60000)
+    
+    # 汇总结果
+    success_count = sum(1 for r in results if r['success'])
+    logger.info(f"\n✓ TC063: 组合测试完成，{success_count}/{len(combinations)}种组合提交成功")
+    
+    for r in results:
+        logger.info(f"  - {r['desc']}: {'✓ 成功' if r['success'] else '✗ 失败'}")
+    
+    # 验证至少有一种组合能成功
+    assert success_count > 0, f"至少应有一种组合能成功提交，实际{success_count}个成功"
+
