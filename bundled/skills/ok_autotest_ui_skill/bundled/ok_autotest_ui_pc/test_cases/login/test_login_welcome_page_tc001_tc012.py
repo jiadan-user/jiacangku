@@ -62,6 +62,8 @@ class TestLoginWelcomePage:
     - 底部显示隐私声明文案
     - 左上角显示盾牌图标+「Your data is protected」
     """)
+    @pytest.mark.p0
+    @pytest.mark.case_id_login_login_040
     @allure.severity(allure.severity_level.BLOCKER)
     @pytest.mark.P0
     def test_open_welcome_dialog(self, page):
@@ -105,6 +107,8 @@ class TestLoginWelcomePage:
         with allure.step("验证「Your data is protected」显示"):
             assert page.get_by_text("Your data is protected").is_visible(), "数据保护提示未显示"
 
+    @pytest.mark.p0
+    @pytest.mark.case_id_login_login_034
     @allure.story("核心流程（正向）")
     @allure.title("TC002: 欢迎弹窗输入合法邮箱后 Continue 按钮变为可用")
     @allure.severity(allure.severity_level.BLOCKER)
@@ -127,6 +131,8 @@ class TestLoginWelcomePage:
             input_box = page.get_by_role('textbox', name='Email or phone number')
             assert input_box.input_value() == TEST_EMAIL, "输入框内容不匹配"
 
+    @pytest.mark.p0
+    @pytest.mark.case_id_login_login_041
     @allure.story("核心流程（正向）")
     @allure.title("TC003: 欢迎弹窗输入合法手机号后 Continue 按钮变为可用")
     @allure.severity(allure.severity_level.BLOCKER)
@@ -149,6 +155,8 @@ class TestLoginWelcomePage:
             continue_btn = preloaded_page.get_by_role('button', name='Continue')
             assert continue_btn.is_enabled(), "Continue 按钮应变为 enabled 状态"
 
+    @pytest.mark.p0
+    @pytest.mark.case_id_login_login_036
     @allure.story("核心流程（正向）")
     @allure.title("TC004: 欢迎弹窗输入框为空时 Continue 按钮保持禁用")
     @allure.severity(allure.severity_level.BLOCKER)
@@ -168,6 +176,8 @@ class TestLoginWelcomePage:
             continue_btn = page.get_by_role('button', name='Continue')
             assert continue_btn.is_disabled(), "Continue 按钮应保持 disabled 状态"
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_037
     @allure.story("表单校验（负向 / 边界）")
     @allure.title("TC005: 欢迎弹窗输入非法格式邮箱后点击 Continue")
     @allure.severity(allure.severity_level.NORMAL)
@@ -202,6 +212,8 @@ class TestLoginWelcomePage:
             # 记录页面文本用于调试
             allure.attach(page.content(), name="页面内容", attachment_type=allure.attachment_type.HTML)
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_043
     @allure.story("表单校验（负向 / 边界）")
     @allure.title("TC006: 欢迎弹窗输入空格后点击 Continue")
     @allure.severity(allure.severity_level.MINOR)
@@ -224,6 +236,8 @@ class TestLoginWelcomePage:
                     continue_btn.click()
                     page.wait_for_timeout(2000)
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_038
     @allure.story("表单校验（负向 / 边界）")
     @allure.title("TC007: 欢迎弹窗输入超长字符串（500字符）")
     @allure.severity(allure.severity_level.MINOR)
@@ -250,6 +264,8 @@ class TestLoginWelcomePage:
             actual_value = input_box.input_value()
             allure.attach(f"实际输入值长度: {len(actual_value)}", name="输入框值长度")
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_035
     @allure.story("表单校验（负向 / 边界）")
     @allure.title("TC008: 欢迎弹窗输入 Emoji 字符")
     @allure.severity(allure.severity_level.MINOR)
@@ -273,6 +289,8 @@ class TestLoginWelcomePage:
         with allure.step("验证系统不接受 Emoji，提交后显示格式错误提示"):
             page.wait_for_timeout(1000)
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_033
     @allure.story("弹窗交互")
     @allure.title("TC009: 欢迎弹窗点击蒙层区域验证是否可关闭")
     @allure.severity(allure.severity_level.NORMAL)
@@ -304,6 +322,8 @@ class TestLoginWelcomePage:
             except:
                 allure.attach("弹窗已关闭", name="弹窗交互结果")
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_042
     @allure.story("弹窗交互")
     @allure.title("TC010: 欢迎弹窗按 ESC 键验证是否可关闭")
     @allure.severity(allure.severity_level.MINOR)

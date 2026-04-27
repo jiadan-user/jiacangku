@@ -45,6 +45,8 @@ TEST_PASSWORD = "Qwer1234"
 class TestLoginPrivacyPolicy:
     """登录模块 - 隐私协议与合规测试"""
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_023
     @allure.story("核心流程（正向）")
     @allure.title("TC066: 欢迎页底部隐私声明完整文案展示")
     @allure.severity(allure.severity_level.NORMAL)
@@ -64,6 +66,8 @@ class TestLoginPrivacyPolicy:
             privacy_link = dialog.get_by_text("Privacy Policy")
             assert privacy_link.is_visible(), "未显示 Privacy Policy 链接"
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_029
     @allure.story("核心流程（正向）")
     @allure.title("TC067: 欢迎页点击 Terms of Use 链接跳转正确页面")
     @allure.severity(allure.severity_level.NORMAL)
@@ -88,6 +92,8 @@ class TestLoginPrivacyPolicy:
             assert dialog.is_visible(), "原登录弹窗应保持打开"
         new_page.close()
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_022
     @allure.story("核心流程（正向）")
     @allure.title("TC068: 欢迎页点击 Privacy Policy 链接跳转正确页面")
     @allure.severity(allure.severity_level.NORMAL)
@@ -112,6 +118,8 @@ class TestLoginPrivacyPolicy:
             assert dialog.is_visible(), "原登录弹窗应保持打开"
         new_page.close()
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_024
     @allure.story("核心流程（正向）")
     @allure.title("TC069: 邮箱密码登录页底部隐私声明文案展示")
     @allure.severity(allure.severity_level.MINOR)
@@ -132,6 +140,8 @@ class TestLoginPrivacyPolicy:
             privacy_link = dialog.get_by_text("Privacy Policy")
             assert privacy_link.is_visible(), "未显示 Privacy Policy 链接"
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_025
     @allure.story("核心流程（正向）")
     @allure.title("TC070: 手机号密码登录页底部隐私声明文案展示")
     @allure.severity(allure.severity_level.MINOR)
@@ -147,6 +157,8 @@ class TestLoginPrivacyPolicy:
             is_visible = privacy_text.is_visible(timeout=3000)
             allure.attach(f"隐私声明可见: {is_visible}", name="显示状态")
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_028
     @allure.story("链接功能（负向 / 边界）")
     @allure.title("TC072: Terms of Use 链接在不同登录页面跳转一致")
     @allure.severity(allure.severity_level.MINOR)
@@ -180,6 +192,8 @@ class TestLoginPrivacyPolicy:
             assert len(set(paths)) == 1, f"URL 路径不一致: {urls}"
             allure.attach(f"URL列表: {urls}\n路径: {paths[0]}", name="跳转一致性验证")
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_026
     @allure.story("链接功能（负向 / 边界）")
     @allure.title("TC074: Terms of Use 链接在新标签页打开后原弹窗状态保持")
     @allure.severity(allure.severity_level.MINOR)
@@ -205,6 +219,8 @@ class TestLoginPrivacyPolicy:
             continue_btn = preloaded_page.get_by_role('button', name='Continue')
             assert continue_btn.is_enabled(), "Continue 按钮应保持 enabled 状态"
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_020
     @allure.story("链接功能（负向 / 边界）")
     @allure.title("TC075: Privacy Policy 链接在新标签页打开后原弹窗状态保持")
     @allure.severity(allure.severity_level.MINOR)
@@ -230,6 +246,8 @@ class TestLoginPrivacyPolicy:
             login_btn = preloaded_page.get_by_role('button', name='Log in')
             assert login_btn.is_enabled(), "Log in 按钮应保持 enabled 状态"
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_066
     @allure.story("安全与合规")
     @allure.title("TC080: 登录页面不在 URL 中暴露密码（不自动化）")
     @allure.severity(allure.severity_level.NORMAL)
@@ -256,6 +274,8 @@ class TestLoginPrivacyPolicy:
                 name="URL 变化记录",
             )
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_021
     @allure.story("安全与合规")
     @allure.title("TC081: Terms of Use 和 Privacy Policy 链接使用 HTTPS 协议（不自动化）")
     @allure.severity(allure.severity_level.NORMAL)

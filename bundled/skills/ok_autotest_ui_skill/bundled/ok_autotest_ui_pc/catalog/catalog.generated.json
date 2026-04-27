@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-04-23T08:54:45Z",
+  "generated_at": "2026-04-27T09:44:04Z",
   "root_dir": "/Users/mengmeng/Desktop/ok_autotest_skill_ui_pc/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc",
   "case_count": 2082,
-  "governed_case_count": 2014,
+  "governed_case_count": 2081,
   "cases": [
     {
       "nodeid": "test_cases/ SEO/AE/test_settings_new_messages.py::test_tc001_access_settings_new_messages",
@@ -10471,12 +10471,14 @@
       "nodeid": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py::TestCompatibilityAndI18n::test_chrome_browser_login_flow",
       "file_path": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py",
       "test_name": "test_chrome_browser_login_flow",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_061",
+      "priority": "p0",
       "site": "ae",
       "markers": [
         "P1",
         "allure_description",
+        "case_id_login_login_061",
+        "p0",
         "skip"
       ],
       "allure_feature": "八、兼容性与国际化",
@@ -10493,19 +10495,21 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py::TestCompatibilityAndI18n::test_english_language_content_correct",
       "file_path": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py",
       "test_name": "test_english_language_content_correct",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_001",
+      "priority": "p1",
       "site": "ae",
       "markers": [
         "P1",
-        "allure_description"
+        "allure_description",
+        "case_id_login_login_001",
+        "p1"
       ],
       "allure_feature": "八、兼容性与国际化",
       "allure_story": "国际化",
@@ -10521,19 +10525,21 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py::TestCompatibilityAndI18n::test_resolution_1920x1080_layout_normal",
       "file_path": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py",
       "test_name": "test_resolution_1920x1080_layout_normal",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_002",
+      "priority": "p1",
       "site": "ae",
       "markers": [
         "P2",
-        "allure_description"
+        "allure_description",
+        "case_id_login_login_002",
+        "p1"
       ],
       "allure_feature": "八、兼容性与国际化",
       "allure_story": "响应式布局",
@@ -10549,17 +10555,19 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py::TestCrossBrowserManual::test_firefox_browser_manual",
       "file_path": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py",
       "test_name": "test_firefox_browser_manual",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_tc063_firefox_061",
+      "priority": "p1",
       "site": "ae",
       "markers": [
+        "case_id_login_tc063_firefox_061",
+        "p1",
         "skip"
       ],
       "allure_feature": "八、兼容性与国际化 - 跨浏览器测试说明",
@@ -10575,17 +10583,19 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py::TestCrossBrowserManual::test_safari_browser_manual",
       "file_path": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py",
       "test_name": "test_safari_browser_manual",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_tc062_safari_061",
+      "priority": "p1",
       "site": "ae",
       "markers": [
+        "case_id_login_tc062_safari_061",
+        "p1",
         "skip"
       ],
       "allure_feature": "八、兼容性与国际化 - 跨浏览器测试说明",
@@ -10601,18 +10611,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_email_display_in_password_page",
       "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
       "test_name": "test_email_display_in_password_page",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_ui_013",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P1"
+        "P1",
+        "case_id_login_login_ui_013",
+        "p1"
       ],
       "allure_feature": "二、邮箱密码登录页",
       "allure_story": "UI 与文案",
@@ -10629,19 +10641,21 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_email_login_success",
       "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
       "test_name": "test_email_login_success",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_013",
+      "priority": "p0",
       "site": "ae",
       "markers": [
         "P0",
-        "needs_logout"
+        "case_id_login_login_013",
+        "needs_logout",
+        "p0"
       ],
       "allure_feature": "二、邮箱密码登录页",
       "allure_story": "核心流程（正向）",
@@ -10657,18 +10671,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_empty_password_disables_login_button",
       "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
       "test_name": "test_empty_password_disables_login_button",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_003",
+      "priority": "p0",
       "site": "ae",
       "markers": [
-        "P0"
+        "P0",
+        "case_id_login_login_003",
+        "p0"
       ],
       "allure_feature": "二、邮箱密码登录页",
       "allure_story": "核心流程（正向）",
@@ -10684,18 +10700,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_forgot_password_link_display",
       "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
       "test_name": "test_forgot_password_link_display",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_ui_001",
+      "priority": "p0",
       "site": "ae",
       "markers": [
-        "P0"
+        "P0",
+        "case_id_login_login_ui_001",
+        "p0"
       ],
       "allure_feature": "二、邮箱密码登录页",
       "allure_story": "UI 与文案",
@@ -10712,18 +10730,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_password_long_string",
       "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
       "test_name": "test_password_long_string",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_004",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P2"
+        "P2",
+        "case_id_login_login_004",
+        "p1"
       ],
       "allure_feature": "二、邮箱密码登录页",
       "allure_story": "表单校验（负向 / 边界）",
@@ -10739,18 +10759,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_password_visibility_toggle",
       "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
       "test_name": "test_password_visibility_toggle",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_005",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P1"
+        "P1",
+        "case_id_login_login_005",
+        "p1"
       ],
       "allure_feature": "二、邮箱密码登录页",
       "allure_story": "核心流程（正向）",
@@ -10766,18 +10788,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_password_with_special_characters",
       "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
       "test_name": "test_password_with_special_characters",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_006",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P1"
+        "P1",
+        "case_id_login_login_006",
+        "p1"
       ],
       "allure_feature": "二、邮箱密码登录页",
       "allure_story": "表单校验（负向 / 边界）",
@@ -10793,18 +10817,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_privacy_statement_display",
       "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
       "test_name": "test_privacy_statement_display",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_ui_002",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P2"
+        "P2",
+        "case_id_login_login_ui_002",
+        "p1"
       ],
       "allure_feature": "二、邮箱密码登录页",
       "allure_story": "UI 与文案",
@@ -10821,18 +10847,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_unregistered_email_login_fails",
       "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
       "test_name": "test_unregistered_email_login_fails",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_007",
+      "priority": "p0",
       "site": "ae",
       "markers": [
-        "P0"
+        "P0",
+        "case_id_login_login_007",
+        "p0"
       ],
       "allure_feature": "二、邮箱密码登录页",
       "allure_story": "表单校验（负向 / 边界）",
@@ -10848,18 +10876,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_wrong_password_login_fails",
       "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
       "test_name": "test_wrong_password_login_fails",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_008",
+      "priority": "p0",
       "site": "ae",
       "markers": [
-        "P0"
+        "P0",
+        "case_id_login_login_008",
+        "p0"
       ],
       "allure_feature": "二、邮箱密码登录页",
       "allure_story": "表单校验（负向 / 边界）",
@@ -10875,19 +10905,21 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_confirm_button_disabled_after_clear",
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "test_name": "test_confirm_button_disabled_after_clear",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_039",
+      "priority": "p1",
       "site": "ae",
       "markers": [
         "P2",
-        "allure_description"
+        "allure_description",
+        "case_id_login_login_039",
+        "p1"
       ],
       "allure_feature": "四、忘记密码流程",
       "allure_story": "验证码重发功能",
@@ -10903,19 +10935,21 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_confirm_button_disabled_when_code_empty",
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "test_name": "test_confirm_button_disabled_when_code_empty",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_009",
+      "priority": "p0",
       "site": "ae",
       "markers": [
         "P0",
-        "allure_description"
+        "allure_description",
+        "case_id_login_login_009",
+        "p0"
       ],
       "allure_feature": "四、忘记密码流程",
       "allure_story": "表单校验（负向 / 边界）",
@@ -10931,19 +10965,21 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_confirm_button_enabled_after_input",
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "test_name": "test_confirm_button_enabled_after_input",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_010",
+      "priority": "p1",
       "site": "ae",
       "markers": [
         "P1",
-        "allure_description"
+        "allure_description",
+        "case_id_login_login_010",
+        "p1"
       ],
       "allure_feature": "四、忘记密码流程",
       "allure_story": "验证码重发功能",
@@ -10959,19 +10995,21 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_email_forgot_password_triggers_code_send",
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "test_name": "test_email_forgot_password_triggers_code_send",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_011",
+      "priority": "p0",
       "site": "ae",
       "markers": [
         "P0",
-        "allure_description"
+        "allure_description",
+        "case_id_login_login_011",
+        "p0"
       ],
       "allure_feature": "四、忘记密码流程",
       "allure_story": "核心流程（正向）",
@@ -10987,19 +11025,21 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_phone_forgot_password_entry_exists",
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "test_name": "test_phone_forgot_password_entry_exists",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_012",
+      "priority": "p0",
       "site": "ae",
       "markers": [
         "P0",
-        "allure_description"
+        "allure_description",
+        "case_id_login_login_012",
+        "p0"
       ],
       "allure_feature": "四、忘记密码流程",
       "allure_story": "不同账号类型测试",
@@ -11015,19 +11055,21 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_code_countdown_format",
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "test_name": "test_verification_code_countdown_format",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_014",
+      "priority": "p1",
       "site": "ae",
       "markers": [
         "P2",
-        "allure_description"
+        "allure_description",
+        "case_id_login_login_014",
+        "p1"
       ],
       "allure_feature": "四、忘记密码流程",
       "allure_story": "表单校验（负向 / 边界）",
@@ -11043,19 +11085,21 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_code_length_limit",
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "test_name": "test_verification_code_length_limit",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_015",
+      "priority": "p1",
       "site": "ae",
       "markers": [
         "P2",
-        "allure_description"
+        "allure_description",
+        "case_id_login_login_015",
+        "p1"
       ],
       "allure_feature": "四、忘记密码流程",
       "allure_story": "表单校验（负向 / 边界）",
@@ -11071,19 +11115,21 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_input_focus",
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "test_name": "test_verification_input_focus",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_016",
+      "priority": "p1",
       "site": "ae",
       "markers": [
         "P2",
-        "allure_description"
+        "allure_description",
+        "case_id_login_login_016",
+        "p1"
       ],
       "allure_feature": "四、忘记密码流程",
       "allure_story": "验证码输入交互",
@@ -11099,19 +11145,21 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_input_paste",
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "test_name": "test_verification_input_paste",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_017",
+      "priority": "p1",
       "site": "ae",
       "markers": [
         "P2",
-        "allure_description"
+        "allure_description",
+        "case_id_login_login_017",
+        "p1"
       ],
       "allure_feature": "四、忘记密码流程",
       "allure_story": "验证码输入交互",
@@ -11127,19 +11175,21 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_page_back_button",
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "test_name": "test_verification_page_back_button",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_018",
+      "priority": "p1",
       "site": "ae",
       "markers": [
         "P1",
-        "allure_description"
+        "allure_description",
+        "case_id_login_login_018",
+        "p1"
       ],
       "allure_feature": "四、忘记密码流程",
       "allure_story": "返回/取消功能",
@@ -11155,19 +11205,21 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_page_esc_key",
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "test_name": "test_verification_page_esc_key",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_019",
+      "priority": "p1",
       "site": "ae",
       "markers": [
         "P2",
-        "allure_description"
+        "allure_description",
+        "case_id_login_login_019",
+        "p1"
       ],
       "allure_feature": "四、忘记密码流程",
       "allure_story": "返回/取消功能",
@@ -11183,22 +11235,24 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_incorrect_verification_code_manual",
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "test_name": "test_incorrect_verification_code_manual",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_tc044_039",
+      "priority": "p1",
       "site": "ae",
       "markers": [
+        "case_id_login_tc044_039",
+        "p1",
         "skip"
       ],
       "allure_feature": "四、忘记密码流程 - 手动测试说明",
       "allure_story": null,
-      "allure_title": "TC044: 输入错误验证码提交",
+      "allure_title": "TC044: 输入错误验证码提交（不自动化）",
       "severity": null,
       "module_id": "login",
       "feature_id": "tc044",
@@ -11209,22 +11263,24 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_old_verification_code_invalid_manual",
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "test_name": "test_old_verification_code_invalid_manual",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_tc048_039",
+      "priority": "p1",
       "site": "ae",
       "markers": [
+        "case_id_login_tc048_039",
+        "p1",
         "skip"
       ],
       "allure_feature": "四、忘记密码流程 - 手动测试说明",
       "allure_story": null,
-      "allure_title": "TC048: 旧验证码在新验证码发送后失效",
+      "allure_title": "TC048: 旧验证码在新验证码发送后失效（不自动化）",
       "severity": null,
       "module_id": "login",
       "feature_id": "tc048",
@@ -11235,22 +11291,24 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_phone_forgot_password_manual",
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "test_name": "test_phone_forgot_password_manual",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_tc040_forgot_your_password_039",
+      "priority": "p1",
       "site": "ae",
       "markers": [
+        "case_id_login_tc040_forgot_your_password_039",
+        "p1",
         "skip"
       ],
       "allure_feature": "四、忘记密码流程 - 手动测试说明",
       "allure_story": null,
-      "allure_title": "TC040: 手机号登录页点击「Forgot your password?」触发验证码发送",
+      "allure_title": "TC040: 手机号登录页点击「Forgot your password?」触发验证码发送（不自动化）",
       "severity": null,
       "module_id": "login",
       "feature_id": "tc040_forgot_your_password",
@@ -11261,22 +11319,24 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_verification_code_case_insensitive_manual",
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "test_name": "test_verification_code_case_insensitive_manual",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_tc046_039",
+      "priority": "p1",
       "site": "ae",
       "markers": [
+        "case_id_login_tc046_039",
+        "p1",
         "skip"
       ],
       "allure_feature": "四、忘记密码流程 - 手动测试说明",
       "allure_story": null,
-      "allure_title": "TC046: 验证码大小写不敏感（如适用）",
+      "allure_title": "TC046: 验证码大小写不敏感（如适用）（不自动化）",
       "severity": null,
       "module_id": "login",
       "feature_id": "tc046",
@@ -11287,22 +11347,24 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_verification_code_expiry_manual",
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "test_name": "test_verification_code_expiry_manual",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_tc041_039",
+      "priority": "p1",
       "site": "ae",
       "markers": [
+        "case_id_login_tc041_039",
+        "p1",
         "skip"
       ],
       "allure_feature": "四、忘记密码流程 - 手动测试说明",
       "allure_story": null,
-      "allure_title": "TC041: 验证码倒计时结束后验证码过期",
+      "allure_title": "TC041: 验证码倒计时结束后验证码过期（不自动化）",
       "severity": null,
       "module_id": "login",
       "feature_id": "tc041",
@@ -11313,22 +11375,24 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_verification_code_rate_limit_manual",
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "test_name": "test_verification_code_rate_limit_manual",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_tc043_60_039",
+      "priority": "p1",
       "site": "ae",
       "markers": [
+        "case_id_login_tc043_60_039",
+        "p1",
         "skip"
       ],
       "allure_feature": "四、忘记密码流程 - 手动测试说明",
       "allure_story": null,
-      "allure_title": "TC043: 验证码发送频控—60 秒内不可重复发送",
+      "allure_title": "TC043: 验证码发送频控—60 秒内不可重复发送（不自动化）",
       "severity": null,
       "module_id": "login",
       "feature_id": "tc043_60",
@@ -11339,19 +11403,21 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_permission_security_tc053_tc057.py::TestPermissionAndSecurity::test_token_expired_after_clear_cookies",
       "file_path": "test_cases/login/test_login_permission_security_tc053_tc057.py",
       "test_name": "test_token_expired_after_clear_cookies",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_053",
+      "priority": "p0",
       "site": "ae",
       "markers": [
         "P1",
         "allure_description",
+        "case_id_login_login_053",
+        "p0",
         "skip"
       ],
       "allure_feature": "六、权限与安全",
@@ -11368,18 +11434,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_auto_detect_country_code",
       "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
       "test_name": "test_auto_detect_country_code",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_login_phone_password_tc027_tc038_027",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P0"
+        "P0",
+        "case_id_login_login_login_phone_password_tc027_tc038_027",
+        "p1"
       ],
       "allure_feature": "三、手机号密码登录页",
       "allure_story": null,
@@ -11394,18 +11462,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_empty_password_disables_login_button",
       "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
       "test_name": "test_empty_password_disables_login_button",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_login_phone_password_tc027_tc038_001",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P0"
+        "P0",
+        "case_id_login_login_login_phone_password_tc027_tc038_001",
+        "p1"
       ],
       "allure_feature": "三、手机号密码登录页",
       "allure_story": null,
@@ -11420,18 +11490,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_forgot_password_link_display",
       "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
       "test_name": "test_forgot_password_link_display",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_login_phone_password_tc027_tc038_002",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P0"
+        "P0",
+        "case_id_login_login_login_phone_password_tc027_tc038_002",
+        "p1"
       ],
       "allure_feature": "三、手机号密码登录页",
       "allure_story": null,
@@ -11446,18 +11518,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_insufficient_phone_digits",
       "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
       "test_name": "test_insufficient_phone_digits",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_login_phone_password_tc027_tc038_003",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P1"
+        "P1",
+        "case_id_login_login_login_phone_password_tc027_tc038_003",
+        "p1"
       ],
       "allure_feature": "三、手机号密码登录页",
       "allure_story": null,
@@ -11472,19 +11546,21 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_multiple_clicks_prevention",
       "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
       "test_name": "test_multiple_clicks_prevention",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_login_phone_password_tc027_tc038_004",
+      "priority": "p1",
       "site": "ae",
       "markers": [
         "P1",
-        "needs_logout"
+        "case_id_login_login_login_phone_password_tc027_tc038_004",
+        "needs_logout",
+        "p1"
       ],
       "allure_feature": "三、手机号密码登录页",
       "allure_story": null,
@@ -11499,18 +11575,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_non_numeric_phone_input",
       "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
       "test_name": "test_non_numeric_phone_input",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_login_phone_password_tc027_tc038_005",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P1"
+        "P1",
+        "case_id_login_login_login_phone_password_tc027_tc038_005",
+        "p1"
       ],
       "allure_feature": "三、手机号密码登录页",
       "allure_story": null,
@@ -11525,18 +11603,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_phone_display_in_password_page",
       "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
       "test_name": "test_phone_display_in_password_page",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_login_phone_password_tc027_tc038_006",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P1"
+        "P1",
+        "case_id_login_login_login_phone_password_tc027_tc038_006",
+        "p1"
       ],
       "allure_feature": "三、手机号密码登录页",
       "allure_story": null,
@@ -11551,19 +11631,21 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_phone_login_success",
       "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
       "test_name": "test_phone_login_success",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_027",
+      "priority": "p0",
       "site": "ae",
       "markers": [
         "P0",
-        "needs_logout"
+        "case_id_login_login_027",
+        "needs_logout",
+        "p0"
       ],
       "allure_feature": "三、手机号密码登录页",
       "allure_story": "核心流程（正向）",
@@ -11579,18 +11661,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_unregistered_phone_login",
       "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
       "test_name": "test_unregistered_phone_login",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_login_phone_password_tc027_tc038_007",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P1"
+        "P1",
+        "case_id_login_login_login_phone_password_tc027_tc038_007",
+        "p1"
       ],
       "allure_feature": "三、手机号密码登录页",
       "allure_story": null,
@@ -11605,18 +11689,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_wrong_password_for_phone",
       "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
       "test_name": "test_wrong_password_for_phone",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_login_phone_password_tc027_tc038_008",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P0"
+        "P0",
+        "case_id_login_login_login_phone_password_tc027_tc038_008",
+        "p1"
       ],
       "allure_feature": "三、手机号密码登录页",
       "allure_story": null,
@@ -11631,18 +11717,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_no_password_in_url",
       "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
       "test_name": "test_no_password_in_url",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_066",
+      "priority": "p1",
       "site": "ae",
       "markers": [
         "P1",
+        "case_id_login_login_066",
+        "p1",
         "skip"
       ],
       "allure_feature": "九、隐私协议与合规",
@@ -11659,18 +11747,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_link_preserves_dialog_state",
       "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
       "test_name": "test_privacy_link_preserves_dialog_state",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_020",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P2"
+        "P2",
+        "case_id_login_login_020",
+        "p1"
       ],
       "allure_feature": "九、隐私协议与合规",
       "allure_story": "链接功能（负向 / 边界）",
@@ -11686,18 +11776,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_links_use_https",
       "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
       "test_name": "test_privacy_links_use_https",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_021",
+      "priority": "p1",
       "site": "ae",
       "markers": [
         "P1",
+        "case_id_login_login_021",
+        "p1",
         "skip"
       ],
       "allure_feature": "九、隐私协议与合规",
@@ -11714,18 +11806,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_policy_link_navigation",
       "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
       "test_name": "test_privacy_policy_link_navigation",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_022",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P1"
+        "P1",
+        "case_id_login_login_022",
+        "p1"
       ],
       "allure_feature": "九、隐私协议与合规",
       "allure_story": "核心流程（正向）",
@@ -11741,18 +11835,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_statement_full_text_display",
       "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
       "test_name": "test_privacy_statement_full_text_display",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_023",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P1"
+        "P1",
+        "case_id_login_login_023",
+        "p1"
       ],
       "allure_feature": "九、隐私协议与合规",
       "allure_story": "核心流程（正向）",
@@ -11768,18 +11864,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_statement_in_email_password_page",
       "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
       "test_name": "test_privacy_statement_in_email_password_page",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_024",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P2"
+        "P2",
+        "case_id_login_login_024",
+        "p1"
       ],
       "allure_feature": "九、隐私协议与合规",
       "allure_story": "核心流程（正向）",
@@ -11795,18 +11893,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_statement_in_phone_password_page",
       "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
       "test_name": "test_privacy_statement_in_phone_password_page",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_025",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P2"
+        "P2",
+        "case_id_login_login_025",
+        "p1"
       ],
       "allure_feature": "九、隐私协议与合规",
       "allure_story": "核心流程（正向）",
@@ -11822,18 +11922,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_terms_link_preserves_dialog_state",
       "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
       "test_name": "test_terms_link_preserves_dialog_state",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_026",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P2"
+        "P2",
+        "case_id_login_login_026",
+        "p1"
       ],
       "allure_feature": "九、隐私协议与合规",
       "allure_story": "链接功能（负向 / 边界）",
@@ -11849,18 +11951,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_terms_of_use_consistent_across_pages",
       "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
       "test_name": "test_terms_of_use_consistent_across_pages",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_028",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P2"
+        "P2",
+        "case_id_login_login_028",
+        "p1"
       ],
       "allure_feature": "九、隐私协议与合规",
       "allure_story": "链接功能（负向 / 边界）",
@@ -11876,18 +11980,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_terms_of_use_link_navigation",
       "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
       "test_name": "test_terms_of_use_link_navigation",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_029",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P1"
+        "P1",
+        "case_id_login_login_029",
+        "p1"
       ],
       "allure_feature": "九、隐私协议与合规",
       "allure_story": "核心流程（正向）",
@@ -11903,19 +12009,21 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_third_party_tc049_tc052.py::TestThirdPartyLogin::test_apple_login_button_exists_and_clickable",
       "file_path": "test_cases/login/test_login_third_party_tc049_tc052.py",
       "test_name": "test_apple_login_button_exists_and_clickable",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_049",
+      "priority": "p1",
       "site": "ae",
       "markers": [
         "P1",
-        "allure_description"
+        "allure_description",
+        "case_id_login_login_049",
+        "p1"
       ],
       "allure_feature": "五、第三方登录",
       "allure_story": "第三方登录按钮展示",
@@ -11931,19 +12039,21 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_third_party_tc049_tc052.py::TestThirdPartyLogin::test_facebook_login_button_exists_and_clickable",
       "file_path": "test_cases/login/test_login_third_party_tc049_tc052.py",
       "test_name": "test_facebook_login_button_exists_and_clickable",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_030",
+      "priority": "p1",
       "site": "ae",
       "markers": [
         "P1",
-        "allure_description"
+        "allure_description",
+        "case_id_login_login_030",
+        "p1"
       ],
       "allure_feature": "五、第三方登录",
       "allure_story": "第三方登录按钮展示",
@@ -11959,19 +12069,21 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_third_party_tc049_tc052.py::TestThirdPartyLogin::test_google_login_button_exists_and_clickable",
       "file_path": "test_cases/login/test_login_third_party_tc049_tc052.py",
       "test_name": "test_google_login_button_exists_and_clickable",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_031",
+      "priority": "p1",
       "site": "ae",
       "markers": [
         "P1",
-        "allure_description"
+        "allure_description",
+        "case_id_login_login_031",
+        "p1"
       ],
       "allure_feature": "五、第三方登录",
       "allure_story": "第三方登录按钮展示",
@@ -11987,19 +12099,21 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_third_party_tc049_tc052.py::TestThirdPartyLogin::test_third_party_login_buttons_overview",
       "file_path": "test_cases/login/test_login_third_party_tc049_tc052.py",
       "test_name": "test_third_party_login_buttons_overview",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_032",
+      "priority": "p1",
       "site": "ae",
       "markers": [
         "P2",
-        "allure_description"
+        "allure_description",
+        "case_id_login_login_032",
+        "p1"
       ],
       "allure_feature": "五、第三方登录",
       "allure_story": "第三方登录按钮展示",
@@ -12015,18 +12129,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_click_overlay_to_close",
       "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
       "test_name": "test_click_overlay_to_close",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_033",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P1"
+        "P1",
+        "case_id_login_login_033",
+        "p1"
       ],
       "allure_feature": "一、欢迎页（Welcome Page）",
       "allure_story": "弹窗交互",
@@ -12042,18 +12158,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_email_input_enables_continue_button",
       "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
       "test_name": "test_email_input_enables_continue_button",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_034",
+      "priority": "p0",
       "site": "ae",
       "markers": [
-        "P0"
+        "P0",
+        "case_id_login_login_034",
+        "p0"
       ],
       "allure_feature": "一、欢迎页（Welcome Page）",
       "allure_story": "核心流程（正向）",
@@ -12069,18 +12187,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_emoji_input",
       "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
       "test_name": "test_emoji_input",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_035",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P2"
+        "P2",
+        "case_id_login_login_035",
+        "p1"
       ],
       "allure_feature": "一、欢迎页（Welcome Page）",
       "allure_story": "表单校验（负向 / 边界）",
@@ -12096,18 +12216,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_empty_input_keeps_continue_disabled",
       "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
       "test_name": "test_empty_input_keeps_continue_disabled",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_036",
+      "priority": "p0",
       "site": "ae",
       "markers": [
-        "P0"
+        "P0",
+        "case_id_login_login_036",
+        "p0"
       ],
       "allure_feature": "一、欢迎页（Welcome Page）",
       "allure_story": "核心流程（正向）",
@@ -12123,18 +12245,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_invalid_email_format",
       "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
       "test_name": "test_invalid_email_format",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_037",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P1"
+        "P1",
+        "case_id_login_login_037",
+        "p1"
       ],
       "allure_feature": "一、欢迎页（Welcome Page）",
       "allure_story": "表单校验（负向 / 边界）",
@@ -12150,18 +12274,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_long_string_input",
       "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
       "test_name": "test_long_string_input",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_038",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P2"
+        "P2",
+        "case_id_login_login_038",
+        "p1"
       ],
       "allure_feature": "一、欢迎页（Welcome Page）",
       "allure_story": "表单校验（负向 / 边界）",
@@ -12177,19 +12303,21 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_open_welcome_dialog",
       "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
       "test_name": "test_open_welcome_dialog",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_040",
+      "priority": "p0",
       "site": "ae",
       "markers": [
         "P0",
-        "allure_description"
+        "allure_description",
+        "case_id_login_login_040",
+        "p0"
       ],
       "allure_feature": "一、欢迎页（Welcome Page）",
       "allure_story": "核心流程（正向）",
@@ -12205,18 +12333,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_phone_input_enables_continue_button",
       "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
       "test_name": "test_phone_input_enables_continue_button",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_041",
+      "priority": "p0",
       "site": "ae",
       "markers": [
-        "P0"
+        "P0",
+        "case_id_login_login_041",
+        "p0"
       ],
       "allure_feature": "一、欢迎页（Welcome Page）",
       "allure_story": "核心流程（正向）",
@@ -12232,18 +12362,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_press_esc_to_close",
       "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
       "test_name": "test_press_esc_to_close",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_042",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P2"
+        "P2",
+        "case_id_login_login_042",
+        "p1"
       ],
       "allure_feature": "一、欢迎页（Welcome Page）",
       "allure_story": "弹窗交互",
@@ -12259,18 +12391,20 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
       "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_space_input",
       "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
       "test_name": "test_space_input",
-      "case_id": null,
-      "priority": null,
+      "case_id": "case_id_login_login_043",
+      "priority": "p1",
       "site": "ae",
       "markers": [
-        "P2"
+        "P2",
+        "case_id_login_login_043",
+        "p1"
       ],
       "allure_feature": "一、欢迎页（Welcome Page）",
       "allure_story": "表单校验（负向 / 边界）",
@@ -12286,7 +12420,7 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": false,
+      "governed": true,
       "skill_excluded": false
     },
     {
@@ -12658,7 +12792,7 @@
       ],
       "allure_feature": "登录注册未设置密码场景（手机号）",
       "allure_story": "六、手机号登录未设置密码",
-      "allure_title": "TC015: 手机号未设置密码 — 点击 Send code 成功发送验证码",
+      "allure_title": "TC015: 手机号未设置密码 — 点击 Send code 成功发送验证码（不自动化）",
       "severity": "blocker",
       "module_id": "login",
       "feature_id": "login_",
@@ -12688,7 +12822,7 @@
       ],
       "allure_feature": "登录注册未设置密码场景（手机号）",
       "allure_story": "六、手机号登录未设置密码",
-      "allure_title": "TC016: 手机号验证码页面文案包含 +971 501234579",
+      "allure_title": "TC016: 手机号验证码页面文案包含 +971 501234579（不自动化）",
       "severity": "normal",
       "module_id": "login",
       "feature_id": "login_",

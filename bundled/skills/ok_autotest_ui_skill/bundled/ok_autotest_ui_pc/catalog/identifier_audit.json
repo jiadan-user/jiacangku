@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-04-23T08:54:45Z",
+  "generated_at": "2026-04-27T09:44:04Z",
   "summary": {
-    "missing_priority": 67,
-    "missing_case_id": 68,
+    "missing_priority": 0,
+    "missing_case_id": 1,
     "missing_module_id": 0,
     "missing_feature_id": 0
   },
@@ -4105,13 +4105,10 @@
     {
       "file_path": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py",
       "nodeid": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py::TestCompatibilityAndI18n::test_chrome_browser_login_flow",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p0",
       "suggested_priority": "p0",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_061",
       "suggested_case_id": "case_id_login_login_061",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4121,13 +4118,10 @@
     {
       "file_path": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py",
       "nodeid": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py::TestCompatibilityAndI18n::test_english_language_content_correct",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_001",
       "suggested_case_id": "case_id_login_login_001",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4137,13 +4131,10 @@
     {
       "file_path": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py",
       "nodeid": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py::TestCompatibilityAndI18n::test_resolution_1920x1080_layout_normal",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_002",
       "suggested_case_id": "case_id_login_login_002",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4153,13 +4144,10 @@
     {
       "file_path": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py",
       "nodeid": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py::TestCrossBrowserManual::test_firefox_browser_manual",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_tc063_firefox_061",
       "suggested_case_id": "case_id_login_tc063_firefox_061",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4169,13 +4157,10 @@
     {
       "file_path": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py",
       "nodeid": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py::TestCrossBrowserManual::test_safari_browser_manual",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_tc062_safari_061",
       "suggested_case_id": "case_id_login_tc062_safari_061",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4185,13 +4170,10 @@
     {
       "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
       "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_email_display_in_password_page",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_ui_013",
       "suggested_case_id": "case_id_login_login_ui_013",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4201,13 +4183,10 @@
     {
       "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
       "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_email_login_success",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p0",
       "suggested_priority": "p0",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_013",
       "suggested_case_id": "case_id_login_login_013",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4217,13 +4196,10 @@
     {
       "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
       "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_empty_password_disables_login_button",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p0",
       "suggested_priority": "p0",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_003",
       "suggested_case_id": "case_id_login_login_003",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4233,13 +4209,10 @@
     {
       "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
       "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_forgot_password_link_display",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p0",
       "suggested_priority": "p0",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_ui_001",
       "suggested_case_id": "case_id_login_login_ui_001",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4249,13 +4222,10 @@
     {
       "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
       "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_password_long_string",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_004",
       "suggested_case_id": "case_id_login_login_004",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4265,13 +4235,10 @@
     {
       "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
       "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_password_visibility_toggle",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_005",
       "suggested_case_id": "case_id_login_login_005",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4281,13 +4248,10 @@
     {
       "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
       "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_password_with_special_characters",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_006",
       "suggested_case_id": "case_id_login_login_006",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4297,13 +4261,10 @@
     {
       "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
       "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_privacy_statement_display",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_ui_002",
       "suggested_case_id": "case_id_login_login_ui_002",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4313,13 +4274,10 @@
     {
       "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
       "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_unregistered_email_login_fails",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p0",
       "suggested_priority": "p0",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_007",
       "suggested_case_id": "case_id_login_login_007",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4329,13 +4287,10 @@
     {
       "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
       "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_wrong_password_login_fails",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p0",
       "suggested_priority": "p0",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_008",
       "suggested_case_id": "case_id_login_login_008",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4345,13 +4300,10 @@
     {
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_confirm_button_disabled_after_clear",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_039",
       "suggested_case_id": "case_id_login_login_039",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4361,13 +4313,10 @@
     {
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_confirm_button_disabled_when_code_empty",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p0",
       "suggested_priority": "p0",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_009",
       "suggested_case_id": "case_id_login_login_009",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4377,13 +4326,10 @@
     {
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_confirm_button_enabled_after_input",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_010",
       "suggested_case_id": "case_id_login_login_010",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4393,13 +4339,10 @@
     {
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_email_forgot_password_triggers_code_send",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p0",
       "suggested_priority": "p0",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_011",
       "suggested_case_id": "case_id_login_login_011",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4409,13 +4352,10 @@
     {
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_phone_forgot_password_entry_exists",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p0",
       "suggested_priority": "p0",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_012",
       "suggested_case_id": "case_id_login_login_012",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4425,13 +4365,10 @@
     {
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_code_countdown_format",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_014",
       "suggested_case_id": "case_id_login_login_014",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4441,13 +4378,10 @@
     {
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_code_length_limit",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_015",
       "suggested_case_id": "case_id_login_login_015",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4457,13 +4391,10 @@
     {
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_input_focus",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_016",
       "suggested_case_id": "case_id_login_login_016",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4473,13 +4404,10 @@
     {
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_input_paste",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_017",
       "suggested_case_id": "case_id_login_login_017",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4489,13 +4417,10 @@
     {
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_page_back_button",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_018",
       "suggested_case_id": "case_id_login_login_018",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4505,13 +4430,10 @@
     {
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_page_esc_key",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_019",
       "suggested_case_id": "case_id_login_login_019",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4521,13 +4443,10 @@
     {
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_incorrect_verification_code_manual",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_tc044_039",
       "suggested_case_id": "case_id_login_tc044_039",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4537,13 +4456,10 @@
     {
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_old_verification_code_invalid_manual",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_tc048_039",
       "suggested_case_id": "case_id_login_tc048_039",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4553,13 +4469,10 @@
     {
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_phone_forgot_password_manual",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_tc040_forgot_your_password_039",
       "suggested_case_id": "case_id_login_tc040_forgot_your_password_039",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4569,13 +4482,10 @@
     {
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_verification_code_case_insensitive_manual",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_tc046_039",
       "suggested_case_id": "case_id_login_tc046_039",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4585,13 +4495,10 @@
     {
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_verification_code_expiry_manual",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_tc041_039",
       "suggested_case_id": "case_id_login_tc041_039",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4601,13 +4508,10 @@
     {
       "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
       "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_verification_code_rate_limit_manual",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_tc043_60_039",
       "suggested_case_id": "case_id_login_tc043_60_039",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4617,13 +4521,10 @@
     {
       "file_path": "test_cases/login/test_login_permission_security_tc053_tc057.py",
       "nodeid": "test_cases/login/test_login_permission_security_tc053_tc057.py::TestPermissionAndSecurity::test_token_expired_after_clear_cookies",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p0",
       "suggested_priority": "p0",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_053",
       "suggested_case_id": "case_id_login_login_053",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4633,13 +4534,10 @@
     {
       "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
       "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_auto_detect_country_code",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_login_phone_password_tc027_tc038_027",
       "suggested_case_id": "case_id_login_login_login_phone_password_tc027_tc038_027",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4649,13 +4547,10 @@
     {
       "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
       "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_empty_password_disables_login_button",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_login_phone_password_tc027_tc038_001",
       "suggested_case_id": "case_id_login_login_login_phone_password_tc027_tc038_001",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4665,13 +4560,10 @@
     {
       "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
       "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_forgot_password_link_display",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_login_phone_password_tc027_tc038_002",
       "suggested_case_id": "case_id_login_login_login_phone_password_tc027_tc038_002",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4681,13 +4573,10 @@
     {
       "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
       "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_insufficient_phone_digits",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_login_phone_password_tc027_tc038_003",
       "suggested_case_id": "case_id_login_login_login_phone_password_tc027_tc038_003",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4697,13 +4586,10 @@
     {
       "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
       "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_multiple_clicks_prevention",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_login_phone_password_tc027_tc038_004",
       "suggested_case_id": "case_id_login_login_login_phone_password_tc027_tc038_004",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4713,13 +4599,10 @@
     {
       "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
       "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_non_numeric_phone_input",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_login_phone_password_tc027_tc038_005",
       "suggested_case_id": "case_id_login_login_login_phone_password_tc027_tc038_005",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4729,13 +4612,10 @@
     {
       "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
       "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_phone_display_in_password_page",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_login_phone_password_tc027_tc038_006",
       "suggested_case_id": "case_id_login_login_login_phone_password_tc027_tc038_006",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4745,13 +4625,10 @@
     {
       "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
       "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_phone_login_success",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p0",
       "suggested_priority": "p0",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_027",
       "suggested_case_id": "case_id_login_login_027",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4761,13 +4638,10 @@
     {
       "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
       "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_unregistered_phone_login",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_login_phone_password_tc027_tc038_007",
       "suggested_case_id": "case_id_login_login_login_phone_password_tc027_tc038_007",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4777,13 +4651,10 @@
     {
       "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
       "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_wrong_password_for_phone",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_login_phone_password_tc027_tc038_008",
       "suggested_case_id": "case_id_login_login_login_phone_password_tc027_tc038_008",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4793,13 +4664,10 @@
     {
       "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
       "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_no_password_in_url",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_066",
       "suggested_case_id": "case_id_login_login_066",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4809,13 +4677,10 @@
     {
       "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
       "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_link_preserves_dialog_state",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_020",
       "suggested_case_id": "case_id_login_login_020",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4825,13 +4690,10 @@
     {
       "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
       "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_links_use_https",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_021",
       "suggested_case_id": "case_id_login_login_021",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4841,13 +4703,10 @@
     {
       "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
       "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_policy_link_navigation",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_022",
       "suggested_case_id": "case_id_login_login_022",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4857,13 +4716,10 @@
     {
       "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
       "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_statement_full_text_display",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_023",
       "suggested_case_id": "case_id_login_login_023",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4873,13 +4729,10 @@
     {
       "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
       "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_statement_in_email_password_page",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_024",
       "suggested_case_id": "case_id_login_login_024",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4889,13 +4742,10 @@
     {
       "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
       "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_statement_in_phone_password_page",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_025",
       "suggested_case_id": "case_id_login_login_025",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4905,13 +4755,10 @@
     {
       "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
       "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_terms_link_preserves_dialog_state",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_026",
       "suggested_case_id": "case_id_login_login_026",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4921,13 +4768,10 @@
     {
       "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
       "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_terms_of_use_consistent_across_pages",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_028",
       "suggested_case_id": "case_id_login_login_028",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4937,13 +4781,10 @@
     {
       "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
       "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_terms_of_use_link_navigation",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_029",
       "suggested_case_id": "case_id_login_login_029",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4953,13 +4794,10 @@
     {
       "file_path": "test_cases/login/test_login_third_party_tc049_tc052.py",
       "nodeid": "test_cases/login/test_login_third_party_tc049_tc052.py::TestThirdPartyLogin::test_apple_login_button_exists_and_clickable",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_049",
       "suggested_case_id": "case_id_login_login_049",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4969,13 +4807,10 @@
     {
       "file_path": "test_cases/login/test_login_third_party_tc049_tc052.py",
       "nodeid": "test_cases/login/test_login_third_party_tc049_tc052.py::TestThirdPartyLogin::test_facebook_login_button_exists_and_clickable",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_030",
       "suggested_case_id": "case_id_login_login_030",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -4985,13 +4820,10 @@
     {
       "file_path": "test_cases/login/test_login_third_party_tc049_tc052.py",
       "nodeid": "test_cases/login/test_login_third_party_tc049_tc052.py::TestThirdPartyLogin::test_google_login_button_exists_and_clickable",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_031",
       "suggested_case_id": "case_id_login_login_031",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -5001,13 +4833,10 @@
     {
       "file_path": "test_cases/login/test_login_third_party_tc049_tc052.py",
       "nodeid": "test_cases/login/test_login_third_party_tc049_tc052.py::TestThirdPartyLogin::test_third_party_login_buttons_overview",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_032",
       "suggested_case_id": "case_id_login_login_032",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -5017,13 +4846,10 @@
     {
       "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
       "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_click_overlay_to_close",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_033",
       "suggested_case_id": "case_id_login_login_033",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -5033,13 +4859,10 @@
     {
       "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
       "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_email_input_enables_continue_button",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p0",
       "suggested_priority": "p0",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_034",
       "suggested_case_id": "case_id_login_login_034",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -5049,13 +4872,10 @@
     {
       "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
       "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_emoji_input",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_035",
       "suggested_case_id": "case_id_login_login_035",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -5065,13 +4885,10 @@
     {
       "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
       "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_empty_input_keeps_continue_disabled",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p0",
       "suggested_priority": "p0",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_036",
       "suggested_case_id": "case_id_login_login_036",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -5081,13 +4898,10 @@
     {
       "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
       "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_invalid_email_format",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_037",
       "suggested_case_id": "case_id_login_login_037",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -5097,13 +4911,10 @@
     {
       "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
       "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_long_string_input",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_038",
       "suggested_case_id": "case_id_login_login_038",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -5113,13 +4924,10 @@
     {
       "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
       "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_open_welcome_dialog",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p0",
       "suggested_priority": "p0",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_040",
       "suggested_case_id": "case_id_login_login_040",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -5129,13 +4937,10 @@
     {
       "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
       "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_phone_input_enables_continue_button",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p0",
       "suggested_priority": "p0",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_041",
       "suggested_case_id": "case_id_login_login_041",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -5145,13 +4950,10 @@
     {
       "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
       "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_press_esc_to_close",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_042",
       "suggested_case_id": "case_id_login_login_042",
       "current_module_id": "login",
       "suggested_module_id": "login",
@@ -5161,13 +4963,10 @@
     {
       "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
       "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_space_input",
-      "missing": [
-        "priority",
-        "case_id"
-      ],
-      "current_priority": null,
+      "missing": [],
+      "current_priority": "p1",
       "suggested_priority": "p1",
-      "current_case_id": null,
+      "current_case_id": "case_id_login_login_043",
       "suggested_case_id": "case_id_login_login_043",
       "current_module_id": "login",
       "suggested_module_id": "login",

@@ -65,6 +65,8 @@ def ensure_logged_out_before_test(preloaded_page):
 class TestLoginEmailPasswordPage:
     """登录模块 - 邮箱密码登录页测试"""
 
+    @pytest.mark.p0
+    @pytest.mark.case_id_login_login_013
     @allure.story("核心流程（正向）")
     @allure.title("TC013: 已注册邮箱正确密码登录成功")
     @allure.severity(allure.severity_level.BLOCKER)
@@ -94,6 +96,8 @@ class TestLoginEmailPasswordPage:
             is_logged_in = login_page.is_login_button_text_changed(timeout=5000)
             assert is_logged_in, "登录成功后应显示已登录状态"
 
+    @pytest.mark.p0
+    @pytest.mark.case_id_login_login_003
     @allure.story("核心流程（正向）")
     @allure.title("TC014: 邮箱登录页密码输入框为空时 Log in 按钮禁用")
     @allure.severity(allure.severity_level.BLOCKER)
@@ -108,6 +112,8 @@ class TestLoginEmailPasswordPage:
             login_btn = preloaded_page.get_by_role('button', name='Log in')
             assert login_btn.is_disabled(), "Log in 按钮应显示 disabled 状态"
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_005
     @allure.story("核心流程（正向）")
     @allure.title("TC015: 邮箱登录页密码显示/隐藏切换（眼睛图标）")
     @allure.severity(allure.severity_level.NORMAL)
@@ -133,6 +139,8 @@ class TestLoginEmailPasswordPage:
             else:
                 allure.attach("未找到眼睛图标", name="测试结果")
 
+    @pytest.mark.p0
+    @pytest.mark.case_id_login_login_008
     @allure.story("表单校验（负向 / 边界）")
     @allure.title("TC016: 已注册邮箱输入错误密码登录失败")
     @allure.severity(allure.severity_level.BLOCKER)
@@ -154,6 +162,8 @@ class TestLoginEmailPasswordPage:
             has_error = any(keyword in page_text for keyword in error_keywords)
             allure.attach(f"是否显示错误提示: {has_error}", name="错误提示检查")
 
+    @pytest.mark.p0
+    @pytest.mark.case_id_login_login_007
     @allure.story("表单校验（负向 / 边界）")
     @allure.title("TC017: 未注册邮箱输入任意密码登录失败")
     @allure.severity(allure.severity_level.BLOCKER)
@@ -180,6 +190,8 @@ class TestLoginEmailPasswordPage:
                 else:
                     allure.attach("未找到注册页面标识，也未找到错误提示", name="❌ 验证失败")
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_006
     @allure.story("表单校验（负向 / 边界）")
     @allure.title("TC018: 邮箱登录密码输入特殊字符")
     @allure.severity(allure.severity_level.NORMAL)
@@ -207,6 +219,8 @@ class TestLoginEmailPasswordPage:
         with allure.step("验证系统不执行脚本，正常返回密码错误提示，无 XSS 漏洞"):
             allure.attach("未执行脚本，安全", name="XSS 检测结果")
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_004
     @allure.story("表单校验（负向 / 边界）")
     @allure.title("TC019: 邮箱登录密码输入超长字符（500字符）")
     @allure.severity(allure.severity_level.MINOR)
@@ -242,6 +256,8 @@ class TestLoginEmailPasswordPage:
                     name="✅ 截断验证",
                 )
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_ui_013
     @allure.story("UI 与文案")
     @allure.title("TC022: 邮箱登录页正确显示邮箱地址")
     @allure.severity(allure.severity_level.NORMAL)
@@ -256,6 +272,8 @@ class TestLoginEmailPasswordPage:
             assert preloaded_page.get_by_text("Email").is_visible(), "未显示 Email 标签"
             assert preloaded_page.get_by_text(TEST_EMAIL).is_visible(), f"未显示邮箱地址 {TEST_EMAIL}"
 
+    @pytest.mark.p0
+    @pytest.mark.case_id_login_login_ui_001
     @allure.story("UI 与文案")
     @allure.title("TC023: 邮箱登录页「Forgot your password?」链接展示")
     @allure.severity(allure.severity_level.BLOCKER)
@@ -270,6 +288,8 @@ class TestLoginEmailPasswordPage:
             forgot_link = preloaded_page.get_by_text("Forgot your password?")
             assert forgot_link.is_visible(), "未显示「Forgot your password?」链接"
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_ui_002
     @allure.story("UI 与文案")
     @allure.title("TC024: 邮箱登录页底部隐私声明文案展示")
     @allure.severity(allure.severity_level.MINOR)

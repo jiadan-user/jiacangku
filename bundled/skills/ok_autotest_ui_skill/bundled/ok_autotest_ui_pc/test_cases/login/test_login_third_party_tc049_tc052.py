@@ -79,6 +79,8 @@ class TestThirdPartyLogin:
     - 点击后触发新窗口或跳转（OAuth授权）
     说明: 不验证完整登录流程，仅验证按钮功能
     """)
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_031
     @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.P1
     def test_google_login_button_exists_and_clickable(self, preloaded_page):
@@ -123,6 +125,8 @@ class TestThirdPartyLogin:
     步骤: 查找并点击 Facebook 图标
     预期: Facebook 登录按钮存在，点击后触发OAuth授权
     """)
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_030
     @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.P1
     def test_facebook_login_button_exists_and_clickable(self, preloaded_page):
@@ -161,6 +165,8 @@ class TestThirdPartyLogin:
     步骤: 查找并点击 Apple 图标
     预期: Apple 登录按钮存在，点击后触发登录
     """)
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_049
     @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.P1
     def test_apple_login_button_exists_and_clickable(self, preloaded_page):
@@ -199,6 +205,8 @@ class TestThirdPartyLogin:
     步骤: 查找所有第三方登录按钮
     预期: 统计哪些第三方登录方式可用
     """)
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_032
     @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.P2
     def test_third_party_login_buttons_overview(self, preloaded_page):

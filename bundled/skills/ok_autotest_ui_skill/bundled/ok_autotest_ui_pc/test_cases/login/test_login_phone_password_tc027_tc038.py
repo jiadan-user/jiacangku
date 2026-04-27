@@ -49,6 +49,8 @@ TEST_PASSWORD = "Qwer1234"
 class TestLoginPhonePasswordPage:
     """登录模块 - 手机号密码登录页测试"""
 
+    @pytest.mark.p0
+    @pytest.mark.case_id_login_login_027
     @allure.story("核心流程（正向）")
     @allure.title("TC027: 已注册手机号正确密码登录成功")
     @allure.severity(allure.severity_level.BLOCKER)
@@ -79,6 +81,8 @@ class TestLoginPhonePasswordPage:
             is_logged_in = login_page.is_login_button_text_changed(timeout=8000)
             assert is_logged_in, "登录成功后应显示已登录状态"
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_login_phone_password_tc027_tc038_001
     @pytest.mark.P0
     def test_empty_password_disables_login_button(self, preloaded_page):
         with allure.step("前置条件：已输入合法手机号并进入密码页"):
@@ -105,6 +109,8 @@ class TestLoginPhonePasswordPage:
             
             assert login_btn.is_disabled(), "Log in 按钮应为 disabled 状态"
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_login_phone_password_tc027_tc038_027
     @pytest.mark.P0
     def test_auto_detect_country_code(self, preloaded_page):
         with allure.step("前置条件：打开欢迎弹窗"):
@@ -115,6 +121,8 @@ class TestLoginPhonePasswordPage:
         with allure.step("验证系统自动识别为手机号并添加「AE +971」国家码"):
             assert preloaded_page.get_by_text("AE +971").is_visible(), "未显示 AE +971 国家码"
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_login_phone_password_tc027_tc038_005
     @pytest.mark.P1
     def test_non_numeric_phone_input(self, preloaded_page):
         with allure.step("前置条件：打开欢迎弹窗"):
@@ -126,6 +134,8 @@ class TestLoginPhonePasswordPage:
             # 可能继续作为邮箱处理，或显示错误提示
             allure.attach("输入非数字字符的处理结果", name="测试结果")
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_login_phone_password_tc027_tc038_003
     @pytest.mark.P1
     def test_insufficient_phone_digits(self, preloaded_page):
         with allure.step("前置条件：打开欢迎弹窗"):
@@ -141,6 +151,8 @@ class TestLoginPhonePasswordPage:
         with allure.step("验证系统提示手机号格式不正确，或返回账号不存在"):
             allure.attach("短位数手机号处理结果", name="测试结果")
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_login_phone_password_tc027_tc038_008
     @pytest.mark.P0
     def test_wrong_password_for_phone(self, preloaded_page):
         with allure.step("前置条件：已进入手机号密码登录页（+971 501234570）"):
@@ -156,6 +168,8 @@ class TestLoginPhonePasswordPage:
             preloaded_page.wait_for_timeout(2000)
             allure.attach("密码错误处理结果", name="测试结果")
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_login_phone_password_tc027_tc038_007
     @pytest.mark.P1
     def test_unregistered_phone_login(self, preloaded_page):
         with allure.step("前置条件：打开欢迎弹窗"):
@@ -185,6 +199,8 @@ class TestLoginPhonePasswordPage:
                     "应显示注册引导页面或提示"
                 )
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_login_phone_password_tc027_tc038_004
     @pytest.mark.P1
     @pytest.mark.needs_logout  # 用例内会登录成功，结束后须退登，避免后续用例找不到「Log in / Register」
     def test_multiple_clicks_prevention(self, preloaded_page):
@@ -219,6 +235,8 @@ class TestLoginPhonePasswordPage:
             assert is_logged_in, "应该成功登录"
             allure.attach("登录成功，防重复机制正常", name="✅ 最终验证")
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_login_phone_password_tc027_tc038_002
     @pytest.mark.P0
     def test_forgot_password_link_display(self, preloaded_page):
         with allure.step("前置条件：已进入手机号密码登录页"):
@@ -230,6 +248,8 @@ class TestLoginPhonePasswordPage:
             forgot_link = preloaded_page.get_by_text("Forgot your password?")
             assert forgot_link.is_visible(), "未显示「Forgot your password?」链接"
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_login_phone_password_tc027_tc038_006
     @pytest.mark.P1
     def test_phone_display_in_password_page(self, preloaded_page):
         with allure.step(f"前置条件：已输入 {TEST_PHONE} 并进入密码页"):

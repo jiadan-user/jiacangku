@@ -54,6 +54,8 @@ class TestCompatibilityAndI18n:
     预期: 所有页面元素正常渲染，登录成功
     说明: 此用例不需要自动化，已由其他测试用例覆盖
     """)
+    @pytest.mark.p0
+    @pytest.mark.case_id_login_login_061
     @allure.severity(allure.severity_level.CRITICAL)
     @pytest.mark.skip(reason="此用例不需要自动化，已由其他测试用例覆盖")
     @pytest.mark.P1
@@ -96,6 +98,8 @@ class TestCompatibilityAndI18n:
     - 密码页文案正确
     - 按钮文本正确
     """)
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_001
     @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.P1
     def test_english_language_content_correct(self, preloaded_page):
@@ -157,6 +161,8 @@ class TestCompatibilityAndI18n:
     步骤: 打开登录弹窗，检查布局
     预期: 弹窗居中显示，无溢出或错位
     """)
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_002
     @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.P2
     def test_resolution_1920x1080_layout_normal(self, preloaded_page):
@@ -218,6 +224,8 @@ class TestCompatibilityAndI18n:
 class TestCrossBrowserManual:
     """跨浏览器测试说明（需配置环境）"""
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_tc062_safari_061
     @pytest.mark.skip(reason="需要配置Safari浏览器环境，当前环境为Chromium")
     @allure.title("TC062: Safari浏览器登录流程正常（需单独环境）")
     def test_safari_browser_manual(self):
@@ -233,6 +241,8 @@ class TestCrossBrowserManual:
         """
         pass
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_tc063_firefox_061
     @pytest.mark.skip(reason="需要配置Firefox浏览器环境，当前环境为Chromium")
     @allure.title("TC063: Firefox浏览器登录流程正常（需单独环境）")
     def test_firefox_browser_manual(self):

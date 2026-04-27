@@ -92,6 +92,8 @@ class TestLoginForgotPassword:
     - 验证码输入框为空，右侧显示倒计时（59s）
     - Confirm 按钮显示 disabled 状态
     """)
+    @pytest.mark.p0
+    @pytest.mark.case_id_login_login_011
     @allure.severity(allure.severity_level.CRITICAL)
     @pytest.mark.P0
     def test_email_forgot_password_triggers_code_send(self, preloaded_page):
@@ -177,6 +179,8 @@ class TestLoginForgotPassword:
     步骤: 不输入验证码，尝试点击 Confirm
     预期: Confirm 按钮为 disabled 状态，无法点击
     """)
+    @pytest.mark.p0
+    @pytest.mark.case_id_login_login_009
     @allure.severity(allure.severity_level.CRITICAL)
     @pytest.mark.P0
     def test_confirm_button_disabled_when_code_empty(self, preloaded_page):
@@ -219,6 +223,8 @@ class TestLoginForgotPassword:
     步骤: 在验证码框输入 20 个字符，点击 Confirm（若变为可点击）
     预期: 输入被截断（有位数限制），或提交后返回格式错误
     """)
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_015
     @allure.severity(allure.severity_level.MINOR)
     @pytest.mark.P2
     def test_verification_code_length_limit(self, preloaded_page):
@@ -274,6 +280,8 @@ class TestLoginForgotPassword:
     步骤: 观察验证码输入框右侧倒计时显示
     预期: 验证码框右侧显示倒计时格式为「XXs」（如 59s、30s）
     """)
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_014
     @allure.severity(allure.severity_level.MINOR)
     @pytest.mark.P2
     def test_verification_code_countdown_format(self, preloaded_page):
@@ -353,6 +361,8 @@ class TestLoginForgotPassword:
     步骤: 输入任意验证码
     预期: Confirm 按钮从 disabled 变为 enabled 状态
     """)
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_010
     @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.P1
     def test_confirm_button_enabled_after_input(self, preloaded_page):
@@ -395,6 +405,8 @@ class TestLoginForgotPassword:
     步骤: 清空验证码输入框
     预期: Confirm 按钮恢复为 disabled 状态
     """)
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_039
     @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.P2
     def test_confirm_button_disabled_after_clear(self, preloaded_page):
@@ -435,6 +447,8 @@ class TestLoginForgotPassword:
     步骤: 查找并点击返回按钮
     预期: 存在返回按钮（back/close/X），点击后返回密码输入页
     """)
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_018
     @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.P1
     def test_verification_page_back_button(self, preloaded_page):
@@ -481,6 +495,8 @@ class TestLoginForgotPassword:
     步骤: 按 ESC 键
     预期: 验证码弹窗关闭
     """)
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_019
     @allure.severity(allure.severity_level.MINOR)
     @pytest.mark.P2
     def test_verification_page_esc_key(self, preloaded_page):
@@ -518,6 +534,8 @@ class TestLoginForgotPassword:
     步骤: 查找「Forgot your password?」文本
     预期: 手机号密码页也存在忘记密码入口
     """)
+    @pytest.mark.p0
+    @pytest.mark.case_id_login_login_012
     @allure.severity(allure.severity_level.CRITICAL)
     @pytest.mark.P0
     def test_phone_forgot_password_entry_exists(self, preloaded_page):
@@ -551,6 +569,8 @@ class TestLoginForgotPassword:
     步骤: 检查验证码输入框焦点状态
     预期: 验证码输入框自动获得焦点或可点击获得焦点
     """)
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_016
     @allure.severity(allure.severity_level.MINOR)
     @pytest.mark.P2
     def test_verification_input_focus(self, preloaded_page):
@@ -594,6 +614,8 @@ class TestLoginForgotPassword:
     步骤: 使用键盘快捷键粘贴验证码
     预期: 验证码输入框支持粘贴操作
     """)
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_login_017
     @allure.severity(allure.severity_level.NORMAL)
     @pytest.mark.P2
     def test_verification_input_paste(self, preloaded_page):
@@ -654,6 +676,8 @@ class TestLoginForgotPassword:
 class TestLoginForgotPasswordManual:
     """需要人工验证码的测试用例（文档化）"""
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_tc040_forgot_your_password_039
     @pytest.mark.skip(reason="需要真实短信验证码，无法自动化")
     @allure.title("TC040: 手机号登录页点击「Forgot your password?」触发验证码发送（不自动化）")
     def test_phone_forgot_password_manual(self):
@@ -667,6 +691,8 @@ class TestLoginForgotPasswordManual:
         """
         pass
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_tc041_039
     @pytest.mark.skip(reason="需要等待真实倒计时（60秒）和真实验证码")
     @allure.title("TC041: 验证码倒计时结束后验证码过期（不自动化）")
     def test_verification_code_expiry_manual(self):
@@ -680,6 +706,8 @@ class TestLoginForgotPasswordManual:
         """
         pass
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_tc043_60_039
     @pytest.mark.skip(reason="需要验证码发送频控，无法自动化测试")
     @allure.title("TC043: 验证码发送频控—60 秒内不可重复发送（不自动化）")
     def test_verification_code_rate_limit_manual(self):
@@ -691,6 +719,8 @@ class TestLoginForgotPasswordManual:
         """
         pass
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_tc044_039
     @pytest.mark.skip(reason="需要真实验证码")
     @allure.title("TC044: 输入错误验证码提交（不自动化）")
     def test_incorrect_verification_code_manual(self):
@@ -703,6 +733,8 @@ class TestLoginForgotPasswordManual:
         """
         pass
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_tc046_039
     @pytest.mark.skip(reason="需要真实验证码")
     @allure.title("TC046: 验证码大小写不敏感（如适用）（不自动化）")
     def test_verification_code_case_insensitive_manual(self):
@@ -715,6 +747,8 @@ class TestLoginForgotPasswordManual:
         """
         pass
 
+    @pytest.mark.p1
+    @pytest.mark.case_id_login_tc048_039
     @pytest.mark.skip(reason="需要真实验证码")
     @allure.title("TC048: 旧验证码在新验证码发送后失效（不自动化）")
     def test_old_verification_code_invalid_manual(self):

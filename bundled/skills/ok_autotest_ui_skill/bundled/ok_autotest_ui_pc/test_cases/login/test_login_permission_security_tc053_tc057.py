@@ -55,6 +55,8 @@ class TestPermissionAndSecurity:
     
     说明: 此用例不需要自动化，需要特定页面访问权限验证
     """)
+    @pytest.mark.p0
+    @pytest.mark.case_id_login_login_053
     @allure.severity(allure.severity_level.CRITICAL)
     @pytest.mark.skip(reason="此用例不需要自动化，需要特定页面访问权限验证")
     @pytest.mark.P1
