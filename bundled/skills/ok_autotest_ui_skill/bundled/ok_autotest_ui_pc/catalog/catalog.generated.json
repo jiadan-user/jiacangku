@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-04-20T03:21:50Z",
-  "root_dir": "/Users/shenchang/Documents/workspace/igit/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc",
-  "case_count": 1963,
-  "governed_case_count": 1962,
+  "generated_at": "2026-04-23T08:54:45Z",
+  "root_dir": "/Users/mengmeng/Desktop/ok_autotest_skill_ui_pc/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc",
+  "case_count": 2082,
+  "governed_case_count": 2014,
   "cases": [
     {
       "nodeid": "test_cases/ SEO/AE/test_settings_new_messages.py::test_tc001_access_settings_new_messages",
@@ -8883,6 +8883,1179 @@
       "skill_excluded": false
     },
     {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc001_homepage_marketplace_link_href",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc001_homepage_marketplace_link_href",
+      "case_id": "case_id_ae_common_list_tc001",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc001",
+        "marketplace",
+        "p0",
+        "smoke"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC001: 金刚位 Marketplace 链接含 cate-marketplace 与 iconSource",
+      "severity": null,
+      "module_id": "marketplace_post",
+      "feature_id": "marketplace_post_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "marketplace_post",
+        "marketplace_post_ae_marketplace_common_list_md",
+        "tc001_marketplace_cate_marketplace_iconsource"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc002_home_search_jobs",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc002_home_search_jobs",
+      "case_id": "case_id_ae_common_list_tc002",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc002",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC002: 首页综合搜 jobs 后可达结果（分类/URL 抽检）",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc002_jobs_url"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc003_marketplace_default_chips",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc003_marketplace_default_chips",
+      "case_id": "case_id_ae_common_list_tc003",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc003",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC003: Marketplace 落地默认筛选项与 Tag",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc003_marketplace_tag"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc004_card_fields_and_price",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc004_card_fields_and_price",
+      "case_id": "case_id_ae_common_list_tc004",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc004",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC004: 列表卡片字段完整、价格含 AED",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc004_aed"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc005_click_card_opens_detail",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc005_click_card_opens_detail",
+      "case_id": "case_id_ae_common_list_tc005",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc005",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC005: 点击卡片进详情（新标签或同页）",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc005"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc006_city_search_dubai",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc006_city_search_dubai",
+      "case_id": "case_id_ae_common_list_tc006",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc006",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC006: 城市搜索 Dubai 并应用",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc006_dubai"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc007_city_search_no_result",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc007_city_search_no_result",
+      "case_id": "case_id_ae_common_list_tc007",
+      "priority": "p2",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc007",
+        "p2"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC007: 城市搜索无结果关键词不崩溃",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc007"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc008_city_panel_scrollable",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc008_city_panel_scrollable",
+      "case_id": "case_id_ae_common_list_tc008",
+      "priority": "p1",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc008",
+        "p1"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC008: 滚动城市列表可选择（降级为列表容器存在）",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc008"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc009_city_index_if_present",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc009_city_index_if_present",
+      "case_id": "case_id_ae_common_list_tc009",
+      "priority": "p1",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc009",
+        "p1"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC009: 字母索引导航（若存在则可见）",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc009"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc010_sort_dropdown_four_labels",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc010_sort_dropdown_four_labels",
+      "case_id": "case_id_ae_common_list_tc010",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc010",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC010: 排序下拉四项文案",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc010"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc011_sort_best_match_sortid",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc011_sort_best_match_sortid",
+      "case_id": "case_id_ae_common_list_tc011",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc011",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC011: Best Match sortId=0",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc011_best_match_sortid_0"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc012_sort_newest_sortid",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc012_sort_newest_sortid",
+      "case_id": "case_id_ae_common_list_tc012",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc012",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC012: Newest First sortId=1",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc012_newest_first_sortid_1"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc013_sort_lowest_price_sortid",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc013_sort_lowest_price_sortid",
+      "case_id": "case_id_ae_common_list_tc013",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc013",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC013: Lowest Price sortId=3",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc013_lowest_price_sortid_3"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc014_sort_highest_price_sortid",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc014_sort_highest_price_sortid",
+      "case_id": "case_id_ae_common_list_tc014",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc014",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC014: Highest Price sortId=4",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc014_highest_price_sortid_4"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc015_subcategory_computers_tablets",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc015_subcategory_computers_tablets",
+      "case_id": "case_id_ae_common_list_tc015",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc015",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC015: 进入 Electronics 子分类",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc015_electronics"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc016_category_jobs_sub",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc016_category_jobs_sub",
+      "case_id": "case_id_ae_common_list_tc016",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc016",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC016: 主类 Jobs + 子类",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc016_jobs"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc017_category_property_sub",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc017_category_property_sub",
+      "case_id": "case_id_ae_common_list_tc017",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc017",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC017: 主类 Property + 子类",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc017_property"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc018_category_cars_sub",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc018_category_cars_sub",
+      "case_id": "case_id_ae_common_list_tc018",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc018",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC018: 主类 Cars + 子类",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc018_cars"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc019_category_services_sub",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc019_category_services_sub",
+      "case_id": "case_id_ae_common_list_tc019",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc019",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC019: 主类 Services + 子类",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc019_services"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc020_category_community_sub",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc020_category_community_sub",
+      "case_id": "case_id_ae_common_list_tc020",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc020",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC020: 主类 Community + 子类",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc020_community"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc021_category_shop_after_scroll",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc021_category_shop_after_scroll",
+      "case_id": "case_id_ae_common_list_tc021",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc021",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC021: Shop 主类横向滚动后选择子类",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc021_shop"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc022_price_min_only",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc022_price_min_only",
+      "case_id": "case_id_ae_common_list_tc022",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc022",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC022: Price 仅 Min",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc022_price_min"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc023_price_max_only",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc023_price_max_only",
+      "case_id": "case_id_ae_common_list_tc023",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc023",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC023: Price 仅 Max",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc023_price_max"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc024_price_min_max_closed",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc024_price_min_max_closed",
+      "case_id": "case_id_ae_common_list_tc024",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc024",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC024: Price Min+Max 闭区间",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc024_price_min_max"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc025_transaction_online",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc025_transaction_online",
+      "case_id": "case_id_ae_common_list_tc025",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc025",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC025: Transaction 切换 Online",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc025_transaction_online"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc026_books_condition_multi",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc026_books_condition_multi",
+      "case_id": "case_id_ae_common_list_tc026",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc026",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC026: Books 列表 Condition 多选",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc026_books_condition"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc027_books_price_and_condition",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc027_books_price_and_condition",
+      "case_id": "case_id_ae_common_list_tc027",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc027",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC027: Books Price + Condition",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc027_books_price_condition"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc028_remove_category_tag",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc028_remove_category_tag",
+      "case_id": "case_id_ae_common_list_tc028",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc028",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC028: 删除 Category Tag",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc028_category_tag"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc029_remove_location_tag",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc029_remove_location_tag",
+      "case_id": "case_id_ae_common_list_tc029",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc029",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC029: 删除 Location Tag",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc029_location_tag"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc030_remove_price_tag_after_filter",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc030_remove_price_tag_after_filter",
+      "case_id": "case_id_ae_common_list_tc030",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc030",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC030: Price Tag 出现后删除",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc030_price_tag"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc031_filter_panel_sync",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc031_filter_panel_sync",
+      "case_id": "case_id_ae_common_list_tc031",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc031",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC031: Filter 面板与外显一致",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc031_filter"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc032_filter_change_category_apply",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc032_filter_change_category_apply",
+      "case_id": "case_id_ae_common_list_tc032",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc032",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC032: Filter 内切换类别后应用",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc032_filter"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc033_filter_combos_clear",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc033_filter_combos_clear",
+      "case_id": "case_id_ae_common_list_tc033",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc033",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC033: Filter 组合与清除",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc033_filter"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc034_jobs_list_salary_not_price_mix",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc034_jobs_list_salary_not_price_mix",
+      "case_id": "case_id_ae_common_list_tc034",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc034",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC034: Jobs 列表薪资维度非 Price 混淆",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc034_jobs_price"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc035_car_explore_filters",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc035_car_explore_filters",
+      "case_id": "case_id_ae_common_list_tc035",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc035",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC035: 车辆列表专属筛选项",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc035"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc036_free_kingkong_landing",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc036_free_kingkong_landing",
+      "case_id": "case_id_ae_common_list_tc036",
+      "priority": "p1",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc036",
+        "p1"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC036: Free 金刚位落地 URL",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc036_free_url"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc037_kingkong_property_services_community",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc037_kingkong_property_services_community",
+      "case_id": "case_id_ae_common_list_tc037",
+      "priority": "p1",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc037",
+        "p1"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC037: Property / Services / Community 金刚位默认可见",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc037_property_services_community"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc038_pagination_next",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc038_pagination_next",
+      "case_id": "case_id_ae_common_list_tc038",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc038",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC038: 分页切换",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc038"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc039_weak_network_skipped",
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "test_name": "test_tc039_weak_network_skipped",
+      "case_id": "case_id_ae_common_list_tc039",
+      "priority": "p2",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_ae_common_list_tc039",
+        "p2",
+        "skip"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "AE Marketplace 首页金刚位（common_list MD）",
+      "allure_title": "TC039: 弱网体验（文本用例标注不可自动化）",
+      "severity": null,
+      "module_id": "common_list",
+      "feature_id": "common_list_ae_marketplace_common_list_md",
+      "aliases": [
+        "ae_marketplace_common_list_md",
+        "common_list",
+        "common_list_ae_marketplace_common_list_md",
+        "tc039"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
       "nodeid": "test_cases/explore/test_explore_cars_page_load_tc001.py::test_tc001_direct_access_cars_page_title_and_elements_should_display_correctly",
       "file_path": "test_cases/explore/test_explore_cars_page_load_tc001.py",
       "test_name": "test_tc001_direct_access_cars_page_title_and_elements_should_display_correctly",
@@ -9291,6 +10464,2242 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": "qa-ui",
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py::TestCompatibilityAndI18n::test_chrome_browser_login_flow",
+      "file_path": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py",
+      "test_name": "test_chrome_browser_login_flow",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1",
+        "allure_description",
+        "skip"
+      ],
+      "allure_feature": "八、兼容性与国际化",
+      "allure_story": "浏览器兼容性",
+      "allure_title": "TC061: Chrome浏览器登录流程正常（不自动化）",
+      "severity": "critical",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc061_chrome"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py::TestCompatibilityAndI18n::test_english_language_content_correct",
+      "file_path": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py",
+      "test_name": "test_english_language_content_correct",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1",
+        "allure_description"
+      ],
+      "allure_feature": "八、兼容性与国际化",
+      "allure_story": "国际化",
+      "allure_title": "TC064: 页面语言为英语时所有文案正确",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc064"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py::TestCompatibilityAndI18n::test_resolution_1920x1080_layout_normal",
+      "file_path": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py",
+      "test_name": "test_resolution_1920x1080_layout_normal",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P2",
+        "allure_description"
+      ],
+      "allure_feature": "八、兼容性与国际化",
+      "allure_story": "响应式布局",
+      "allure_title": "TC065: 1920x1080分辨率下登录弹窗布局正常",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc065_1920x1080"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py::TestCrossBrowserManual::test_firefox_browser_manual",
+      "file_path": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py",
+      "test_name": "test_firefox_browser_manual",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "skip"
+      ],
+      "allure_feature": "八、兼容性与国际化 - 跨浏览器测试说明",
+      "allure_story": null,
+      "allure_title": "TC063: Firefox浏览器登录流程正常（需单独环境）",
+      "severity": null,
+      "module_id": "login",
+      "feature_id": "tc063_firefox",
+      "aliases": [
+        "login",
+        "tc063_firefox"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py::TestCrossBrowserManual::test_safari_browser_manual",
+      "file_path": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py",
+      "test_name": "test_safari_browser_manual",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "skip"
+      ],
+      "allure_feature": "八、兼容性与国际化 - 跨浏览器测试说明",
+      "allure_story": null,
+      "allure_title": "TC062: Safari浏览器登录流程正常（需单独环境）",
+      "severity": null,
+      "module_id": "login",
+      "feature_id": "tc062_safari",
+      "aliases": [
+        "login",
+        "tc062_safari"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_email_display_in_password_page",
+      "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
+      "test_name": "test_email_display_in_password_page",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1"
+      ],
+      "allure_feature": "二、邮箱密码登录页",
+      "allure_story": "UI 与文案",
+      "allure_title": "TC022: 邮箱登录页正确显示邮箱地址",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_ui",
+      "aliases": [
+        "login",
+        "login_ui",
+        "tc022",
+        "ui"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_email_login_success",
+      "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
+      "test_name": "test_email_login_success",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P0",
+        "needs_logout"
+      ],
+      "allure_feature": "二、邮箱密码登录页",
+      "allure_story": "核心流程（正向）",
+      "allure_title": "TC013: 已注册邮箱正确密码登录成功",
+      "severity": "blocker",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc013"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_empty_password_disables_login_button",
+      "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
+      "test_name": "test_empty_password_disables_login_button",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P0"
+      ],
+      "allure_feature": "二、邮箱密码登录页",
+      "allure_story": "核心流程（正向）",
+      "allure_title": "TC014: 邮箱登录页密码输入框为空时 Log in 按钮禁用",
+      "severity": "blocker",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc014_log_in"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_forgot_password_link_display",
+      "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
+      "test_name": "test_forgot_password_link_display",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P0"
+      ],
+      "allure_feature": "二、邮箱密码登录页",
+      "allure_story": "UI 与文案",
+      "allure_title": "TC023: 邮箱登录页「Forgot your password?」链接展示",
+      "severity": "blocker",
+      "module_id": "login",
+      "feature_id": "login_ui",
+      "aliases": [
+        "login",
+        "login_ui",
+        "tc023_forgot_your_password",
+        "ui"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_password_long_string",
+      "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
+      "test_name": "test_password_long_string",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P2"
+      ],
+      "allure_feature": "二、邮箱密码登录页",
+      "allure_story": "表单校验（负向 / 边界）",
+      "allure_title": "TC019: 邮箱登录密码输入超长字符（500字符）",
+      "severity": "minor",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc019_500"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_password_visibility_toggle",
+      "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
+      "test_name": "test_password_visibility_toggle",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1"
+      ],
+      "allure_feature": "二、邮箱密码登录页",
+      "allure_story": "核心流程（正向）",
+      "allure_title": "TC015: 邮箱登录页密码显示/隐藏切换（眼睛图标）",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc015"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_password_with_special_characters",
+      "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
+      "test_name": "test_password_with_special_characters",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1"
+      ],
+      "allure_feature": "二、邮箱密码登录页",
+      "allure_story": "表单校验（负向 / 边界）",
+      "allure_title": "TC018: 邮箱登录密码输入特殊字符",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc018"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_privacy_statement_display",
+      "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
+      "test_name": "test_privacy_statement_display",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P2"
+      ],
+      "allure_feature": "二、邮箱密码登录页",
+      "allure_story": "UI 与文案",
+      "allure_title": "TC024: 邮箱登录页底部隐私声明文案展示",
+      "severity": "minor",
+      "module_id": "login",
+      "feature_id": "login_ui",
+      "aliases": [
+        "login",
+        "login_ui",
+        "tc024",
+        "ui"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_unregistered_email_login_fails",
+      "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
+      "test_name": "test_unregistered_email_login_fails",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P0"
+      ],
+      "allure_feature": "二、邮箱密码登录页",
+      "allure_story": "表单校验（负向 / 边界）",
+      "allure_title": "TC017: 未注册邮箱输入任意密码登录失败",
+      "severity": "blocker",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc017"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_wrong_password_login_fails",
+      "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
+      "test_name": "test_wrong_password_login_fails",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P0"
+      ],
+      "allure_feature": "二、邮箱密码登录页",
+      "allure_story": "表单校验（负向 / 边界）",
+      "allure_title": "TC016: 已注册邮箱输入错误密码登录失败",
+      "severity": "blocker",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc016"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_confirm_button_disabled_after_clear",
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "test_name": "test_confirm_button_disabled_after_clear",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P2",
+        "allure_description"
+      ],
+      "allure_feature": "四、忘记密码流程",
+      "allure_story": "验证码重发功能",
+      "allure_title": "TC050_NEW: 验证码输入框清空后 Confirm 按钮恢复 disabled",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc050_new_confirm_disabled"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_confirm_button_disabled_when_code_empty",
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "test_name": "test_confirm_button_disabled_when_code_empty",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P0",
+        "allure_description"
+      ],
+      "allure_feature": "四、忘记密码流程",
+      "allure_story": "表单校验（负向 / 边界）",
+      "allure_title": "TC042: 验证码页面 Confirm 按钮在验证码为空时禁用",
+      "severity": "critical",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc042_confirm"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_confirm_button_enabled_after_input",
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "test_name": "test_confirm_button_enabled_after_input",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1",
+        "allure_description"
+      ],
+      "allure_feature": "四、忘记密码流程",
+      "allure_story": "验证码重发功能",
+      "allure_title": "TC049_NEW: 验证码输入后 Confirm 按钮自动启用",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc049_new_confirm"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_email_forgot_password_triggers_code_send",
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "test_name": "test_email_forgot_password_triggers_code_send",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P0",
+        "allure_description"
+      ],
+      "allure_feature": "四、忘记密码流程",
+      "allure_story": "核心流程（正向）",
+      "allure_title": "TC039: 邮箱登录页点击「Forgot your password?」触发验证码发送",
+      "severity": "critical",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc039_forgot_your_password"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_phone_forgot_password_entry_exists",
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "test_name": "test_phone_forgot_password_entry_exists",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P0",
+        "allure_description"
+      ],
+      "allure_feature": "四、忘记密码流程",
+      "allure_story": "不同账号类型测试",
+      "allure_title": "TC053_NEW: 手机号忘记密码入口存在",
+      "severity": "critical",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc053_new"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_code_countdown_format",
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "test_name": "test_verification_code_countdown_format",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P2",
+        "allure_description"
+      ],
+      "allure_feature": "四、忘记密码流程",
+      "allure_story": "表单校验（负向 / 边界）",
+      "allure_title": "TC047: 验证码 UI 展示倒计时格式",
+      "severity": "minor",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc047_ui"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_code_length_limit",
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "test_name": "test_verification_code_length_limit",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P2",
+        "allure_description"
+      ],
+      "allure_feature": "四、忘记密码流程",
+      "allure_story": "表单校验（负向 / 边界）",
+      "allure_title": "TC045: 输入超长验证码",
+      "severity": "minor",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc045"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_input_focus",
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "test_name": "test_verification_input_focus",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P2",
+        "allure_description"
+      ],
+      "allure_feature": "四、忘记密码流程",
+      "allure_story": "验证码输入交互",
+      "allure_title": "TC054_NEW: 验证码输入框焦点状态",
+      "severity": "minor",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc054_new"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_input_paste",
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "test_name": "test_verification_input_paste",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P2",
+        "allure_description"
+      ],
+      "allure_feature": "四、忘记密码流程",
+      "allure_story": "验证码输入交互",
+      "allure_title": "TC055_NEW: 验证码输入框支持粘贴",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc055_new"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_page_back_button",
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "test_name": "test_verification_page_back_button",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1",
+        "allure_description"
+      ],
+      "allure_feature": "四、忘记密码流程",
+      "allure_story": "返回/取消功能",
+      "allure_title": "TC051_NEW: 验证码页面返回按钮存在且可点击",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc051_new"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_page_esc_key",
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "test_name": "test_verification_page_esc_key",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P2",
+        "allure_description"
+      ],
+      "allure_feature": "四、忘记密码流程",
+      "allure_story": "返回/取消功能",
+      "allure_title": "TC052_NEW: ESC 键关闭验证码弹窗",
+      "severity": "minor",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc052_new_esc"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_incorrect_verification_code_manual",
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "test_name": "test_incorrect_verification_code_manual",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "skip"
+      ],
+      "allure_feature": "四、忘记密码流程 - 手动测试说明",
+      "allure_story": null,
+      "allure_title": "TC044: 输入错误验证码提交",
+      "severity": null,
+      "module_id": "login",
+      "feature_id": "tc044",
+      "aliases": [
+        "login",
+        "tc044"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_old_verification_code_invalid_manual",
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "test_name": "test_old_verification_code_invalid_manual",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "skip"
+      ],
+      "allure_feature": "四、忘记密码流程 - 手动测试说明",
+      "allure_story": null,
+      "allure_title": "TC048: 旧验证码在新验证码发送后失效",
+      "severity": null,
+      "module_id": "login",
+      "feature_id": "tc048",
+      "aliases": [
+        "login",
+        "tc048"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_phone_forgot_password_manual",
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "test_name": "test_phone_forgot_password_manual",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "skip"
+      ],
+      "allure_feature": "四、忘记密码流程 - 手动测试说明",
+      "allure_story": null,
+      "allure_title": "TC040: 手机号登录页点击「Forgot your password?」触发验证码发送",
+      "severity": null,
+      "module_id": "login",
+      "feature_id": "tc040_forgot_your_password",
+      "aliases": [
+        "login",
+        "tc040_forgot_your_password"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_verification_code_case_insensitive_manual",
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "test_name": "test_verification_code_case_insensitive_manual",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "skip"
+      ],
+      "allure_feature": "四、忘记密码流程 - 手动测试说明",
+      "allure_story": null,
+      "allure_title": "TC046: 验证码大小写不敏感（如适用）",
+      "severity": null,
+      "module_id": "login",
+      "feature_id": "tc046",
+      "aliases": [
+        "login",
+        "tc046"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_verification_code_expiry_manual",
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "test_name": "test_verification_code_expiry_manual",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "skip"
+      ],
+      "allure_feature": "四、忘记密码流程 - 手动测试说明",
+      "allure_story": null,
+      "allure_title": "TC041: 验证码倒计时结束后验证码过期",
+      "severity": null,
+      "module_id": "login",
+      "feature_id": "tc041",
+      "aliases": [
+        "login",
+        "tc041"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_verification_code_rate_limit_manual",
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "test_name": "test_verification_code_rate_limit_manual",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "skip"
+      ],
+      "allure_feature": "四、忘记密码流程 - 手动测试说明",
+      "allure_story": null,
+      "allure_title": "TC043: 验证码发送频控—60 秒内不可重复发送",
+      "severity": null,
+      "module_id": "login",
+      "feature_id": "tc043_60",
+      "aliases": [
+        "login",
+        "tc043_60"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_permission_security_tc053_tc057.py::TestPermissionAndSecurity::test_token_expired_after_clear_cookies",
+      "file_path": "test_cases/login/test_login_permission_security_tc053_tc057.py",
+      "test_name": "test_token_expired_after_clear_cookies",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1",
+        "allure_description",
+        "skip"
+      ],
+      "allure_feature": "六、权限与安全",
+      "allure_story": "会话管理",
+      "allure_title": "TC054: Token过期后清除Cookie可正常重新登录（不自动化）",
+      "severity": "critical",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc054_token_cookie"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_auto_detect_country_code",
+      "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
+      "test_name": "test_auto_detect_country_code",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P0"
+      ],
+      "allure_feature": "三、手机号密码登录页",
+      "allure_story": null,
+      "allure_title": null,
+      "severity": null,
+      "module_id": "login",
+      "feature_id": "login_login_phone_password_tc027_tc038",
+      "aliases": [
+        "login",
+        "login_login_phone_password_tc027_tc038"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_empty_password_disables_login_button",
+      "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
+      "test_name": "test_empty_password_disables_login_button",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P0"
+      ],
+      "allure_feature": "三、手机号密码登录页",
+      "allure_story": null,
+      "allure_title": null,
+      "severity": null,
+      "module_id": "login",
+      "feature_id": "login_login_phone_password_tc027_tc038",
+      "aliases": [
+        "login",
+        "login_login_phone_password_tc027_tc038"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_forgot_password_link_display",
+      "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
+      "test_name": "test_forgot_password_link_display",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P0"
+      ],
+      "allure_feature": "三、手机号密码登录页",
+      "allure_story": null,
+      "allure_title": null,
+      "severity": null,
+      "module_id": "login",
+      "feature_id": "login_login_phone_password_tc027_tc038",
+      "aliases": [
+        "login",
+        "login_login_phone_password_tc027_tc038"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_insufficient_phone_digits",
+      "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
+      "test_name": "test_insufficient_phone_digits",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1"
+      ],
+      "allure_feature": "三、手机号密码登录页",
+      "allure_story": null,
+      "allure_title": null,
+      "severity": null,
+      "module_id": "login",
+      "feature_id": "login_login_phone_password_tc027_tc038",
+      "aliases": [
+        "login",
+        "login_login_phone_password_tc027_tc038"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_multiple_clicks_prevention",
+      "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
+      "test_name": "test_multiple_clicks_prevention",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1",
+        "needs_logout"
+      ],
+      "allure_feature": "三、手机号密码登录页",
+      "allure_story": null,
+      "allure_title": null,
+      "severity": null,
+      "module_id": "login",
+      "feature_id": "login_login_phone_password_tc027_tc038",
+      "aliases": [
+        "login",
+        "login_login_phone_password_tc027_tc038"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_non_numeric_phone_input",
+      "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
+      "test_name": "test_non_numeric_phone_input",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1"
+      ],
+      "allure_feature": "三、手机号密码登录页",
+      "allure_story": null,
+      "allure_title": null,
+      "severity": null,
+      "module_id": "login",
+      "feature_id": "login_login_phone_password_tc027_tc038",
+      "aliases": [
+        "login",
+        "login_login_phone_password_tc027_tc038"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_phone_display_in_password_page",
+      "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
+      "test_name": "test_phone_display_in_password_page",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1"
+      ],
+      "allure_feature": "三、手机号密码登录页",
+      "allure_story": null,
+      "allure_title": null,
+      "severity": null,
+      "module_id": "login",
+      "feature_id": "login_login_phone_password_tc027_tc038",
+      "aliases": [
+        "login",
+        "login_login_phone_password_tc027_tc038"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_phone_login_success",
+      "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
+      "test_name": "test_phone_login_success",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P0",
+        "needs_logout"
+      ],
+      "allure_feature": "三、手机号密码登录页",
+      "allure_story": "核心流程（正向）",
+      "allure_title": "TC027: 已注册手机号正确密码登录成功",
+      "severity": "blocker",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc027"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_unregistered_phone_login",
+      "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
+      "test_name": "test_unregistered_phone_login",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1"
+      ],
+      "allure_feature": "三、手机号密码登录页",
+      "allure_story": null,
+      "allure_title": null,
+      "severity": null,
+      "module_id": "login",
+      "feature_id": "login_login_phone_password_tc027_tc038",
+      "aliases": [
+        "login",
+        "login_login_phone_password_tc027_tc038"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_wrong_password_for_phone",
+      "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
+      "test_name": "test_wrong_password_for_phone",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P0"
+      ],
+      "allure_feature": "三、手机号密码登录页",
+      "allure_story": null,
+      "allure_title": null,
+      "severity": null,
+      "module_id": "login",
+      "feature_id": "login_login_phone_password_tc027_tc038",
+      "aliases": [
+        "login",
+        "login_login_phone_password_tc027_tc038"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_no_password_in_url",
+      "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
+      "test_name": "test_no_password_in_url",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1",
+        "skip"
+      ],
+      "allure_feature": "九、隐私协议与合规",
+      "allure_story": "安全与合规",
+      "allure_title": "TC080: 登录页面不在 URL 中暴露密码（不自动化）",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc080_url"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_link_preserves_dialog_state",
+      "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
+      "test_name": "test_privacy_link_preserves_dialog_state",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P2"
+      ],
+      "allure_feature": "九、隐私协议与合规",
+      "allure_story": "链接功能（负向 / 边界）",
+      "allure_title": "TC075: Privacy Policy 链接在新标签页打开后原弹窗状态保持",
+      "severity": "minor",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc075_privacy_policy"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_links_use_https",
+      "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
+      "test_name": "test_privacy_links_use_https",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1",
+        "skip"
+      ],
+      "allure_feature": "九、隐私协议与合规",
+      "allure_story": "安全与合规",
+      "allure_title": "TC081: Terms of Use 和 Privacy Policy 链接使用 HTTPS 协议（不自动化）",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc081_terms_of_use_privacy_policy_https"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_policy_link_navigation",
+      "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
+      "test_name": "test_privacy_policy_link_navigation",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1"
+      ],
+      "allure_feature": "九、隐私协议与合规",
+      "allure_story": "核心流程（正向）",
+      "allure_title": "TC068: 欢迎页点击 Privacy Policy 链接跳转正确页面",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc068_privacy_policy"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_statement_full_text_display",
+      "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
+      "test_name": "test_privacy_statement_full_text_display",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1"
+      ],
+      "allure_feature": "九、隐私协议与合规",
+      "allure_story": "核心流程（正向）",
+      "allure_title": "TC066: 欢迎页底部隐私声明完整文案展示",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc066"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_statement_in_email_password_page",
+      "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
+      "test_name": "test_privacy_statement_in_email_password_page",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P2"
+      ],
+      "allure_feature": "九、隐私协议与合规",
+      "allure_story": "核心流程（正向）",
+      "allure_title": "TC069: 邮箱密码登录页底部隐私声明文案展示",
+      "severity": "minor",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc069"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_statement_in_phone_password_page",
+      "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
+      "test_name": "test_privacy_statement_in_phone_password_page",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P2"
+      ],
+      "allure_feature": "九、隐私协议与合规",
+      "allure_story": "核心流程（正向）",
+      "allure_title": "TC070: 手机号密码登录页底部隐私声明文案展示",
+      "severity": "minor",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc070"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_terms_link_preserves_dialog_state",
+      "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
+      "test_name": "test_terms_link_preserves_dialog_state",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P2"
+      ],
+      "allure_feature": "九、隐私协议与合规",
+      "allure_story": "链接功能（负向 / 边界）",
+      "allure_title": "TC074: Terms of Use 链接在新标签页打开后原弹窗状态保持",
+      "severity": "minor",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc074_terms_of_use"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_terms_of_use_consistent_across_pages",
+      "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
+      "test_name": "test_terms_of_use_consistent_across_pages",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P2"
+      ],
+      "allure_feature": "九、隐私协议与合规",
+      "allure_story": "链接功能（负向 / 边界）",
+      "allure_title": "TC072: Terms of Use 链接在不同登录页面跳转一致",
+      "severity": "minor",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc072_terms_of_use"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_terms_of_use_link_navigation",
+      "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
+      "test_name": "test_terms_of_use_link_navigation",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1"
+      ],
+      "allure_feature": "九、隐私协议与合规",
+      "allure_story": "核心流程（正向）",
+      "allure_title": "TC067: 欢迎页点击 Terms of Use 链接跳转正确页面",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc067_terms_of_use"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_third_party_tc049_tc052.py::TestThirdPartyLogin::test_apple_login_button_exists_and_clickable",
+      "file_path": "test_cases/login/test_login_third_party_tc049_tc052.py",
+      "test_name": "test_apple_login_button_exists_and_clickable",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1",
+        "allure_description"
+      ],
+      "allure_feature": "五、第三方登录",
+      "allure_story": "第三方登录按钮展示",
+      "allure_title": "TC051: Apple 登录按钮存在且可触发",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc051_apple"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_third_party_tc049_tc052.py::TestThirdPartyLogin::test_facebook_login_button_exists_and_clickable",
+      "file_path": "test_cases/login/test_login_third_party_tc049_tc052.py",
+      "test_name": "test_facebook_login_button_exists_and_clickable",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1",
+        "allure_description"
+      ],
+      "allure_feature": "五、第三方登录",
+      "allure_story": "第三方登录按钮展示",
+      "allure_title": "TC050: Facebook 登录按钮存在且可触发",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc050_facebook"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_third_party_tc049_tc052.py::TestThirdPartyLogin::test_google_login_button_exists_and_clickable",
+      "file_path": "test_cases/login/test_login_third_party_tc049_tc052.py",
+      "test_name": "test_google_login_button_exists_and_clickable",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1",
+        "allure_description"
+      ],
+      "allure_feature": "五、第三方登录",
+      "allure_story": "第三方登录按钮展示",
+      "allure_title": "TC049: Google 登录按钮存在且可触发",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc049_google"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_third_party_tc049_tc052.py::TestThirdPartyLogin::test_third_party_login_buttons_overview",
+      "file_path": "test_cases/login/test_login_third_party_tc049_tc052.py",
+      "test_name": "test_third_party_login_buttons_overview",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P2",
+        "allure_description"
+      ],
+      "allure_feature": "五、第三方登录",
+      "allure_story": "第三方登录按钮展示",
+      "allure_title": "TC_ALL: 第三方登录按钮展示情况总览",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc_all"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_click_overlay_to_close",
+      "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
+      "test_name": "test_click_overlay_to_close",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1"
+      ],
+      "allure_feature": "一、欢迎页（Welcome Page）",
+      "allure_story": "弹窗交互",
+      "allure_title": "TC009: 欢迎弹窗点击蒙层区域验证是否可关闭",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc009"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_email_input_enables_continue_button",
+      "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
+      "test_name": "test_email_input_enables_continue_button",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P0"
+      ],
+      "allure_feature": "一、欢迎页（Welcome Page）",
+      "allure_story": "核心流程（正向）",
+      "allure_title": "TC002: 欢迎弹窗输入合法邮箱后 Continue 按钮变为可用",
+      "severity": "blocker",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc002_continue"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_emoji_input",
+      "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
+      "test_name": "test_emoji_input",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P2"
+      ],
+      "allure_feature": "一、欢迎页（Welcome Page）",
+      "allure_story": "表单校验（负向 / 边界）",
+      "allure_title": "TC008: 欢迎弹窗输入 Emoji 字符",
+      "severity": "minor",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc008_emoji"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_empty_input_keeps_continue_disabled",
+      "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
+      "test_name": "test_empty_input_keeps_continue_disabled",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P0"
+      ],
+      "allure_feature": "一、欢迎页（Welcome Page）",
+      "allure_story": "核心流程（正向）",
+      "allure_title": "TC004: 欢迎弹窗输入框为空时 Continue 按钮保持禁用",
+      "severity": "blocker",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc004_continue"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_invalid_email_format",
+      "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
+      "test_name": "test_invalid_email_format",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P1"
+      ],
+      "allure_feature": "一、欢迎页（Welcome Page）",
+      "allure_story": "表单校验（负向 / 边界）",
+      "allure_title": "TC005: 欢迎弹窗输入非法格式邮箱后点击 Continue",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc005_continue"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_long_string_input",
+      "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
+      "test_name": "test_long_string_input",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P2"
+      ],
+      "allure_feature": "一、欢迎页（Welcome Page）",
+      "allure_story": "表单校验（负向 / 边界）",
+      "allure_title": "TC007: 欢迎弹窗输入超长字符串（500字符）",
+      "severity": "minor",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc007_500"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_open_welcome_dialog",
+      "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
+      "test_name": "test_open_welcome_dialog",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P0",
+        "allure_description"
+      ],
+      "allure_feature": "一、欢迎页（Welcome Page）",
+      "allure_story": "核心流程（正向）",
+      "allure_title": "TC001: 点击右上角「Log in / Register」打开欢迎弹窗",
+      "severity": "blocker",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc001_log_in_register"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_phone_input_enables_continue_button",
+      "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
+      "test_name": "test_phone_input_enables_continue_button",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P0"
+      ],
+      "allure_feature": "一、欢迎页（Welcome Page）",
+      "allure_story": "核心流程（正向）",
+      "allure_title": "TC003: 欢迎弹窗输入合法手机号后 Continue 按钮变为可用",
+      "severity": "blocker",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc003_continue"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_press_esc_to_close",
+      "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
+      "test_name": "test_press_esc_to_close",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P2"
+      ],
+      "allure_feature": "一、欢迎页（Welcome Page）",
+      "allure_story": "弹窗交互",
+      "allure_title": "TC010: 欢迎弹窗按 ESC 键验证是否可关闭",
+      "severity": "minor",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc010_esc"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_space_input",
+      "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
+      "test_name": "test_space_input",
+      "case_id": null,
+      "priority": null,
+      "site": "ae",
+      "markers": [
+        "P2"
+      ],
+      "allure_feature": "一、欢迎页（Welcome Page）",
+      "allure_story": "表单校验（负向 / 边界）",
+      "allure_title": "TC006: 欢迎弹窗输入空格后点击 Continue",
+      "severity": "minor",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc006_continue"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordEmail::test_tc001_no_password_email_password_page",
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "test_name": "test_tc001_no_password_email_password_page",
+      "case_id": "case_id_ae_login_nopwd_email_tc001",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "allure_description",
+        "case_id_ae_login_nopwd_email_tc001",
+        "p0",
+        "smoke"
+      ],
+      "allure_feature": "登录注册未设置密码场景（邮箱）",
+      "allure_story": "一、未设置密码提示展示",
+      "allure_title": "TC001: 未设置密码邮箱进入密码页显示特殊提示",
+      "severity": "blocker",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc001"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordEmail::test_tc002_send_code_initial_state",
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "test_name": "test_tc002_send_code_initial_state",
+      "case_id": "case_id_ae_login_nopwd_email_tc002",
+      "priority": "p1",
+      "site": "ae",
+      "markers": [
+        "allure_description",
+        "case_id_ae_login_nopwd_email_tc002",
+        "p1"
+      ],
+      "allure_feature": "登录注册未设置密码场景（邮箱）",
+      "allure_story": "一、未设置密码提示展示",
+      "allure_title": "TC002: Send code 按钮初始状态正常",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc002_send_code"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordEmail::test_tc003_send_code_email_flow",
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "test_name": "test_tc003_send_code_email_flow",
+      "case_id": "case_id_ae_login_nopwd_email_tc003",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "allure_description",
+        "case_id_ae_login_nopwd_email_tc003",
+        "p0",
+        "smoke"
+      ],
+      "allure_feature": "登录注册未设置密码场景（邮箱）",
+      "allure_story": "二、发送验证码功能",
+      "allure_title": "TC003: 点击 Send code 成功发送验证码（邮箱）",
+      "severity": "blocker",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc003_send_code"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordEmail::test_tc004_countdown_ticks",
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "test_name": "test_tc004_countdown_ticks",
+      "case_id": "case_id_ae_login_nopwd_email_tc004",
+      "priority": "p1",
+      "site": "ae",
+      "markers": [
+        "allure_description",
+        "case_id_ae_login_nopwd_email_tc004",
+        "p1"
+      ],
+      "allure_feature": "登录注册未设置密码场景（邮箱）",
+      "allure_story": "二、发送验证码功能",
+      "allure_title": "TC004: 验证码倒计时正常运行（短时采样）",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc004"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordEmail::test_tc007_code_input_initial",
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "test_name": "test_tc007_code_input_initial",
+      "case_id": "case_id_ae_login_nopwd_email_tc007",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "allure_description",
+        "case_id_ae_login_nopwd_email_tc007",
+        "p0",
+        "smoke"
+      ],
+      "allure_feature": "登录注册未设置密码场景（邮箱）",
+      "allure_story": "三、验证码输入与校验",
+      "allure_title": "TC007: 验证码输入框初始状态",
+      "severity": "blocker",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc007"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordEmail::test_tc008_confirm_enabled_after_input",
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "test_name": "test_tc008_confirm_enabled_after_input",
+      "case_id": "case_id_ae_login_nopwd_email_tc008",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "allure_description",
+        "case_id_ae_login_nopwd_email_tc008",
+        "p0",
+        "smoke"
+      ],
+      "allure_feature": "登录注册未设置密码场景（邮箱）",
+      "allure_story": "三、验证码输入与校验",
+      "allure_title": "TC008: 输入验证码后 Confirm 按钮变为 enabled",
+      "severity": "blocker",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc008_confirm_enabled"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordEmail::test_tc009_clear_code_disables_confirm",
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "test_name": "test_tc009_clear_code_disables_confirm",
+      "case_id": "case_id_ae_login_nopwd_email_tc009",
+      "priority": "p1",
+      "site": "ae",
+      "markers": [
+        "allure_description",
+        "case_id_ae_login_nopwd_email_tc009",
+        "p1"
+      ],
+      "allure_feature": "登录注册未设置密码场景（邮箱）",
+      "allure_story": "三、验证码输入与校验",
+      "allure_title": "TC009: 清空验证码后 Confirm 恢复 disabled",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc009_confirm_disabled"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordEmail::test_tc010_long_input_not_truncated_ui",
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "test_name": "test_tc010_long_input_not_truncated_ui",
+      "case_id": "case_id_ae_login_nopwd_email_tc010",
+      "priority": "p2",
+      "site": "ae",
+      "markers": [
+        "allure_description",
+        "case_id_ae_login_nopwd_email_tc010",
+        "p2"
+      ],
+      "allure_feature": "登录注册未设置密码场景（邮箱）",
+      "allure_story": "三、验证码输入与校验",
+      "allure_title": "TC010: 验证码输入框允许输入长字符串",
+      "severity": "minor",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc010"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordEmail::test_tc011_special_chars_input",
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "test_name": "test_tc011_special_chars_input",
+      "case_id": "case_id_ae_login_nopwd_email_tc011",
+      "priority": "p2",
+      "site": "ae",
+      "markers": [
+        "allure_description",
+        "case_id_ae_login_nopwd_email_tc011",
+        "p2"
+      ],
+      "allure_feature": "登录注册未设置密码场景（邮箱）",
+      "allure_story": "三、验证码输入与校验",
+      "allure_title": "TC011: 验证码输入特殊字符",
+      "severity": "minor",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc011"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordEmail::test_tc012_back_to_welcome_from_password_page",
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "test_name": "test_tc012_back_to_welcome_from_password_page",
+      "case_id": "case_id_ae_login_nopwd_email_tc012",
+      "priority": "p1",
+      "site": "ae",
+      "markers": [
+        "allure_description",
+        "case_id_ae_login_nopwd_email_tc012",
+        "p1"
+      ],
+      "allure_feature": "登录注册未设置密码场景（邮箱）",
+      "allure_story": "四、返回与导航",
+      "allure_title": "TC012: 点击返回按钮返回欢迎页",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc012"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordEmail::test_tc013_verification_copy_email",
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "test_name": "test_tc013_verification_copy_email",
+      "case_id": "case_id_ae_login_nopwd_email_tc013",
+      "priority": "p1",
+      "site": "ae",
+      "markers": [
+        "allure_description",
+        "case_id_ae_login_nopwd_email_tc013",
+        "p1"
+      ],
+      "allure_feature": "登录注册未设置密码场景（邮箱）",
+      "allure_story": "五、文案与国际化",
+      "allure_title": "TC013: 验证码页面文案完整性（邮箱）",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc013"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordPhone::test_tc014_phone_no_password_password_page",
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "test_name": "test_tc014_phone_no_password_password_page",
+      "case_id": "case_id_ae_login_nopwd_phone_tc014",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "allure_description",
+        "case_id_ae_login_nopwd_phone_tc014",
+        "p0",
+        "smoke"
+      ],
+      "allure_feature": "登录注册未设置密码场景（手机号）",
+      "allure_story": "六、手机号登录未设置密码",
+      "allure_title": "TC014: 未设置密码手机号进入密码页显示特殊提示",
+      "severity": "blocker",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc014"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordPhone::test_tc015_phone_send_code",
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "test_name": "test_tc015_phone_send_code",
+      "case_id": "case_id_ae_login_nopwd_phone_tc015",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "allure_description",
+        "case_id_ae_login_nopwd_phone_tc015",
+        "p0",
+        "skip",
+        "smoke"
+      ],
+      "allure_feature": "登录注册未设置密码场景（手机号）",
+      "allure_story": "六、手机号登录未设置密码",
+      "allure_title": "TC015: 手机号未设置密码 — 点击 Send code 成功发送验证码",
+      "severity": "blocker",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc015_send_code"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordPhone::test_tc016_phone_verification_copy",
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "test_name": "test_tc016_phone_verification_copy",
+      "case_id": "case_id_ae_login_nopwd_phone_tc016",
+      "priority": "p1",
+      "site": "ae",
+      "markers": [
+        "allure_description",
+        "case_id_ae_login_nopwd_phone_tc016",
+        "p1",
+        "skip"
+      ],
+      "allure_feature": "登录注册未设置密码场景（手机号）",
+      "allure_story": "六、手机号登录未设置密码",
+      "allure_title": "TC016: 手机号验证码页面文案包含 +971 501234579",
+      "severity": "normal",
+      "module_id": "login",
+      "feature_id": "login_",
+      "aliases": [
+        "login",
+        "login_",
+        "tc016_971_501234579"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": null,
       "governed": true,
       "skill_excluded": false
     },
@@ -21373,40 +24782,6 @@
       "aliases": [
         "filter",
         "filter_beds_2_bathrooms_1_done",
-        "property_basics",
-        "property_basics_filter",
-        "property_buy",
-        "property_rent"
-      ],
-      "baseline_set": null,
-      "risk_level": null,
-      "owner": "qa-ui",
-      "governed": true,
-      "skill_excluded": false
-    },
-    {
-      "nodeid": "test_cases/property_basics/map/test_map_property_type_filter.py::TestMapPropertyTypeAndFilter::test_filter_panel_clear_removes_all_filter_params",
-      "file_path": "test_cases/property_basics/map/test_map_property_type_filter.py",
-      "test_name": "test_filter_panel_clear_removes_all_filter_params",
-      "case_id": "case_id_sa_filter_042",
-      "priority": "p1",
-      "site": "au",
-      "markers": [
-        "allure_description",
-        "au",
-        "case_id_sa_filter_042",
-        "p1",
-        "student_apartment"
-      ],
-      "allure_feature": "OK",
-      "allure_story": "Filter 综合筛选 - 功能场景",
-      "allure_title": "Filter 面板点击 Clear，所有综合筛选参数被清除",
-      "severity": "normal",
-      "module_id": "property_basics",
-      "feature_id": "property_basics_filter",
-      "aliases": [
-        "filter",
-        "filter_clear",
         "property_basics",
         "property_basics_filter",
         "property_buy",
@@ -57977,9 +61352,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_description_area.py::test_tc024_description_normal_display[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_description_area.py::test_tc024_description_normal_display",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_description_area.py",
-      "test_name": "test_tc024_description_normal_display[chromium]",
+      "test_name": "test_tc024_description_normal_display",
       "case_id": "case_id_detail_core_tc024",
       "priority": "p0",
       "site": "us",
@@ -58010,9 +61385,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc012_location_normal_display[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc012_location_normal_display",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py",
-      "test_name": "test_tc012_location_normal_display[chromium]",
+      "test_name": "test_tc012_location_normal_display",
       "case_id": "case_id_detail_core_tc012",
       "priority": "p0",
       "site": "us",
@@ -58043,9 +61418,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc014_location_position_validation[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc014_location_position_validation",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py",
-      "test_name": "test_tc014_location_position_validation[chromium]",
+      "test_name": "test_tc014_location_position_validation",
       "case_id": "case_id_detail_core_tc014",
       "priority": "p1",
       "site": "us",
@@ -58076,9 +61451,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc015_location_icon_validation[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc015_location_icon_validation",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py",
-      "test_name": "test_tc015_location_icon_validation[chromium]",
+      "test_name": "test_tc015_location_icon_validation",
       "case_id": "case_id_detail_core_tc015",
       "priority": "p1",
       "site": "us",
@@ -58109,9 +61484,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc016_location_not_clickable[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc016_location_not_clickable",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py",
-      "test_name": "test_tc016_location_not_clickable[chromium]",
+      "test_name": "test_tc016_location_not_clickable",
       "case_id": "case_id_detail_core_tc016",
       "priority": "p1",
       "site": "us",
@@ -58142,9 +61517,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc017_location_text_format[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc017_location_text_format",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py",
-      "test_name": "test_tc017_location_text_format[chromium]",
+      "test_name": "test_tc017_location_text_format",
       "case_id": "case_id_detail_core_tc017",
       "priority": "p2",
       "site": "us",
@@ -58175,9 +61550,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc018_location_completeness[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc018_location_completeness",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py",
-      "test_name": "test_tc018_location_completeness[chromium]",
+      "test_name": "test_tc018_location_completeness",
       "case_id": "case_id_detail_core_tc018",
       "priority": "p2",
       "site": "us",
@@ -58208,9 +61583,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py::test_tc001_normal_price_display[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py::test_tc001_normal_price_display",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py",
-      "test_name": "test_tc001_normal_price_display[chromium]",
+      "test_name": "test_tc001_normal_price_display",
       "case_id": "case_id_detail_core_tc001",
       "priority": "p0",
       "site": "us",
@@ -58241,9 +61616,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py::test_tc002_free_post_price_display[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py::test_tc002_free_post_price_display",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py",
-      "test_name": "test_tc002_free_post_price_display[chromium]",
+      "test_name": "test_tc002_free_post_price_display",
       "case_id": "case_id_detail_core_tc002",
       "priority": "p1",
       "site": "us",
@@ -58274,9 +61649,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py::test_tc003_price_consistency_list_to_detail[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py::test_tc003_price_consistency_list_to_detail",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py",
-      "test_name": "test_tc003_price_consistency_list_to_detail[chromium]",
+      "test_name": "test_tc003_price_consistency_list_to_detail",
       "case_id": "case_id_detail_core_tc003",
       "priority": "p0",
       "site": "us",
@@ -58307,9 +61682,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py::test_tc004_price_format_validation[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py::test_tc004_price_format_validation",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py",
-      "test_name": "test_tc004_price_format_validation[chromium]",
+      "test_name": "test_tc004_price_format_validation",
       "case_id": "case_id_detail_core_tc004",
       "priority": "p2",
       "site": "us",
@@ -58340,9 +61715,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py::test_tc005_no_price_post_display[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py::test_tc005_no_price_post_display",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py",
-      "test_name": "test_tc005_no_price_post_display[chromium]",
+      "test_name": "test_tc005_no_price_post_display",
       "case_id": "case_id_detail_core_tc005",
       "priority": "p2",
       "site": "us",
@@ -58373,9 +61748,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py::test_tc019_publish_time_normal_display[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py::test_tc019_publish_time_normal_display",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py",
-      "test_name": "test_tc019_publish_time_normal_display[chromium]",
+      "test_name": "test_tc019_publish_time_normal_display",
       "case_id": "case_id_detail_core_tc019",
       "priority": "p0",
       "site": "us",
@@ -58406,9 +61781,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py::test_tc020_publish_time_format_validation[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py::test_tc020_publish_time_format_validation",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py",
-      "test_name": "test_tc020_publish_time_format_validation[chromium]",
+      "test_name": "test_tc020_publish_time_format_validation",
       "case_id": "case_id_detail_core_tc020",
       "priority": "p1",
       "site": "us",
@@ -58439,9 +61814,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py::test_tc021_publish_time_position_validation[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py::test_tc021_publish_time_position_validation",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py",
-      "test_name": "test_tc021_publish_time_position_validation[chromium]",
+      "test_name": "test_tc021_publish_time_position_validation",
       "case_id": "case_id_detail_core_tc021",
       "priority": "p1",
       "site": "us",
@@ -58472,9 +61847,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py::test_tc022_publish_time_text_format[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py::test_tc022_publish_time_text_format",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py",
-      "test_name": "test_tc022_publish_time_text_format[chromium]",
+      "test_name": "test_tc022_publish_time_text_format",
       "case_id": "case_id_detail_core_tc022",
       "priority": "p2",
       "site": "us",
@@ -58505,9 +61880,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py::test_tc023_publish_time_reasonableness[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py::test_tc023_publish_time_reasonableness",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py",
-      "test_name": "test_tc023_publish_time_reasonableness[chromium]",
+      "test_name": "test_tc023_publish_time_reasonableness",
       "case_id": "case_id_detail_core_tc023",
       "priority": "p2",
       "site": "us",
@@ -58538,9 +61913,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc006_title_normal_display[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc006_title_normal_display",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py",
-      "test_name": "test_tc006_title_normal_display[chromium]",
+      "test_name": "test_tc006_title_normal_display",
       "case_id": "case_id_detail_core_tc006",
       "priority": "p0",
       "site": "us",
@@ -58571,9 +61946,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc007_title_length_validation[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc007_title_length_validation",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py",
-      "test_name": "test_tc007_title_length_validation[chromium]",
+      "test_name": "test_tc007_title_length_validation",
       "case_id": "case_id_detail_core_tc007",
       "priority": "p1",
       "site": "us",
@@ -58604,9 +61979,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc008_title_consistency_list_to_detail[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc008_title_consistency_list_to_detail",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py",
-      "test_name": "test_tc008_title_consistency_list_to_detail[chromium]",
+      "test_name": "test_tc008_title_consistency_list_to_detail",
       "case_id": "case_id_detail_core_tc008",
       "priority": "p0",
       "site": "us",
@@ -58637,9 +62012,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc009_title_format_validation[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc009_title_format_validation",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py",
-      "test_name": "test_tc009_title_format_validation[chromium]",
+      "test_name": "test_tc009_title_format_validation",
       "case_id": "case_id_detail_core_tc009",
       "priority": "p2",
       "site": "us",
@@ -58670,9 +62045,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc010_title_position_validation[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc010_title_position_validation",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py",
-      "test_name": "test_tc010_title_position_validation[chromium]",
+      "test_name": "test_tc010_title_position_validation",
       "case_id": "case_id_detail_core_tc010",
       "priority": "p1",
       "site": "us",
@@ -58703,9 +62078,9 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc011_title_visibility_on_load[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc011_title_visibility_on_load",
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py",
-      "test_name": "test_tc011_title_visibility_on_load[chromium]",
+      "test_name": "test_tc011_title_visibility_on_load",
       "case_id": "case_id_detail_core_tc011",
       "priority": "p2",
       "site": "us",

@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-04-16T13:13:45Z",
+  "generated_at": "2026-04-23T08:54:45Z",
   "summary": {
-    "missing_priority": 0,
-    "missing_case_id": 1,
+    "missing_priority": 67,
+    "missing_case_id": 68,
     "missing_module_id": 0,
     "missing_feature_id": 0
   },
@@ -3427,6 +3427,513 @@
       "suggested_feature_id": "chat_ai_ai"
     },
     {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc001_homepage_marketplace_link_href",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc001",
+      "suggested_case_id": "case_id_ae_common_list_tc001",
+      "current_module_id": "marketplace_post",
+      "suggested_module_id": "marketplace_post",
+      "current_feature_id": "marketplace_post_ae_marketplace_common_list_md",
+      "suggested_feature_id": "marketplace_post_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc002_home_search_jobs",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc002",
+      "suggested_case_id": "case_id_ae_common_list_tc002",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc003_marketplace_default_chips",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc003",
+      "suggested_case_id": "case_id_ae_common_list_tc003",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc004_card_fields_and_price",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc004",
+      "suggested_case_id": "case_id_ae_common_list_tc004",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc005_click_card_opens_detail",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc005",
+      "suggested_case_id": "case_id_ae_common_list_tc005",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc006_city_search_dubai",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc006",
+      "suggested_case_id": "case_id_ae_common_list_tc006",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc007_city_search_no_result",
+      "missing": [],
+      "current_priority": "p2",
+      "suggested_priority": "p2",
+      "current_case_id": "case_id_ae_common_list_tc007",
+      "suggested_case_id": "case_id_ae_common_list_tc007",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc008_city_panel_scrollable",
+      "missing": [],
+      "current_priority": "p1",
+      "suggested_priority": "p1",
+      "current_case_id": "case_id_ae_common_list_tc008",
+      "suggested_case_id": "case_id_ae_common_list_tc008",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc009_city_index_if_present",
+      "missing": [],
+      "current_priority": "p1",
+      "suggested_priority": "p1",
+      "current_case_id": "case_id_ae_common_list_tc009",
+      "suggested_case_id": "case_id_ae_common_list_tc009",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc010_sort_dropdown_four_labels",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc010",
+      "suggested_case_id": "case_id_ae_common_list_tc010",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc011_sort_best_match_sortid",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc011",
+      "suggested_case_id": "case_id_ae_common_list_tc011",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc012_sort_newest_sortid",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc012",
+      "suggested_case_id": "case_id_ae_common_list_tc012",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc013_sort_lowest_price_sortid",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc013",
+      "suggested_case_id": "case_id_ae_common_list_tc013",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc014_sort_highest_price_sortid",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc014",
+      "suggested_case_id": "case_id_ae_common_list_tc014",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc015_subcategory_computers_tablets",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc015",
+      "suggested_case_id": "case_id_ae_common_list_tc015",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc016_category_jobs_sub",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc016",
+      "suggested_case_id": "case_id_ae_common_list_tc016",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc017_category_property_sub",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc017",
+      "suggested_case_id": "case_id_ae_common_list_tc017",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc018_category_cars_sub",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc018",
+      "suggested_case_id": "case_id_ae_common_list_tc018",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc019_category_services_sub",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc019",
+      "suggested_case_id": "case_id_ae_common_list_tc019",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc020_category_community_sub",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc020",
+      "suggested_case_id": "case_id_ae_common_list_tc020",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc021_category_shop_after_scroll",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc021",
+      "suggested_case_id": "case_id_ae_common_list_tc021",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc022_price_min_only",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc022",
+      "suggested_case_id": "case_id_ae_common_list_tc022",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc023_price_max_only",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc023",
+      "suggested_case_id": "case_id_ae_common_list_tc023",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc024_price_min_max_closed",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc024",
+      "suggested_case_id": "case_id_ae_common_list_tc024",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc025_transaction_online",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc025",
+      "suggested_case_id": "case_id_ae_common_list_tc025",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc026_books_condition_multi",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc026",
+      "suggested_case_id": "case_id_ae_common_list_tc026",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc027_books_price_and_condition",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc027",
+      "suggested_case_id": "case_id_ae_common_list_tc027",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc028_remove_category_tag",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc028",
+      "suggested_case_id": "case_id_ae_common_list_tc028",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc029_remove_location_tag",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc029",
+      "suggested_case_id": "case_id_ae_common_list_tc029",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc030_remove_price_tag_after_filter",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc030",
+      "suggested_case_id": "case_id_ae_common_list_tc030",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc031_filter_panel_sync",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc031",
+      "suggested_case_id": "case_id_ae_common_list_tc031",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc032_filter_change_category_apply",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc032",
+      "suggested_case_id": "case_id_ae_common_list_tc032",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc033_filter_combos_clear",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc033",
+      "suggested_case_id": "case_id_ae_common_list_tc033",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc034_jobs_list_salary_not_price_mix",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc034",
+      "suggested_case_id": "case_id_ae_common_list_tc034",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc035_car_explore_filters",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc035",
+      "suggested_case_id": "case_id_ae_common_list_tc035",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc036_free_kingkong_landing",
+      "missing": [],
+      "current_priority": "p1",
+      "suggested_priority": "p1",
+      "current_case_id": "case_id_ae_common_list_tc036",
+      "suggested_case_id": "case_id_ae_common_list_tc036",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc037_kingkong_property_services_community",
+      "missing": [],
+      "current_priority": "p1",
+      "suggested_priority": "p1",
+      "current_case_id": "case_id_ae_common_list_tc037",
+      "suggested_case_id": "case_id_ae_common_list_tc037",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc038_pagination_next",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_common_list_tc038",
+      "suggested_case_id": "case_id_ae_common_list_tc038",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
+      "file_path": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py",
+      "nodeid": "test_cases/common_list/test_ae_marketplace_common_list_tc001_tc039.py::test_tc039_weak_network_skipped",
+      "missing": [],
+      "current_priority": "p2",
+      "suggested_priority": "p2",
+      "current_case_id": "case_id_ae_common_list_tc039",
+      "suggested_case_id": "case_id_ae_common_list_tc039",
+      "current_module_id": "common_list",
+      "suggested_module_id": "common_list",
+      "current_feature_id": "common_list_ae_marketplace_common_list_md",
+      "suggested_feature_id": "common_list_ae_marketplace_common_list_md"
+    },
+    {
       "file_path": "test_cases/explore/test_explore_cars_page_load_tc001.py",
       "nodeid": "test_cases/explore/test_explore_cars_page_load_tc001.py::test_tc001_direct_access_cars_page_title_and_elements_should_display_correctly",
       "missing": [],
@@ -3594,6 +4101,1260 @@
       "suggested_module_id": "kyc",
       "current_feature_id": "kyc_kyc",
       "suggested_feature_id": "kyc_kyc"
+    },
+    {
+      "file_path": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py",
+      "nodeid": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py::TestCompatibilityAndI18n::test_chrome_browser_login_flow",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p0",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_061",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py",
+      "nodeid": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py::TestCompatibilityAndI18n::test_english_language_content_correct",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_001",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py",
+      "nodeid": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py::TestCompatibilityAndI18n::test_resolution_1920x1080_layout_normal",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_002",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py",
+      "nodeid": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py::TestCrossBrowserManual::test_firefox_browser_manual",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_tc063_firefox_061",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "tc063_firefox",
+      "suggested_feature_id": "tc063_firefox"
+    },
+    {
+      "file_path": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py",
+      "nodeid": "test_cases/login/test_login_compatibility_i18n_tc061_tc065.py::TestCrossBrowserManual::test_safari_browser_manual",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_tc062_safari_061",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "tc062_safari",
+      "suggested_feature_id": "tc062_safari"
+    },
+    {
+      "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
+      "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_email_display_in_password_page",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_ui_013",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_ui",
+      "suggested_feature_id": "login_ui"
+    },
+    {
+      "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
+      "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_email_login_success",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p0",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_013",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
+      "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_empty_password_disables_login_button",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p0",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_003",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
+      "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_forgot_password_link_display",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p0",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_ui_001",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_ui",
+      "suggested_feature_id": "login_ui"
+    },
+    {
+      "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
+      "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_password_long_string",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_004",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
+      "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_password_visibility_toggle",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_005",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
+      "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_password_with_special_characters",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_006",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
+      "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_privacy_statement_display",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_ui_002",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_ui",
+      "suggested_feature_id": "login_ui"
+    },
+    {
+      "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
+      "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_unregistered_email_login_fails",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p0",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_007",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_email_password_tc013_tc026.py",
+      "nodeid": "test_cases/login/test_login_email_password_tc013_tc026.py::TestLoginEmailPasswordPage::test_wrong_password_login_fails",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p0",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_008",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_confirm_button_disabled_after_clear",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_039",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_confirm_button_disabled_when_code_empty",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p0",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_009",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_confirm_button_enabled_after_input",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_010",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_email_forgot_password_triggers_code_send",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p0",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_011",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_phone_forgot_password_entry_exists",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p0",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_012",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_code_countdown_format",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_014",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_code_length_limit",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_015",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_input_focus",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_016",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_input_paste",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_017",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_page_back_button",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_018",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPassword::test_verification_page_esc_key",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_019",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_incorrect_verification_code_manual",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_tc044_039",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "tc044",
+      "suggested_feature_id": "tc044"
+    },
+    {
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_old_verification_code_invalid_manual",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_tc048_039",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "tc048",
+      "suggested_feature_id": "tc048"
+    },
+    {
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_phone_forgot_password_manual",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_tc040_forgot_your_password_039",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "tc040_forgot_your_password",
+      "suggested_feature_id": "tc040_forgot_your_password"
+    },
+    {
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_verification_code_case_insensitive_manual",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_tc046_039",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "tc046",
+      "suggested_feature_id": "tc046"
+    },
+    {
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_verification_code_expiry_manual",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_tc041_039",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "tc041",
+      "suggested_feature_id": "tc041"
+    },
+    {
+      "file_path": "test_cases/login/test_login_forgot_password_tc039_tc048.py",
+      "nodeid": "test_cases/login/test_login_forgot_password_tc039_tc048.py::TestLoginForgotPasswordManual::test_verification_code_rate_limit_manual",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_tc043_60_039",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "tc043_60",
+      "suggested_feature_id": "tc043_60"
+    },
+    {
+      "file_path": "test_cases/login/test_login_permission_security_tc053_tc057.py",
+      "nodeid": "test_cases/login/test_login_permission_security_tc053_tc057.py::TestPermissionAndSecurity::test_token_expired_after_clear_cookies",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p0",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_053",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
+      "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_auto_detect_country_code",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_login_phone_password_tc027_tc038_027",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_login_phone_password_tc027_tc038",
+      "suggested_feature_id": "login_login_phone_password_tc027_tc038"
+    },
+    {
+      "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
+      "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_empty_password_disables_login_button",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_login_phone_password_tc027_tc038_001",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_login_phone_password_tc027_tc038",
+      "suggested_feature_id": "login_login_phone_password_tc027_tc038"
+    },
+    {
+      "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
+      "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_forgot_password_link_display",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_login_phone_password_tc027_tc038_002",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_login_phone_password_tc027_tc038",
+      "suggested_feature_id": "login_login_phone_password_tc027_tc038"
+    },
+    {
+      "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
+      "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_insufficient_phone_digits",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_login_phone_password_tc027_tc038_003",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_login_phone_password_tc027_tc038",
+      "suggested_feature_id": "login_login_phone_password_tc027_tc038"
+    },
+    {
+      "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
+      "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_multiple_clicks_prevention",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_login_phone_password_tc027_tc038_004",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_login_phone_password_tc027_tc038",
+      "suggested_feature_id": "login_login_phone_password_tc027_tc038"
+    },
+    {
+      "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
+      "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_non_numeric_phone_input",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_login_phone_password_tc027_tc038_005",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_login_phone_password_tc027_tc038",
+      "suggested_feature_id": "login_login_phone_password_tc027_tc038"
+    },
+    {
+      "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
+      "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_phone_display_in_password_page",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_login_phone_password_tc027_tc038_006",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_login_phone_password_tc027_tc038",
+      "suggested_feature_id": "login_login_phone_password_tc027_tc038"
+    },
+    {
+      "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
+      "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_phone_login_success",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p0",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_027",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
+      "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_unregistered_phone_login",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_login_phone_password_tc027_tc038_007",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_login_phone_password_tc027_tc038",
+      "suggested_feature_id": "login_login_phone_password_tc027_tc038"
+    },
+    {
+      "file_path": "test_cases/login/test_login_phone_password_tc027_tc038.py",
+      "nodeid": "test_cases/login/test_login_phone_password_tc027_tc038.py::TestLoginPhonePasswordPage::test_wrong_password_for_phone",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_login_phone_password_tc027_tc038_008",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_login_phone_password_tc027_tc038",
+      "suggested_feature_id": "login_login_phone_password_tc027_tc038"
+    },
+    {
+      "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
+      "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_no_password_in_url",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_066",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
+      "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_link_preserves_dialog_state",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_020",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
+      "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_links_use_https",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_021",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
+      "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_policy_link_navigation",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_022",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
+      "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_statement_full_text_display",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_023",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
+      "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_statement_in_email_password_page",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_024",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
+      "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_privacy_statement_in_phone_password_page",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_025",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
+      "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_terms_link_preserves_dialog_state",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_026",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
+      "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_terms_of_use_consistent_across_pages",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_028",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_privacy_policy_tc066_tc082.py",
+      "nodeid": "test_cases/login/test_login_privacy_policy_tc066_tc082.py::TestLoginPrivacyPolicy::test_terms_of_use_link_navigation",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_029",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_third_party_tc049_tc052.py",
+      "nodeid": "test_cases/login/test_login_third_party_tc049_tc052.py::TestThirdPartyLogin::test_apple_login_button_exists_and_clickable",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_049",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_third_party_tc049_tc052.py",
+      "nodeid": "test_cases/login/test_login_third_party_tc049_tc052.py::TestThirdPartyLogin::test_facebook_login_button_exists_and_clickable",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_030",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_third_party_tc049_tc052.py",
+      "nodeid": "test_cases/login/test_login_third_party_tc049_tc052.py::TestThirdPartyLogin::test_google_login_button_exists_and_clickable",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_031",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_third_party_tc049_tc052.py",
+      "nodeid": "test_cases/login/test_login_third_party_tc049_tc052.py::TestThirdPartyLogin::test_third_party_login_buttons_overview",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_032",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
+      "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_click_overlay_to_close",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_033",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
+      "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_email_input_enables_continue_button",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p0",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_034",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
+      "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_emoji_input",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_035",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
+      "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_empty_input_keeps_continue_disabled",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p0",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_036",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
+      "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_invalid_email_format",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_037",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
+      "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_long_string_input",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_038",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
+      "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_open_welcome_dialog",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p0",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_040",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
+      "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_phone_input_enables_continue_button",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p0",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_041",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
+      "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_press_esc_to_close",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_042",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_login_welcome_page_tc001_tc012.py",
+      "nodeid": "test_cases/login/test_login_welcome_page_tc001_tc012.py::TestLoginWelcomePage::test_space_input",
+      "missing": [
+        "priority",
+        "case_id"
+      ],
+      "current_priority": null,
+      "suggested_priority": "p1",
+      "current_case_id": null,
+      "suggested_case_id": "case_id_login_login_043",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordEmail::test_tc001_no_password_email_password_page",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_login_nopwd_email_tc001",
+      "suggested_case_id": "case_id_ae_login_nopwd_email_tc001",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordEmail::test_tc002_send_code_initial_state",
+      "missing": [],
+      "current_priority": "p1",
+      "suggested_priority": "p1",
+      "current_case_id": "case_id_ae_login_nopwd_email_tc002",
+      "suggested_case_id": "case_id_ae_login_nopwd_email_tc002",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordEmail::test_tc003_send_code_email_flow",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_login_nopwd_email_tc003",
+      "suggested_case_id": "case_id_ae_login_nopwd_email_tc003",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordEmail::test_tc004_countdown_ticks",
+      "missing": [],
+      "current_priority": "p1",
+      "suggested_priority": "p1",
+      "current_case_id": "case_id_ae_login_nopwd_email_tc004",
+      "suggested_case_id": "case_id_ae_login_nopwd_email_tc004",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordEmail::test_tc007_code_input_initial",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_login_nopwd_email_tc007",
+      "suggested_case_id": "case_id_ae_login_nopwd_email_tc007",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordEmail::test_tc008_confirm_enabled_after_input",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_login_nopwd_email_tc008",
+      "suggested_case_id": "case_id_ae_login_nopwd_email_tc008",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordEmail::test_tc009_clear_code_disables_confirm",
+      "missing": [],
+      "current_priority": "p1",
+      "suggested_priority": "p1",
+      "current_case_id": "case_id_ae_login_nopwd_email_tc009",
+      "suggested_case_id": "case_id_ae_login_nopwd_email_tc009",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordEmail::test_tc010_long_input_not_truncated_ui",
+      "missing": [],
+      "current_priority": "p2",
+      "suggested_priority": "p2",
+      "current_case_id": "case_id_ae_login_nopwd_email_tc010",
+      "suggested_case_id": "case_id_ae_login_nopwd_email_tc010",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordEmail::test_tc011_special_chars_input",
+      "missing": [],
+      "current_priority": "p2",
+      "suggested_priority": "p2",
+      "current_case_id": "case_id_ae_login_nopwd_email_tc011",
+      "suggested_case_id": "case_id_ae_login_nopwd_email_tc011",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordEmail::test_tc012_back_to_welcome_from_password_page",
+      "missing": [],
+      "current_priority": "p1",
+      "suggested_priority": "p1",
+      "current_case_id": "case_id_ae_login_nopwd_email_tc012",
+      "suggested_case_id": "case_id_ae_login_nopwd_email_tc012",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordEmail::test_tc013_verification_copy_email",
+      "missing": [],
+      "current_priority": "p1",
+      "suggested_priority": "p1",
+      "current_case_id": "case_id_ae_login_nopwd_email_tc013",
+      "suggested_case_id": "case_id_ae_login_nopwd_email_tc013",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordPhone::test_tc014_phone_no_password_password_page",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_login_nopwd_phone_tc014",
+      "suggested_case_id": "case_id_ae_login_nopwd_phone_tc014",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordPhone::test_tc015_phone_send_code",
+      "missing": [],
+      "current_priority": "p0",
+      "suggested_priority": "p0",
+      "current_case_id": "case_id_ae_login_nopwd_phone_tc015",
+      "suggested_case_id": "case_id_ae_login_nopwd_phone_tc015",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
+    },
+    {
+      "file_path": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py",
+      "nodeid": "test_cases/login/test_ok_ae_login_register_no_password_tc001_tc016.py::TestAeNoPasswordPhone::test_tc016_phone_verification_copy",
+      "missing": [],
+      "current_priority": "p1",
+      "suggested_priority": "p1",
+      "current_case_id": "case_id_ae_login_nopwd_phone_tc016",
+      "suggested_case_id": "case_id_ae_login_nopwd_phone_tc016",
+      "current_module_id": "login",
+      "suggested_module_id": "login",
+      "current_feature_id": "login_",
+      "suggested_feature_id": "login_"
     },
     {
       "file_path": "test_cases/marketplace/test_ae_marketplace_detail_online_offline.py",
@@ -8426,19 +10187,6 @@
       "suggested_priority": "p0",
       "current_case_id": "case_id_sa_filter_041",
       "suggested_case_id": "case_id_sa_filter_041",
-      "current_module_id": "property_basics",
-      "suggested_module_id": "property_basics",
-      "current_feature_id": "property_basics_filter",
-      "suggested_feature_id": "property_basics_filter"
-    },
-    {
-      "file_path": "test_cases/property_basics/map/test_map_property_type_filter.py",
-      "nodeid": "test_cases/property_basics/map/test_map_property_type_filter.py::TestMapPropertyTypeAndFilter::test_filter_panel_clear_removes_all_filter_params",
-      "missing": [],
-      "current_priority": "p1",
-      "suggested_priority": "p1",
-      "current_case_id": "case_id_sa_filter_042",
-      "suggested_case_id": "case_id_sa_filter_042",
       "current_module_id": "property_basics",
       "suggested_module_id": "property_basics",
       "current_feature_id": "property_basics_filter",
@@ -23281,7 +25029,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py",
-      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_cancel_favourite[chromium]",
+      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_cancel_favourite",
       "missing": [],
       "current_priority": "p0",
       "suggested_priority": "p0",
@@ -23294,7 +25042,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py",
-      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_favourite_appears_in_list[chromium]",
+      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_favourite_appears_in_list",
       "missing": [],
       "current_priority": "p0",
       "suggested_priority": "p0",
@@ -23307,7 +25055,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py",
-      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_favourite_persists_after_navigation[chromium]",
+      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_favourite_persists_after_navigation",
       "missing": [],
       "current_priority": "p0",
       "suggested_priority": "p0",
@@ -23320,7 +25068,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py",
-      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_favourite_persists_after_refresh[chromium]",
+      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_favourite_persists_after_refresh",
       "missing": [],
       "current_priority": "p0",
       "suggested_priority": "p0",
@@ -23333,7 +25081,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py",
-      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_first_favourite[chromium]",
+      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_first_favourite",
       "missing": [],
       "current_priority": "p0",
       "suggested_priority": "p0",
@@ -23346,7 +25094,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py",
-      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_toggle_favourite_multiple_times[chromium]",
+      "nodeid": "test_cases/体验/详情页/收藏功能/test_detail_page_favourites_logged_in.py::TestDetailPageFavouritesLoggedIn::test_logged_user_toggle_favourite_multiple_times",
       "missing": [],
       "current_priority": "p1",
       "suggested_priority": "p1",
@@ -23424,7 +25172,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_description_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_description_area.py::test_tc024_description_normal_display[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_description_area.py::test_tc024_description_normal_display",
       "missing": [],
       "current_priority": "p0",
       "suggested_priority": "p0",
@@ -23437,7 +25185,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc012_location_normal_display[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc012_location_normal_display",
       "missing": [],
       "current_priority": "p0",
       "suggested_priority": "p0",
@@ -23450,7 +25198,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc014_location_position_validation[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc014_location_position_validation",
       "missing": [],
       "current_priority": "p1",
       "suggested_priority": "p1",
@@ -23463,7 +25211,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc015_location_icon_validation[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc015_location_icon_validation",
       "missing": [],
       "current_priority": "p1",
       "suggested_priority": "p1",
@@ -23476,7 +25224,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc016_location_not_clickable[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc016_location_not_clickable",
       "missing": [],
       "current_priority": "p1",
       "suggested_priority": "p1",
@@ -23489,7 +25237,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc017_location_text_format[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc017_location_text_format",
       "missing": [],
       "current_priority": "p2",
       "suggested_priority": "p2",
@@ -23502,7 +25250,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc018_location_completeness[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_location_area.py::test_tc018_location_completeness",
       "missing": [],
       "current_priority": "p2",
       "suggested_priority": "p2",
@@ -23515,7 +25263,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py::test_tc001_normal_price_display[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py::test_tc001_normal_price_display",
       "missing": [],
       "current_priority": "p0",
       "suggested_priority": "p0",
@@ -23528,7 +25276,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py::test_tc002_free_post_price_display[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py::test_tc002_free_post_price_display",
       "missing": [],
       "current_priority": "p1",
       "suggested_priority": "p1",
@@ -23541,7 +25289,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py::test_tc003_price_consistency_list_to_detail[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py::test_tc003_price_consistency_list_to_detail",
       "missing": [],
       "current_priority": "p0",
       "suggested_priority": "p0",
@@ -23554,7 +25302,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py::test_tc004_price_format_validation[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py::test_tc004_price_format_validation",
       "missing": [],
       "current_priority": "p2",
       "suggested_priority": "p2",
@@ -23567,7 +25315,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py::test_tc005_no_price_post_display[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_price_area.py::test_tc005_no_price_post_display",
       "missing": [],
       "current_priority": "p2",
       "suggested_priority": "p2",
@@ -23580,7 +25328,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py::test_tc019_publish_time_normal_display[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py::test_tc019_publish_time_normal_display",
       "missing": [],
       "current_priority": "p0",
       "suggested_priority": "p0",
@@ -23593,7 +25341,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py::test_tc020_publish_time_format_validation[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py::test_tc020_publish_time_format_validation",
       "missing": [],
       "current_priority": "p1",
       "suggested_priority": "p1",
@@ -23606,7 +25354,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py::test_tc021_publish_time_position_validation[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py::test_tc021_publish_time_position_validation",
       "missing": [],
       "current_priority": "p1",
       "suggested_priority": "p1",
@@ -23619,7 +25367,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py::test_tc022_publish_time_text_format[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py::test_tc022_publish_time_text_format",
       "missing": [],
       "current_priority": "p2",
       "suggested_priority": "p2",
@@ -23632,7 +25380,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py::test_tc023_publish_time_reasonableness[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_publish_time_area.py::test_tc023_publish_time_reasonableness",
       "missing": [],
       "current_priority": "p2",
       "suggested_priority": "p2",
@@ -23645,7 +25393,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc006_title_normal_display[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc006_title_normal_display",
       "missing": [],
       "current_priority": "p0",
       "suggested_priority": "p0",
@@ -23658,7 +25406,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc007_title_length_validation[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc007_title_length_validation",
       "missing": [],
       "current_priority": "p1",
       "suggested_priority": "p1",
@@ -23671,7 +25419,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc008_title_consistency_list_to_detail[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc008_title_consistency_list_to_detail",
       "missing": [],
       "current_priority": "p0",
       "suggested_priority": "p0",
@@ -23684,7 +25432,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc009_title_format_validation[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc009_title_format_validation",
       "missing": [],
       "current_priority": "p2",
       "suggested_priority": "p2",
@@ -23697,7 +25445,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc010_title_position_validation[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc010_title_position_validation",
       "missing": [],
       "current_priority": "p1",
       "suggested_priority": "p1",
@@ -23710,7 +25458,7 @@
     },
     {
       "file_path": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py",
-      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc011_title_visibility_on_load[chromium]",
+      "nodeid": "test_cases/体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc011_title_visibility_on_load",
       "missing": [],
       "current_priority": "p2",
       "suggested_priority": "p2",
