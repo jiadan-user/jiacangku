@@ -52,7 +52,7 @@ _CONFIG = {
 @allure.title("设置合法价格区间 10000-50000，筛选生效并更新 URL")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证输入最小值 10000、最大值 50000 并 Confirm 后，URL 含价格参数")
-def test_tc031_price_range_valid(page, config):
+def test_tc030_price_range_valid(page, config):
     """TC031: 设置合法价格区间筛选"""
 
     # ========== Arrange ==========
@@ -104,7 +104,7 @@ def test_tc031_price_range_valid(page, config):
 @allure.title("最大值小于最小值，提交价格区间，系统应有错误提示或不执行")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证最大价格小于最小价格时，不执行筛选请求或显示错误提示")
-def test_tc032_price_max_less_than_min(page, config):
+def test_tc031_price_max_less_than_min(page, config):
     """TC032: 最大值小于最小值，提交价格区间"""
 
     # ========== Arrange ==========
@@ -141,7 +141,7 @@ def test_tc032_price_max_less_than_min(page, config):
 @allure.title("价格输入框输入非数字字符，输入被过滤")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证价格输入框中输入 'abc' 时，不被接受或提交时报错")
-def test_tc033_price_non_numeric_input(page, config):
+def test_tc032_price_non_numeric_input(page, config):
     """TC033: 价格输入框输入非数字字符"""
 
     # ========== Arrange ==========
@@ -178,7 +178,7 @@ def test_tc033_price_non_numeric_input(page, config):
 @allure.title("价格输入 0 或负数，页面不崩溃")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证价格输入 0 和负数时，页面不崩溃")
-def test_tc034_price_zero_and_negative(page, config):
+def test_tc033_price_zero_and_negative(page, config):
     """TC034: 价格输入 0 或负数"""
 
     # ========== Arrange ==========
@@ -215,7 +215,7 @@ def test_tc034_price_zero_and_negative(page, config):
 @allure.title("仅设置最小价格，最大留空，筛选生效")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证只输入最小价格 20000，最大值留空时，筛选仍可生效")
-def test_tc035_price_only_min(page, config):
+def test_tc034_price_only_min(page, config):
     """TC035: 仅设置最小价格，最大留空"""
 
     # ========== Arrange ==========
@@ -256,7 +256,7 @@ def test_tc035_price_only_min(page, config):
 @allure.title("设置合法里程区间 0-50000km，筛选生效")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证设置里程 0-50000 km 并 Confirm 后，URL 含里程参数")
-def test_tc036_mileage_range_valid(page, config):
+def test_tc035_mileage_range_valid(page, config):
     """TC036: 设置合法里程区间筛选"""
 
     # ========== Arrange ==========
@@ -293,7 +293,7 @@ def test_tc036_mileage_range_valid(page, config):
 @allure.title("里程最大值小于最小值，页面不崩溃")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证里程最大值 10000 < 最小值 100000 时，页面不崩溃")
-def test_tc037_mileage_max_less_than_min(page, config):
+def test_tc036_mileage_max_less_than_min(page, config):
     """TC037: 里程最大值小于最小值"""
 
     # ========== Arrange ==========
@@ -334,7 +334,7 @@ def test_tc037_mileage_max_less_than_min(page, config):
 @allure.title("点击 Brand 下拉，查看品牌列表展示")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证点击 Brand 下拉后，展示品牌列表，包含热门品牌和字母列表")
-def test_tc038_brand_dropdown_shows_list(page, config):
+def test_tc037_brand_dropdown_shows_list(page, config):
     """TC038: 点击 Brand 下拉查看品牌列表"""
 
     # ========== Arrange ==========
@@ -371,7 +371,7 @@ def test_tc038_brand_dropdown_shows_list(page, config):
 @allure.title("选择 Toyota 品牌，列表仅显示 Toyota 车辆，URL 含品牌参数")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证在 Brand 面板选择 Toyota 后，URL 包含品牌参数，Brand Tag 显示")
-def test_tc039_brand_select_toyota(page, config):
+def test_tc038_brand_select_toyota(page, config):
     """TC039: 选择单个品牌（Toyota）筛选"""
 
     # ========== Arrange ==========
@@ -414,7 +414,7 @@ def test_tc039_brand_select_toyota(page, config):
 @allure.title("尝试从品牌列表选择多个品牌（多选验证）")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证 Brand 面板是否支持多选，选择 Toyota 后查看是否可继续选择其他品牌")
-def test_tc040_brand_multiple_selection(page, config):
+def test_tc039_brand_multiple_selection(page, config):
     """TC040: 选择多个品牌（多选验证）"""
 
     # ========== Arrange ==========
@@ -448,7 +448,7 @@ def test_tc040_brand_multiple_selection(page, config):
 @allure.title("Brand 下拉内查看字母排序品牌列表")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证 Brand 面板展开后，字母排序的品牌列表（Anchor Selector）可见且包含多个品牌")
-def test_tc041_brand_anchor_list(page, config):
+def test_tc040_brand_anchor_list(page, config):
     """TC041: Brand 下拉内查看品牌字母列表"""
 
     # ========== Arrange ==========

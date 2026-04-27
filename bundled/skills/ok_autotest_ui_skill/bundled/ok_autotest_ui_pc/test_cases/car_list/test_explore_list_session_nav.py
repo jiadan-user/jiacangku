@@ -51,7 +51,7 @@ _CONFIG = {
 @allure.title("筛选后刷新页面，筛选条件通过 URL 参数保留")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证设置价格筛选后刷新页面，URL 参数保留，筛选条件有效")
-def test_tc052_filter_preserved_after_reload(page, config):
+def test_tc050_filter_preserved_after_reload(page, config):
     """TC052: 筛选后刷新页面，筛选条件通过 URL 参数保留"""
 
     # ========== Arrange ==========
@@ -94,7 +94,7 @@ def test_tc052_filter_preserved_after_reload(page, config):
 @allure.title("点击详情后浏览器后退，返回列表页且筛选状态保留")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证从列表页进入详情页后，点击后退返回列表页，URL 筛选参数恢复")
-def test_tc053_back_from_detail_restores_filter(page, config):
+def test_tc051_back_from_detail_restores_filter(page, config):
     """TC053: 点击详情后浏览器后退，筛选状态恢复"""
 
     # ========== Arrange ==========
@@ -140,7 +140,7 @@ def test_tc053_back_from_detail_restores_filter(page, config):
 @allure.title("复制当前筛选 URL 在新标签页打开，展示相同筛选结果")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证含筛选参数的 URL 可以直接访问，展示相同筛选条件和结果")
-def test_tc054_url_sharing(page, config):
+def test_tc052_url_sharing(page, config):
     """TC054: 复制当前筛选 URL 在新标签页打开"""
 
     # ========== Arrange ==========
@@ -183,7 +183,7 @@ def test_tc054_url_sharing(page, config):
 @allure.title("点击 Log in / Register 跳转登录注册页")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证未登录状态下点击 Log in / Register 按钮，跳转到登录页或弹出登录弹窗")
-def test_tc055_login_register_button(page, config):
+def test_tc053_login_register_button(page, config):
     """TC055: 点击 Log in / Register 跳转登录注册页"""
 
     # ========== Arrange ==========
@@ -297,7 +297,7 @@ def test_tc055_login_register_button(page, config):
 @allure.title("点击 Browse 导航菜单，展开分类下拉")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证点击 Browse 下拉菜单后，展开分类导航列表")
-def test_tc056_browse_menu(page, config):
+def test_tc054_browse_menu(page, config):
     """TC056: 点击 Browse 导航菜单，验证 Cars 选项存在并选中后 URL 含 cate-car"""
 
     # ========== Arrange ==========
@@ -345,7 +345,7 @@ def test_tc056_browse_menu(page, config):
 @allure.title("页面有悬浮按钮时，点击不崩溃")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证页面右下角悬浮按钮（如果存在）点击后页面不崩溃")
-def test_tc057_floating_button(page, config):
+def test_tc055_floating_button(page, config):
     """TC057: 点击右下角悬浮按钮功能"""
 
     # ========== Arrange ==========
@@ -374,7 +374,7 @@ def test_tc057_floating_button(page, config):
 @allure.title("页面顶部导航功能完整可用")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证顶部导航中的关键元素（Search、Login、Browse）均可见")
-def test_tc058_top_nav_elements(page, config):
+def test_tc056_top_nav_elements(page, config):
     """TC058: 顶部导航元素完整性验证"""
 
     # ========== Arrange ==========
@@ -411,7 +411,7 @@ def test_tc058_top_nav_elements(page, config):
 @allure.title("在 1920x1080 桌面分辨率下页面正常显示")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证在标准桌面分辨率下，页面关键元素均正常显示")
-def test_tc060_desktop_resolution_compatibility(page, config):
+def test_tc057_desktop_resolution_compatibility(page, config):
     """TC060: 桌面分辨率 1920x1080 页面正常显示"""
 
     # ========== Arrange ==========
@@ -447,7 +447,7 @@ def test_tc060_desktop_resolution_compatibility(page, config):
 @allure.title("页面标题和 SEO Meta 信息验证")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证页面 <title> 包含城市和 Cars 信息，meta description 不为空")
-def test_tc062_seo_meta_info(page, config):
+def test_tc058_seo_meta_info(page, config):
     """TC062: 页面标题和 SEO Meta 信息验证"""
 
     # ========== Arrange ==========

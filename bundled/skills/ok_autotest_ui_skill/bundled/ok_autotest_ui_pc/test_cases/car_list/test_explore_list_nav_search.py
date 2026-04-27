@@ -200,7 +200,7 @@ def test_tc004_location_tag_displayed(page, config):
 @allure.title("输入关键词点击 Search 执行搜索")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证在搜索框输入 Toyota 并点击 Search 后，URL 包含关键词参数")
-def test_tc006_search_with_keyword(page, config):
+def test_tc005_search_with_keyword(page, config):
     """TC006: 输入关键词点击 Search 执行搜索"""
 
     # ========== Arrange ==========
@@ -235,7 +235,7 @@ def test_tc006_search_with_keyword(page, config):
 @allure.title("搜索框输入后按 Enter 键执行搜索")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证在搜索框输入 BMW 并按 Enter 键，效果与点击 Search 相同")
-def test_tc007_search_with_enter(page, config):
+def test_tc006_search_with_enter(page, config):
     """TC007: 搜索框输入后按 Enter 键执行搜索"""
 
     # ========== Arrange ==========
@@ -270,7 +270,7 @@ def test_tc007_search_with_enter(page, config):
 @allure.title("搜索框输入空值点击 Search，页面不报错")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证搜索框为空时点击 Search，页面不崩溃不报错")
-def test_tc008_search_empty_value(page, config):
+def test_tc007_search_empty_value(page, config):
     """TC008: 搜索框输入空值点击 Search"""
 
     # ========== Arrange ==========
@@ -304,7 +304,7 @@ def test_tc008_search_empty_value(page, config):
 @allure.title("搜索框输入特殊字符，不执行 XSS")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证搜索框输入 XSS 字符串后，页面不执行脚本，正常展示")
-def test_tc009_search_xss_input(page, config):
+def test_tc008_search_xss_input(page, config):
     """TC009: 搜索框输入特殊字符（XSS 安全验证）"""
 
     # ========== Arrange ==========
@@ -343,7 +343,7 @@ def test_tc009_search_xss_input(page, config):
 @allure.title("搜索框输入超长字符串（500字符），页面不崩溃")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证搜索框输入 500 个字符后提交，页面不崩溃")
-def test_tc010_search_long_string(page, config):
+def test_tc009_search_long_string(page, config):
     """TC010: 搜索框输入超长字符串（500字符）"""
 
     # ========== Arrange ==========
@@ -383,7 +383,7 @@ def test_tc010_search_long_string(page, config):
 @allure.title("列表页加载后至少展示 1 张车辆卡片")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证探索列表页加载后，至少返回 1 张车辆卡片，列表不为空")
-def test_tc072_card_list_not_empty(page, config):
+def test_tc068_card_list_not_empty(page, config):
     """TC072: 列表页加载后至少展示 1 张车辆卡片"""
 
     list_page = ExploreListPage(page)
@@ -408,7 +408,7 @@ def test_tc072_card_list_not_empty(page, config):
 @allure.title("每张卡片标题非空且包含车型信息")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证列表中每张卡片的标题不为空，且为有效车型名称文本")
-def test_tc073_card_title_not_empty(page, config):
+def test_tc069_card_title_not_empty(page, config):
     """TC073: 每张卡片标题非空"""
 
     list_page = ExploreListPage(page)
@@ -437,7 +437,7 @@ def test_tc073_card_title_not_empty(page, config):
 @allure.title("每张卡片价格字段展示货币符号 AED")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证列表中每张卡片均显示价格，且包含 AED 货币符号")
-def test_tc074_card_price_shows_aed(page, config):
+def test_tc070_card_price_shows_aed(page, config):
     """TC074: 卡片价格包含 AED 货币符号"""
 
     list_page = ExploreListPage(page)
@@ -480,7 +480,7 @@ def test_tc074_card_price_shows_aed(page, config):
 @allure.title("每张卡片价格数值为正整数")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证列表中每张卡片显示的价格数值为正整数（>0）")
-def test_tc075_card_price_positive(page, config):
+def test_tc071_card_price_positive(page, config):
     """TC075: 卡片价格数值为正整数"""
 
     list_page = ExploreListPage(page)
@@ -550,7 +550,7 @@ def test_tc075_card_price_positive(page, config):
 @allure.title("第一张卡片详情参数包含年份、里程、城市三个字段")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证第一张卡片的详情参数区域展示年份、里程（含 km）、城市三个数据项")
-def test_tc076_card_detail_params_complete(page, config):
+def test_tc072_card_detail_params_complete(page, config):
     """TC076: 卡片详情参数包含年份、里程、城市"""
 
     list_page = ExploreListPage(page)
@@ -583,7 +583,7 @@ def test_tc076_card_detail_params_complete(page, config):
 @allure.title("第一张卡片封面图 src 非空且为有效 URL")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证第一张卡片的封面图 src 属性不为空，且为有效的 http/https URL")
-def test_tc077_card_image_src_valid(page, config):
+def test_tc073_card_image_src_valid(page, config):
     """TC077: 卡片封面图 src 为有效 URL"""
 
     list_page = ExploreListPage(page)
@@ -610,7 +610,7 @@ def test_tc077_card_image_src_valid(page, config):
 @allure.title("第一张卡片封面图 alt 与标题一致")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证第一张卡片的封面图 alt 属性包含卡片标题文本（利于 SEO 和可访问性）")
-def test_tc078_card_image_alt_matches_title(page, config):
+def test_tc074_card_image_alt_matches_title(page, config):
     """TC078: 卡片封面图 alt 包含车型标题"""
 
     list_page = ExploreListPage(page)
@@ -641,7 +641,7 @@ def test_tc078_card_image_alt_matches_title(page, config):
 @allure.title("第一张卡片链接指向详情页，URL 包含车型 slug")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证第一张卡片的 href 指向有效详情页，URL 含站点域名和车型路径")
-def test_tc079_card_href_valid(page, config):
+def test_tc075_card_href_valid(page, config):
     """TC079: 卡片链接为有效详情页 URL"""
 
     list_page = ExploreListPage(page)
@@ -670,7 +670,7 @@ def test_tc079_card_href_valid(page, config):
 @allure.title("关键词搜索后列表卡片标题均包含搜索词")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证搜索 Toyota 后，返回的卡片标题均包含 'Toyota'（品牌相关性过滤）")
-def test_tc080_search_result_cards_match_keyword(page, config):
+def test_tc076_search_result_cards_match_keyword(page, config):
     """TC080: 关键词搜索后卡片与关键词相关"""
 
     list_page = ExploreListPage(page)

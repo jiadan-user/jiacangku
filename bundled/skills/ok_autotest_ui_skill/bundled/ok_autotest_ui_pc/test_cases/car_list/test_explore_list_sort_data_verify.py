@@ -65,7 +65,7 @@ def _parse_price(text: str):
 @allure.title("Price Low to High 排序后卡片价格递增")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证选择价格升序后，前10张卡片的价格数值呈非递减顺序")
-def test_tc101_sort_price_low_to_high_data(page, config):
+def test_tc077_sort_price_low_to_high_data(page, config):
     """TC101: 价格升序后卡片价格数值递增"""
 
     list_page = ExploreListPage(page)
@@ -101,7 +101,7 @@ def test_tc101_sort_price_low_to_high_data(page, config):
 @allure.title("Price High to Low 排序后卡片价格递减")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证选择价格降序后，前10张卡片的价格数值呈非递增顺序")
-def test_tc102_sort_price_high_to_low_data(page, config):
+def test_tc078_sort_price_high_to_low_data(page, config):
     """TC102: 价格降序后卡片价格数值递减"""
 
     list_page = ExploreListPage(page)
@@ -137,7 +137,7 @@ def test_tc102_sort_price_high_to_low_data(page, config):
 @allure.title("筛选 Brand 后排序 Price Low to High，结果同时满足")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("先选择 Brand 筛选，再按价格升序排列，验证 URL 同时包含品牌和排序参数")
-def test_tc103_sort_with_filter_combined(page, config):
+def test_tc079_sort_with_filter_combined(page, config):
     """TC103: 先选 Brand，再排序 Price Low→High"""
 
     list_page = ExploreListPage(page)
@@ -186,7 +186,7 @@ def test_tc103_sort_with_filter_combined(page, config):
 @allure.title("切换排序方式前后列表总数不变")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证从默认排序切换到价格升序后，页面卡片数量不变")
-def test_tc104_sort_result_count_unchanged(page, config):
+def test_tc080_sort_result_count_unchanged(page, config):
     """TC104: 切换排序方式前后列表总数不变"""
 
     list_page = ExploreListPage(page)
@@ -222,7 +222,7 @@ def test_tc104_sort_result_count_unchanged(page, config):
 @allure.title("价格升序时 Free 帖子的排序位置合理")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证价格升序排列时，Free 帖子要么在最前、要么在最后，位置一致")
-def test_tc105_sort_price_low_free_position(page, config):
+def test_tc081_sort_price_low_free_position(page, config):
     """TC105: 价格升序时 Free 帖子排序位置"""
 
     list_page = ExploreListPage(page)
@@ -263,7 +263,7 @@ def test_tc105_sort_price_low_free_position(page, config):
 @allure.title("从 Price Low→High 切换到 Most recent，数据重新加载")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证切换排序方式后 URL 更新且首条卡片标题可能变化")
-def test_tc106_sort_switch_between_options(page, config):
+def test_tc082_sort_switch_between_options(page, config):
     """TC106: 切换排序方式，数据重新加载"""
 
     list_page = ExploreListPage(page)
@@ -303,7 +303,7 @@ def test_tc106_sort_switch_between_options(page, config):
 @allure.title("搜索关键词后再排序，两个条件共存")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证搜索关键词后选择排序，URL 同时包含 keyword 和 sortId")
-def test_tc107_sort_and_search_combined(page, config):
+def test_tc083_sort_and_search_combined(page, config):
     """TC107: 搜索关键词后再排序"""
 
     list_page = ExploreListPage(page)
@@ -333,7 +333,7 @@ def test_tc107_sort_and_search_combined(page, config):
 @allure.title("排序后翻到第2页，排序条件仍保持")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证排序后点击 Next 翻页，URL 中排序参数仍存在")
-def test_tc108_sort_and_pagination(page, config):
+def test_tc084_sort_and_pagination(page, config):
     """TC108: 排序后翻页，排序条件保持"""
 
     list_page = ExploreListPage(page)

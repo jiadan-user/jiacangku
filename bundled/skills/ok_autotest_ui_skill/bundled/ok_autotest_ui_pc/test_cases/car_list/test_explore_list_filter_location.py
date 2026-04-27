@@ -52,7 +52,7 @@ _CONFIG = {
 @allure.title("点击 Filter 按钮展开筛选弹窗")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证点击 Filter 按钮后展开筛选弹窗，包含多个筛选维度")
-def test_tc021_filter_panel_opens(page, config):
+def test_tc020_filter_panel_opens(page, config):
     """TC021: 点击 Filter 按钮展开筛选面板"""
 
     # ========== Arrange ==========
@@ -91,7 +91,7 @@ def test_tc021_filter_panel_opens(page, config):
 @allure.title("激活筛选条件后 Filter 按钮显示角标数字")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证在 Filter 面板中选择 1 个条件后，Filter 按钮显示 '· 1' 角标")
-def test_tc022_filter_badge_shows_count(page, config):
+def test_tc021_filter_badge_shows_count(page, config):
     """TC022: 已激活筛选时 Filter 按钮显示角标数字"""
 
     # ========== Arrange ==========
@@ -135,7 +135,7 @@ def test_tc022_filter_badge_shows_count(page, config):
 @allure.title("Filter 面板内多条件组合筛选，结果符合 AND 逻辑")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证在 Filter 面板中选择多个条件后，URL 包含对应参数，筛选生效")
-def test_tc023_filter_multi_condition(page, config):
+def test_tc022_filter_multi_condition(page, config):
     """TC023: Filter 面板内多条件组合筛选"""
 
     # ========== Arrange ==========
@@ -172,7 +172,7 @@ def test_tc023_filter_multi_condition(page, config):
 @allure.title("Filter 筛选结果为空时展示空态 UI")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证筛选组合使结果为空时，页面展示空态图标和文案")
-def test_tc024_filter_empty_result(page, config):
+def test_tc023_filter_empty_result(page, config):
     """TC024: Filter 面板内全部条件选择后，筛选结果为空"""
 
     # ========== Arrange ==========
@@ -206,7 +206,7 @@ def test_tc024_filter_empty_result(page, config):
 @allure.title("Filter 面板内点击 Clear 清空所有筛选条件")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证 Filter 面板点击 Clear 后所有已选条件清空")
-def test_tc025_filter_clear_all(page, config):
+def test_tc024_filter_clear_all(page, config):
     """TC025: Filter 面板内点击 Clear 清空所有筛选"""
 
     # ========== Arrange ==========
@@ -251,7 +251,7 @@ def test_tc025_filter_clear_all(page, config):
 @allure.title("按 ESC 键关闭 Filter 面板，未确认条件不生效")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证 Filter 面板展开时按 ESC 键可关闭，未确认的条件不生效")
-def test_tc026_filter_close_by_escape(page, config):
+def test_tc025_filter_close_by_escape(page, config):
     """TC026: 按 ESC 键关闭 Filter 面板"""
 
     # ========== Arrange ==========
@@ -298,7 +298,7 @@ def test_tc026_filter_close_by_escape(page, config):
 @allure.title("切换城市为 Dubai，页面标题和 Tag 更新为 Dubai")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证点击 Abu Dhabi 下拉并选择 Dubai 后，页面标题、URL、Location Tag 均更新")
-def test_tc027_switch_city_to_dubai(page, config):
+def test_tc026_switch_city_to_dubai(page, config):
     """TC027: 切换城市为 Dubai，页面标题和 Tag 更新"""
 
     # ========== Arrange ==========
@@ -348,7 +348,7 @@ def test_tc027_switch_city_to_dubai(page, config):
 @allure.title("点击 Location Tag 上的 × 移除城市筛选")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证点击 Location Tag 的关闭图标后，Tag 消失，URL 切换为全国路径")
-def test_tc028_remove_location_tag(page, config):
+def test_tc027_remove_location_tag(page, config):
     """TC028: 点击 Location Tag 上的 × 移除城市筛选"""
 
     # ========== Arrange ==========
@@ -389,7 +389,7 @@ def test_tc028_remove_location_tag(page, config):
 @allure.title("城市下拉列表展示完整城市选项，当前城市高亮")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证点击城市下拉后，展示 UAE 主要城市列表，包含 Dubai 选项")
-def test_tc029_city_dropdown_shows_list(page, config):
+def test_tc028_city_dropdown_shows_list(page, config):
     """TC029: 城市下拉列表展示完整城市选项"""
 
     # ========== Arrange ==========
@@ -423,7 +423,7 @@ def test_tc029_city_dropdown_shows_list(page, config):
 @allure.title("URL 包含不存在的城市参数，页面不崩溃")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证直接访问不存在城市的 URL，页面显示 404 或重定向，不白屏")
-def test_tc030_invalid_city_url(page, config):
+def test_tc029_invalid_city_url(page, config):
     """TC030: URL 直接包含不存在的城市参数"""
 
     # ========== Arrange ==========
@@ -460,7 +460,7 @@ def test_tc030_invalid_city_url(page, config):
 @allure.title("Filter 弹窗展示 8 个筛选分组：Body Style/Color/Year/Specs/energyType/Transmission/Engine/Drive Type")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证 Filter 弹窗内包含全部 8 个筛选分组名称，顺序正确")
-def test_tc063_filter_all_groups_visible(page, config):
+def test_tc059_filter_all_groups_visible(page, config):
     """TC063: Filter 弹窗包含所有筛选分组"""
 
     list_page = ExploreListPage(page)
@@ -495,7 +495,7 @@ def test_tc063_filter_all_groups_visible(page, config):
 @allure.title("Filter - Body Style 选择 SUV，URL 含 attr_190 参数，列表结果更新")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证在 Filter 弹窗选择 Body Style = SUV 后，URL 包含 attr_190 参数，Filter 角标数为 1")
-def test_tc064_filter_body_style_suv(page, config):
+def test_tc060_filter_body_style_suv(page, config):
     """TC064: Filter - Body Style 筛选 SUV"""
 
     list_page = ExploreListPage(page)
@@ -534,7 +534,7 @@ def test_tc064_filter_body_style_suv(page, config):
 @allure.title("Filter - Body Color 选择 White，URL 含 attr_180 参数")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证选择 Body Color = White 后，URL 包含 attr_180 参数，Filter 激活")
-def test_tc065_filter_body_color_white(page, config):
+def test_tc061_filter_body_color_white(page, config):
     """TC065: Filter - Body Color 筛选 White"""
 
     list_page = ExploreListPage(page)
@@ -572,7 +572,7 @@ def test_tc065_filter_body_color_white(page, config):
 @allure.title("Filter - Year 下拉选项包含历史年份，选择后 URL 含 attr_199")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证 Year 下拉包含历史年份选项，选择后 URL 含 attr_199 参数")
-def test_tc066_filter_year_selection(page, config):
+def test_tc062_filter_year_selection(page, config):
     """TC066: Filter - Year 年份筛选"""
 
     list_page = ExploreListPage(page)
@@ -613,7 +613,7 @@ def test_tc066_filter_year_selection(page, config):
 @allure.title("Filter - Specs 选择 European，URL 含 attr_194 参数")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证选择 Specs = European 后，URL 包含 attr_194 参数")
-def test_tc067_filter_specs_european(page, config):
+def test_tc063_filter_specs_european(page, config):
     """TC067: Filter - Specs 规格筛选"""
 
     list_page = ExploreListPage(page)
@@ -647,7 +647,7 @@ def test_tc067_filter_specs_european(page, config):
 @allure.title("Filter - energyType 选择 Petrol，URL 含 attr_192 参数")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证选择 energyType = Petrol 后，URL 含 attr_192，列表结果为汽油车")
-def test_tc068_filter_fuel_type_petrol(page, config):
+def test_tc064_filter_fuel_type_petrol(page, config):
     """TC068: Filter - energyType 燃油类型筛选"""
 
     list_page = ExploreListPage(page)
@@ -686,7 +686,7 @@ def test_tc068_filter_fuel_type_petrol(page, config):
 @allure.title("Filter - Transmission 选择 Auto，URL 含 attr_197 参数")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证选择 Transmission = Auto 后，URL 含 attr_197 参数，Filter 激活")
-def test_tc069_filter_transmission_auto(page, config):
+def test_tc065_filter_transmission_auto(page, config):
     """TC069: Filter - Transmission 变速箱类型筛选"""
 
     list_page = ExploreListPage(page)
@@ -725,7 +725,7 @@ def test_tc069_filter_transmission_auto(page, config):
 @allure.title("Filter - Engine(cc) 输入排量区间 1000-3000，URL 含 attr_479 参数")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证在 Engine(cc) 输入框输入 1000-3000 并 Confirm 后，URL 含 attr_479=1000_3000")
-def test_tc070_filter_engine_cc_range(page, config):
+def test_tc066_filter_engine_cc_range(page, config):
     """TC070: Filter - Engine(cc) 排量区间筛选"""
 
     list_page = ExploreListPage(page)
@@ -762,7 +762,7 @@ def test_tc070_filter_engine_cc_range(page, config):
 @allure.title("Filter - Drive Type 选择 AWD，URL 含 attr_191 参数")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证选择 Drive Type = AWD 后，URL 含 attr_191 参数，Filter 激活")
-def test_tc071_filter_drive_type_awd(page, config):
+def test_tc067_filter_drive_type_awd(page, config):
     """TC071: Filter - Drive Type 驱动类型筛选"""
 
     list_page = ExploreListPage(page)
