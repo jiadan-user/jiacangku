@@ -481,7 +481,7 @@ class TestAiChatJobSuccessSwitch:
             logger.info("✓ 刷新后 ON 状态持久化")
 
     # ----------------------------------------------------------
-    # TC008：EasyChat 关闭状态下刷新后 OFF 持久化
+    # TC006：EasyChat 关闭状态下刷新后 OFF 持久化
     # ----------------------------------------------------------
     @pytest.mark.case_id_ai_chat_success_switch_06
     @pytest.mark.p1
@@ -524,7 +524,7 @@ class TestAiChatJobSuccessSwitch:
             logger.info("✓ 恢复开关为 ON")
 
     # ----------------------------------------------------------
-    # TC010：发布成功页整体布局验证
+    # TC008：发布成功页整体布局验证
     # ----------------------------------------------------------
     @pytest.mark.case_id_ai_chat_success_switch_08
     @pytest.mark.p1
@@ -583,7 +583,7 @@ class TestAiChatJobSuccessSwitch:
             logger.info("✓ 无水平滚动条")
 
     # ----------------------------------------------------------
-    # TC011：EasyChat 开关 ON 状态视觉验证
+    # TC009：EasyChat 开关 ON 状态视觉验证
     # ----------------------------------------------------------
     @pytest.mark.case_id_ai_chat_success_switch_09
     @pytest.mark.p1
@@ -621,7 +621,7 @@ class TestAiChatJobSuccessSwitch:
             logger.info("✓ 卡片内容完整可见")
 
     # ----------------------------------------------------------
-    # TC012：EasyChat 开关 OFF 状态视觉验证
+    # TC010：EasyChat 开关 OFF 状态视觉验证
     # ----------------------------------------------------------
     @pytest.mark.case_id_ai_chat_success_switch_10
     @pytest.mark.p1
