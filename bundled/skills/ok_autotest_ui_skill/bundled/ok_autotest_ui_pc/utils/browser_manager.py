@@ -210,6 +210,182 @@ def _fix_playwright_browser_path():
                 break
 # ────────────────────────────────────────────────────────────────────────────
 
+# 与 _start_browser_core 中一致，供 zhaopin 等 session 级共享 Context 复用
+STEALTH_INIT_SCRIPT = """
+                // 移除 webdriver 标志
+                Object.defineProperty(navigator, 'webdriver', {
+                    get: () => undefined
+                });
+
+                // 覆盖 plugins 属性
+                Object.defineProperty(navigator, 'plugins', {
+                    get: () => [1, 2, 3, 4, 5]
+                });
+
+                // 覆盖 languages 属性
+                Object.defineProperty(navigator, 'languages', {
+                    get: () => ['en-US', 'en']
+                });
+
+                // 覆盖 chrome 对象
+                window.chrome = {
+                    runtime: {},
+                    loadTimes: function() {},
+                    csi: function() {},
+                    app: {}
+                };
+
+                // 覆盖 permissions
+                const originalQuery = window.navigator.permissions.query;
+                window.navigator.permissions.query = (parameters) => (
+                    parameters.name === 'notifications' ?
+                        Promise.resolve({ state: Notification.permission }) :
+                        originalQuery(parameters)
+                );
+
+                // 覆盖 getBattery
+                if (navigator.getBattery) {
+                    navigator.getBattery = undefined;
+                }
+
+                // 覆盖 connection
+                Object.defineProperty(navigator, 'connection', {
+                    get: () => ({
+                        effectiveType: '4g',
+                        rtt: 50,
+                        downlink: 10,
+                        saveData: false
+                    })
+                });
+
+                // 覆盖 hardwareConcurrency
+                Object.defineProperty(navigator, 'hardwareConcurrency', {
+                    get: () => 8
+                });
+
+                // 覆盖 deviceMemory
+                Object.defineProperty(navigator, 'deviceMemory', {
+                    get: () => 8
+                });
+
+                // 覆盖 platform
+                Object.defineProperty(navigator, 'platform', {
+                    get: () => 'MacIntel'
+                });
+
+                // 移除自动化相关属性
+                delete navigator.__proto__.webdriver;
+
+                // 覆盖 toString 方法
+                const originalToString = Function.prototype.toString;
+                Function.prototype.toString = function() {
+                    if (this === navigator.getBattery ||
+                        this === navigator.permissions.query) {
+                        return 'function () { [native code] }';
+                    }
+                    return originalToString.apply(this, arguments);
+                };
+"""
+
+
+def build_ui_context_options(
+    headless,
+    viewport=None,
+    base_url=None,
+    storage_state=None,
+    permissions=None,
+    geolocation=None,
+):
+    """创建与 BrowserManager.start_browser 一致的 BrowserContext 参数字典。"""
+    context_options = {}
+    if not headless:
+        context_options["viewport"] = None
+        context_options["no_viewport"] = True
+    else:
+        if viewport:
+            context_options["viewport"] = viewport
+        else:
+            context_options["viewport"] = {"width": 1920, "height": 1080}
+    if base_url:
+        context_options["base_url"] = base_url
+    context_options["user_agent"] = (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    )
+    context_options["locale"] = "en-US"
+    context_options["timezone_id"] = "America/New_York"
+    context_options["permissions"] = (
+        permissions if permissions is not None else ["notifications"]
+    )
+    context_options["geolocation"] = (
+        geolocation
+        if geolocation is not None
+        else {"longitude": -74.006, "latitude": 40.7128}
+    )
+    if storage_state:
+        context_options["storage_state"] = storage_state
+        logger.info(f"[AUTH] 使用storage state: {storage_state}")
+    return context_options
+
+
+def new_stealth_browser_context(
+    browser,
+    *,
+    headless,
+    viewport=None,
+    base_url=None,
+    storage_state=None,
+    permissions=None,
+    geolocation=None,
+):
+    """在已启动的 Browser 上创建带反检测脚本的 Context（session 级复用 Browser 时用）。"""
+    opts = build_ui_context_options(
+        headless=headless,
+        viewport=viewport,
+        base_url=base_url,
+        storage_state=storage_state,
+        permissions=permissions,
+        geolocation=geolocation,
+    )
+    ctx = browser.new_context(**opts)
+    ctx.add_init_script(STEALTH_INIT_SCRIPT)
+    return ctx
+
+
+def launch_shared_chromium_browser():
+    """
+    仅启动 Chromium 进程（不创建 Context/Page）。
+    供 zhaopin 等目录在 session 级单例复用，减少重复 launch。
+    """
+    _fix_playwright_browser_path()
+    pw = _get_or_create_playwright()
+    env_headless = os.environ.get("HEADLESS", "").lower() in ("true", "1", "yes")
+    env_ci = os.environ.get("CI", "").lower() in ("true", "1", "yes")
+    headless = env_headless or env_ci
+    launch_options = {
+        "headless": headless,
+        "timeout": int(os.environ.get("PLAYWRIGHT_BROWSER_LAUNCH_TIMEOUT_MS", "300000")),
+        "args": [
+            "--disable-blink-features=AutomationControlled",
+            "--disable-dev-shm-usage",
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-web-security",
+            "--disable-features=IsolateOrigins,site-per-process",
+        ],
+    }
+    slow_mo_raw = os.environ.get("SLOW_MO_MS", "").strip()
+    if slow_mo_raw:
+        try:
+            slow_mo_ms = int(slow_mo_raw)
+            if slow_mo_ms > 0:
+                launch_options["slow_mo"] = slow_mo_ms
+        except ValueError:
+            pass
+    if os.environ.get("DEVTOOLS", "").lower() in ("1", "true", "yes"):
+        launch_options["devtools"] = True
+    return pw.chromium.launch(**launch_options)
+
 
 class BrowserManager:
     """浏览器管理器（静默执行）"""
@@ -259,6 +435,7 @@ class BrowserManager:
         viewport=None,
         geolocation=None,
         permissions=None,
+        storage_state=None,
     ):
         """
         启动浏览器并创建页面（静默执行）
@@ -272,6 +449,7 @@ class BrowserManager:
                          None 则使用默认纽约坐标
             permissions: 权限列表 ["geolocation", "notifications"]，
                          None 则默认只授予 ["notifications"]
+            storage_state: Storage state文件路径（用于恢复登录状态）
 
         Returns:
             Page: Playwright 页面对象
@@ -284,6 +462,7 @@ class BrowserManager:
             viewport=viewport,
             geolocation=geolocation,
             permissions=permissions,
+            storage_state=storage_state,
         )
 
     def _start_browser_core(
@@ -294,6 +473,7 @@ class BrowserManager:
         viewport=None,
         geolocation=None,
         permissions=None,
+        storage_state=None,
     ):
         """实际启动浏览器的核心逻辑（在当前线程中调用）"""
         try:
@@ -328,6 +508,7 @@ class BrowserManager:
             # 添加启动参数以减少被检测
             launch_options = {
                 'headless': headless,
+                'timeout': int(os.environ.get("PLAYWRIGHT_BROWSER_LAUNCH_TIMEOUT_MS", "300000")),
                 'args': [
                     '--disable-blink-features=AutomationControlled',  # 禁用自动化控制标志
                     '--disable-dev-shm-usage',
@@ -355,123 +536,16 @@ class BrowserManager:
             
             self.browser = browser_launcher.launch(**launch_options)
             
-            # 创建浏览器上下文（不设置 viewport 以便后续最大化）
-            context_options = {}
-            
-            # 如果不是无头模式，不设置 viewport（让浏览器自适应）
-            if not headless:
-                context_options['viewport'] = None  # 自适应，允许后续最大化
-                context_options['no_viewport'] = True  # 不限制视口
-            else:
-                # 无头模式设置大尺寸视口
-                if viewport:
-                    context_options['viewport'] = viewport
-                else:
-                    context_options['viewport'] = {'width': 1920, 'height': 1080}
-            
-            if base_url:
-                context_options['base_url'] = base_url
-            
-            # 添加反检测措施，使浏览器更像真实用户
-            # 设置真实的 User-Agent
-            context_options['user_agent'] = (
-                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 '
-                '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            context_options = build_ui_context_options(
+                headless=headless,
+                viewport=viewport,
+                base_url=base_url,
+                storage_state=storage_state,
+                permissions=permissions,
+                geolocation=geolocation,
             )
-            
-            # 设置语言和时区
-            context_options['locale'] = 'en-US'
-            context_options['timezone_id'] = 'America/New_York'
-            
-            # 设置权限（允许通知等，更像真实浏览器）
-            # 若调用方传入 permissions，优先使用；否则默认仅授予 notifications
-            context_options['permissions'] = permissions if permissions is not None else ['notifications']
-
-            # 设置地理位置
-            # 若调用方传入 geolocation，使用调用方坐标；否则默认纽约（反检测）
-            context_options['geolocation'] = (
-                geolocation if geolocation is not None
-                else {'longitude': -74.006, 'latitude': 40.7128}  # New York default
-            )
-            
             self.context = self.browser.new_context(**context_options)
-            
-            # 添加额外的反检测脚本
-            self.context.add_init_script("""
-                // 移除 webdriver 标志
-                Object.defineProperty(navigator, 'webdriver', {
-                    get: () => undefined
-                });
-                
-                // 覆盖 plugins 属性
-                Object.defineProperty(navigator, 'plugins', {
-                    get: () => [1, 2, 3, 4, 5]
-                });
-                
-                // 覆盖 languages 属性
-                Object.defineProperty(navigator, 'languages', {
-                    get: () => ['en-US', 'en']
-                });
-                
-                // 覆盖 chrome 对象
-                window.chrome = {
-                    runtime: {},
-                    loadTimes: function() {},
-                    csi: function() {},
-                    app: {}
-                };
-                
-                // 覆盖 permissions
-                const originalQuery = window.navigator.permissions.query;
-                window.navigator.permissions.query = (parameters) => (
-                    parameters.name === 'notifications' ?
-                        Promise.resolve({ state: Notification.permission }) :
-                        originalQuery(parameters)
-                );
-                
-                // 覆盖 getBattery
-                if (navigator.getBattery) {
-                    navigator.getBattery = undefined;
-                }
-                
-                // 覆盖 connection
-                Object.defineProperty(navigator, 'connection', {
-                    get: () => ({
-                        effectiveType: '4g',
-                        rtt: 50,
-                        downlink: 10,
-                        saveData: false
-                    })
-                });
-                
-                // 覆盖 hardwareConcurrency
-                Object.defineProperty(navigator, 'hardwareConcurrency', {
-                    get: () => 8
-                });
-                
-                // 覆盖 deviceMemory
-                Object.defineProperty(navigator, 'deviceMemory', {
-                    get: () => 8
-                });
-                
-                // 覆盖 platform
-                Object.defineProperty(navigator, 'platform', {
-                    get: () => 'MacIntel'
-                });
-                
-                // 移除自动化相关属性
-                delete navigator.__proto__.webdriver;
-                
-                // 覆盖 toString 方法
-                const originalToString = Function.prototype.toString;
-                Function.prototype.toString = function() {
-                    if (this === navigator.getBattery || 
-                        this === navigator.permissions.query) {
-                        return 'function () { [native code] }';
-                    }
-                    return originalToString.apply(this, arguments);
-                };
-            """)
+            self.context.add_init_script(STEALTH_INIT_SCRIPT)
             
             # 创建新页面
             page = self.context.new_page()

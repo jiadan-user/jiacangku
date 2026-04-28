@@ -1,4 +1,6 @@
 # pages/jobs_list_page_sg.py
+import re
+
 from pages.base_page import BasePage
 from utils.logger import setup_logger
 
@@ -62,18 +64,46 @@ class JobsListPageSG(BasePage):
         try:
             tb = self.page.get_by_role("textbox", name="Search for anything")
             if tb.count() > 0:
-                tb.first.wait_for(state="visible", timeout=15000)
+                tb.first.wait_for(state="visible", timeout=20000)
                 tb.first.fill(keyword)
                 self.page.wait_for_timeout(500)
                 return
         except Exception:
             pass
+        for placeholder_re in (
+            re.compile(r"Search", re.I),
+            re.compile(r"search for", re.I),
+        ):
+            try:
+                ph = self.page.get_by_placeholder(placeholder_re)
+                if ph.count() > 0:
+                    ph.first.wait_for(state="visible", timeout=20000)
+                    ph.first.fill(keyword)
+                    self.page.wait_for_timeout(500)
+                    return
+            except Exception:
+                pass
         try:
+            self.page.locator("input[aria-label*='Search' i]").first.wait_for(
+                state="visible", timeout=20000
+            )
+            self.page.locator("input[aria-label*='Search' i]").first.fill(keyword)
+            self.page.wait_for_timeout(500)
+            return
+        except Exception:
+            pass
+        try:
+            self.page.locator(self.SEARCH_INPUT).first.wait_for(
+                state="visible", timeout=20000
+            )
             self.page.locator(self.SEARCH_INPUT).first.fill(keyword)
             self.page.wait_for_timeout(500)
         except Exception:
             try:
                 self.logger.error("主定位器失败，尝试备选定位器")
+                self.page.locator(self.SEARCH_INPUT_BACKUP).first.wait_for(
+                    state="visible", timeout=20000
+                )
                 self.page.locator(self.SEARCH_INPUT_BACKUP).first.fill(keyword)
                 self.page.wait_for_timeout(500)
             except Exception as e:
@@ -309,9 +339,25 @@ class JobsListPageSG(BasePage):
         return self.page.url
 
     def is_page_loaded(self) -> bool:
-        """判断页面是否加载完成（通过标题判断）"""
+        """判断页面是否加载完成（标题 Jobs 或筛选区/列表区可见）。"""
+        url = (self.page.url or "").lower()
+        if "cate-jobs" in url:
+            for sel in (".listPage-filterArea", "#istPageFilterArea", "main", "[class*='listPage']"):
+                try:
+                    loc = self.page.locator(sel)
+                    if loc.count() and loc.first.is_visible(timeout=8000):
+                        return True
+                except Exception:
+                    continue
         try:
-            return self.is_visible(self.PAGE_HEADING, timeout=10000)
+            if self.is_visible(self.PAGE_HEADING, timeout=5000):
+                return True
+        except Exception:
+            pass
+        try:
+            return self.page.get_by_role("heading", name=re.compile(r"^Jobs$", re.I)).first.is_visible(
+                timeout=5000
+            )
         except Exception:
             return False
 

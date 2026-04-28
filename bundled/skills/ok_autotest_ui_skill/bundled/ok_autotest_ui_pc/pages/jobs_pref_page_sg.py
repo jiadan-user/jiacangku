@@ -182,11 +182,23 @@ class JobsPrefPageSG(BasePage):
             location_name: 地点名称（如 "Singapore"）
         """
         try:
-            self.page.get_by_role("checkbox", name=location_name, exact=True).click()
+            cb = self.page.get_by_role("checkbox", name=location_name, exact=True)
+            cb.wait_for(state="visible", timeout=25000)
+            cb.click()
             self.page.wait_for_timeout(300)
-        except Exception as e:
-            self.logger.error(f"选择Location失败（{location_name}）: {e}")
-            raise
+        except Exception:
+            try:
+                self.page.get_by_label(location_name, exact=True).click()
+                self.page.wait_for_timeout(300)
+            except Exception:
+                try:
+                    self.page.locator(
+                        f'label:has-text("{location_name}")'
+                    ).first.click()
+                    self.page.wait_for_timeout(300)
+                except Exception as e:
+                    self.logger.error(f"选择Location失败（{location_name}）: {e}")
+                    raise
 
     def confirm_location(self):
         """点击 Location 面板的 Confirm 按钮"""

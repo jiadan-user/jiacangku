@@ -1,0 +1,207 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Library/Developer/CommandLineTools/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc
+configfile: pytest.ini
+plugins: order-1.2.0, dependency-0.5.1, allure-pytest-2.15.3
+collecting ... collected 5 items
+
+test_cases/zhaopin/test_ae_job_preferences_add_from_list.py::test_ae_add_pref_unauthenticated_should_show_add_banner 14:09:42 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+
+-------------------------------- live log setup --------------------------------
+2026-04-27 14:09:42 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+14:09:43 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+2026-04-27 14:09:43 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+14:09:43 [INFO] [zhaopin] 已创建共享 BrowserContext: site=ae headless=True
+2026-04-27 14:09:43 [INFO] [zhaopin] 已创建共享 BrowserContext: site=ae headless=True
+14:09:44 [INFO] ============================================================
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:09:44 [INFO] ============================================================
+14:09:44 [INFO] TC001: AE站 - 未登录用户 Jobs 列表页显示 Add Job Preference 卡片
+2026-04-27 14:09:44 [INFO] TC001: AE站 - 未登录用户 Jobs 列表页显示 Add Job Preference 卡片
+14:09:44 [INFO] ============================================================
+2026-04-27 14:09:44 [INFO] ============================================================
+14:09:45 [INFO] ✓ 已清除所有 cookies 和本地存储
+2026-04-27 14:09:45 [INFO] ✓ 已清除所有 cookies 和本地存储
+14:09:46 [INFO] ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-27 14:09:46 [INFO] ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+14:09:46 [INFO] ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-27 14:09:46 [INFO] ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+14:09:46 [ERROR] 测试失败 URL: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-27 14:09:46 [ERROR] 测试失败 URL: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+FAILED
+test_cases/zhaopin/test_ae_job_preferences_add_from_list.py::test_ae_add_pref_authenticated_should_show_tag_bar_not_add_banner 14:09:47 [INFO] ============================================================
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:09:47 [INFO] ============================================================
+14:09:47 [INFO] TC002: AE站 - 已登录用户 Jobs 列表页显示 Job Preference 标签栏
+2026-04-27 14:09:47 [INFO] TC002: AE站 - 已登录用户 Jobs 列表页显示 Job Preference 标签栏
+14:09:47 [INFO] ============================================================
+2026-04-27 14:09:47 [INFO] ============================================================
+14:09:52 [INFO] ⚠️ AE 站 Session 已过期，需要重新登录
+2026-04-27 14:09:52 [INFO] ⚠️ AE 站 Session 已过期，需要重新登录
+14:09:58 [INFO] AE 站未登录，开始执行登录流程
+2026-04-27 14:09:58 [INFO] AE 站未登录，开始执行登录流程
+14:10:10 [INFO] ✓ AE 站登录成功并保存 Session
+2026-04-27 14:10:10 [INFO] ✓ AE 站登录成功并保存 Session
+14:10:10 [INFO] ✓ 已进入 Jobs 列表页: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-27 14:10:10 [INFO] ✓ 已进入 Jobs 列表页: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+14:10:10 [INFO] ✓ 未显示 Add Job Preference 卡片，符合预期
+2026-04-27 14:10:10 [INFO] ✓ 未显示 Add Job Preference 卡片，符合预期
+14:10:10 [INFO] ✓ Edit 链接可见，符合预期
+2026-04-27 14:10:10 [INFO] ✓ Edit 链接可见，符合预期
+14:10:10 [INFO] ✅ TC002 通过：已登录状态下标签栏展示验证成功
+2026-04-27 14:10:10 [INFO] ✅ TC002 通过：已登录状态下标签栏展示验证成功
+PASSED
+test_cases/zhaopin/test_ae_job_preferences_add_from_list.py::test_ae_add_pref_login_via_banner_should_redirect_to_edit_page 14:10:11 [INFO] ============================================================
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:10:11 [INFO] ============================================================
+14:10:11 [INFO] TC003: AE站 - Add Job Preference 入口登录后跳转编辑页
+2026-04-27 14:10:11 [INFO] TC003: AE站 - Add Job Preference 入口登录后跳转编辑页
+14:10:11 [INFO] ============================================================
+2026-04-27 14:10:11 [INFO] ============================================================
+14:10:11 [INFO] ✓ 已清除所有 cookies 和本地存储
+2026-04-27 14:10:11 [INFO] ✓ 已清除所有 cookies 和本地存储
+14:10:12 [INFO] ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-27 14:10:12 [INFO] ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+14:10:13 [ERROR] 测试失败 URL: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-27 14:10:13 [ERROR] 测试失败 URL: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+FAILED
+test_cases/zhaopin/test_ae_job_preferences_add_from_list.py::test_ae_add_pref_back_button_should_redirect_to_jobs_list 14:10:13 [INFO] ============================================================
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:10:13 [INFO] ============================================================
+14:10:13 [INFO] TC004: AE站 - Add入口编辑页 Back 按钮跳转验证
+2026-04-27 14:10:13 [INFO] TC004: AE站 - Add入口编辑页 Back 按钮跳转验证
+14:10:13 [INFO] ============================================================
+2026-04-27 14:10:13 [INFO] ============================================================
+14:10:15 [INFO] ✓ 已清除所有 cookies 和本地存储
+2026-04-27 14:10:15 [INFO] ✓ 已清除所有 cookies 和本地存储
+14:10:15 [INFO] ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-27 14:10:15 [INFO] ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+14:10:16 [ERROR] 测试失败 URL: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-27 14:10:16 [ERROR] 测试失败 URL: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+FAILED
+test_cases/zhaopin/test_ae_job_preferences_add_from_list.py::test_ae_add_pref_continue_should_submit_and_redirect_to_jobs_list 14:10:16 [INFO] ============================================================
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:10:16 [INFO] ============================================================
+14:10:16 [INFO] TC005: AE站 - Add入口编辑页 Continue 提交验证
+2026-04-27 14:10:16 [INFO] TC005: AE站 - Add入口编辑页 Continue 提交验证
+14:10:16 [INFO] ============================================================
+2026-04-27 14:10:16 [INFO] ============================================================
+14:10:17 [INFO] ✓ 已清除所有 cookies 和本地存储
+2026-04-27 14:10:17 [INFO] ✓ 已清除所有 cookies 和本地存储
+14:10:17 [INFO] ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-27 14:10:17 [INFO] ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+14:10:18 [ERROR] 测试失败 URL: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-27 14:10:18 [ERROR] 测试失败 URL: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+FAILED14:10:18 [INFO] [PLAYWRIGHT] 清理全局 Playwright 实例
+---------------------------- live log sessionfinish ----------------------------
+2026-04-27 14:10:18 [INFO] [PLAYWRIGHT] 清理全局 Playwright 实例
+14:10:18 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例已清理
+2026-04-27 14:10:18 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例已清理
+
+
+=================================== FAILURES ===================================
+___________ test_ae_add_pref_unauthenticated_should_show_add_banner ____________
+test_cases/zhaopin/test_ae_job_preferences_add_from_list.py:259: in test_ae_add_pref_unauthenticated_should_show_add_banner
+    assert add_pref_card.is_visible(timeout=8000), \
+E   AssertionError: 未找到 'Add Job Preference' 文本，未登录状态下应显示该卡片
+E   assert False
+E    +  where False = is_visible(timeout=8000)
+E    +    where is_visible = <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i >> nth=0'>.is_visible
+------------------------------ Captured log setup ------------------------------
+INFO     AutoTest:browser_manager.py:42 [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+INFO     AutoTest:browser_manager.py:45 [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+INFO     AutoTest:conftest.py:143 [zhaopin] 已创建共享 BrowserContext: site=ae headless=True
+------------------------------ Captured log call -------------------------------
+INFO     AutoTest:test_ae_job_preferences_add_from_list.py:247 ============================================================
+INFO     AutoTest:test_ae_job_preferences_add_from_list.py:248 TC001: AE站 - 未登录用户 Jobs 列表页显示 Add Job Preference 卡片
+INFO     AutoTest:test_ae_job_preferences_add_from_list.py:249 ============================================================
+INFO     AutoTest:test_ae_job_preferences_add_from_list.py:173 ✓ 已清除所有 cookies 和本地存储
+INFO     AutoTest:test_ae_job_preferences_add_from_list.py:183 ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+INFO     AutoTest:test_ae_job_preferences_add_from_list.py:254 ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+________ test_ae_add_pref_login_via_banner_should_redirect_to_edit_page ________
+test_cases/zhaopin/test_ae_job_preferences_add_from_list.py:347: in test_ae_add_pref_login_via_banner_should_redirect_to_edit_page
+    _login_via_add_job_pref_banner(page, config)
+test_cases/zhaopin/test_ae_job_preferences_add_from_list.py:205: in _login_via_add_job_pref_banner
+    assert page.get_by_text("Add Job Preference").first.is_visible(timeout=5000), \
+E   AssertionError: 调用 _login_via_add_job_pref_banner 前，Add Job Preference 卡片应可见（未登录状态）
+E   assert False
+E    +  where False = is_visible(timeout=5000)
+E    +    where is_visible = <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i >> nth=0'>.is_visible
+E    +      where <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i >> nth=0'> = <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i'>.first
+E    +        where <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i'> = get_by_text('Add Job Preference')
+E    +          where get_by_text = <Page url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'>.get_by_text
+------------------------------ Captured log call -------------------------------
+INFO     AutoTest:test_ae_job_preferences_add_from_list.py:338 ============================================================
+INFO     AutoTest:test_ae_job_preferences_add_from_list.py:339 TC003: AE站 - Add Job Preference 入口登录后跳转编辑页
+INFO     AutoTest:test_ae_job_preferences_add_from_list.py:340 ============================================================
+INFO     AutoTest:test_ae_job_preferences_add_from_list.py:173 ✓ 已清除所有 cookies 和本地存储
+INFO     AutoTest:test_ae_job_preferences_add_from_list.py:183 ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+__________ test_ae_add_pref_back_button_should_redirect_to_jobs_list ___________
+test_cases/zhaopin/test_ae_job_preferences_add_from_list.py:400: in test_ae_add_pref_back_button_should_redirect_to_jobs_list
+    _login_via_add_job_pref_banner(page, config)
+test_cases/zhaopin/test_ae_job_preferences_add_from_list.py:205: in _login_via_add_job_pref_banner
+    assert page.get_by_text("Add Job Preference").first.is_visible(timeout=5000), \
+E   AssertionError: 调用 _login_via_add_job_pref_banner 前，Add Job Preference 卡片应可见（未登录状态）
+E   assert False
+E    +  where False = is_visible(timeout=5000)
+E    +    where is_visible = <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i >> nth=0'>.is_visible
+E    +      where <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i >> nth=0'> = <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i'>.first
+E    +        where <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i'> = get_by_text('Add Job Preference')
+E    +          where get_by_text = <Page url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'>.get_by_text
+------------------------------ Captured log call -------------------------------
+INFO     AutoTest:test_ae_job_preferences_add_from_list.py:393 ============================================================
+INFO     AutoTest:test_ae_job_preferences_add_from_list.py:394 TC004: AE站 - Add入口编辑页 Back 按钮跳转验证
+INFO     AutoTest:test_ae_job_preferences_add_from_list.py:395 ============================================================
+INFO     AutoTest:test_ae_job_preferences_add_from_list.py:173 ✓ 已清除所有 cookies 和本地存储
+INFO     AutoTest:test_ae_job_preferences_add_from_list.py:183 ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+______ test_ae_add_pref_continue_should_submit_and_redirect_to_jobs_list _______
+test_cases/zhaopin/test_ae_job_preferences_add_from_list.py:460: in test_ae_add_pref_continue_should_submit_and_redirect_to_jobs_list
+    _login_via_add_job_pref_banner(page, config)
+test_cases/zhaopin/test_ae_job_preferences_add_from_list.py:205: in _login_via_add_job_pref_banner
+    assert page.get_by_text("Add Job Preference").first.is_visible(timeout=5000), \
+E   AssertionError: 调用 _login_via_add_job_pref_banner 前，Add Job Preference 卡片应可见（未登录状态）
+E   assert False
+E    +  where False = is_visible(timeout=5000)
+E    +    where is_visible = <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i >> nth=0'>.is_visible
+E    +      where <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i >> nth=0'> = <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i'>.first
+E    +        where <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i'> = get_by_text('Add Job Preference')
+E    +          where get_by_text = <Page url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'>.get_by_text
+------------------------------ Captured log call -------------------------------
+INFO     AutoTest:test_ae_job_preferences_add_from_list.py:453 ============================================================
+INFO     AutoTest:test_ae_job_preferences_add_from_list.py:454 TC005: AE站 - Add入口编辑页 Continue 提交验证
+INFO     AutoTest:test_ae_job_preferences_add_from_list.py:455 ============================================================
+INFO     AutoTest:test_ae_job_preferences_add_from_list.py:173 ✓ 已清除所有 cookies 和本地存储
+INFO     AutoTest:test_ae_job_preferences_add_from_list.py:183 ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+- generated xml file: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/parallel_headless_run_20260427_140941/junit/test_ae_job_preferences_add_from_list_junit.xml -
+=========================== short test summary info ============================
+FAILED test_cases/zhaopin/test_ae_job_preferences_add_from_list.py::test_ae_add_pref_unauthenticated_should_show_add_banner - AssertionError: 未找到 'Add Job Preference' 文本，未登录状态下应显示该卡片
+assert False
+ +  where False = is_visible(timeout=8000)
+ +    where is_visible = <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i >> nth=0'>.is_visible
+FAILED test_cases/zhaopin/test_ae_job_preferences_add_from_list.py::test_ae_add_pref_login_via_banner_should_redirect_to_edit_page - AssertionError: 调用 _login_via_add_job_pref_banner 前，Add Job Preference 卡片应可见（未登录状态）
+assert False
+ +  where False = is_visible(timeout=5000)
+ +    where is_visible = <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i >> nth=0'>.is_visible
+ +      where <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i >> nth=0'> = <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i'>.first
+ +        where <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i'> = get_by_text('Add Job Preference')
+ +          where get_by_text = <Page url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'>.get_by_text
+FAILED test_cases/zhaopin/test_ae_job_preferences_add_from_list.py::test_ae_add_pref_back_button_should_redirect_to_jobs_list - AssertionError: 调用 _login_via_add_job_pref_banner 前，Add Job Preference 卡片应可见（未登录状态）
+assert False
+ +  where False = is_visible(timeout=5000)
+ +    where is_visible = <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i >> nth=0'>.is_visible
+ +      where <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i >> nth=0'> = <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i'>.first
+ +        where <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i'> = get_by_text('Add Job Preference')
+ +          where get_by_text = <Page url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'>.get_by_text
+FAILED test_cases/zhaopin/test_ae_job_preferences_add_from_list.py::test_ae_add_pref_continue_should_submit_and_redirect_to_jobs_list - AssertionError: 调用 _login_via_add_job_pref_banner 前，Add Job Preference 卡片应可见（未登录状态）
+assert False
+ +  where False = is_visible(timeout=5000)
+ +    where is_visible = <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i >> nth=0'>.is_visible
+ +      where <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i >> nth=0'> = <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i'>.first
+ +        where <Locator frame=<Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'> selector='internal:text="Add Job Preference"i'> = get_by_text('Add Job Preference')
+ +          where get_by_text = <Page url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'>.get_by_text
+========================= 4 failed, 1 passed in 36.70s =========================

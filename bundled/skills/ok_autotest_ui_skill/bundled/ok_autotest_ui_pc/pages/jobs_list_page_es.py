@@ -15,6 +15,10 @@ ES站 Jobs列表页 Page Object
   - 侧边栏详情
 """
 
+import re
+
+from playwright.sync_api import expect
+
 from pages.base_page import BasePage
 from utils.logger import setup_logger
 
@@ -79,9 +83,12 @@ class JobsListPageES(BasePage):
             pass  # ES站存在长连接，networkidle不会触发，忽略超时
         # 等待筛选区域可见，确保页面关键内容已渲染
         try:
-            self.page.locator(".listPage-filterArea").wait_for(state="visible", timeout=15000)
+            self.page.locator(".listPage-filterArea").wait_for(state="visible", timeout=20000)
         except Exception:
-            self.page.wait_for_timeout(3000)
+            try:
+                self.page.wait_for_load_state("domcontentloaded", timeout=10000)
+            except Exception:
+                pass
         self.logger.info(f"导航到Jobs列表页: {url}")
     
     # ==================== 搜索功能方法 ====================
@@ -89,8 +96,9 @@ class JobsListPageES(BasePage):
     def input_search_keyword(self, keyword: str):
         """在搜索框中输入关键词"""
         try:
-            self.page.get_by_role("textbox", name="Search for anything").fill(keyword)
-            self.page.wait_for_timeout(500)
+            box = self.page.get_by_role("textbox", name="Search for anything")
+            box.fill(keyword)
+            expect(box).to_have_value(keyword, timeout=5000)
             self.logger.info(f"输入搜索关键词: {keyword}")
         except Exception:
             # 备用选择器
@@ -195,7 +203,10 @@ class JobsListPageES(BasePage):
         try:
             self.page.locator(".listPage-filterArea").wait_for(state="visible", timeout=12000)
         except Exception:
-            self.page.wait_for_timeout(2000)
+            try:
+                self.page.wait_for_load_state("domcontentloaded", timeout=5000)
+            except Exception:
+                pass
     
     def click_job_type_clear(self):
         """点击Job Type的Clear按钮"""
@@ -362,7 +373,13 @@ class JobsListPageES(BasePage):
             self.page.wait_for_load_state("networkidle", timeout=8000)
         except Exception:
             pass  # ES站存在长连接，networkidle不会触发
-        self.page.wait_for_timeout(1000)
+        try:
+            self.page.locator(".listPage-filterArea").first.wait_for(state="visible", timeout=10000)
+        except Exception:
+            try:
+                self.page.wait_for_load_state("domcontentloaded", timeout=5000)
+            except Exception:
+                pass
 
     # ==================== 地址筛选扩展方法（两级省→市结构）====================
 
@@ -374,7 +391,18 @@ class JobsListPageES(BasePage):
         """
         try:
             self.page.get_by_text(province_name, exact=True).click()
-            self.page.wait_for_timeout(600)
+            try:
+                self.page.locator(self.CITY_LIST).first.wait_for(state="visible", timeout=8000)
+            except Exception:
+                try:
+                    self.page.get_by_text("Top Cities", exact=False).first.wait_for(
+                        state="visible", timeout=5000
+                    )
+                except Exception:
+                    try:
+                        self.page.wait_for_load_state("domcontentloaded", timeout=3000)
+                    except Exception:
+                        pass
         except Exception as e:
             self.logger.error(f"选择省份失败: {province_name}, {e}")
             raise
@@ -496,16 +524,37 @@ class JobsListPageES(BasePage):
         """滚动到页面底部，触发 feed 流加载更多"""
         try:
             self.page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+            try:
+                self.page.wait_for_load_state("domcontentloaded", timeout=3000)
+            except Exception:
+                pass
             self.page.wait_for_timeout(2000)
         except Exception as e:
             self.logger.error(f"滚动到页面底部失败: {e}")
             raise
 
+    def ensure_sidebar_visible(self, timeout: int = 20000) -> None:
+        """列表就绪后确保右侧详情侧栏可见：优先等默认展开，否则点击首张卡片。"""
+        panel = self.page.locator(
+            '[class*="DetailsCard_detailsCard__"], [class*="JobDetail_jobDetail__"]'
+        ).first
+        try:
+            panel.wait_for(state="visible", timeout=8000)
+            return
+        except Exception:
+            pass
+        self.click_first_job_card()
+        panel.wait_for(state="visible", timeout=timeout)
+
     def get_job_card_count_by_evaluate(self) -> int:
         """通过 JS 获取当前职位卡片总数（更精确）"""
         try:
             count = self.page.evaluate(
-                "() => document.querySelectorAll('.JobListItem_jobListItem__').length"
+                """() => {
+                    const a = document.querySelectorAll('[class*="list-components-item-job-card"]').length;
+                    const b = document.querySelectorAll('.JobListItem_jobListItem__').length;
+                    return Math.max(a, b);
+                }"""
             )
             return int(count) if count else 0
         except Exception:
@@ -617,7 +666,6 @@ class JobsListPageES(BasePage):
             text = self.page.locator(".listPage-filterArea").get_by_text(
                 "Job Type"
             ).first.text_content() or ""
-            import re
             match = re.search(r'·\s*(\d+)', text)
             return int(match.group(1)) if match else 0
         except Exception:
@@ -642,18 +690,22 @@ class JobsListPageES(BasePage):
     def is_sidebar_visible(self) -> bool:
         """检查职位详情侧边栏是否可见"""
         try:
-            # 实际侧边栏使用 DetailsCard 组件
-            if self.page.locator('[class*="DetailsCard_detailsCard__"]').first.is_visible(timeout=5000):
+            if self.page.locator(
+                '[class*="DetailsCard_detailsCard__"], [class*="JobDetail_jobDetail__"]'
+            ).first.is_visible(timeout=6000):
                 return True
         except Exception:
             pass
         try:
-            return self.page.locator(".JobDetail_jobDetail__").first.is_visible(timeout=3000)
+            return self.page.get_by_role("button", name=re.compile(r"contact", re.I)).is_visible(
+                timeout=3000
+            )
         except Exception:
-            try:
-                return self.page.get_by_role("button", name="Contact").is_visible(timeout=3000)
-            except Exception:
-                return False
+            pass
+        try:
+            return self.page.get_by_role("button", name="Withdraw").is_visible(timeout=2000)
+        except Exception:
+            return False
 
     def is_sidebar_contact_button_visible(self) -> bool:
         """检查侧边栏 Contact 按钮是否可见"""
@@ -672,28 +724,43 @@ class JobsListPageES(BasePage):
     def is_sidebar_favourites_visible(self) -> bool:
         """检查侧边栏 Favourites 按钮是否可见"""
         try:
-            return self.page.get_by_text("Favourites").first.is_visible(timeout=3000)
+            return self.page.get_by_text(re.compile(r"favo[u]?rites", re.I)).first.is_visible(
+                timeout=5000
+            )
         except Exception:
             return False
 
     def is_sidebar_new_tab_link_visible(self) -> bool:
         """检查侧边栏 New tab 链接是否可见"""
         try:
-            return self.page.get_by_role("link", name="New tab").is_visible(timeout=3000)
+            return self.page.get_by_role("link", name=re.compile(r"new\s*tab", re.I)).is_visible(
+                timeout=5000
+            )
         except Exception:
             return False
 
     def is_sidebar_resume_entry_visible(self) -> bool:
         """检查侧边栏底部 Resume 快捷入口是否可见"""
         try:
-            return self.page.get_by_text("Resume").first.is_visible(timeout=3000)
+            return self.page.get_by_text(re.compile(r"^resume$", re.I)).first.is_visible(
+                timeout=5000
+            )
         except Exception:
-            return False
+            try:
+                return self.page.get_by_role("link", name=re.compile(r"resume", re.I)).first.is_visible(
+                    timeout=3000
+                )
+            except Exception:
+                return False
 
     def click_sidebar_resume(self):
         """点击侧边栏底部 Resume 快捷入口"""
         try:
-            self.page.get_by_text("Resume").first.click()
+            link = self.page.get_by_role("link", name=re.compile(r"resume", re.I)).first
+            if link.is_visible(timeout=2000):
+                link.click()
+            else:
+                self.page.get_by_text(re.compile(r"^resume$", re.I)).first.click()
             self.page.wait_for_load_state("domcontentloaded", timeout=15000)
         except Exception as e:
             self.logger.error(f"点击 Resume 入口失败: {e}")
@@ -702,7 +769,9 @@ class JobsListPageES(BasePage):
     def is_quick_reply_label_visible(self) -> bool:
         """检查职位卡片上 Quick Reply 标签是否可见"""
         try:
-            return self.page.get_by_text("Quick Reply").first.is_visible(timeout=3000)
+            return self.page.get_by_text(re.compile(r"quick\s*reply", re.I)).first.is_visible(
+                timeout=5000
+            )
         except Exception:
             return False
 

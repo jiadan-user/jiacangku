@@ -1,0 +1,127 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.11.11, pytest-9.0.2, pluggy-1.5.0 -- /Users/wangyongli/miniconda3/bin/python3.11
+cachedir: .pytest_cache
+metadata: {'Python': '3.11.11', 'Platform': 'macOS-15.4.1-arm64-arm-64bit', 'Packages': {'pytest': '9.0.2', 'pluggy': '1.5.0'}, 'Plugins': {'anyio': '4.9.0', 'xdist': '3.8.0', 'metadata': '3.1.1', 'html': '4.2.0', 'langsmith': '0.3.42', 'rerunfailures': '16.1', 'allure-pytest': '2.15.3'}, 'JAVA_HOME': '/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home'}
+rootdir: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc
+configfile: pytest.ini
+plugins: anyio-4.9.0, xdist-3.8.0, metadata-3.1.1, html-4.2.0, langsmith-0.3.42, rerunfailures-16.1, allure-pytest-2.15.3
+collecting ... collected 2 items
+
+test_cases/zhaopin/test_ae_jobs_list_location_and_add_pref.py::test_location_filter_shows_specific_city 19:03:04 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+
+-------------------------------- live log setup --------------------------------
+2026-04-17 19:03:04 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+19:03:04 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+2026-04-17 19:03:04 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+19:03:04 [INFO] [ENV] 检测到环境变量 HEADLESS=True 或 CI=False，强制使用无头模式
+2026-04-17 19:03:04 [INFO] [ENV] 检测到环境变量 HEADLESS=True 或 CI=False，强制使用无头模式
+19:03:04 [INFO] ================================================================================
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:03:04 [INFO] ================================================================================
+19:03:04 [INFO] AE站 - Jobs列表页 Location筛选器验证测试
+2026-04-17 19:03:04 [INFO] AE站 - Jobs列表页 Location筛选器验证测试
+19:03:04 [INFO] ================================================================================
+2026-04-17 19:03:04 [INFO] ================================================================================
+19:03:04 [INFO] 站点: AE (阿联酋站)
+2026-04-17 19:03:04 [INFO] 站点: AE (阿联酋站)
+19:03:04 [INFO] 角色: VISITOR (访客/未登录)
+2026-04-17 19:03:04 [INFO] 角色: VISITOR (访客/未登录)
+19:03:04 [INFO] 首页URL: https://ae.58v5.cn/en/city-abu-dhabi/
+2026-04-17 19:03:04 [INFO] 首页URL: https://ae.58v5.cn/en/city-abu-dhabi/
+19:03:04 [INFO] Jobs列表URL: https://ae.58v5.cn/en/city-abu-dhabi/cate-jobs/?iconSource=jobs
+2026-04-17 19:03:04 [INFO] Jobs列表URL: https://ae.58v5.cn/en/city-abu-dhabi/cate-jobs/?iconSource=jobs
+19:03:04 [INFO] ================================================================================
+2026-04-17 19:03:04 [INFO] ================================================================================
+19:03:04 [INFO] 开始导航到首页
+2026-04-17 19:03:04 [INFO] 开始导航到首页
+19:03:08 [INFO] ✓ 成功打开首页: https://ae.58v5.cn/en/city-abu-dhabi/
+2026-04-17 19:03:08 [INFO] ✓ 成功打开首页: https://ae.58v5.cn/en/city-abu-dhabi/
+19:03:08 [INFO] 开始点击Jobs金刚位
+2026-04-17 19:03:08 [INFO] 开始点击Jobs金刚位
+19:03:11 [INFO] ✓ 成功进入Jobs列表页: https://ae.58v5.cn/en/city-abu-dhabi/cate-jobs/?iconSource=jobs
+2026-04-17 19:03:11 [INFO] ✓ 成功进入Jobs列表页: https://ae.58v5.cn/en/city-abu-dhabi/cate-jobs/?iconSource=jobs
+19:03:11 [INFO] ✓ URL验证通过，包含'cate-jobs': https://ae.58v5.cn/en/city-abu-dhabi/cate-jobs/?iconSource=jobs
+2026-04-17 19:03:11 [INFO] ✓ URL验证通过，包含'cate-jobs': https://ae.58v5.cn/en/city-abu-dhabi/cate-jobs/?iconSource=jobs
+19:03:11 [INFO] ✓ 页面标题验证通过: 11111 Jobs in the Abu Dhabi: The Ultimate Buyers Guide (2026) | ok.com
+2026-04-17 19:03:11 [INFO] ✓ 页面标题验证通过: 11111 Jobs in the Abu Dhabi: The Ultimate Buyers Guide (2026) | ok.com
+19:03:11 [INFO] ✅ Jobs列表页加载成功！
+2026-04-17 19:03:11 [INFO] ✅ Jobs列表页加载成功！
+19:03:11 [INFO] 开始检查Location筛选器
+2026-04-17 19:03:11 [INFO] 开始检查Location筛选器
+19:03:12 [INFO] ✓ 筛选器区域加载完成
+2026-04-17 19:03:12 [INFO] ✓ 筛选器区域加载完成
+19:03:12 [INFO] ✓ Location筛选器可见
+2026-04-17 19:03:12 [INFO] ✓ Location筛选器可见
+19:03:12 [INFO] ✓ Location筛选器显示正确: Abu Dhabi
+2026-04-17 19:03:12 [INFO] ✓ Location筛选器显示正确: Abu Dhabi
+19:03:12 [INFO] ✓ Location筛选器不是空值状态
+2026-04-17 19:03:12 [INFO] ✓ Location筛选器不是空值状态
+19:03:12 [INFO] ✅ Location筛选器验证全部通过！
+2026-04-17 19:03:12 [INFO] ✅ Location筛选器验证全部通过！
+19:03:12 [INFO] ================================================================================
+2026-04-17 19:03:12 [INFO] ================================================================================
+19:03:12 [INFO] ✅ TC001 测试通过：Location筛选器显示具体城市地址Abu Dhabi
+2026-04-17 19:03:12 [INFO] ✅ TC001 测试通过：Location筛选器显示具体城市地址Abu Dhabi
+19:03:12 [INFO] ================================================================================
+2026-04-17 19:03:12 [INFO] ================================================================================
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_location_and_add_pref.py::test_add_job_preferences_entry_visible 19:03:12 [INFO] ================================================================================
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:03:12 [INFO] ================================================================================
+19:03:12 [INFO] AE站 - Jobs列表页 Add Job Preferences入口验证测试
+2026-04-17 19:03:12 [INFO] AE站 - Jobs列表页 Add Job Preferences入口验证测试
+19:03:12 [INFO] ================================================================================
+2026-04-17 19:03:12 [INFO] ================================================================================
+19:03:12 [INFO] 站点: AE (阿联酋站)
+2026-04-17 19:03:12 [INFO] 站点: AE (阿联酋站)
+19:03:12 [INFO] 角色: VISITOR (访客/未登录)
+2026-04-17 19:03:12 [INFO] 角色: VISITOR (访客/未登录)
+19:03:12 [INFO] 首页URL: https://ae.58v5.cn/en/city-abu-dhabi/
+2026-04-17 19:03:12 [INFO] 首页URL: https://ae.58v5.cn/en/city-abu-dhabi/
+19:03:12 [INFO] Jobs列表URL: https://ae.58v5.cn/en/city-abu-dhabi/cate-jobs/?iconSource=jobs
+2026-04-17 19:03:12 [INFO] Jobs列表URL: https://ae.58v5.cn/en/city-abu-dhabi/cate-jobs/?iconSource=jobs
+19:03:12 [INFO] ================================================================================
+2026-04-17 19:03:12 [INFO] ================================================================================
+19:03:12 [INFO] 开始导航到首页
+2026-04-17 19:03:12 [INFO] 开始导航到首页
+19:03:15 [INFO] ✓ 成功打开首页: https://ae.58v5.cn/en/city-abu-dhabi/
+2026-04-17 19:03:15 [INFO] ✓ 成功打开首页: https://ae.58v5.cn/en/city-abu-dhabi/
+19:03:15 [INFO] 开始点击Jobs金刚位
+2026-04-17 19:03:15 [INFO] 开始点击Jobs金刚位
+19:03:17 [INFO] ✓ 成功进入Jobs列表页: https://ae.58v5.cn/en/city-abu-dhabi/cate-jobs/?iconSource=jobs
+2026-04-17 19:03:17 [INFO] ✓ 成功进入Jobs列表页: https://ae.58v5.cn/en/city-abu-dhabi/cate-jobs/?iconSource=jobs
+19:03:17 [INFO] ✓ URL验证通过: https://ae.58v5.cn/en/city-abu-dhabi/cate-jobs/?iconSource=jobs
+2026-04-17 19:03:17 [INFO] ✓ URL验证通过: https://ae.58v5.cn/en/city-abu-dhabi/cate-jobs/?iconSource=jobs
+19:03:17 [INFO] 等待页面完全加载
+2026-04-17 19:03:17 [INFO] 等待页面完全加载
+19:03:20 [INFO] ✓ 页面加载完成，已滚动至顶部
+2026-04-17 19:03:20 [INFO] ✓ 页面加载完成，已滚动至顶部
+19:03:20 [INFO] ✓ Add Job Preference入口卡片可见
+2026-04-17 19:03:20 [INFO] ✓ Add Job Preference入口卡片可见
+19:03:20 [INFO] ✓ 卡片标题文案正确: Add Job Preference
+2026-04-17 19:03:20 [INFO] ✓ 卡片标题文案正确: Add Job Preference
+19:03:20 [INFO] ✓ 卡片副文本正确: Unlock more opportunities tailored for you.
+2026-04-17 19:03:20 [INFO] ✓ 卡片副文本正确: Unlock more opportunities tailored for you.
+19:03:21 [INFO] ✓ Add Job Preference卡片可点击
+2026-04-17 19:03:21 [INFO] ✓ Add Job Preference卡片可点击
+19:03:21 [INFO] ✅ Add Job Preference入口验证全部通过！
+2026-04-17 19:03:21 [INFO] ✅ Add Job Preference入口验证全部通过！
+19:03:21 [INFO] ================================================================================
+2026-04-17 19:03:21 [INFO] ================================================================================
+19:03:21 [INFO] ✅ TC002 测试通过：Add Job Preferences入口在列表页可见
+2026-04-17 19:03:21 [INFO] ✅ TC002 测试通过：Add Job Preferences入口在列表页可见
+19:03:21 [INFO] ================================================================================
+2026-04-17 19:03:21 [INFO] ================================================================================
+PASSED19:03:21 [INFO] [PLAYWRIGHT] 清理全局 Playwright 实例
+---------------------------- live log sessionfinish ----------------------------
+2026-04-17 19:03:21 [INFO] [PLAYWRIGHT] 清理全局 Playwright 实例
+19:03:21 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例已清理
+2026-04-17 19:03:21 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例已清理
+
+
+- generated xml file: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/ae_jobs_list_location_and_add_pref_junit.xml -
+============================== 2 passed in 17.19s ==============================
+real 17.67
+user 6.25
+sys 0.97

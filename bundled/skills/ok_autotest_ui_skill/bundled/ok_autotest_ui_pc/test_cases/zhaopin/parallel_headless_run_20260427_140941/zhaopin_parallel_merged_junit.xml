@@ -1,0 +1,463 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="pytest" errors="0" failures="4" skipped="0" tests="5" time="36.695" timestamp="2026-04-27T14:09:42.207652+08:00" hostname="wangyonglideMacBook-Pro.local">
+    <testcase classname="test_cases.zhaopin.test_ae_job_preferences_add_from_list" name="test_ae_add_pref_unauthenticated_should_show_add_banner" time="4.525">
+      <failure message="AssertionError: 未找到 'Add Job Preference' 文本，未登录状态下应显示该卡片&#10;assert False&#10; +  where False = is_visible(timeout=8000)&#10; +    where is_visible = &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text=&quot;Add Job Preference&quot;i &gt;&gt; nth=0'&gt;.is_visible">test_cases/zhaopin/test_ae_job_preferences_add_from_list.py:259: in test_ae_add_pref_unauthenticated_should_show_add_banner
+    assert add_pref_card.is_visible(timeout=8000), \
+E   AssertionError: 未找到 'Add Job Preference' 文本，未登录状态下应显示该卡片
+E   assert False
+E    +  where False = is_visible(timeout=8000)
+E    +    where is_visible = &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text="Add Job Preference"i &gt;&gt; nth=0'&gt;.is_visible</failure>
+    </testcase>
+    <testcase classname="test_cases.zhaopin.test_ae_job_preferences_add_from_list" name="test_ae_add_pref_authenticated_should_show_tag_bar_not_add_banner" time="23.870" />
+    <testcase classname="test_cases.zhaopin.test_ae_job_preferences_add_from_list" name="test_ae_add_pref_login_via_banner_should_redirect_to_edit_page" time="1.660">
+      <failure message="AssertionError: 调用 _login_via_add_job_pref_banner 前，Add Job Preference 卡片应可见（未登录状态）&#10;assert False&#10; +  where False = is_visible(timeout=5000)&#10; +    where is_visible = &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text=&quot;Add Job Preference&quot;i &gt;&gt; nth=0'&gt;.is_visible&#10; +      where &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text=&quot;Add Job Preference&quot;i &gt;&gt; nth=0'&gt; = &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text=&quot;Add Job Preference&quot;i'&gt;.first&#10; +        where &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text=&quot;Add Job Preference&quot;i'&gt; = get_by_text('Add Job Preference')&#10; +          where get_by_text = &lt;Page url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt;.get_by_text">test_cases/zhaopin/test_ae_job_preferences_add_from_list.py:347: in test_ae_add_pref_login_via_banner_should_redirect_to_edit_page
+    _login_via_add_job_pref_banner(page, config)
+test_cases/zhaopin/test_ae_job_preferences_add_from_list.py:205: in _login_via_add_job_pref_banner
+    assert page.get_by_text("Add Job Preference").first.is_visible(timeout=5000), \
+E   AssertionError: 调用 _login_via_add_job_pref_banner 前，Add Job Preference 卡片应可见（未登录状态）
+E   assert False
+E    +  where False = is_visible(timeout=5000)
+E    +    where is_visible = &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text="Add Job Preference"i &gt;&gt; nth=0'&gt;.is_visible
+E    +      where &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text="Add Job Preference"i &gt;&gt; nth=0'&gt; = &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text="Add Job Preference"i'&gt;.first
+E    +        where &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text="Add Job Preference"i'&gt; = get_by_text('Add Job Preference')
+E    +          where get_by_text = &lt;Page url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt;.get_by_text</failure>
+    </testcase>
+    <testcase classname="test_cases.zhaopin.test_ae_job_preferences_add_from_list" name="test_ae_add_pref_back_button_should_redirect_to_jobs_list" time="2.157">
+      <failure message="AssertionError: 调用 _login_via_add_job_pref_banner 前，Add Job Preference 卡片应可见（未登录状态）&#10;assert False&#10; +  where False = is_visible(timeout=5000)&#10; +    where is_visible = &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text=&quot;Add Job Preference&quot;i &gt;&gt; nth=0'&gt;.is_visible&#10; +      where &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text=&quot;Add Job Preference&quot;i &gt;&gt; nth=0'&gt; = &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text=&quot;Add Job Preference&quot;i'&gt;.first&#10; +        where &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text=&quot;Add Job Preference&quot;i'&gt; = get_by_text('Add Job Preference')&#10; +          where get_by_text = &lt;Page url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt;.get_by_text">test_cases/zhaopin/test_ae_job_preferences_add_from_list.py:400: in test_ae_add_pref_back_button_should_redirect_to_jobs_list
+    _login_via_add_job_pref_banner(page, config)
+test_cases/zhaopin/test_ae_job_preferences_add_from_list.py:205: in _login_via_add_job_pref_banner
+    assert page.get_by_text("Add Job Preference").first.is_visible(timeout=5000), \
+E   AssertionError: 调用 _login_via_add_job_pref_banner 前，Add Job Preference 卡片应可见（未登录状态）
+E   assert False
+E    +  where False = is_visible(timeout=5000)
+E    +    where is_visible = &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text="Add Job Preference"i &gt;&gt; nth=0'&gt;.is_visible
+E    +      where &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text="Add Job Preference"i &gt;&gt; nth=0'&gt; = &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text="Add Job Preference"i'&gt;.first
+E    +        where &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text="Add Job Preference"i'&gt; = get_by_text('Add Job Preference')
+E    +          where get_by_text = &lt;Page url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt;.get_by_text</failure>
+    </testcase>
+    <testcase classname="test_cases.zhaopin.test_ae_job_preferences_add_from_list" name="test_ae_add_pref_continue_should_submit_and_redirect_to_jobs_list" time="1.505">
+      <failure message="AssertionError: 调用 _login_via_add_job_pref_banner 前，Add Job Preference 卡片应可见（未登录状态）&#10;assert False&#10; +  where False = is_visible(timeout=5000)&#10; +    where is_visible = &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text=&quot;Add Job Preference&quot;i &gt;&gt; nth=0'&gt;.is_visible&#10; +      where &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text=&quot;Add Job Preference&quot;i &gt;&gt; nth=0'&gt; = &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text=&quot;Add Job Preference&quot;i'&gt;.first&#10; +        where &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text=&quot;Add Job Preference&quot;i'&gt; = get_by_text('Add Job Preference')&#10; +          where get_by_text = &lt;Page url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt;.get_by_text">test_cases/zhaopin/test_ae_job_preferences_add_from_list.py:460: in test_ae_add_pref_continue_should_submit_and_redirect_to_jobs_list
+    _login_via_add_job_pref_banner(page, config)
+test_cases/zhaopin/test_ae_job_preferences_add_from_list.py:205: in _login_via_add_job_pref_banner
+    assert page.get_by_text("Add Job Preference").first.is_visible(timeout=5000), \
+E   AssertionError: 调用 _login_via_add_job_pref_banner 前，Add Job Preference 卡片应可见（未登录状态）
+E   assert False
+E    +  where False = is_visible(timeout=5000)
+E    +    where is_visible = &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text="Add Job Preference"i &gt;&gt; nth=0'&gt;.is_visible
+E    +      where &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text="Add Job Preference"i &gt;&gt; nth=0'&gt; = &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text="Add Job Preference"i'&gt;.first
+E    +        where &lt;Locator frame=&lt;Frame name= url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt; selector='internal:text="Add Job Preference"i'&gt; = get_by_text('Add Job Preference')
+E    +          where get_by_text = &lt;Page url='https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs'&gt;.get_by_text</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="pytest" errors="0" failures="1" skipped="0" tests="15" time="170.535" timestamp="2026-04-27T14:09:42.084857+08:00" hostname="wangyonglideMacBook-Pro.local">
+    <testcase classname="test_cases.zhaopin.test_ae_job_preferences_edit" name="test_ae_edit_enter_from_jobs_list_should_show_prefilled_data" time="16.284" />
+    <testcase classname="test_cases.zhaopin.test_ae_job_preferences_edit" name="test_ae_edit_prefill_job_functions_tags_and_count" time="10.424" />
+    <testcase classname="test_cases.zhaopin.test_ae_job_preferences_edit" name="test_ae_edit_prefill_location_tags_and_count" time="10.478" />
+    <testcase classname="test_cases.zhaopin.test_ae_job_preferences_edit" name="test_ae_edit_prefill_salary_pay_type_and_amount" time="10.404" />
+    <testcase classname="test_cases.zhaopin.test_ae_job_preferences_edit" name="test_ae_edit_prefill_workplace_type_and_job_type_checkboxes" time="10.760" />
+    <testcase classname="test_cases.zhaopin.test_ae_job_preferences_edit" name="test_ae_edit_continue_submits_and_returns_to_return_url" time="10.781">
+      <failure message="AssertionError: 仍停留在编辑页，当前 URL: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&#10;assert not True&#10; +  where True = is_url_contains('jobPreference')&#10; +    where is_url_contains = &lt;pages.job_preference_page.JobPreferencePage object at 0x104597a30&gt;.is_url_contains">test_cases/zhaopin/test_ae_job_preferences_edit.py:346: in test_ae_edit_continue_submits_and_returns_to_return_url
+    assert not job_pref_page.is_url_contains("jobPreference"), \
+E   AssertionError: 仍停留在编辑页，当前 URL: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+E   assert not True
+E    +  where True = is_url_contains('jobPreference')
+E    +    where is_url_contains = &lt;pages.job_preference_page.JobPreferencePage object at 0x104597a30&gt;.is_url_contains</failure>
+    </testcase>
+    <testcase classname="test_cases.zhaopin.test_ae_job_preferences_edit" name="test_ae_edit_job_functions_has_oil_gas_and_skilled_trades" time="12.519" />
+    <testcase classname="test_cases.zhaopin.test_ae_job_preferences_edit" name="test_ae_edit_location_shows_only_uae_cities" time="11.150" />
+    <testcase classname="test_cases.zhaopin.test_ae_job_preferences_edit" name="test_ae_edit_salary_currency_prefix_is_aed" time="10.476" />
+    <testcase classname="test_cases.zhaopin.test_ae_job_preferences_edit" name="test_ae_edit_back_without_changes_goes_directly_to_return_url" time="13.219" />
+    <testcase classname="test_cases.zhaopin.test_ae_job_preferences_edit" name="test_ae_edit_back_with_unsaved_changes_shows_dialog_and_discards" time="14.560" />
+    <testcase classname="test_cases.zhaopin.test_ae_job_preferences_edit" name="test_ae_edit_open_redirect_tampered_return_url_blocked" time="12.760" />
+    <testcase classname="test_cases.zhaopin.test_ae_job_preferences_edit" name="test_ae_edit_refresh_page_refills_data_from_server" time="12.559" />
+    <testcase classname="test_cases.zhaopin.test_ae_job_preferences_edit" name="test_ae_edit_expired_session_redirects_to_login" time="13.145" />
+    <testcase classname="test_cases.zhaopin.test_ae_job_preferences_edit" name="test_ae_edit_horizontal_privilege_escalation_blocked" time="0.297" />
+  </testsuite>
+  <testsuite name="pytest" errors="0" failures="4" skipped="0" tests="30" time="274.722" timestamp="2026-04-27T14:09:42.032263+08:00" hostname="wangyonglideMacBook-Pro.local">
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestResumePageLoad" name="test_tc001_resume_view_page_loads" time="14.711" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestResumePageLoad" name="test_tc002_redirect_to_login_when_not_logged_in" time="0.384" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestResumePageLoad" name="test_tc003_edit_icons_visible" time="14.692" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestPersonalInfoModal" name="test_tc004_open_personal_info_modal" time="7.161" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestPersonalInfoModal" name="test_tc005_name_fields_prefilled" time="6.489" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestPersonalInfoModal" name="test_tc006_save_disabled_when_firstname_empty" time="6.927" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestPersonalInfoModal" name="test_tc007_save_disabled_when_lastname_empty" time="6.783" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestPersonalInfoModal" name="test_tc008_name_max_100_chars" time="6.621" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestPersonalInfoModal" name="test_tc009_cancel_closes_modal_without_saving" time="7.433" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestPersonalInfoModal" name="test_tc010_email_display_in_modal" time="6.175" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestPersonalSummaryModal" name="test_tc011_open_personal_summary_modal" time="5.387" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestPersonalSummaryModal" name="test_tc012_save_personal_summary" time="8.326" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestPersonalSummaryModal" name="test_tc013_personal_summary_placeholder" time="6.313" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestWorkExperienceModal" name="test_tc014_open_work_experience_modal" time="6.044" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestWorkExperienceModal" name="test_tc015_job_function_dropdown" time="7.933" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestWorkExperienceModal" name="test_tc016_currently_work_here_checkbox" time="6.240" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestWorkExperienceModal" name="test_tc017_uncheck_currently_work_here" time="6.426" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestWorkExperienceModal" name="test_tc018_job_description_field" time="6.154" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestWorkExperienceModal" name="test_tc019_cancel_work_experience_modal" time="36.725" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestEducationModal" name="test_tc020_open_education_modal" time="6.208" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestEducationModal" name="test_tc021_education_level_dropdown_options" time="6.183" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestEducationModal" name="test_tc022_institute_major_optional" time="6.282" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestEducationModal" name="test_tc023_save_education_and_echo" time="17.335">
+      <failure message="playwright._impl._errors.TimeoutError: Page.wait_for_selector: Timeout 8000ms exceeded.&#10;Call log:&#10;  - waiting for locator(&quot;.modal-content&quot;) to be visible">test_cases/zhaopin/test_ae_resume_edit.py:757: in test_tc023_save_education_and_echo
+    self.resume_page.open_edit_education_modal()
+pages/resume_add_page_ae.py:507: in open_edit_education_modal
+    self.page.wait_for_selector(".modal-content", timeout=8000)
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/sync_api/_generated.py:8182: in wait_for_selector
+    self._sync(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_page.py:423: in wait_for_selector
+    return await self._main_frame.wait_for_selector(**locals_to_params(locals()))
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:369: in wait_for_selector
+    await self._channel.send(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_connection.py:69: in send
+    return await self._connection.wrap_api_call(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_connection.py:558: in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+E   playwright._impl._errors.TimeoutError: Page.wait_for_selector: Timeout 8000ms exceeded.
+E   Call log:
+E     - waiting for locator(".modal-content") to be visible</failure>
+    </testcase>
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestEducationModal" name="test_tc024_education_date_fields" time="6.322" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestEducationModal" name="test_tc025_cancel_education_modal" time="6.903" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestLanguageModal" name="test_tc026_open_language_modal" time="6.061" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestLanguageModal" name="test_tc027_language_dropdown_placeholder" time="6.241" />
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestDataEchoVerification" name="test_tc028_personal_info_data_echo_after_reload" time="18.468">
+      <failure message="playwright._impl._errors.TimeoutError: Page.wait_for_selector: Timeout 8000ms exceeded.&#10;Call log:&#10;  - waiting for locator(&quot;.modal-content&quot;) to be visible">test_cases/zhaopin/test_ae_resume_edit.py:927: in test_tc028_personal_info_data_echo_after_reload
+    resume_page.open_edit_education_modal()
+pages/resume_add_page_ae.py:507: in open_edit_education_modal
+    self.page.wait_for_selector(".modal-content", timeout=8000)
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/sync_api/_generated.py:8182: in wait_for_selector
+    self._sync(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_page.py:423: in wait_for_selector
+    return await self._main_frame.wait_for_selector(**locals_to_params(locals()))
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:369: in wait_for_selector
+    await self._channel.send(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_connection.py:69: in send
+    return await self._connection.wrap_api_call(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_connection.py:558: in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+E   playwright._impl._errors.TimeoutError: Page.wait_for_selector: Timeout 8000ms exceeded.
+E   Call log:
+E     - waiting for locator(".modal-content") to be visible</failure>
+    </testcase>
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestDataEchoVerification" name="test_tc029_education_data_echo_after_reload" time="17.178">
+      <failure message="playwright._impl._errors.TimeoutError: Page.wait_for_selector: Timeout 8000ms exceeded.&#10;Call log:&#10;  - waiting for locator(&quot;.modal-content&quot;) to be visible">test_cases/zhaopin/test_ae_resume_edit.py:967: in test_tc029_education_data_echo_after_reload
+    resume_page.open_edit_education_modal()
+pages/resume_add_page_ae.py:507: in open_edit_education_modal
+    self.page.wait_for_selector(".modal-content", timeout=8000)
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/sync_api/_generated.py:8182: in wait_for_selector
+    self._sync(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_page.py:423: in wait_for_selector
+    return await self._main_frame.wait_for_selector(**locals_to_params(locals()))
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:369: in wait_for_selector
+    await self._channel.send(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_connection.py:69: in send
+    return await self._connection.wrap_api_call(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_connection.py:558: in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+E   playwright._impl._errors.TimeoutError: Page.wait_for_selector: Timeout 8000ms exceeded.
+E   Call log:
+E     - waiting for locator(".modal-content") to be visible</failure>
+    </testcase>
+    <testcase classname="test_cases.zhaopin.test_ae_resume_edit.TestDataEchoVerification" name="test_tc030_personal_summary_data_echo_after_reload" time="9.001">
+      <failure message="AssertionError: 刷新后视图页 Personal Summary 区块应显示最新摘要内容&#10;assert False">test_cases/zhaopin/test_ae_resume_edit.py:1011: in test_tc030_personal_summary_data_echo_after_reload
+    assert summary_visible, \
+E   AssertionError: 刷新后视图页 Personal Summary 区块应显示最新摘要内容
+E   assert False</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="pytest" errors="0" failures="1" skipped="0" tests="28" time="544.943" timestamp="2026-04-27T14:09:42.278603+08:00" hostname="wangyonglideMacBook-Pro.local">
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestDetailPanelInfoDisplay" name="test_tc001_default_load_shows_detail_panel" time="14.123" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestDetailPanelInfoDisplay" name="test_tc002_own_post_title_correct" time="7.158" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestDetailPanelInfoDisplay" name="test_tc003_own_post_salary_correct" time="5.470" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestDetailPanelInfoDisplay" name="test_tc004_own_post_company_correct" time="4.993" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestDetailPanelInfoDisplay" name="test_tc005_own_post_job_tags_count" time="7.788" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestDetailPanelInfoDisplay" name="test_tc006_own_post_description_visible" time="6.359" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestOwnPostActions" name="test_tc007_own_post_shows_withdraw_edit_not_contact" time="5.229" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestOwnPostActions" name="test_tc008_own_post_edit_navigates_to_edit_page" time="9.781" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestOwnPostActions" name="test_tc009_own_post_withdraw_shows_dialog" time="7.772" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestOwnPostActions" name="test_tc010_withdraw_dialog_cancel_closes_dialog" time="6.644" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestOwnPostActions" name="test_tc011_withdraw_dialog_close_icon_closes_dialog" time="6.586" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestOtherPostActions" name="test_tc012_other_post_shows_contact_not_withdraw_edit" time="60.625">
+      <failure message="playwright._impl._errors.TimeoutError: Page.wait_for_selector: Timeout 45000ms exceeded.&#10;Call log:&#10;  - waiting for locator(&quot;[class*=\&quot;list-components-item-job-card\&quot;] a[href*=\&quot;/city-\&quot;], [class*=\&quot;list-components-item-job-card\&quot;] a[href*=\&quot;/city/\&quot;], [class*=\&quot;JobListItem\&quot;] a[href*=\&quot;/city-\&quot;], [class*=\&quot;JobListItem\&quot;] a[href*=\&quot;/city/\&quot;], main [class*=\&quot;list\&quot;] a[href*=\&quot;/city-\&quot;], main [class*=\&quot;list\&quot;] a[href*=\&quot;/city/\&quot;], main a[href*=\&quot;/city/\&quot;][href*=\&quot;cate-\&quot;]&quot;) to be visible">test_cases/zhaopin/test_es_jobs_detail_panel.py:493: in test_tc012_other_post_shows_contact_not_withdraw_edit
+    detail_page.click_first_non_own_job_card(config['own_post_id'])
+pages/jobs_detail_panel_page_es.py:251: in click_first_non_own_job_card
+    self.page.wait_for_selector(card_sel, timeout=45000)
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/sync_api/_generated.py:8182: in wait_for_selector
+    self._sync(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_page.py:423: in wait_for_selector
+    return await self._main_frame.wait_for_selector(**locals_to_params(locals()))
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:369: in wait_for_selector
+    await self._channel.send(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_connection.py:69: in send
+    return await self._connection.wrap_api_call(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_connection.py:558: in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+E   playwright._impl._errors.TimeoutError: Page.wait_for_selector: Timeout 45000ms exceeded.
+E   Call log:
+E     - waiting for locator("[class*=\"list-components-item-job-card\"] a[href*=\"/city-\"], [class*=\"list-components-item-job-card\"] a[href*=\"/city/\"], [class*=\"JobListItem\"] a[href*=\"/city-\"], [class*=\"JobListItem\"] a[href*=\"/city/\"], main [class*=\"list\"] a[href*=\"/city-\"], main [class*=\"list\"] a[href*=\"/city/\"], main a[href*=\"/city/\"][href*=\"cate-\"]") to be visible</failure>
+    </testcase>
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestOtherPostActions" name="test_tc013_other_post_contact_navigates_to_chat" time="27.173" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestOtherPostActions" name="test_tc014_other_post_detail_info_complete" time="167.176" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestFavouritesAction" name="test_tc015_favourites_not_collected_shows_added_toast" time="57.028" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestFavouritesAction" name="test_tc016_favourites_collected_shows_removed_toast" time="24.150" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestFavouritesAction" name="test_tc017_own_post_favourites_works" time="4.624" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestShareAction" name="test_tc018_share_shows_link_copied_toast" time="24.934" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestNewTabAction" name="test_tc019_new_tab_link_exists" time="4.534" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestNewTabAction" name="test_tc020_new_tab_opens_post_detail_in_new_tab" time="8.613" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestButtonPermissionIsolation" name="test_tc021_switch_own_to_other_updates_buttons" time="23.974" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestButtonPermissionIsolation" name="test_tc022_switch_other_to_own_updates_buttons" time="26.679" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestUnauthenticatedPermissions" name="test_tc023_unauthenticated_shows_contact_not_withdraw_edit" time="3.255" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestUnauthenticatedPermissions" name="test_tc024_unauthenticated_contact_shows_login_dialog" time="5.232" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestUnauthenticatedPermissions" name="test_tc025_unauthenticated_login_dialog_close" time="6.144" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestUnauthenticatedPermissions" name="test_tc026_unauthenticated_all_posts_show_contact" time="6.511" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestResumeEntry" name="test_tc027_resume_entry_visible" time="4.639" />
+    <testcase classname="test_cases.zhaopin.test_es_jobs_detail_panel.TestResumeEntry" name="test_tc028_resume_entry_navigates_to_resume_page" time="6.761" />
+  </testsuite>
+  <testsuite name="pytest" errors="0" failures="2" skipped="0" tests="41" time="845.535" timestamp="2026-04-27T14:09:42.069577+08:00" hostname="wangyonglideMacBook-Pro.local">
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc001_enter_resume_add_via_resume_button" time="28.665" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc005_continue_button_enabled_after_name_filled" time="15.030" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc006_continue_disabled_without_last_name" time="14.812" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc008_email_prefilled_with_login_account" time="14.817" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc019_click_continue_enters_step2" time="16.389" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc020_back_shows_unsaved_changes_dialog" time="21.104" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc023_job_function_two_level_selection" time="17.429" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc024_work_from_date_picker" time="18.716" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc025_currently_work_here_default_checked" time="17.576" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc027_no_work_experience_toggle_hides_fields" time="17.463" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc029_education_level_selection" time="17.522" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc032_done_button_enabled_after_all_fields_filled" time="21.926" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc033_done_button_enabled_with_no_work_experience" time="22.283" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc034_date_picker_year_range" time="17.450" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc004_upload_avatar_via_set_input_files" time="15.672" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc002_unauthenticated_resume_redirects_to_login" time="3.354" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc003_select_preset_avatar_shows_selected_state" time="16.204" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc007_first_last_name_max_100_chars" time="14.425" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc016_current_location_dropdown_select" time="14.377">
+      <failure message="AssertionError: 选择 France 后 Current Location 字段应回显 'France'，实际: Spain&#10;assert 'Spain' == 'France'&#10;  &#10;  - France&#10;  + Spain">test_cases/zhaopin/test_es_resume_add.py:1093: in test_tc016_current_location_dropdown_select
+    assert actual_value == "France", \
+E   AssertionError: 选择 France 后 Current Location 字段应回显 'France'，实际: Spain
+E   assert 'Spain' == 'France'
+E     
+E     - France
+E     + Spain</failure>
+    </testcase>
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc018_gender_dropdown_select" time="13.852" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc021_unsaved_changes_dialog_cancel_stays_on_step2" time="18.701" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc022_step1_back_returns_to_jobs_list" time="11.759" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc026_uncheck_currently_work_here_enables_to_date" time="16.882" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc028_work_to_date_cannot_be_before_from_date" time="20.025" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc030_education_from_and_to_both_required" time="20.572" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc031_education_to_date_cannot_be_before_from" time="35.086" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc035_job_function_panel_no_search_filter" time="17.373">
+      <failure message="AssertionError: Job Function 应显示所选分类，实际: &#10;assert 'Testing &amp; Quality Assurance' in ''">test_cases/zhaopin/test_es_resume_add.py:1568: in test_tc035_job_function_panel_no_search_filter
+    assert subcategory in selected_value, \
+E   AssertionError: Job Function 应显示所选分类，实际: 
+E   assert 'Testing &amp; Quality Assurance' in ''</failure>
+    </testcase>
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc009_first_name_spaces_only_continue_disabled" time="15.103" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc010_clear_first_name_disables_continue" time="15.125" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc011_char_counter_updates_realtime" time="73.872" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc012_input_truncated_at_100_chars" time="74.295" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc013_first_name_mixed_chars" time="14.869" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc014_emoji_counts_as_two_chars" time="44.083" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc015_continue_disabled_without_first_name" time="14.627" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc017_country_list_anchor_follows_scroll" time="21.706" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc042_page_refresh_discards_local_changes" time="14.072" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc036_avatar_preview_updates_after_upload" time="15.439" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc038_first_time_create_resume_fields_empty" time="13.608" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc039_session_timeout_redirects_to_login" time="15.634" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc040_date_picker_min_boundary_1925_01" time="15.750" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_add" name="test_tc041_work_from_equals_to_is_valid" time="16.660" />
+  </testsuite>
+  <testsuite name="pytest" errors="0" failures="2" skipped="0" tests="6" time="445.911" timestamp="2026-04-27T14:09:41.992525+08:00" hostname="wangyonglideMacBook-Pro.local">
+    <testcase classname="test_cases.zhaopin.test_es_resume_submit.TestESResumeSubmit" name="test_submit_resume_with_work_experience" time="21.933" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_submit.TestESResumeSubmit" name="test_submit_resume_without_work_experience" time="258.047">
+      <failure message="playwright._impl._errors.TimeoutError: Page.wait_for_function: Timeout 120000ms exceeded.">test_cases/zhaopin/test_es_resume_submit.py:426: in test_submit_resume_without_work_experience
+    resume_page.click_done()
+pages/resume_add_page_es.py:1022: in click_done
+    _attempt(force_click=True)
+pages/resume_add_page_es.py:1015: in _attempt
+    self.page.wait_for_function(js_leave_add, timeout=120000)
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/sync_api/_generated.py:11559: in wait_for_function
+    self._sync(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_page.py:1113: in wait_for_function
+    return await self._main_frame.wait_for_function(**locals_to_params(locals()))
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:860: in wait_for_function
+    await self._channel.send("waitForFunction", self._timeout, params)
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_connection.py:69: in send
+    return await self._connection.wrap_api_call(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_connection.py:558: in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+E   playwright._impl._errors.TimeoutError: Page.wait_for_function: Timeout 120000ms exceeded.</failure>
+    </testcase>
+    <testcase classname="test_cases.zhaopin.test_es_resume_submit.TestESResumeSubmit" name="test_database_cleanup" time="2.884" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_submit.TestESResumeSubmit" name="test_submit_resume_change_location" time="140.288">
+      <failure message="AssertionError: country_code 不正确，期望: FR (France), 实际: ES&#10;assert 'ES' == 'FR'&#10;  &#10;  - FR&#10;  + ES">test_cases/zhaopin/test_es_resume_submit.py:657: in test_submit_resume_change_location
+    assert rows[0][0] == "FR", f"country_code 不正确，期望: FR (France), 实际: {rows[0][0]}"
+E   AssertionError: country_code 不正确，期望: FR (France), 实际: ES
+E   assert 'ES' == 'FR'
+E     
+E     - FR
+E     + ES</failure>
+    </testcase>
+    <testcase classname="test_cases.zhaopin.test_es_resume_submit.TestESResumeSubmit" name="test_submit_resume_set_work_to_date" time="16.698" />
+    <testcase classname="test_cases.zhaopin.test_es_resume_submit.TestESResumeSubmit" name="test_verify_resume_data_display" time="5.290" />
+  </testsuite>
+  <testsuite name="pytest" errors="0" failures="2" skipped="0" tests="58" time="1343.642" timestamp="2026-04-27T14:09:42.044183+08:00" hostname="wangyonglideMacBook-Pro.local">
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_jobs_icon_navigates_to_job_preferences_page" time="31.486">
+      <failure message="AssertionError: 期望 jobPreference 中间页或带 iconSource=jobs 的职位列表，当前: https://sg.58v5.cn/en/city-singapore/&#10;assert ('cate-jobs' in 'https://sg.58v5.cn/en/city-singapore/')">test_cases/zhaopin/test_sg_job_preferences.py:148: in test_sg_jobs_icon_navigates_to_job_preferences_page
+    assert "cate-jobs" in current_url and "iconSource=jobs" in current_url, \
+E   AssertionError: 期望 jobPreference 中间页或带 iconSource=jobs 的职位列表，当前: https://sg.58v5.cn/en/city-singapore/
+E   assert ('cate-jobs' in 'https://sg.58v5.cn/en/city-singapore/')</failure>
+    </testcase>
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_job_preferences_skip_navigates_to_jobs_list" time="24.663" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_job_preferences_back_navigates_to_home" time="26.632" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_empty_form_continue_shows_three_required_errors" time="26.320" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_only_job_functions_filled_shows_location_salary_errors" time="22.950" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_only_location_filled_shows_job_functions_salary_errors" time="22.058" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_only_salary_filled_shows_job_functions_location_errors" time="22.145" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_job_preferences_page_shows_all_form_blocks" time="21.428" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_home_page_jobs_icon_visible_and_clickable" time="21.185">
+      <failure message="AssertionError: 点击 Jobs 后 URL 未变化: https://sg.58v5.cn/en/city-singapore/&#10;assert ('city-singapore' not in 'https://sg....y-singapore/'&#10;  &#10;  'city-singapore' is contained here:&#10;    https://sg.58v5.cn/en/city-singapore/&#10;  ?                       ++++++++++++++ or 'cate-jobs' in 'https://sg.58v5.cn/en/city-singapore/' or 'jobPreference' in 'https://sg.58v5.cn/en/city-singapore/')">test_cases/zhaopin/test_sg_job_preferences.py:451: in test_sg_home_page_jobs_icon_visible_and_clickable
+    assert "city-singapore" not in current_url or "cate-jobs" in current_url or "jobPreference" in current_url, \
+E   AssertionError: 点击 Jobs 后 URL 未变化: https://sg.58v5.cn/en/city-singapore/
+E   assert ('city-singapore' not in 'https://sg....y-singapore/'
+E     
+E     'city-singapore' is contained here:
+E       https://sg.58v5.cn/en/city-singapore/
+E     ?                       ++++++++++++++ or 'cate-jobs' in 'https://sg.58v5.cn/en/city-singapore/' or 'jobPreference' in 'https://sg.58v5.cn/en/city-singapore/')</failure>
+    </testcase>
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_other_category_icon_bypasses_job_preferences" time="21.821" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_job_functions_trigger_expands_two_column_panel" time="21.904" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_job_functions_full_selection_flow" time="22.970" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_job_functions_max_10_items_boundary" time="33.380" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_job_functions_panel_closes_on_outside_click" time="21.970" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_job_functions_clear_resets_selections" time="23.091" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_job_functions_reselect_after_clear" time="24.897" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_location_trigger_expands_checkbox_panel" time="22.152" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_location_full_selection_flow" time="22.088" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_location_max_5_items_boundary" time="22.433" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_location_uncheck_updates_count" time="22.536" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_location_clear_resets_selections" time="23.006" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_location_reselect_after_clear" time="23.342" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_pay_type_button_expands_options" time="21.502" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_salary_full_flow_pay_type_and_amount" time="22.223" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_salary_amount_boundary_values" time="26.542" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_salary_illegal_chars_blocked" time="23.548" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_salary_amount_clear_resets_input" time="22.920" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_salary_pay_type_can_be_switched" time="23.090" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_after_filling_and_clearing_all_fields_errors_reappear" time="26.293" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_workplace_type_and_job_type_are_optional_multiselect" time="21.502" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_refresh_page_clears_unfilled_form_data" time="22.395" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_unauthenticated_access_job_preferences_shows_login_popup" time="2.505" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_direct_jobs_list_url_bypasses_job_preferences" time="22.555" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_skip_return_url_contains_icon_source_jobs" time="22.997" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_pay_type_switch_to_monthly_updates_button_text" time="23.386" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_pay_type_monthly_all_required_fields_filled_continue_enabled" time="23.840" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_pay_type_monthly_yearly_toggle_updates_text" time="23.043" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_monthly_pay_type_empty_amount_triggers_required_error" time="22.955" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_pay_type_switch_to_hourly_updates_button_text" time="22.195" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_pay_type_hourly_all_required_fields_filled_continue_enabled" time="24.893" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_pay_type_hourly_yearly_toggle_updates_text" time="23.036" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_pay_type_monthly_to_hourly_updates_button_text" time="23.093" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_pay_type_hourly_to_monthly_updates_button_text" time="23.045" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_hourly_pay_type_empty_amount_triggers_required_error" time="23.057" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_monthly_hourly_extreme_salary_boundary_values" time="28.982" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_salary_two_decimal_places_preserved" time="23.690" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_salary_more_than_two_decimals_truncated" time="23.740" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_salary_one_decimal_place_allowed" time="23.566" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_salary_negative_sign_blocked" time="23.438" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_salary_paste_with_illegal_chars_filtered" time="23.172" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_job_functions_deselect_item_in_panel" time="23.287" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_job_functions_deselect_all_restores_placeholder" time="23.809" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_location_deselect_item_in_panel" time="22.313" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_location_deselect_all_restores_placeholder" time="23.036" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_workplace_type_deselect_item" time="21.449" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_workplace_type_deselect_all_items" time="21.538" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_job_type_deselect_item" time="21.554" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences" name="test_sg_job_type_deselect_all_items" time="21.637" />
+  </testsuite>
+  <testsuite name="pytest" errors="0" failures="1" skipped="0" tests="8" time="334.425" timestamp="2026-04-27T14:09:42.229010+08:00" hostname="wangyonglideMacBook-Pro.local">
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences_add_from_list" name="test_sg_add_pref_authenticated_no_pref_should_show_add_banner" time="48.559" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences_add_from_list" name="test_sg_add_pref_unauthenticated_should_show_add_banner" time="30.589" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences_add_from_list" name="test_sg_add_pref_authenticated_should_redirect_directly_to_add_page" time="66.954">
+      <failure message="playwright._impl._errors.TimeoutError: Locator.wait_for: Timeout 25000ms exceeded.&#10;Call log:&#10;  - waiting for get_by_text(re.compile(r&quot;Add\s*Job\s*Preference\s*Unlock\s+more&quot;, re.IGNORECASE)).or_(get_by_text(re.compile(r&quot;Add\s+Job\s+Preference&quot;, re.IGNORECASE))).or_(get_by_text(re.compile(r&quot;Unlock\s+more\s+opportunities&quot;, re.IGNORECASE))).first">test_cases/zhaopin/test_sg_job_preferences_add_from_list.py:471: in test_sg_add_pref_authenticated_should_redirect_directly_to_add_page
+    _click_sg_add_job_preference_card(page)
+test_cases/zhaopin/test_sg_job_preferences_add_from_list.py:196: in _click_sg_add_job_preference_card
+    _wait_sg_jobs_list_preference_banner(page, timeout_ms=timeout_ms)
+test_cases/zhaopin/test_sg_job_preferences_add_from_list.py:183: in _wait_sg_jobs_list_preference_banner
+    loc.wait_for(state="attached", timeout=timeout_ms)
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/sync_api/_generated.py:17975: in wait_for
+    self._sync(self._impl_obj.wait_for(timeout=timeout, state=state))
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_locator.py:692: in wait_for
+    await self._frame.wait_for_selector(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:369: in wait_for_selector
+    await self._channel.send(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_connection.py:69: in send
+    return await self._connection.wrap_api_call(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_connection.py:558: in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+E   playwright._impl._errors.TimeoutError: Locator.wait_for: Timeout 25000ms exceeded.
+E   Call log:
+E     - waiting for get_by_text(re.compile(r"Add\s*Job\s*Preference\s*Unlock\s+more", re.IGNORECASE)).or_(get_by_text(re.compile(r"Add\s+Job\s+Preference", re.IGNORECASE))).or_(get_by_text(re.compile(r"Unlock\s+more\s+opportunities", re.IGNORECASE))).first</failure>
+    </testcase>
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences_add_from_list" name="test_sg_add_pref_add_page_should_show_empty_form" time="32.755" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences_add_from_list" name="test_sg_add_pref_empty_form_continue_should_show_three_validation_errors" time="33.867" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences_add_from_list" name="test_sg_add_pref_back_button_should_redirect_to_jobs_list" time="61.280" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences_add_from_list" name="test_sg_add_pref_login_via_banner_should_redirect_to_add_page" time="30.573" />
+    <testcase classname="test_cases.zhaopin.test_sg_job_preferences_add_from_list" name="test_sg_add_pref_unauthenticated_click_should_show_login_dialog" time="28.931" />
+  </testsuite>
+  <testsuite name="pytest" errors="0" failures="2" skipped="0" tests="7" time="177.321" timestamp="2026-04-27T14:09:42.200674+08:00" hostname="wangyonglideMacBook-Pro.local">
+    <testcase classname="test_cases.zhaopin.test_zhaopin_job_preferences" name="test_tc001_unnamed" time="76.475">
+      <failure message="playwright._impl._errors.TimeoutError: Timeout 45000ms exceeded.&#10;=========================== logs ===========================&#10;waiting for navigation to &quot;**/cate-jobs**&quot; until 'load'&#10;  navigated to &quot;https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs&quot;&#10;  navigated to &quot;https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs&quot;&#10;  navigated to &quot;https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs&quot;&#10;============================================================">test_cases/zhaopin/test_zhaopin_job_preferences.py:67: in test_tc001_unnamed
+    sg_wait_jobs_list_url(page, timeout=45000)
+test_cases/zhaopin/explicit_waits.py:143: in sg_wait_jobs_list_url
+    page.wait_for_url("**/cate-jobs**", timeout=timeout)
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/sync_api/_generated.py:9162: in wait_for_url
+    self._sync(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_page.py:584: in wait_for_url
+    return await self._main_frame.wait_for_url(**locals_to_params(locals()))
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:266: in wait_for_url
+    pass
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_event_context_manager.py:33: in __aexit__
+    await self._future
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:239: in continuation
+    event = await waiter.result()
+E   playwright._impl._errors.TimeoutError: Timeout 45000ms exceeded.
+E   =========================== logs ===========================
+E   waiting for navigation to "**/cate-jobs**" until 'load'
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E   ============================================================</failure>
+    </testcase>
+    <testcase classname="test_cases.zhaopin.test_zhaopin_job_preferences" name="test_tc002_unnamed" time="47.966">
+      <failure message="playwright._impl._errors.TimeoutError: Timeout 45000ms exceeded.&#10;=========================== logs ===========================&#10;waiting for navigation to &quot;**/cate-jobs**&quot; until 'load'&#10;  navigated to &quot;https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs&quot;&#10;  navigated to &quot;https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs&quot;&#10;  navigated to &quot;https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs&quot;&#10;============================================================">test_cases/zhaopin/test_zhaopin_job_preferences.py:91: in test_tc002_unnamed
+    sg_wait_jobs_list_url(page, timeout=45000)
+test_cases/zhaopin/explicit_waits.py:143: in sg_wait_jobs_list_url
+    page.wait_for_url("**/cate-jobs**", timeout=timeout)
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/sync_api/_generated.py:9162: in wait_for_url
+    self._sync(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_page.py:584: in wait_for_url
+    return await self._main_frame.wait_for_url(**locals_to_params(locals()))
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:266: in wait_for_url
+    pass
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_event_context_manager.py:33: in __aexit__
+    await self._future
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:239: in continuation
+    event = await waiter.result()
+E   playwright._impl._errors.TimeoutError: Timeout 45000ms exceeded.
+E   =========================== logs ===========================
+E   waiting for navigation to "**/cate-jobs**" until 'load'
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E   ============================================================</failure>
+    </testcase>
+    <testcase classname="test_cases.zhaopin.test_zhaopin_job_preferences" name="test_tc003_unnamed" time="1.339" />
+    <testcase classname="test_cases.zhaopin.test_zhaopin_job_preferences" name="test_tc004_unnamed" time="0.730" />
+    <testcase classname="test_cases.zhaopin.test_zhaopin_job_preferences" name="test_tc005_0_999999" time="24.952" />
+    <testcase classname="test_cases.zhaopin.test_zhaopin_job_preferences" name="test_tc006_unnamed" time="23.577" />
+    <testcase classname="test_cases.zhaopin.test_zhaopin_job_preferences" name="test_tc007_unnamed" time="0.477" />
+  </testsuite>
+</testsuites>

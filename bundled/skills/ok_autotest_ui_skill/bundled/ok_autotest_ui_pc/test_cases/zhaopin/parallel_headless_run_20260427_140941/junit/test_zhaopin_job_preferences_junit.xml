@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="7" time="177.321" timestamp="2026-04-27T14:09:42.200674+08:00" hostname="wangyonglideMacBook-Pro.local"><testcase classname="test_cases.zhaopin.test_zhaopin_job_preferences" name="test_tc001_unnamed" time="76.475"><failure message="playwright._impl._errors.TimeoutError: Timeout 45000ms exceeded.&#10;=========================== logs ===========================&#10;waiting for navigation to &quot;**/cate-jobs**&quot; until 'load'&#10;  navigated to &quot;https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs&quot;&#10;  navigated to &quot;https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs&quot;&#10;  navigated to &quot;https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs&quot;&#10;============================================================">test_cases/zhaopin/test_zhaopin_job_preferences.py:67: in test_tc001_unnamed
+    sg_wait_jobs_list_url(page, timeout=45000)
+test_cases/zhaopin/explicit_waits.py:143: in sg_wait_jobs_list_url
+    page.wait_for_url("**/cate-jobs**", timeout=timeout)
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/sync_api/_generated.py:9162: in wait_for_url
+    self._sync(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_page.py:584: in wait_for_url
+    return await self._main_frame.wait_for_url(**locals_to_params(locals()))
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:266: in wait_for_url
+    pass
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_event_context_manager.py:33: in __aexit__
+    await self._future
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:239: in continuation
+    event = await waiter.result()
+E   playwright._impl._errors.TimeoutError: Timeout 45000ms exceeded.
+E   =========================== logs ===========================
+E   waiting for navigation to "**/cate-jobs**" until 'load'
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E   ============================================================</failure></testcase><testcase classname="test_cases.zhaopin.test_zhaopin_job_preferences" name="test_tc002_unnamed" time="47.966"><failure message="playwright._impl._errors.TimeoutError: Timeout 45000ms exceeded.&#10;=========================== logs ===========================&#10;waiting for navigation to &quot;**/cate-jobs**&quot; until 'load'&#10;  navigated to &quot;https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs&quot;&#10;  navigated to &quot;https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs&quot;&#10;  navigated to &quot;https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs&quot;&#10;============================================================">test_cases/zhaopin/test_zhaopin_job_preferences.py:91: in test_tc002_unnamed
+    sg_wait_jobs_list_url(page, timeout=45000)
+test_cases/zhaopin/explicit_waits.py:143: in sg_wait_jobs_list_url
+    page.wait_for_url("**/cate-jobs**", timeout=timeout)
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/sync_api/_generated.py:9162: in wait_for_url
+    self._sync(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_page.py:584: in wait_for_url
+    return await self._main_frame.wait_for_url(**locals_to_params(locals()))
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:266: in wait_for_url
+    pass
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_event_context_manager.py:33: in __aexit__
+    await self._future
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:239: in continuation
+    event = await waiter.result()
+E   playwright._impl._errors.TimeoutError: Timeout 45000ms exceeded.
+E   =========================== logs ===========================
+E   waiting for navigation to "**/cate-jobs**" until 'load'
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E   ============================================================</failure></testcase><testcase classname="test_cases.zhaopin.test_zhaopin_job_preferences" name="test_tc003_unnamed" time="1.339" /><testcase classname="test_cases.zhaopin.test_zhaopin_job_preferences" name="test_tc004_unnamed" time="0.730" /><testcase classname="test_cases.zhaopin.test_zhaopin_job_preferences" name="test_tc005_0_999999" time="24.952" /><testcase classname="test_cases.zhaopin.test_zhaopin_job_preferences" name="test_tc006_unnamed" time="23.577" /><testcase classname="test_cases.zhaopin.test_zhaopin_job_preferences" name="test_tc007_unnamed" time="0.477" /></testsuite></testsuites>

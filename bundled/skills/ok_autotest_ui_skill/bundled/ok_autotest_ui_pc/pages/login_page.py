@@ -76,6 +76,47 @@ class LoginPage(BasePage):
         by_sign = p.get_by_text(re.compile(r"Sign\s*in\s*/\s*Register", re.I)).first
         return by_text.or_(by_link).or_(by_button).or_(by_sign)
 
+    def active_login_dialog(self):
+        """
+        当前登录流程弹窗定位器。
+        站点普遍使用 ARIA role=dialog，未必实现为原生 <dialog open>。
+        优先：含 Continue / Log in；备选：含 Welcome to OK.com 的首屏（避免首屏按钮文案差异）。
+        """
+        p = self.page
+        with_cta = p.get_by_role("dialog").filter(
+            has=p.get_by_role("button", name=re.compile(r"Continue|Log\s*in", re.I))
+        ).first
+        welcome = p.get_by_role("dialog").filter(
+            has=p.get_by_text(re.compile(r"Welcome to OK\.com", re.I))
+        ).first
+        return with_cta.or_(welcome)
+
+    def _wait_for_login_modal_visible(self, timeout=20000):
+        """点击入口后等待登录层出现（ARIA dialog 优先，兼容原生 dialog[open]）。"""
+        try:
+            self.active_login_dialog().wait_for(state="visible", timeout=timeout)
+            return
+        except Exception:
+            pass
+        try:
+            self.page.locator("dialog[open]").first.wait_for(
+                state="visible", timeout=min(8000, timeout)
+            )
+            return
+        except Exception:
+            pass
+        try:
+            self.page.get_by_role("dialog").first.wait_for(
+                state="visible", timeout=min(8000, timeout)
+            )
+            return
+        except Exception:
+            self.logger.warning(
+                "登录弹窗未在预期时间内就绪（已尝试含 Continue/Log in 的 dialog、"
+                "dialog[open]、任意 dialog）"
+            )
+            self.page.wait_for_timeout(2000)
+
     def click_login_register_button(self, timeout=30000):
         """点击登录/注册按钮，并等待登录弹窗出现"""
         try:
@@ -83,13 +124,8 @@ class LoginPage(BasePage):
             entry.wait_for(state="visible", timeout=timeout)
             entry.scroll_into_view_if_needed(timeout=5000)
             entry.click(timeout=min(15000, timeout))
-            # 等待登录弹窗出现（在无头模式下需要更长时间）
-            self.page.wait_for_timeout(3000)
-            # 验证弹窗是否打开
-            dialog = self.page.locator('dialog[open]').first
-            if not dialog.is_visible(timeout=5000):
-                self.logger.warning("登录弹窗未在 5 秒内出现，尝试延长等待时间")
-                self.page.wait_for_timeout(5000)
+            self.page.wait_for_timeout(500)
+            self._wait_for_login_modal_visible(timeout=min(20000, timeout))
         except Exception as e:
             self.logger.error(f"点击登录/注册按钮失败: {e}")
             raise

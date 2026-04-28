@@ -1,0 +1,1706 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Library/Developer/CommandLineTools/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc
+configfile: pytest.ini
+plugins: order-1.2.0, dependency-0.5.1, allure-pytest-2.15.3
+collecting ... collected 65 items
+
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_search_with_keyword_should_navigate_to_results 11:58:15 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+
+-------------------------------- live log setup --------------------------------
+2026-04-27 11:58:15 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+11:58:18 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+2026-04-27 11:58:18 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+11:58:18 [INFO] [zhaopin] 已创建共享 BrowserContext: site=es headless=True
+2026-04-27 11:58:18 [INFO] [zhaopin] 已创建共享 BrowserContext: site=es headless=True
+11:58:19 [INFO] 尝试加载Session: es_jobseeker_wang_es
+-------------------------------- live log call ---------------------------------
+2026-04-27 11:58:19 [INFO] 尝试加载Session: es_jobseeker_wang_es
+11:58:19 [INFO] Session加载成功，验证登录状态...
+2026-04-27 11:58:19 [INFO] Session加载成功，验证登录状态...
+11:58:27 [INFO] ✓ 检测到登录用户名
+2026-04-27 11:58:27 [INFO] ✓ 检测到登录用户名
+11:58:27 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 11:58:27 [INFO] ✓ Session有效，已登录ES站
+11:58:27 [INFO] ✓ 已登录ES站
+2026-04-27 11:58:27 [INFO] ✓ 已登录ES站
+11:58:32 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 11:58:32 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+11:58:32 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 11:58:32 [INFO] ✓ 已导航到Jobs列表页
+11:58:33 [INFO] 输入搜索关键词: manager
+2026-04-27 11:58:33 [INFO] 输入搜索关键词: manager
+11:58:33 [INFO] ✓ 已输入关键词"manager"
+2026-04-27 11:58:33 [INFO] ✓ 已输入关键词"manager"
+11:58:34 [INFO] 点击搜索按钮
+2026-04-27 11:58:34 [INFO] 点击搜索按钮
+11:58:36 [INFO] ✓ 已点击Search按钮
+2026-04-27 11:58:36 [INFO] ✓ 已点击Search按钮
+11:58:36 [INFO] ✓ URL验证成功: https://es.58v5.cn/en/city-madrid2/cate-jobs/?keyword=manager
+2026-04-27 11:58:36 [INFO] ✓ URL验证成功: https://es.58v5.cn/en/city-madrid2/cate-jobs/?keyword=manager
+11:58:36 [INFO] ✓ 筛选器区域可见
+2026-04-27 11:58:36 [INFO] ✓ 筛选器区域可见
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_search_with_empty_keyword_should_stay_or_default 11:58:36 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 11:58:36 [INFO] 尝试加载Session: es_jobseeker_wang_es
+11:58:36 [INFO] Session加载成功，验证登录状态...
+2026-04-27 11:58:36 [INFO] Session加载成功，验证登录状态...
+11:58:39 [INFO] ✓ 检测到登录用户名
+2026-04-27 11:58:39 [INFO] ✓ 检测到登录用户名
+11:58:39 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 11:58:39 [INFO] ✓ Session有效，已登录ES站
+11:58:39 [INFO] ✓ 已登录ES站
+2026-04-27 11:58:39 [INFO] ✓ 已登录ES站
+11:58:42 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 11:58:42 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+11:58:42 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 11:58:42 [INFO] ✓ 已导航到Jobs列表页
+11:58:44 [INFO] 点击搜索按钮
+2026-04-27 11:58:44 [INFO] 点击搜索按钮
+11:58:46 [INFO] ✓ 已点击Search按钮
+2026-04-27 11:58:46 [INFO] ✓ 已点击Search按钮
+11:58:46 [INFO] ✓ URL验证成功: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&keyword=
+2026-04-27 11:58:46 [INFO] ✓ URL验证成功: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&keyword=
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_search_with_special_characters 11:58:47 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 11:58:47 [INFO] 尝试加载Session: es_jobseeker_wang_es
+11:58:47 [INFO] Session加载成功，验证登录状态...
+2026-04-27 11:58:47 [INFO] Session加载成功，验证登录状态...
+11:58:52 [INFO] ✓ 检测到登录用户名
+2026-04-27 11:58:52 [INFO] ✓ 检测到登录用户名
+11:58:52 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 11:58:52 [INFO] ✓ Session有效，已登录ES站
+11:58:52 [INFO] ✓ 已登录ES站
+2026-04-27 11:58:52 [INFO] ✓ 已登录ES站
+11:58:59 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 11:58:59 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+11:58:59 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 11:58:59 [INFO] ✓ 已导航到Jobs列表页
+11:58:59 [INFO] 输入搜索关键词: @#$%
+2026-04-27 11:58:59 [INFO] 输入搜索关键词: @#$%
+11:58:59 [INFO] ✓ 已输入特殊字符"@#$%"
+2026-04-27 11:58:59 [INFO] ✓ 已输入特殊字符"@#$%"
+11:59:00 [INFO] 点击搜索按钮
+2026-04-27 11:59:00 [INFO] 点击搜索按钮
+11:59:02 [INFO] ✓ 已点击Search按钮
+2026-04-27 11:59:02 [INFO] ✓ 已点击Search按钮
+11:59:02 [INFO] ✓ URL正确编码特殊字符: https://es.58v5.cn/en/city-madrid2/cate-jobs/?keyword=%40%23%24%25
+2026-04-27 11:59:02 [INFO] ✓ URL正确编码特殊字符: https://es.58v5.cn/en/city-madrid2/cate-jobs/?keyword=%40%23%24%25
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_search_with_long_keyword 11:59:02 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 11:59:02 [INFO] 尝试加载Session: es_jobseeker_wang_es
+11:59:02 [INFO] Session加载成功，验证登录状态...
+2026-04-27 11:59:02 [INFO] Session加载成功，验证登录状态...
+11:59:04 [INFO] ✓ 检测到登录用户名
+2026-04-27 11:59:04 [INFO] ✓ 检测到登录用户名
+11:59:04 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 11:59:04 [INFO] ✓ Session有效，已登录ES站
+11:59:04 [INFO] ✓ 已登录ES站
+2026-04-27 11:59:04 [INFO] ✓ 已登录ES站
+11:59:07 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 11:59:07 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+11:59:07 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 11:59:07 [INFO] ✓ 已导航到Jobs列表页
+11:59:07 [INFO] 输入搜索关键词: managermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanager
+2026-04-27 11:59:07 [INFO] 输入搜索关键词: managermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanager
+11:59:07 [INFO] ✓ 已输入超长关键词（350字符）
+2026-04-27 11:59:07 [INFO] ✓ 已输入超长关键词（350字符）
+11:59:07 [INFO] 点击搜索按钮
+2026-04-27 11:59:07 [INFO] 点击搜索按钮
+11:59:09 [INFO] ✓ 已点击Search按钮
+2026-04-27 11:59:09 [INFO] ✓ 已点击Search按钮
+11:59:09 [INFO] ✓ 系统正常处理超长关键词: https://es.58v5.cn/en/city-madrid2/cate-jobs/?keyword=managermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanager
+2026-04-27 11:59:09 [INFO] ✓ 系统正常处理超长关键词: https://es.58v5.cn/en/city-madrid2/cate-jobs/?keyword=managermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanagermanager
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_default_location_filter_is_madrid 11:59:09 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 11:59:09 [INFO] 尝试加载Session: es_jobseeker_wang_es
+11:59:09 [INFO] Session加载成功，验证登录状态...
+2026-04-27 11:59:09 [INFO] Session加载成功，验证登录状态...
+11:59:13 [INFO] ✓ 检测到登录用户名
+2026-04-27 11:59:13 [INFO] ✓ 检测到登录用户名
+11:59:13 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 11:59:13 [INFO] ✓ Session有效，已登录ES站
+11:59:13 [INFO] ✓ 已登录ES站
+2026-04-27 11:59:13 [INFO] ✓ 已登录ES站
+11:59:16 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 11:59:16 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+11:59:16 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 11:59:16 [INFO] ✓ 已导航到Jobs列表页
+11:59:16 [INFO] ✓ 地址筛选器默认显示Madrid
+2026-04-27 11:59:16 [INFO] ✓ 地址筛选器默认显示Madrid
+11:59:16 [INFO] ✓ URL包含city-madrid2: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 11:59:16 [INFO] ✓ URL包含city-madrid2: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_switch_city_updates_filter_and_url 11:59:17 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 11:59:17 [INFO] 尝试加载Session: es_jobseeker_wang_es
+11:59:17 [INFO] Session加载成功，验证登录状态...
+2026-04-27 11:59:17 [INFO] Session加载成功，验证登录状态...
+11:59:24 [INFO] ✓ 检测到登录用户名
+2026-04-27 11:59:24 [INFO] ✓ 检测到登录用户名
+11:59:24 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 11:59:24 [INFO] ✓ Session有效，已登录ES站
+11:59:24 [INFO] ✓ 已登录ES站
+2026-04-27 11:59:24 [INFO] ✓ 已登录ES站
+11:59:26 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 11:59:26 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+11:59:26 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 11:59:26 [INFO] ✓ 已导航到Jobs列表页
+11:59:26 [INFO] 点击Madrid地址筛选器
+2026-04-27 11:59:26 [INFO] 点击Madrid地址筛选器
+11:59:26 [INFO] ✓ 已打开地址筛选面板
+2026-04-27 11:59:26 [INFO] ✓ 已打开地址筛选面板
+11:59:40 [INFO] ✓ 已选择省份Catalonia
+2026-04-27 11:59:40 [INFO] ✓ 已选择省份Catalonia
+11:59:55 [INFO] ✓ 已选择城市Tarragona
+2026-04-27 11:59:55 [INFO] ✓ 已选择城市Tarragona
+11:59:55 [INFO] ✓ URL已切换城市: https://es.58v5.cn/en/city-tarragona/cate-jobs/?iconSource=jobs
+2026-04-27 11:59:55 [INFO] ✓ URL已切换城市: https://es.58v5.cn/en/city-tarragona/cate-jobs/?iconSource=jobs
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_click_location_filter_opens_panel 11:59:55 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 11:59:55 [INFO] 尝试加载Session: es_jobseeker_wang_es
+11:59:55 [INFO] Session加载成功，验证登录状态...
+2026-04-27 11:59:55 [INFO] Session加载成功，验证登录状态...
+11:59:58 [INFO] ✓ 检测到登录用户名
+2026-04-27 11:59:58 [INFO] ✓ 检测到登录用户名
+11:59:58 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 11:59:58 [INFO] ✓ Session有效，已登录ES站
+11:59:58 [INFO] ✓ 已登录ES站
+2026-04-27 11:59:58 [INFO] ✓ 已登录ES站
+12:00:03 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:00:03 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:00:03 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:00:03 [INFO] ✓ 已导航到Jobs列表页
+12:00:03 [INFO] 点击Madrid地址筛选器
+2026-04-27 12:00:03 [INFO] 点击Madrid地址筛选器
+12:00:03 [INFO] ✓ 已点击地址筛选器
+2026-04-27 12:00:03 [INFO] ✓ 已点击地址筛选器
+12:00:03 [INFO] ✓ 地址选择面板已展开
+2026-04-27 12:00:03 [INFO] ✓ 地址选择面板已展开
+12:00:03 [INFO] ✓ Search City搜索框可见
+2026-04-27 12:00:03 [INFO] ✓ Search City搜索框可见
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_location_two_level_selection 12:00:04 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:00:04 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:00:04 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:00:04 [INFO] Session加载成功，验证登录状态...
+12:00:07 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:00:07 [INFO] ✓ 检测到登录用户名
+12:00:07 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:00:07 [INFO] ✓ Session有效，已登录ES站
+12:00:07 [INFO] ✓ 已登录ES站
+2026-04-27 12:00:07 [INFO] ✓ 已登录ES站
+12:00:10 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:00:10 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:00:10 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:00:10 [INFO] ✓ 已导航到Jobs列表页
+12:00:10 [INFO] 点击Madrid地址筛选器
+2026-04-27 12:00:10 [INFO] 点击Madrid地址筛选器
+12:00:10 [INFO] ✓ 已打开地址面板
+2026-04-27 12:00:10 [INFO] ✓ 已打开地址面板
+12:00:23 [INFO] ✓ 已选择省份Andalusia
+2026-04-27 12:00:23 [INFO] ✓ 已选择省份Andalusia
+12:00:39 [INFO] ✓ 已选择城市Sevilla
+2026-04-27 12:00:39 [INFO] ✓ 已选择城市Sevilla
+12:00:39 [INFO] ✓ URL已切换城市: https://es.58v5.cn/en/city-sevilla/cate-jobs/?iconSource=jobs
+2026-04-27 12:00:39 [INFO] ✓ URL已切换城市: https://es.58v5.cn/en/city-sevilla/cate-jobs/?iconSource=jobs
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_location_select_all_spain 12:00:39 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:00:39 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:00:39 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:00:39 [INFO] Session加载成功，验证登录状态...
+12:00:42 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:00:42 [INFO] ✓ 检测到登录用户名
+12:00:42 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:00:42 [INFO] ✓ Session有效，已登录ES站
+12:00:42 [INFO] ✓ 已登录ES站
+2026-04-27 12:00:42 [INFO] ✓ 已登录ES站
+12:00:45 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:00:45 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:00:45 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:00:45 [INFO] ✓ 已导航到Jobs列表页
+12:00:45 [INFO] 点击Madrid地址筛选器
+2026-04-27 12:00:45 [INFO] 点击Madrid地址筛选器
+12:00:45 [INFO] ✓ 已打开地址面板
+2026-04-27 12:00:45 [INFO] ✓ 已打开地址面板
+12:00:59 [INFO] ✓ 已选择All Spain
+2026-04-27 12:00:59 [INFO] ✓ 已选择All Spain
+12:00:59 [INFO] ✓ URL验证成功: https://es.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-27 12:00:59 [INFO] ✓ URL验证成功: https://es.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+12:00:59 [INFO] ✓ 筛选器显示Location
+2026-04-27 12:00:59 [INFO] ✓ 筛选器显示Location
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_location_search_city_filters_list 12:01:00 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:01:00 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:01:00 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:01:00 [INFO] Session加载成功，验证登录状态...
+12:01:02 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:01:02 [INFO] ✓ 检测到登录用户名
+12:01:02 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:01:02 [INFO] ✓ Session有效，已登录ES站
+12:01:02 [INFO] ✓ 已登录ES站
+2026-04-27 12:01:02 [INFO] ✓ 已登录ES站
+12:01:05 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:01:05 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:01:05 [INFO] 点击Madrid地址筛选器
+2026-04-27 12:01:05 [INFO] 点击Madrid地址筛选器
+12:01:05 [INFO] ✓ 已打开地址面板
+2026-04-27 12:01:05 [INFO] ✓ 已打开地址面板
+12:01:05 [INFO] ✓ 已输入搜索关键词'Madrid'
+2026-04-27 12:01:05 [INFO] ✓ 已输入搜索关键词'Madrid'
+12:01:05 [INFO] ✓ 搜索结果显示Madrid相关城市
+2026-04-27 12:01:05 [INFO] ✓ 搜索结果显示Madrid相关城市
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_location_use_current_location_requires_permission 12:01:05 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:01:05 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:01:05 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:01:05 [INFO] Session加载成功，验证登录状态...
+12:01:07 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:01:07 [INFO] ✓ 检测到登录用户名
+12:01:07 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:01:07 [INFO] ✓ Session有效，已登录ES站
+12:01:07 [INFO] ✓ 已登录ES站
+2026-04-27 12:01:07 [INFO] ✓ 已登录ES站
+12:01:09 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:01:09 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:01:09 [INFO] 点击Madrid地址筛选器
+2026-04-27 12:01:09 [INFO] 点击Madrid地址筛选器
+12:01:09 [INFO] ✓ 已打开地址面板
+2026-04-27 12:01:09 [INFO] ✓ 已打开地址面板
+12:01:09 [INFO] ✓ Use current location按钮存在（地理位置授权需手工验证）
+2026-04-27 12:01:09 [INFO] ✓ Use current location按钮存在（地理位置授权需手工验证）
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_click_job_type_filter_opens_panel 12:01:10 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:01:10 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:01:10 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:01:10 [INFO] Session加载成功，验证登录状态...
+12:01:12 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:01:12 [INFO] ✓ 检测到登录用户名
+12:01:12 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:01:12 [INFO] ✓ Session有效，已登录ES站
+12:01:12 [INFO] ✓ 已登录ES站
+2026-04-27 12:01:12 [INFO] ✓ 已登录ES站
+12:01:15 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:01:15 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:01:15 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:01:15 [INFO] ✓ 已导航到Jobs列表页
+12:01:15 [INFO] 点击Job Type筛选器
+2026-04-27 12:01:15 [INFO] 点击Job Type筛选器
+12:01:15 [INFO] ✓ 已点击Job Type筛选器
+2026-04-27 12:01:15 [INFO] ✓ 已点击Job Type筛选器
+12:01:15 [INFO] ✓ Job Type面板已展开
+2026-04-27 12:01:15 [INFO] ✓ Job Type面板已展开
+12:01:15 [INFO] ✓ 面板显示Full-time等5个选项
+2026-04-27 12:01:15 [INFO] ✓ 面板显示Full-time等5个选项
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_select_fulltime_and_confirm_updates_url 12:01:15 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:01:15 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:01:15 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:01:15 [INFO] Session加载成功，验证登录状态...
+12:01:18 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:01:18 [INFO] ✓ 检测到登录用户名
+12:01:18 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:01:18 [INFO] ✓ Session有效，已登录ES站
+12:01:18 [INFO] ✓ 已登录ES站
+2026-04-27 12:01:18 [INFO] ✓ 已登录ES站
+12:01:22 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:01:22 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:01:22 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:01:22 [INFO] ✓ 已导航到Jobs列表页
+12:01:22 [INFO] 点击Job Type筛选器
+2026-04-27 12:01:22 [INFO] 点击Job Type筛选器
+12:01:22 [INFO] ✓ 已打开Job Type面板
+2026-04-27 12:01:22 [INFO] ✓ 已打开Job Type面板
+12:01:22 [INFO] 选择Job Type: Full-time
+2026-04-27 12:01:22 [INFO] 选择Job Type: Full-time
+12:01:22 [INFO] ✓ 已选择Full-time
+2026-04-27 12:01:22 [INFO] ✓ 已选择Full-time
+12:01:25 [INFO] 点击Job Type Confirm按钮
+2026-04-27 12:01:25 [INFO] 点击Job Type Confirm按钮
+12:01:26 [INFO] ✓ 已点击Confirm按钮
+2026-04-27 12:01:26 [INFO] ✓ 已点击Confirm按钮
+12:01:26 [INFO] ✓ URL验证成功: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&attr_60=1
+2026-04-27 12:01:26 [INFO] ✓ URL验证成功: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&attr_60=1
+12:01:26 [INFO] ✓ 筛选器显示Job Type · 1
+2026-04-27 12:01:26 [INFO] ✓ 筛选器显示Job Type · 1
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_select_multiple_job_types_and_confirm 12:01:26 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:01:26 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:01:26 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:01:26 [INFO] Session加载成功，验证登录状态...
+12:01:31 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:01:31 [INFO] ✓ 检测到登录用户名
+12:01:31 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:01:31 [INFO] ✓ Session有效，已登录ES站
+12:01:31 [INFO] ✓ 已登录ES站
+2026-04-27 12:01:31 [INFO] ✓ 已登录ES站
+12:01:34 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:01:34 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:01:34 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:01:34 [INFO] ✓ 已导航到Jobs列表页
+12:01:34 [INFO] 点击Job Type筛选器
+2026-04-27 12:01:34 [INFO] 点击Job Type筛选器
+12:01:34 [INFO] ✓ 已打开Job Type面板
+2026-04-27 12:01:34 [INFO] ✓ 已打开Job Type面板
+12:01:34 [INFO] 选择Job Type: Full-time
+2026-04-27 12:01:34 [INFO] 选择Job Type: Full-time
+12:01:34 [INFO] ✓ 已选择Full-time
+2026-04-27 12:01:34 [INFO] ✓ 已选择Full-time
+12:01:34 [INFO] 选择Job Type: Part-time
+2026-04-27 12:01:34 [INFO] 选择Job Type: Part-time
+12:01:34 [INFO] ✓ 已选择Part-time
+2026-04-27 12:01:34 [INFO] ✓ 已选择Part-time
+12:01:35 [INFO] 点击Job Type Confirm按钮
+2026-04-27 12:01:35 [INFO] 点击Job Type Confirm按钮
+12:01:37 [INFO] ✓ 已点击Confirm
+2026-04-27 12:01:37 [INFO] ✓ 已点击Confirm
+12:01:37 [INFO] ✓ URL包含Job Type参数: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&attr_60=1%2C2
+2026-04-27 12:01:37 [INFO] ✓ URL包含Job Type参数: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&attr_60=1%2C2
+12:01:37 [INFO] ✓ 筛选器显示Job Type · 2
+2026-04-27 12:01:37 [INFO] ✓ 筛选器显示Job Type · 2
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_job_type_clear_should_deselect_all_options 12:01:37 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:01:37 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:01:37 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:01:37 [INFO] Session加载成功，验证登录状态...
+12:01:40 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:01:40 [INFO] ✓ 检测到登录用户名
+12:01:40 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:01:40 [INFO] ✓ Session有效，已登录ES站
+12:01:40 [INFO] ✓ 已登录ES站
+2026-04-27 12:01:40 [INFO] ✓ 已登录ES站
+12:01:42 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:01:42 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:01:42 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:01:42 [INFO] ✓ 已导航到Jobs列表页
+12:01:42 [INFO] 点击Job Type筛选器
+2026-04-27 12:01:42 [INFO] 点击Job Type筛选器
+12:01:43 [INFO] 选择Job Type: Full-time
+2026-04-27 12:01:43 [INFO] 选择Job Type: Full-time
+12:01:43 [INFO] ✓ 已打开面板并选择Full-time
+2026-04-27 12:01:43 [INFO] ✓ 已打开面板并选择Full-time
+12:01:43 [INFO] 点击Job Type Clear按钮
+2026-04-27 12:01:43 [INFO] 点击Job Type Clear按钮
+12:01:43 [INFO] ✓ 已点击Clear按钮
+2026-04-27 12:01:43 [INFO] ✓ 已点击Clear按钮
+12:01:43 [INFO] ✓ 面板仍然打开
+2026-04-27 12:01:43 [INFO] ✓ 面板仍然打开
+12:01:43 [INFO] ✓ URL未变更: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:01:43 [INFO] ✓ URL未变更: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_click_workplace_type_filter_should_open_panel 12:01:43 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:01:43 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:01:43 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:01:43 [INFO] Session加载成功，验证登录状态...
+12:01:46 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:01:46 [INFO] ✓ 检测到登录用户名
+12:01:46 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:01:46 [INFO] ✓ Session有效，已登录ES站
+12:01:46 [INFO] ✓ 已登录ES站
+2026-04-27 12:01:46 [INFO] ✓ 已登录ES站
+12:01:50 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:01:50 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:01:50 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:01:50 [INFO] ✓ 已导航到Jobs列表页
+12:01:50 [INFO] 点击Workplace type筛选器
+2026-04-27 12:01:50 [INFO] 点击Workplace type筛选器
+12:01:50 [INFO] ✓ 已点击Workplace type筛选器
+2026-04-27 12:01:50 [INFO] ✓ 已点击Workplace type筛选器
+12:01:50 [INFO] ✓ Workplace type面板已展开
+2026-04-27 12:01:50 [INFO] ✓ Workplace type面板已展开
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_select_remote_workplace_type_and_confirm 12:01:50 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:01:50 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:01:50 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:01:50 [INFO] Session加载成功，验证登录状态...
+12:01:53 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:01:53 [INFO] ✓ 检测到登录用户名
+12:01:53 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:01:53 [INFO] ✓ Session有效，已登录ES站
+12:01:53 [INFO] ✓ 已登录ES站
+2026-04-27 12:01:53 [INFO] ✓ 已登录ES站
+12:01:55 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:01:55 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:01:55 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:01:55 [INFO] ✓ 已导航到Jobs列表页
+12:01:56 [INFO] 点击Workplace type筛选器
+2026-04-27 12:01:56 [INFO] 点击Workplace type筛选器
+12:01:56 [INFO] ✓ 已打开Workplace type面板
+2026-04-27 12:01:56 [INFO] ✓ 已打开Workplace type面板
+12:01:56 [INFO] 选择Workplace type: Remote
+2026-04-27 12:01:56 [INFO] 选择Workplace type: Remote
+12:01:56 [INFO] ✓ 已选择Remote
+2026-04-27 12:01:56 [INFO] ✓ 已选择Remote
+12:01:56 [INFO] 点击Workplace type Confirm按钮
+2026-04-27 12:01:56 [INFO] 点击Workplace type Confirm按钮
+12:01:57 [INFO] ✓ 已点击Confirm
+2026-04-27 12:01:57 [INFO] ✓ 已点击Confirm
+12:01:57 [INFO] ✓ URL包含workplace参数: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&attr_61=2
+2026-04-27 12:01:57 [INFO] ✓ URL包含workplace参数: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&attr_61=2
+12:01:57 [INFO] ✓ 筛选器显示Workplace type · 1
+2026-04-27 12:01:57 [INFO] ✓ 筛选器显示Workplace type · 1
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_click_salary_filter_opens_panel 12:01:57 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:01:57 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:01:57 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:01:57 [INFO] Session加载成功，验证登录状态...
+12:02:00 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:02:00 [INFO] ✓ 检测到登录用户名
+12:02:00 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:02:00 [INFO] ✓ Session有效，已登录ES站
+12:02:00 [INFO] ✓ 已登录ES站
+2026-04-27 12:02:00 [INFO] ✓ 已登录ES站
+12:02:03 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:02:03 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:02:03 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:02:03 [INFO] ✓ 已导航到Jobs列表页
+12:02:03 [INFO] 点击Salary筛选器
+2026-04-27 12:02:03 [INFO] 点击Salary筛选器
+12:02:03 [INFO] ✓ 已点击Salary筛选器
+2026-04-27 12:02:03 [INFO] ✓ 已点击Salary筛选器
+12:02:03 [INFO] ✓ Salary面板已展开，Min/Max输入框可见
+2026-04-27 12:02:03 [INFO] ✓ Salary面板已展开，Min/Max输入框可见
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_salary_filter_with_min_max_range 12:02:03 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:02:03 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:02:03 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:02:03 [INFO] Session加载成功，验证登录状态...
+12:02:05 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:02:05 [INFO] ✓ 检测到登录用户名
+12:02:05 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:02:05 [INFO] ✓ Session有效，已登录ES站
+12:02:05 [INFO] ✓ 已登录ES站
+2026-04-27 12:02:05 [INFO] ✓ 已登录ES站
+12:02:09 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:02:09 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:02:09 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:02:09 [INFO] ✓ 已导航到Jobs列表页
+12:02:09 [INFO] 点击Salary筛选器
+2026-04-27 12:02:09 [INFO] 点击Salary筛选器
+12:02:09 [INFO] ✓ 已打开Salary面板
+2026-04-27 12:02:09 [INFO] ✓ 已打开Salary面板
+12:02:09 [INFO] ✓ 已输入Min=5000，Max=20000
+2026-04-27 12:02:09 [INFO] ✓ 已输入Min=5000，Max=20000
+12:02:13 [INFO] 点击Salary Confirm按钮
+2026-04-27 12:02:13 [INFO] 点击Salary Confirm按钮
+12:02:14 [INFO] ✓ 已点击Confirm
+2026-04-27 12:02:14 [INFO] ✓ 已点击Confirm
+12:02:14 [INFO] ✓ URL验证成功: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&lowestPrice=5000&highestPrice=20000
+2026-04-27 12:02:14 [INFO] ✓ URL验证成功: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&lowestPrice=5000&highestPrice=20000
+12:02:14 [INFO] ✓ Salary筛选器已激活
+2026-04-27 12:02:14 [INFO] ✓ Salary筛选器已激活
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_salary_filter_select_per_month_period 12:02:14 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:02:14 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:02:14 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:02:14 [INFO] Session加载成功，验证登录状态...
+12:02:17 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:02:17 [INFO] ✓ 检测到登录用户名
+12:02:17 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:02:17 [INFO] ✓ Session有效，已登录ES站
+12:02:17 [INFO] ✓ 已登录ES站
+2026-04-27 12:02:17 [INFO] ✓ 已登录ES站
+12:02:19 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:02:19 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:02:19 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:02:19 [INFO] ✓ 已导航到Jobs列表页
+12:02:19 [INFO] 点击Salary筛选器
+2026-04-27 12:02:19 [INFO] 点击Salary筛选器
+12:02:19 [INFO] ✓ 已打开Salary面板
+2026-04-27 12:02:19 [INFO] ✓ 已打开Salary面板
+12:02:19 [INFO] ✓ 已选择Per Month
+2026-04-27 12:02:19 [INFO] ✓ 已选择Per Month
+12:02:20 [INFO] 点击Salary Confirm按钮
+2026-04-27 12:02:20 [INFO] 点击Salary Confirm按钮
+12:02:21 [INFO] ✓ 已点击Confirm
+2026-04-27 12:02:21 [INFO] ✓ 已点击Confirm
+12:02:21 [INFO] ✓ URL验证成功: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&attr_80=4
+2026-04-27 12:02:21 [INFO] ✓ URL验证成功: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&attr_80=4
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_salary_filter_only_min 12:02:21 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:02:21 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:02:21 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:02:21 [INFO] Session加载成功，验证登录状态...
+12:02:25 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:02:25 [INFO] ✓ 检测到登录用户名
+12:02:25 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:02:25 [INFO] ✓ Session有效，已登录ES站
+12:02:25 [INFO] ✓ 已登录ES站
+2026-04-27 12:02:25 [INFO] ✓ 已登录ES站
+12:02:27 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:02:27 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:02:27 [INFO] 点击Salary筛选器
+2026-04-27 12:02:27 [INFO] 点击Salary筛选器
+12:02:27 [INFO] ✓ 已打开Salary面板
+2026-04-27 12:02:27 [INFO] ✓ 已打开Salary面板
+12:02:27 [INFO] ✓ 已输入Min=3000
+2026-04-27 12:02:27 [INFO] ✓ 已输入Min=3000
+12:02:28 [INFO] 点击Salary Confirm按钮
+2026-04-27 12:02:28 [INFO] 点击Salary Confirm按钮
+12:02:29 [INFO] ✓ 已点击Confirm
+2026-04-27 12:02:29 [INFO] ✓ 已点击Confirm
+12:02:29 [INFO] ✓ URL验证成功: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&lowestPrice=3000
+2026-04-27 12:02:29 [INFO] ✓ URL验证成功: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&lowestPrice=3000
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_salary_filter_only_max 12:02:29 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:02:29 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:02:29 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:02:29 [INFO] Session加载成功，验证登录状态...
+12:02:33 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:02:33 [INFO] ✓ 检测到登录用户名
+12:02:33 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:02:33 [INFO] ✓ Session有效，已登录ES站
+12:02:33 [INFO] ✓ 已登录ES站
+2026-04-27 12:02:33 [INFO] ✓ 已登录ES站
+12:02:36 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:02:36 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:02:36 [INFO] 点击Salary筛选器
+2026-04-27 12:02:36 [INFO] 点击Salary筛选器
+12:02:36 [INFO] ✓ 已打开Salary面板
+2026-04-27 12:02:36 [INFO] ✓ 已打开Salary面板
+12:02:36 [INFO] ✓ 已输入Max=50000
+2026-04-27 12:02:36 [INFO] ✓ 已输入Max=50000
+12:02:37 [INFO] 点击Salary Confirm按钮
+2026-04-27 12:02:37 [INFO] 点击Salary Confirm按钮
+12:02:38 [INFO] ✓ 已点击Confirm
+2026-04-27 12:02:38 [INFO] ✓ 已点击Confirm
+12:02:38 [INFO] ✓ URL验证成功: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&highestPrice=50000
+2026-04-27 12:02:38 [INFO] ✓ URL验证成功: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&highestPrice=50000
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_salary_filter_empty_both_confirm 12:02:39 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:02:39 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:02:39 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:02:39 [INFO] Session加载成功，验证登录状态...
+12:02:41 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:02:41 [INFO] ✓ 检测到登录用户名
+12:02:41 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:02:41 [INFO] ✓ Session有效，已登录ES站
+12:02:41 [INFO] ✓ 已登录ES站
+2026-04-27 12:02:41 [INFO] ✓ 已登录ES站
+12:02:43 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:02:43 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:02:43 [INFO] 点击Salary筛选器
+2026-04-27 12:02:43 [INFO] 点击Salary筛选器
+12:02:43 [INFO] ✓ 已打开Salary面板
+2026-04-27 12:02:43 [INFO] ✓ 已打开Salary面板
+12:02:44 [INFO] 点击Salary Confirm按钮
+2026-04-27 12:02:44 [INFO] 点击Salary Confirm按钮
+12:02:45 [INFO] ✓ 已点击Confirm（两框均为空）
+2026-04-27 12:02:45 [INFO] ✓ 已点击Confirm（两框均为空）
+12:02:45 [INFO] ✓ URL不含salary参数: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:02:45 [INFO] ✓ URL不含salary参数: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_salary_filter_min_greater_than_max_shows_error 12:02:45 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:02:45 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:02:45 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:02:45 [INFO] Session加载成功，验证登录状态...
+12:02:47 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:02:47 [INFO] ✓ 检测到登录用户名
+12:02:47 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:02:47 [INFO] ✓ Session有效，已登录ES站
+12:02:47 [INFO] ✓ 已登录ES站
+2026-04-27 12:02:47 [INFO] ✓ 已登录ES站
+12:02:49 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:02:49 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:02:49 [INFO] 点击Salary筛选器
+2026-04-27 12:02:49 [INFO] 点击Salary筛选器
+12:02:50 [INFO] ✓ 已打开Salary面板
+2026-04-27 12:02:50 [INFO] ✓ 已打开Salary面板
+12:02:50 [INFO] ✓ 已输入Min=50000，Max=10000
+2026-04-27 12:02:50 [INFO] ✓ 已输入Min=50000，Max=10000
+12:02:50 [INFO] 点击Salary Confirm按钮
+2026-04-27 12:02:50 [INFO] 点击Salary Confirm按钮
+12:02:50 [INFO] ✓ 已点击Confirm
+2026-04-27 12:02:50 [INFO] ✓ 已点击Confirm
+12:02:50 [INFO] ✓ 系统拦截Min>Max的无效输入，未触发筛选
+2026-04-27 12:02:50 [INFO] ✓ 系统拦截Min>Max的无效输入，未触发筛选
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_salary_filter_min_equals_max 12:02:50 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:02:50 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:02:50 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:02:50 [INFO] Session加载成功，验证登录状态...
+12:02:53 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:02:53 [INFO] ✓ 检测到登录用户名
+12:02:53 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:02:53 [INFO] ✓ Session有效，已登录ES站
+12:02:53 [INFO] ✓ 已登录ES站
+2026-04-27 12:02:53 [INFO] ✓ 已登录ES站
+12:02:55 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:02:55 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:02:55 [INFO] 点击Salary筛选器
+2026-04-27 12:02:55 [INFO] 点击Salary筛选器
+12:02:55 [INFO] ✓ 已打开Salary面板
+2026-04-27 12:02:55 [INFO] ✓ 已打开Salary面板
+12:02:56 [INFO] ✓ 已输入Min=Max=20000
+2026-04-27 12:02:56 [INFO] ✓ 已输入Min=Max=20000
+12:03:00 [INFO] 点击Salary Confirm按钮
+2026-04-27 12:03:00 [INFO] 点击Salary Confirm按钮
+12:03:01 [INFO] ✓ 已点击Confirm
+2026-04-27 12:03:01 [INFO] ✓ 已点击Confirm
+12:03:01 [INFO] ✓ URL验证成功: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&lowestPrice=20000&highestPrice=20000
+2026-04-27 12:03:01 [INFO] ✓ URL验证成功: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&lowestPrice=20000&highestPrice=20000
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_salary_filter_min_is_zero 12:03:01 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:03:01 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:03:01 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:03:01 [INFO] Session加载成功，验证登录状态...
+12:03:04 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:03:04 [INFO] ✓ 检测到登录用户名
+12:03:04 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:03:04 [INFO] ✓ Session有效，已登录ES站
+12:03:04 [INFO] ✓ 已登录ES站
+2026-04-27 12:03:04 [INFO] ✓ 已登录ES站
+12:03:06 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:03:06 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:03:06 [INFO] 点击Salary筛选器
+2026-04-27 12:03:06 [INFO] 点击Salary筛选器
+12:03:06 [INFO] ✓ 已打开Salary面板
+2026-04-27 12:03:06 [INFO] ✓ 已打开Salary面板
+12:03:06 [INFO] ✓ 已输入Min=0，Max=10000
+2026-04-27 12:03:06 [INFO] ✓ 已输入Min=0，Max=10000
+12:03:07 [INFO] 点击Salary Confirm按钮
+2026-04-27 12:03:07 [INFO] 点击Salary Confirm按钮
+12:03:08 [INFO] ✓ 已点击Confirm
+2026-04-27 12:03:08 [INFO] ✓ 已点击Confirm
+12:03:08 [INFO] ✓ URL验证成功: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&lowestPrice=0&highestPrice=10000
+2026-04-27 12:03:08 [INFO] ✓ URL验证成功: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&lowestPrice=0&highestPrice=10000
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_salary_filter_negative_number_blocked 12:03:08 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:03:08 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:03:09 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:03:09 [INFO] Session加载成功，验证登录状态...
+12:03:12 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:03:12 [INFO] ✓ 检测到登录用户名
+12:03:12 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:03:12 [INFO] ✓ Session有效，已登录ES站
+12:03:12 [INFO] ✓ 已登录ES站
+2026-04-27 12:03:12 [INFO] ✓ 已登录ES站
+12:03:14 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:03:14 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:03:14 [INFO] 点击Salary筛选器
+2026-04-27 12:03:14 [INFO] 点击Salary筛选器
+12:03:14 [INFO] ✓ 已打开Salary面板
+2026-04-27 12:03:14 [INFO] ✓ 已打开Salary面板
+12:03:14 [INFO] ✓ 已尝试输入负数-1000
+2026-04-27 12:03:14 [INFO] ✓ 已尝试输入负数-1000
+12:03:14 [INFO] ✓ 负数被拦截，实际值: 
+2026-04-27 12:03:14 [INFO] ✓ 负数被拦截，实际值: 
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_salary_filter_letters_blocked 12:03:14 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:03:14 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:03:14 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:03:14 [INFO] Session加载成功，验证登录状态...
+12:03:17 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:03:17 [INFO] ✓ 检测到登录用户名
+12:03:17 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:03:17 [INFO] ✓ Session有效，已登录ES站
+12:03:17 [INFO] ✓ 已登录ES站
+2026-04-27 12:03:17 [INFO] ✓ 已登录ES站
+12:03:19 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:03:19 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:03:19 [INFO] 点击Salary筛选器
+2026-04-27 12:03:19 [INFO] 点击Salary筛选器
+12:03:19 [INFO] ✓ 已打开Salary面板
+2026-04-27 12:03:19 [INFO] ✓ 已打开Salary面板
+12:03:19 [INFO] ✓ 已尝试输入字母'abc'
+2026-04-27 12:03:19 [INFO] ✓ 已尝试输入字母'abc'
+12:03:19 [INFO] ✓ 字母被拦截，实际值: ''
+2026-04-27 12:03:19 [INFO] ✓ 字母被拦截，实际值: ''
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_salary_filter_decimal_accepted 12:03:19 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:03:19 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:03:19 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:03:19 [INFO] Session加载成功，验证登录状态...
+12:03:21 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:03:21 [INFO] ✓ 检测到登录用户名
+12:03:21 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:03:21 [INFO] ✓ Session有效，已登录ES站
+12:03:21 [INFO] ✓ 已登录ES站
+2026-04-27 12:03:21 [INFO] ✓ 已登录ES站
+12:03:25 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:03:25 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:03:25 [INFO] 点击Salary筛选器
+2026-04-27 12:03:25 [INFO] 点击Salary筛选器
+12:03:25 [INFO] ✓ 已打开Salary面板
+2026-04-27 12:03:25 [INFO] ✓ 已打开Salary面板
+12:03:25 [INFO] ✓ 已输入小数1000.5
+2026-04-27 12:03:25 [INFO] ✓ 已输入小数1000.5
+12:03:25 [INFO] ✓ 小数被接受，实际值: 1000.5
+2026-04-27 12:03:25 [INFO] ✓ 小数被接受，实际值: 1000.5
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_salary_filter_extremely_large_value 12:03:25 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:03:25 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:03:25 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:03:25 [INFO] Session加载成功，验证登录状态...
+12:03:28 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:03:28 [INFO] ✓ 检测到登录用户名
+12:03:28 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:03:28 [INFO] ✓ Session有效，已登录ES站
+12:03:28 [INFO] ✓ 已登录ES站
+2026-04-27 12:03:28 [INFO] ✓ 已登录ES站
+12:03:30 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:03:30 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:03:30 [INFO] 点击Salary筛选器
+2026-04-27 12:03:30 [INFO] 点击Salary筛选器
+12:03:30 [INFO] ✓ 已打开Salary面板
+2026-04-27 12:03:30 [INFO] ✓ 已打开Salary面板
+12:03:31 [INFO] ✓ 已输入超大值
+2026-04-27 12:03:31 [INFO] ✓ 已输入超大值
+12:03:31 [INFO] 点击Salary Confirm按钮
+2026-04-27 12:03:31 [INFO] 点击Salary Confirm按钮
+12:03:33 [INFO] ✓ 已点击Confirm
+2026-04-27 12:03:33 [INFO] ✓ 已点击Confirm
+12:03:33 [INFO] ✓ 系统正常处理超大值，未崩溃
+2026-04-27 12:03:33 [INFO] ✓ 系统正常处理超大值，未崩溃
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_salary_filter_clear_empties_inputs 12:03:33 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:03:33 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:03:33 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:03:33 [INFO] Session加载成功，验证登录状态...
+12:03:35 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:03:35 [INFO] ✓ 检测到登录用户名
+12:03:35 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:03:35 [INFO] ✓ Session有效，已登录ES站
+12:03:35 [INFO] ✓ 已登录ES站
+2026-04-27 12:03:35 [INFO] ✓ 已登录ES站
+12:03:37 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:03:37 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:03:38 [INFO] 点击Salary筛选器
+2026-04-27 12:03:38 [INFO] 点击Salary筛选器
+12:03:38 [INFO] ✓ 已输入Min=5000，Max=20000
+2026-04-27 12:03:38 [INFO] ✓ 已输入Min=5000，Max=20000
+12:03:39 [INFO] ✓ 已点击Clear
+2026-04-27 12:03:39 [INFO] ✓ 已点击Clear
+12:03:39 [INFO] ✓ Min/Max已清空，面板保持打开
+2026-04-27 12:03:39 [INFO] ✓ Min/Max已清空，面板保持打开
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_salary_filter_reopened_shows_previous_values 12:03:39 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:03:39 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:03:39 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:03:39 [INFO] Session加载成功，验证登录状态...
+12:03:42 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:03:42 [INFO] ✓ 检测到登录用户名
+12:03:42 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:03:42 [INFO] ✓ Session有效，已登录ES站
+12:03:42 [INFO] ✓ 已登录ES站
+2026-04-27 12:03:42 [INFO] ✓ 已登录ES站
+12:03:45 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:03:45 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:03:45 [INFO] 点击Salary筛选器
+2026-04-27 12:03:45 [INFO] 点击Salary筛选器
+12:03:47 [INFO] 点击Salary Confirm按钮
+2026-04-27 12:03:47 [INFO] 点击Salary Confirm按钮
+12:03:48 [INFO] ✓ 已设置Salary筛选 Min=10000 Max=30000
+2026-04-27 12:03:48 [INFO] ✓ 已设置Salary筛选 Min=10000 Max=30000
+12:03:48 [INFO] 点击Salary筛选器
+2026-04-27 12:03:48 [INFO] 点击Salary筛选器
+12:03:48 [INFO] ✓ 已再次打开Salary面板
+2026-04-27 12:03:48 [INFO] ✓ 已再次打开Salary面板
+12:03:48 [INFO] ✓ Min回填: 10,000，Max回填: 30,000
+2026-04-27 12:03:48 [INFO] ✓ Min回填: 10,000，Max回填: 30,000
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_job_type_single_selection_echoed_on_reopen 12:03:48 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:03:48 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:03:48 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:03:48 [INFO] Session加载成功，验证登录状态...
+12:03:50 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:03:50 [INFO] ✓ 检测到登录用户名
+12:03:50 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:03:50 [INFO] ✓ Session有效，已登录ES站
+12:03:50 [INFO] ✓ 已登录ES站
+2026-04-27 12:03:50 [INFO] ✓ 已登录ES站
+12:03:52 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:03:52 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:03:53 [INFO] 点击Job Type筛选器
+2026-04-27 12:03:53 [INFO] 点击Job Type筛选器
+12:03:53 [INFO] 选择Job Type: Full-time
+2026-04-27 12:03:53 [INFO] 选择Job Type: Full-time
+12:03:53 [INFO] 点击Job Type Confirm按钮
+2026-04-27 12:03:53 [INFO] 点击Job Type Confirm按钮
+12:03:55 [INFO] ✓ 已选择Full-time并Confirm
+2026-04-27 12:03:55 [INFO] ✓ 已选择Full-time并Confirm
+12:03:55 [INFO] ✓ 已再次打开Job Type面板
+2026-04-27 12:03:55 [INFO] ✓ 已再次打开Job Type面板
+12:03:55 [INFO] ✓ Full-time回显为选中态
+2026-04-27 12:03:55 [INFO] ✓ Full-time回显为选中态
+12:03:55 [INFO] ✓ 其余4个选项未选中
+2026-04-27 12:03:55 [INFO] ✓ 其余4个选项未选中
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_job_type_multi_selection_echoed_on_reopen 12:03:56 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:03:56 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:03:56 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:03:56 [INFO] Session加载成功，验证登录状态...
+12:03:58 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:03:58 [INFO] ✓ 检测到登录用户名
+12:03:58 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:03:58 [INFO] ✓ Session有效，已登录ES站
+12:03:58 [INFO] ✓ 已登录ES站
+2026-04-27 12:03:58 [INFO] ✓ 已登录ES站
+12:04:00 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:04:00 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:04:00 [INFO] 点击Job Type筛选器
+2026-04-27 12:04:00 [INFO] 点击Job Type筛选器
+12:04:00 [INFO] 选择Job Type: Full-time
+2026-04-27 12:04:00 [INFO] 选择Job Type: Full-time
+12:04:00 [INFO] 选择Job Type: Part-time
+2026-04-27 12:04:00 [INFO] 选择Job Type: Part-time
+12:04:01 [INFO] 点击Job Type Confirm按钮
+2026-04-27 12:04:01 [INFO] 点击Job Type Confirm按钮
+12:04:02 [INFO] ✓ 已多选Full-time+Part-time并Confirm
+2026-04-27 12:04:02 [INFO] ✓ 已多选Full-time+Part-time并Confirm
+12:04:03 [INFO] ✓ 已再次打开Job Type面板
+2026-04-27 12:04:03 [INFO] ✓ 已再次打开Job Type面板
+12:04:03 [INFO] ✓ Full-time和Part-time均回显选中态
+2026-04-27 12:04:03 [INFO] ✓ Full-time和Part-time均回显选中态
+12:04:03 [INFO] ✓ badge数量和面板选中数均为2
+2026-04-27 12:04:03 [INFO] ✓ badge数量和面板选中数均为2
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_workplace_type_selection_echoed_on_reopen 12:04:03 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:04:03 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:04:03 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:04:03 [INFO] Session加载成功，验证登录状态...
+12:04:06 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:04:06 [INFO] ✓ 检测到登录用户名
+12:04:06 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:04:06 [INFO] ✓ Session有效，已登录ES站
+12:04:06 [INFO] ✓ 已登录ES站
+2026-04-27 12:04:06 [INFO] ✓ 已登录ES站
+12:04:09 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:04:09 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:04:09 [INFO] 点击Workplace type筛选器
+2026-04-27 12:04:09 [INFO] 点击Workplace type筛选器
+12:04:09 [INFO] 选择Workplace type: Remote
+2026-04-27 12:04:09 [INFO] 选择Workplace type: Remote
+12:04:09 [INFO] 点击Workplace type Confirm按钮
+2026-04-27 12:04:09 [INFO] 点击Workplace type Confirm按钮
+12:04:10 [INFO] ✓ 已选择Remote并Confirm
+2026-04-27 12:04:10 [INFO] ✓ 已选择Remote并Confirm
+12:04:10 [INFO] 点击Workplace type筛选器
+2026-04-27 12:04:10 [INFO] 点击Workplace type筛选器
+12:04:10 [INFO] ✓ 已再次打开Workplace type面板
+2026-04-27 12:04:10 [INFO] ✓ 已再次打开Workplace type面板
+12:04:10 [INFO] ✓ Remote回显为选中态
+2026-04-27 12:04:10 [INFO] ✓ Remote回显为选中态
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_url_params_reflected_in_filter_panel 12:04:11 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:04:11 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:04:11 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:04:11 [INFO] Session加载成功，验证登录状态...
+12:04:13 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:04:13 [INFO] ✓ 检测到登录用户名
+12:04:13 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:04:13 [INFO] ✓ Session有效，已登录ES站
+12:04:13 [INFO] ✓ 已登录ES站
+2026-04-27 12:04:13 [INFO] ✓ 已登录ES站
+12:04:16 [INFO] ✓ 已直接访问带attr_60=1的URL
+2026-04-27 12:04:16 [INFO] ✓ 已直接访问带attr_60=1的URL
+12:04:16 [INFO] ✓ 筛选器显示Job Type · 1
+2026-04-27 12:04:16 [INFO] ✓ 筛选器显示Job Type · 1
+12:04:17 [INFO] ✓ 已打开Job Type面板
+2026-04-27 12:04:17 [INFO] ✓ 已打开Job Type面板
+12:04:17 [INFO] ✓ Full-time回显为选中态
+2026-04-27 12:04:17 [INFO] ✓ Full-time回显为选中态
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_combined_filter_job_type_and_workplace 12:04:17 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:04:17 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:04:17 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:04:17 [INFO] Session加载成功，验证登录状态...
+12:04:20 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:04:20 [INFO] ✓ 检测到登录用户名
+12:04:20 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:04:20 [INFO] ✓ Session有效，已登录ES站
+12:04:20 [INFO] ✓ 已登录ES站
+2026-04-27 12:04:20 [INFO] ✓ 已登录ES站
+12:04:22 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:04:22 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:04:22 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:04:22 [INFO] ✓ 已导航到Jobs列表页
+12:04:22 [INFO] 点击Job Type筛选器
+2026-04-27 12:04:22 [INFO] 点击Job Type筛选器
+12:04:22 [INFO] 选择Job Type: Full-time
+2026-04-27 12:04:22 [INFO] 选择Job Type: Full-time
+12:04:23 [INFO] 点击Job Type Confirm按钮
+2026-04-27 12:04:23 [INFO] 点击Job Type Confirm按钮
+12:04:24 [INFO] ✓ 已设置Job Type=Full-time
+2026-04-27 12:04:24 [INFO] ✓ 已设置Job Type=Full-time
+12:04:24 [INFO] 点击Workplace type筛选器
+2026-04-27 12:04:24 [INFO] 点击Workplace type筛选器
+12:04:24 [INFO] 选择Workplace type: Remote
+2026-04-27 12:04:24 [INFO] 选择Workplace type: Remote
+12:04:25 [INFO] 点击Workplace type Confirm按钮
+2026-04-27 12:04:25 [INFO] 点击Workplace type Confirm按钮
+12:04:26 [INFO] ✓ 已设置Workplace type=Remote
+2026-04-27 12:04:26 [INFO] ✓ 已设置Workplace type=Remote
+12:04:26 [INFO] ✓ 组合筛选URL: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&attr_60=1&attr_61=2
+2026-04-27 12:04:26 [INFO] ✓ 组合筛选URL: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&attr_60=1&attr_61=2
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_combined_filter_search_and_job_type 12:04:26 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:04:26 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:04:26 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:04:26 [INFO] Session加载成功，验证登录状态...
+12:04:28 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:04:28 [INFO] ✓ 检测到登录用户名
+12:04:28 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:04:28 [INFO] ✓ Session有效，已登录ES站
+12:04:28 [INFO] ✓ 已登录ES站
+2026-04-27 12:04:28 [INFO] ✓ 已登录ES站
+12:04:30 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:04:30 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:04:30 [INFO] 输入搜索关键词: engineer
+2026-04-27 12:04:30 [INFO] 输入搜索关键词: engineer
+12:04:31 [INFO] 点击搜索按钮
+2026-04-27 12:04:31 [INFO] 点击搜索按钮
+12:04:32 [INFO] ✓ 已搜索关键词'engineer'
+2026-04-27 12:04:32 [INFO] ✓ 已搜索关键词'engineer'
+12:04:32 [INFO] 点击Job Type筛选器
+2026-04-27 12:04:32 [INFO] 点击Job Type筛选器
+12:04:32 [INFO] 选择Job Type: Full-time
+2026-04-27 12:04:32 [INFO] 选择Job Type: Full-time
+12:04:33 [INFO] 点击Job Type Confirm按钮
+2026-04-27 12:04:33 [INFO] 点击Job Type Confirm按钮
+12:04:34 [INFO] ✓ 已设置Job Type=Full-time
+2026-04-27 12:04:34 [INFO] ✓ 已设置Job Type=Full-time
+12:04:34 [INFO] ✓ 组合筛选URL: https://es.58v5.cn/en/city-madrid2/cate-jobs/?keyword=engineer&attr_60=1
+2026-04-27 12:04:34 [INFO] ✓ 组合筛选URL: https://es.58v5.cn/en/city-madrid2/cate-jobs/?keyword=engineer&attr_60=1
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_reset_clears_all_filters 12:04:34 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:04:34 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:04:34 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:04:34 [INFO] Session加载成功，验证登录状态...
+12:04:37 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:04:37 [INFO] ✓ 检测到登录用户名
+12:04:37 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:04:37 [INFO] ✓ Session有效，已登录ES站
+12:04:37 [INFO] ✓ 已登录ES站
+2026-04-27 12:04:37 [INFO] ✓ 已登录ES站
+12:04:39 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:04:39 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:04:39 [INFO] 点击Job Type筛选器
+2026-04-27 12:04:39 [INFO] 点击Job Type筛选器
+12:04:39 [INFO] 选择Job Type: Full-time
+2026-04-27 12:04:39 [INFO] 选择Job Type: Full-time
+12:04:41 [INFO] 点击Job Type Confirm按钮
+2026-04-27 12:04:41 [INFO] 点击Job Type Confirm按钮
+12:04:42 [INFO] ✓ 已设置Job Type筛选
+2026-04-27 12:04:42 [INFO] ✓ 已设置Job Type筛选
+12:04:43 [INFO] 点击Reset按钮
+2026-04-27 12:04:43 [INFO] 点击Reset按钮
+12:04:44 [INFO] ✓ 已点击Reset按钮
+2026-04-27 12:04:44 [INFO] ✓ 已点击Reset按钮
+12:04:44 [INFO] ✓ URL中筛选参数已移除: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:04:44 [INFO] ✓ URL中筛选参数已移除: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:04:44 [INFO] ✓ 地址筛选器仍显示Madrid
+2026-04-27 12:04:44 [INFO] ✓ 地址筛选器仍显示Madrid
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_reset_keeps_location_filter_unchanged 12:04:45 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:04:45 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:04:45 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:04:45 [INFO] Session加载成功，验证登录状态...
+12:04:47 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:04:47 [INFO] ✓ 检测到登录用户名
+12:04:47 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:04:47 [INFO] ✓ Session有效，已登录ES站
+12:04:47 [INFO] ✓ 已登录ES站
+2026-04-27 12:04:47 [INFO] ✓ 已登录ES站
+12:04:49 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:04:49 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:04:49 [INFO] 点击Job Type筛选器
+2026-04-27 12:04:49 [INFO] 点击Job Type筛选器
+12:04:49 [INFO] 选择Job Type: Full-time
+2026-04-27 12:04:49 [INFO] 选择Job Type: Full-time
+12:04:50 [INFO] 点击Job Type Confirm按钮
+2026-04-27 12:04:50 [INFO] 点击Job Type Confirm按钮
+12:04:51 [INFO] ✓ 已设置Job Type筛选
+2026-04-27 12:04:51 [INFO] ✓ 已设置Job Type筛选
+12:04:52 [INFO] 点击Reset按钮
+2026-04-27 12:04:52 [INFO] 点击Reset按钮
+12:04:53 [INFO] ✓ 已点击Reset
+2026-04-27 12:04:53 [INFO] ✓ 已点击Reset
+12:04:53 [INFO] ✓ URL保持Madrid城市路径: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:04:53 [INFO] ✓ URL保持Madrid城市路径: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:04:53 [INFO] ✓ 地址筛选器仍显示Madrid
+2026-04-27 12:04:53 [INFO] ✓ 地址筛选器仍显示Madrid
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_scroll_to_bottom_loads_more_jobs 12:04:54 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:04:54 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:04:54 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:04:54 [INFO] Session加载成功，验证登录状态...
+12:04:56 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:04:56 [INFO] ✓ 检测到登录用户名
+12:04:56 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:04:56 [INFO] ✓ Session有效，已登录ES站
+12:04:56 [INFO] ✓ 已登录ES站
+2026-04-27 12:04:56 [INFO] ✓ 已登录ES站
+12:04:58 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:04:58 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:04:58 [INFO] ✓ 初始scrollHeight: 9179
+2026-04-27 12:04:58 [INFO] ✓ 初始scrollHeight: 9179
+12:05:00 [INFO] ✓ 已滚动到底部，等待2秒加载
+2026-04-27 12:05:00 [INFO] ✓ 已滚动到底部，等待2秒加载
+12:05:00 [INFO] ✓ scrollHeight增大: 9179 → 11485
+2026-04-27 12:05:00 [INFO] ✓ scrollHeight增大: 9179 → 11485
+12:05:00 [INFO] ✓ URL未变化，确认为feed流模式
+2026-04-27 12:05:00 [INFO] ✓ URL未变化，确认为feed流模式
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_scroll_load_preserves_url_and_filters 12:05:00 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:05:00 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:05:00 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:05:00 [INFO] Session加载成功，验证登录状态...
+12:05:02 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:05:02 [INFO] ✓ 检测到登录用户名
+12:05:02 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:05:02 [INFO] ✓ Session有效，已登录ES站
+12:05:02 [INFO] ✓ 已登录ES站
+2026-04-27 12:05:02 [INFO] ✓ 已登录ES站
+12:05:05 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:05:05 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:05:05 [INFO] 点击Job Type筛选器
+2026-04-27 12:05:05 [INFO] 点击Job Type筛选器
+12:05:05 [INFO] 选择Job Type: Full-time
+2026-04-27 12:05:05 [INFO] 选择Job Type: Full-time
+12:05:06 [INFO] 点击Job Type Confirm按钮
+2026-04-27 12:05:06 [INFO] 点击Job Type Confirm按钮
+12:05:07 [INFO] ✓ 已设置筛选，URL: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&attr_60=1
+2026-04-27 12:05:07 [INFO] ✓ 已设置筛选，URL: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&attr_60=1
+12:05:09 [INFO] ✓ 已滚动到底部
+2026-04-27 12:05:09 [INFO] ✓ 已滚动到底部
+12:05:09 [INFO] ✓ URL未变化
+2026-04-27 12:05:09 [INFO] ✓ URL未变化
+12:05:09 [INFO] ✓ 筛选器仍处于激活态
+2026-04-27 12:05:09 [INFO] ✓ 筛选器仍处于激活态
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_filter_change_resets_list_to_top 12:05:10 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:05:10 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:05:10 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:05:10 [INFO] Session加载成功，验证登录状态...
+12:05:12 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:05:12 [INFO] ✓ 检测到登录用户名
+12:05:12 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:05:12 [INFO] ✓ Session有效，已登录ES站
+12:05:12 [INFO] ✓ 已登录ES站
+2026-04-27 12:05:12 [INFO] ✓ 已登录ES站
+12:05:14 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:05:14 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:05:16 [INFO] ✓ 已滚动底部加载更多
+2026-04-27 12:05:16 [INFO] ✓ 已滚动底部加载更多
+12:05:16 [INFO] 点击Job Type筛选器
+2026-04-27 12:05:16 [INFO] 点击Job Type筛选器
+12:05:16 [INFO] 选择Job Type: Full-time
+2026-04-27 12:05:16 [INFO] 选择Job Type: Full-time
+12:05:17 [INFO] 点击Job Type Confirm按钮
+2026-04-27 12:05:17 [INFO] 点击Job Type Confirm按钮
+12:05:18 [INFO] ✓ 已更改筛选条件
+2026-04-27 12:05:18 [INFO] ✓ 已更改筛选条件
+12:05:18 [INFO] ✓ 筛选条件变更后列表重新加载: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&attr_60=1
+2026-04-27 12:05:18 [INFO] ✓ 筛选条件变更后列表重新加载: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&attr_60=1
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_scroll_stops_when_all_jobs_loaded 12:05:18 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:05:18 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:05:18 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:05:18 [INFO] Session加载成功，验证登录状态...
+12:05:21 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:05:21 [INFO] ✓ 检测到登录用户名
+12:05:21 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:05:21 [INFO] ✓ Session有效，已登录ES站
+12:05:21 [INFO] ✓ 已登录ES站
+2026-04-27 12:05:21 [INFO] ✓ 已登录ES站
+12:05:23 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:05:23 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:05:23 [INFO] 输入搜索关键词: xyzabcnotexist12345
+2026-04-27 12:05:23 [INFO] 输入搜索关键词: xyzabcnotexist12345
+12:05:23 [INFO] 点击搜索按钮
+2026-04-27 12:05:23 [INFO] 点击搜索按钮
+12:05:24 [INFO] ✓ 已搜索稀少结果的词
+2026-04-27 12:05:24 [INFO] ✓ 已搜索稀少结果的词
+12:05:26 [INFO] ✓ 已连续滚动3次，最终scrollHeight: 1333
+2026-04-27 12:05:26 [INFO] ✓ 已连续滚动3次，最终scrollHeight: 1333
+12:05:26 [INFO] ✓ 列表加载完毕，scrollHeight稳定: 1333
+2026-04-27 12:05:26 [INFO] ✓ 列表加载完毕，scrollHeight稳定: 1333
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_no_pagination_buttons_on_jobs_list 12:05:27 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:05:27 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:05:27 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:05:27 [INFO] Session加载成功，验证登录状态...
+12:05:29 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:05:29 [INFO] ✓ 检测到登录用户名
+12:05:29 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:05:29 [INFO] ✓ Session有效，已登录ES站
+12:05:29 [INFO] ✓ 已登录ES站
+2026-04-27 12:05:29 [INFO] ✓ 已登录ES站
+12:05:32 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:05:32 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:05:32 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:05:32 [INFO] ✓ 已导航到Jobs列表页
+12:05:32 [INFO] ✓ 确认无传统分页按钮，页面为feed流模式
+2026-04-27 12:05:32 [INFO] ✓ 确认无传统分页按钮，页面为feed流模式
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_click_add_job_preference_navigates_to_middle_page 12:05:32 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:05:32 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:05:32 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:05:32 [INFO] Session加载成功，验证登录状态...
+12:05:34 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:05:34 [INFO] ✓ 检测到登录用户名
+12:05:34 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:05:34 [INFO] ✓ Session有效，已登录ES站
+12:05:34 [INFO] ✓ 已登录ES站
+2026-04-27 12:05:34 [INFO] ✓ 已登录ES站
+12:05:36 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:05:36 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:05:36 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:05:36 [INFO] ✓ 已导航到Jobs列表页
+12:05:36 [INFO] 点击Add Job Preference入口
+2026-04-27 12:05:36 [INFO] 点击Add Job Preference入口
+12:05:36 [INFO] ✓ 已点击Add Job Preference
+2026-04-27 12:05:36 [INFO] ✓ 已点击Add Job Preference
+12:05:36 [INFO] ✓ 已跳转到Job Preference页: https://espub.58v5.cn/biz/en/jobPreference
+2026-04-27 12:05:36 [INFO] ✓ 已跳转到Job Preference页: https://espub.58v5.cn/biz/en/jobPreference
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_click_job_card_opens_sidebar 12:05:36 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:05:36 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:05:36 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:05:36 [INFO] Session加载成功，验证登录状态...
+12:05:39 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:05:39 [INFO] ✓ 检测到登录用户名
+12:05:39 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:05:39 [INFO] ✓ Session有效，已登录ES站
+12:05:39 [INFO] ✓ 已登录ES站
+2026-04-27 12:05:39 [INFO] ✓ 已登录ES站
+12:05:41 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:05:41 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:05:41 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:05:41 [INFO] ✓ 已导航到Jobs列表页
+12:05:41 [INFO] ✓ 侧边栏默认展开
+2026-04-27 12:05:41 [INFO] ✓ 侧边栏默认展开
+12:05:42 [INFO] ✓ 已点击第一张职位卡片
+2026-04-27 12:05:42 [INFO] ✓ 已点击第一张职位卡片
+12:05:42 [INFO] ✓ 点击后侧边栏展示职位详情
+2026-04-27 12:05:42 [INFO] ✓ 点击后侧边栏展示职位详情
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_sidebar_buttons_for_non_own_job 12:05:42 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:05:42 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:05:42 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:05:42 [INFO] Session加载成功，验证登录状态...
+12:05:44 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:05:44 [INFO] ✓ 检测到登录用户名
+12:05:44 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:05:44 [INFO] ✓ Session有效，已登录ES站
+12:05:44 [INFO] ✓ 已登录ES站
+2026-04-27 12:05:44 [INFO] ✓ 已登录ES站
+12:05:46 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:05:46 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:05:46 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:05:46 [INFO] ✓ 已导航到Jobs列表页
+12:05:47 [INFO] ✓ 已点击职位卡片
+2026-04-27 12:05:47 [INFO] ✓ 已点击职位卡片
+12:05:48 [INFO] ✓ 侧边栏显示Favourites和New tab
+2026-04-27 12:05:48 [INFO] ✓ 侧边栏显示Favourites和New tab
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_sidebar_buttons_for_own_job 12:05:48 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:05:48 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:05:48 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:05:48 [INFO] Session加载成功，验证登录状态...
+12:05:51 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:05:51 [INFO] ✓ 检测到登录用户名
+12:05:51 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:05:51 [INFO] ✓ Session有效，已登录ES站
+12:05:51 [INFO] ✓ 已登录ES站
+2026-04-27 12:05:51 [INFO] ✓ 已登录ES站
+12:05:53 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:05:53 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:05:53 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:05:53 [INFO] ✓ 已导航到Jobs列表页
+12:05:53 [INFO] ✓ 自投职位侧边栏显示Withdraw，不显示Contact
+2026-04-27 12:05:53 [INFO] ✓ 自投职位侧边栏显示Withdraw，不显示Contact
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_quick_reply_label_is_display_only 12:05:53 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:05:53 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:05:53 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:05:53 [INFO] Session加载成功，验证登录状态...
+12:05:56 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:05:56 [INFO] ✓ 检测到登录用户名
+12:05:56 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:05:56 [INFO] ✓ Session有效，已登录ES站
+12:05:56 [INFO] ✓ 已登录ES站
+2026-04-27 12:05:56 [INFO] ✓ 已登录ES站
+12:05:58 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:05:58 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:05:58 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:05:58 [INFO] ✓ 已导航到Jobs列表页
+12:05:58 [INFO] ✓ Quick Reply标签可见
+2026-04-27 12:05:58 [INFO] ✓ Quick Reply标签可见
+12:05:58 [INFO] ✓ 已点击Quick Reply区域
+2026-04-27 12:05:58 [INFO] ✓ 已点击Quick Reply区域
+12:05:58 [INFO] ✓ Quick Reply为纯展示标签，点击仅切换侧边栏
+2026-04-27 12:05:58 [INFO] ✓ Quick Reply为纯展示标签，点击仅切换侧边栏
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_click_favourites_toggles_collect_state 12:05:58 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:05:58 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:05:58 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:05:58 [INFO] Session加载成功，验证登录状态...
+12:06:00 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:06:00 [INFO] ✓ 检测到登录用户名
+12:06:00 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:06:00 [INFO] ✓ Session有效，已登录ES站
+12:06:00 [INFO] ✓ 已登录ES站
+2026-04-27 12:06:00 [INFO] ✓ 已登录ES站
+12:06:02 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:06:02 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:06:02 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:06:02 [INFO] ✓ 已导航到Jobs列表页
+12:06:02 [INFO] ✓ 已点击Favourites按钮
+2026-04-27 12:06:02 [INFO] ✓ 已点击Favourites按钮
+12:06:02 [INFO] ✓ Favourites操作执行成功，页面正常
+2026-04-27 12:06:02 [INFO] ✓ Favourites操作执行成功，页面正常
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_click_new_tab_opens_job_detail_in_new_tab 12:06:03 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:06:03 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:06:03 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:06:03 [INFO] Session加载成功，验证登录状态...
+12:06:05 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:06:05 [INFO] ✓ 检测到登录用户名
+12:06:05 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:06:05 [INFO] ✓ Session有效，已登录ES站
+12:06:05 [INFO] ✓ 已登录ES站
+2026-04-27 12:06:05 [INFO] ✓ 已登录ES站
+12:06:07 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:06:07 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:06:07 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:06:07 [INFO] ✓ 已导航到Jobs列表页
+12:06:08 [INFO] ✓ 已点击New tab，新标签页已打开
+2026-04-27 12:06:08 [INFO] ✓ 已点击New tab，新标签页已打开
+12:06:08 [INFO] ✓ 新标签页URL: https://es.58v5.cn/en/city/cate-administrative-assistants/hello-administrative-assistants-1-2046487377173561344/
+2026-04-27 12:06:08 [INFO] ✓ 新标签页URL: https://es.58v5.cn/en/city/cate-administrative-assistants/hello-administrative-assistants-1-2046487377173561344/
+12:06:08 [INFO] ✓ 原列表页保持不变
+2026-04-27 12:06:08 [INFO] ✓ 原列表页保持不变
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_job_card_highlight_tags_display 12:06:08 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:06:08 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:06:08 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:06:08 [INFO] Session加载成功，验证登录状态...
+12:06:10 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:06:10 [INFO] ✓ 检测到登录用户名
+12:06:10 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:06:10 [INFO] ✓ Session有效，已登录ES站
+12:06:10 [INFO] ✓ 已登录ES站
+2026-04-27 12:06:10 [INFO] ✓ 已登录ES站
+12:06:13 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:06:13 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:06:13 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:06:13 [INFO] ✓ 已导航到Jobs列表页
+12:06:13 [INFO] ✓ 职位列表已加载，技能标签在有标签的卡片上以·分隔符显示
+2026-04-27 12:06:13 [INFO] ✓ 职位列表已加载，技能标签在有标签的卡片上以·分隔符显示
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_clear_search_and_search_again 12:06:14 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:06:14 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:06:14 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:06:14 [INFO] Session加载成功，验证登录状态...
+12:06:16 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:06:16 [INFO] ✓ 检测到登录用户名
+12:06:16 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:06:16 [INFO] ✓ Session有效，已登录ES站
+12:06:16 [INFO] ✓ 已登录ES站
+2026-04-27 12:06:16 [INFO] ✓ 已登录ES站
+12:06:18 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:06:18 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:06:18 [INFO] 输入搜索关键词: manager
+2026-04-27 12:06:18 [INFO] 输入搜索关键词: manager
+12:06:19 [INFO] 点击搜索按钮
+2026-04-27 12:06:19 [INFO] 点击搜索按钮
+12:06:20 [INFO] ✓ 已搜索manager
+2026-04-27 12:06:20 [INFO] ✓ 已搜索manager
+12:06:20 [INFO] 输入搜索关键词: driver
+2026-04-27 12:06:20 [INFO] 输入搜索关键词: driver
+12:06:20 [INFO] 点击搜索按钮
+2026-04-27 12:06:20 [INFO] 点击搜索按钮
+12:06:22 [INFO] ✓ 已重新搜索driver
+2026-04-27 12:06:22 [INFO] ✓ 已重新搜索driver
+12:06:22 [INFO] ✓ URL正确更新: https://es.58v5.cn/en/city-madrid2/cate-jobs/?keyword=driver
+2026-04-27 12:06:22 [INFO] ✓ URL正确更新: https://es.58v5.cn/en/city-madrid2/cate-jobs/?keyword=driver
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_modify_search_keyword_after_search 12:06:22 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:06:22 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:06:22 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:06:22 [INFO] Session加载成功，验证登录状态...
+12:06:24 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:06:24 [INFO] ✓ 检测到登录用户名
+12:06:24 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:06:24 [INFO] ✓ Session有效，已登录ES站
+12:06:24 [INFO] ✓ 已登录ES站
+2026-04-27 12:06:24 [INFO] ✓ 已登录ES站
+12:06:26 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:06:26 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:06:26 [INFO] 输入搜索关键词: engineer
+2026-04-27 12:06:26 [INFO] 输入搜索关键词: engineer
+12:06:27 [INFO] 点击搜索按钮
+2026-04-27 12:06:27 [INFO] 点击搜索按钮
+12:06:28 [INFO] ✓ 已搜索engineer
+2026-04-27 12:06:28 [INFO] ✓ 已搜索engineer
+12:06:28 [INFO] 输入搜索关键词: sales
+2026-04-27 12:06:28 [INFO] 输入搜索关键词: sales
+12:06:29 [INFO] 点击搜索按钮
+2026-04-27 12:06:29 [INFO] 点击搜索按钮
+12:06:30 [INFO] ✓ 已修改搜索词为sales
+2026-04-27 12:06:30 [INFO] ✓ 已修改搜索词为sales
+12:06:30 [INFO] ✓ URL已更新为新搜索词: https://es.58v5.cn/en/city-madrid2/cate-jobs/?keyword=sales
+2026-04-27 12:06:30 [INFO] ✓ URL已更新为新搜索词: https://es.58v5.cn/en/city-madrid2/cate-jobs/?keyword=sales
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_search_keyword_with_spaces_encoded 12:06:30 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:06:30 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:06:30 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:06:30 [INFO] Session加载成功，验证登录状态...
+12:06:32 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:06:32 [INFO] ✓ 检测到登录用户名
+12:06:32 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:06:32 [INFO] ✓ Session有效，已登录ES站
+12:06:32 [INFO] ✓ 已登录ES站
+2026-04-27 12:06:32 [INFO] ✓ 已登录ES站
+12:06:36 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:06:36 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:06:36 [INFO] 输入搜索关键词: software engineer
+2026-04-27 12:06:36 [INFO] 输入搜索关键词: software engineer
+12:06:36 [INFO] 点击搜索按钮
+2026-04-27 12:06:36 [INFO] 点击搜索按钮
+12:06:37 [INFO] ✓ 已搜索'software engineer'（含空格）
+2026-04-27 12:06:37 [INFO] ✓ 已搜索'software engineer'（含空格）
+12:06:37 [INFO] ✓ 空格正确编码: https://es.58v5.cn/en/city-madrid2/cate-jobs/?keyword=software%20engineer
+2026-04-27 12:06:37 [INFO] ✓ 空格正确编码: https://es.58v5.cn/en/city-madrid2/cate-jobs/?keyword=software%20engineer
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_click_outside_closes_job_type_panel 12:06:38 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:06:38 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:06:38 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:06:38 [INFO] Session加载成功，验证登录状态...
+12:06:40 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:06:40 [INFO] ✓ 检测到登录用户名
+12:06:40 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:06:40 [INFO] ✓ Session有效，已登录ES站
+12:06:40 [INFO] ✓ 已登录ES站
+2026-04-27 12:06:40 [INFO] ✓ 已登录ES站
+12:06:42 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:06:42 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:06:42 [INFO] 点击Job Type筛选器
+2026-04-27 12:06:42 [INFO] 点击Job Type筛选器
+12:06:42 [INFO] ✓ Job Type面板已打开
+2026-04-27 12:06:42 [INFO] ✓ Job Type面板已打开
+12:07:13 [INFO] ✓ 已点击外部区域
+2026-04-27 12:07:13 [INFO] ✓ 已点击外部区域
+12:07:13 [INFO] ✓ 面板已收起，URL未变
+2026-04-27 12:07:13 [INFO] ✓ 面板已收起，URL未变
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_job_type_select_all_five_options 12:07:13 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:07:13 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:07:13 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:07:13 [INFO] Session加载成功，验证登录状态...
+12:07:15 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:07:15 [INFO] ✓ 检测到登录用户名
+12:07:15 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:07:15 [INFO] ✓ Session有效，已登录ES站
+12:07:15 [INFO] ✓ 已登录ES站
+2026-04-27 12:07:15 [INFO] ✓ 已登录ES站
+12:07:17 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:07:17 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:07:17 [INFO] 点击Job Type筛选器
+2026-04-27 12:07:17 [INFO] 点击Job Type筛选器
+12:07:17 [INFO] ✓ 已打开Job Type面板
+2026-04-27 12:07:17 [INFO] ✓ 已打开Job Type面板
+12:07:19 [INFO] ✓ 已全选5个选项
+2026-04-27 12:07:19 [INFO] ✓ 已全选5个选项
+12:07:21 [INFO] 点击Job Type Confirm按钮
+2026-04-27 12:07:21 [INFO] 点击Job Type Confirm按钮
+12:07:22 [INFO] ✓ 已点击Confirm
+2026-04-27 12:07:22 [INFO] ✓ 已点击Confirm
+12:07:22 [INFO] ✓ 筛选器显示Job Type · 5
+2026-04-27 12:07:22 [INFO] ✓ 筛选器显示Job Type · 5
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_clear_one_filter_does_not_affect_other 12:07:22 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:07:22 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:07:22 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:07:22 [INFO] Session加载成功，验证登录状态...
+12:07:24 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:07:24 [INFO] ✓ 检测到登录用户名
+12:07:24 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:07:24 [INFO] ✓ Session有效，已登录ES站
+12:07:24 [INFO] ✓ 已登录ES站
+2026-04-27 12:07:24 [INFO] ✓ 已登录ES站
+12:07:27 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:07:27 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:07:27 [INFO] 点击Job Type筛选器
+2026-04-27 12:07:27 [INFO] 点击Job Type筛选器
+12:07:27 [INFO] 选择Job Type: Full-time
+2026-04-27 12:07:27 [INFO] 选择Job Type: Full-time
+12:07:28 [INFO] 点击Job Type Confirm按钮
+2026-04-27 12:07:28 [INFO] 点击Job Type Confirm按钮
+12:07:29 [INFO] ✓ 已设置Job Type=Full-time
+2026-04-27 12:07:29 [INFO] ✓ 已设置Job Type=Full-time
+12:07:29 [INFO] 点击Workplace type筛选器
+2026-04-27 12:07:29 [INFO] 点击Workplace type筛选器
+12:07:29 [INFO] 点击Job Type Clear按钮
+2026-04-27 12:07:29 [INFO] 点击Job Type Clear按钮
+12:07:30 [INFO] 点击Workplace type Confirm按钮
+2026-04-27 12:07:30 [INFO] 点击Workplace type Confirm按钮
+12:07:31 [INFO] ✓ 已对Workplace type执行Clear+Confirm
+2026-04-27 12:07:31 [INFO] ✓ 已对Workplace type执行Clear+Confirm
+12:07:31 [INFO] ✓ Job Type筛选未受影响: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&attr_60=1
+2026-04-27 12:07:31 [INFO] ✓ Job Type筛选未受影响: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs&attr_60=1
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_reset_button_only_visible_with_active_filters 12:07:31 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:07:31 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:07:31 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:07:31 [INFO] Session加载成功，验证登录状态...
+12:07:33 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:07:33 [INFO] ✓ 检测到登录用户名
+12:07:33 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:07:33 [INFO] ✓ Session有效，已登录ES站
+12:07:33 [INFO] ✓ 已登录ES站
+2026-04-27 12:07:33 [INFO] ✓ 已登录ES站
+12:07:35 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:07:35 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:07:35 [INFO] ✓ 已导航到Jobs列表页（无筛选）
+2026-04-27 12:07:35 [INFO] ✓ 已导航到Jobs列表页（无筛选）
+12:07:35 [INFO] 点击Job Type筛选器
+2026-04-27 12:07:35 [INFO] 点击Job Type筛选器
+12:07:36 [INFO] 选择Job Type: Full-time
+2026-04-27 12:07:36 [INFO] 选择Job Type: Full-time
+12:07:36 [INFO] 点击Job Type Confirm按钮
+2026-04-27 12:07:36 [INFO] 点击Job Type Confirm按钮
+12:07:38 [INFO] ✓ 已设置Job Type筛选
+2026-04-27 12:07:38 [INFO] ✓ 已设置Job Type筛选
+12:07:38 [INFO] ✓ 设置筛选后Reset按钮可见
+2026-04-27 12:07:38 [INFO] ✓ 设置筛选后Reset按钮可见
+12:07:38 [INFO] 点击Reset按钮
+2026-04-27 12:07:38 [INFO] 点击Reset按钮
+12:07:40 [INFO] ✓ 已点击Reset，URL中筛选参数已清除
+2026-04-27 12:07:40 [INFO] ✓ 已点击Reset，URL中筛选参数已清除
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_popular_cities_tab_at_bottom 12:07:40 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:07:40 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:07:40 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:07:40 [INFO] Session加载成功，验证登录状态...
+12:07:43 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:07:43 [INFO] ✓ 检测到登录用户名
+12:07:43 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:07:43 [INFO] ✓ Session有效，已登录ES站
+12:07:43 [INFO] ✓ 已登录ES站
+2026-04-27 12:07:43 [INFO] ✓ 已登录ES站
+12:07:45 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:07:45 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:07:45 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:07:45 [INFO] ✓ 已导航到Jobs列表页
+12:07:45 [INFO] ✓ Popular Cities标签页可见
+2026-04-27 12:07:45 [INFO] ✓ Popular Cities标签页可见
+12:07:45 [INFO] ✓ Popular Cities中有 10 个城市链接
+2026-04-27 12:07:45 [INFO] ✓ Popular Cities中有 10 个城市链接
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_click_popular_city_link_navigates 12:07:45 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:07:45 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:07:45 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:07:45 [INFO] Session加载成功，验证登录状态...
+12:07:47 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:07:47 [INFO] ✓ 检测到登录用户名
+12:07:47 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:07:47 [INFO] ✓ Session有效，已登录ES站
+12:07:47 [INFO] ✓ 已登录ES站
+2026-04-27 12:07:47 [INFO] ✓ 已登录ES站
+12:07:49 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:07:49 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:07:49 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:07:49 [INFO] ✓ 已导航到Jobs列表页
+12:07:50 [INFO] ✓ 已点击城市链接: Aragon Jobs Recruitment
+2026-04-27 12:07:50 [INFO] ✓ 已点击城市链接: Aragon Jobs Recruitment
+12:07:50 [INFO] ✓ 已跳转到城市Jobs页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:07:50 [INFO] ✓ 已跳转到城市Jobs页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_sidebar_resume_entry_navigates_to_resume_page 12:07:50 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:07:50 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:07:50 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:07:50 [INFO] Session加载成功，验证登录状态...
+12:07:52 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:07:52 [INFO] ✓ 检测到登录用户名
+12:07:52 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:07:52 [INFO] ✓ Session有效，已登录ES站
+12:07:52 [INFO] ✓ 已登录ES站
+2026-04-27 12:07:52 [INFO] ✓ 已登录ES站
+12:07:54 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:07:54 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:07:54 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:07:54 [INFO] ✓ 已导航到Jobs列表页
+12:07:54 [INFO] ✓ Resume快捷入口可见
+2026-04-27 12:07:54 [INFO] ✓ Resume快捷入口可见
+12:07:54 [INFO] ✓ 已点击Resume入口
+2026-04-27 12:07:54 [INFO] ✓ 已点击Resume入口
+12:07:54 [INFO] ✓ 已跳转到简历页: https://espub.58v5.cn/biz/en/resume/add
+2026-04-27 12:07:54 [INFO] ✓ 已跳转到简历页: https://espub.58v5.cn/biz/en/resume/add
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_click_home_nav_link_navigates_to_home 12:07:55 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:07:55 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:07:55 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:07:55 [INFO] Session加载成功，验证登录状态...
+12:07:57 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:07:57 [INFO] ✓ 检测到登录用户名
+12:07:57 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:07:57 [INFO] ✓ Session有效，已登录ES站
+12:07:57 [INFO] ✓ 已登录ES站
+2026-04-27 12:07:57 [INFO] ✓ 已登录ES站
+12:07:59 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:07:59 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:07:59 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:07:59 [INFO] ✓ 已导航到Jobs列表页
+12:08:00 [INFO] ✓ 已点击Home链接
+2026-04-27 12:08:00 [INFO] ✓ 已点击Home链接
+12:08:00 [INFO] ✓ 已跳转到首页: https://es.58v5.cn/en/city-madrid2/
+2026-04-27 12:08:00 [INFO] ✓ 已跳转到首页: https://es.58v5.cn/en/city-madrid2/
+PASSED
+test_cases/zhaopin/test_es_jobs_list_search_and_filter.py::test_click_browse_menu_responds 12:08:00 [INFO] 尝试加载Session: es_jobseeker_wang_es
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:08:00 [INFO] 尝试加载Session: es_jobseeker_wang_es
+12:08:00 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:08:00 [INFO] Session加载成功，验证登录状态...
+12:08:02 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:08:02 [INFO] ✓ 检测到登录用户名
+12:08:02 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:08:02 [INFO] ✓ Session有效，已登录ES站
+12:08:02 [INFO] ✓ 已登录ES站
+2026-04-27 12:08:02 [INFO] ✓ 已登录ES站
+12:08:05 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:08:05 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:08:05 [INFO] ✓ 已导航到Jobs列表页
+2026-04-27 12:08:05 [INFO] ✓ 已导航到Jobs列表页
+12:08:06 [INFO] ✓ 已点击Browse菜单
+2026-04-27 12:08:06 [INFO] ✓ 已点击Browse菜单
+12:08:06 [INFO] ✓ 点击Browse菜单后页面有响应
+2026-04-27 12:08:06 [INFO] ✓ 点击Browse菜单后页面有响应
+PASSED12:08:06 [INFO] [PLAYWRIGHT] 清理全局 Playwright 实例
+---------------------------- live log sessionfinish ----------------------------
+2026-04-27 12:08:06 [INFO] [PLAYWRIGHT] 清理全局 Playwright 实例
+12:08:06 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例已清理
+2026-04-27 12:08:06 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例已清理
+
+
+- generated xml file: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/parallel_headless_run_20260427_115814/junit/test_es_jobs_list_search_and_filter_junit.xml -
+======================== 65 passed in 591.25s (0:09:51) ========================

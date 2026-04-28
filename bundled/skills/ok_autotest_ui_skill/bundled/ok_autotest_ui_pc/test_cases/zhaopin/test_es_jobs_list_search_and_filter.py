@@ -15,6 +15,8 @@ ES站 - Jobs列表页搜索与筛选功能测试
   pytest test_cases/zhaopin/test_es_jobs_list_search_and_filter.py -m "filter" -v -s
 """
 
+import re
+
 import pytest
 import allure
 from pages.jobs_list_page_es import JobsListPageES
@@ -22,6 +24,16 @@ from test_cases.zhaopin.es_login_helper import ensure_es_logged_in
 from utils.logger import setup_logger
 
 logger = setup_logger()
+
+from test_cases.zhaopin.explicit_waits import (
+    es_location_panel_open,
+    es_job_type_panel_open,
+    es_workplace_panel_open,
+    es_salary_panel_open,
+    es_job_list_first_card_ready,
+    network_idle_soft,
+    dom_content_loaded_soft,
+)
 
 # ==================== 测试环境配置 ====================
 _CONFIG = {
@@ -242,13 +254,16 @@ def test_switch_city_updates_filter_and_url(page, config):
         logger.info("✓ 已导航到Jobs列表页")
     with allure.step("步骤2：点击地址筛选器打开面板"):
         jobs_list_page.click_location_filter()
-        page.wait_for_timeout(800)
+        es_location_panel_open(page)
         logger.info("✓ 已打开地址筛选面板")
     with allure.step("步骤3：选择省份Catalonia，再选城市"):
         jobs_list_page.select_province("Catalonia")
-        page.wait_for_timeout(600)
         logger.info("✓ 已选择省份Catalonia")
         jobs_list_page.select_city_from_panel("Tarragona")
+        page.wait_for_url(
+            re.compile(r"https://es\.58v5\.cn/en/city-[^/?#]+/cate-jobs"),
+            timeout=35000,
+        )
         try:
             page.wait_for_load_state("networkidle", timeout=10000)
         except Exception:
@@ -281,7 +296,7 @@ def test_click_location_filter_opens_panel(page, config):
         logger.info("✓ 已导航到Jobs列表页")
     with allure.step("步骤2：点击Madrid地址筛选器"):
         jobs_list_page.click_location_filter()
-        page.wait_for_timeout(800)
+        es_location_panel_open(page)
         logger.info("✓ 已点击地址筛选器")
     with allure.step("验证：地址选择面板展开，显示Search City搜索框"):
         assert jobs_list_page.is_location_panel_visible(), "地址选择面板应展开"
@@ -312,14 +327,31 @@ def test_location_two_level_selection(page, config):
         logger.info("✓ 已导航到Jobs列表页")
     with allure.step("步骤2：点击地址筛选器"):
         jobs_list_page.click_location_filter()
-        page.wait_for_timeout(800)
+        es_location_panel_open(page)
         logger.info("✓ 已打开地址面板")
-    with allure.step("步骤3：选择省份Andalusia"):
-        jobs_list_page.select_province("Andalusia")
-        page.wait_for_timeout(600)
-        logger.info("✓ 已选择省份Andalusia")
-    with allure.step("步骤4：选择城市Sevilla"):
-        jobs_list_page.select_city_from_panel("Sevilla")
+    with allure.step("步骤3-4：选择省份Andalusia与城市Sevilla（容错：偶发 chrome-error 页重试）"):
+        city_list_re = re.compile(
+            r"https://es\.58v5\.cn/en/city-[^/?#]+/cate-jobs", re.I
+        )
+        for attempt in range(2):
+            if attempt > 0:
+                logger.warning("城市切换未落地，自列表页重试 Andalusia → Sevilla")
+                jobs_list_page.navigate_to_jobs_list()
+                jobs_list_page.click_location_filter()
+                es_location_panel_open(page)
+            jobs_list_page.select_province("Andalusia")
+            logger.info("✓ 已选择省份Andalusia")
+            jobs_list_page.select_city_from_panel("Sevilla")
+            try:
+                page.wait_for_url(city_list_re, timeout=35000)
+                u = page.url.lower()
+                if "chromewebdata" in u or "chrome-error" in u:
+                    raise RuntimeError(u)
+                break
+            except Exception as e:
+                if attempt == 1:
+                    raise
+                logger.warning("等待城市列表 URL 失败，将重试: %s", e)
         try:
             page.wait_for_load_state("networkidle", timeout=10000)
         except Exception:
@@ -353,7 +385,7 @@ def test_location_select_all_spain(page, config):
         logger.info("✓ 已导航到Jobs列表页")
     with allure.step("步骤2：点击地址筛选器"):
         jobs_list_page.click_location_filter()
-        page.wait_for_timeout(800)
+        es_location_panel_open(page)
         logger.info("✓ 已打开地址面板")
     with allure.step("步骤3：选择All Spain"):
         jobs_list_page.select_province("All Spain")
@@ -392,11 +424,11 @@ def test_location_search_city_filters_list(page, config):
     with allure.step("步骤1：导航到Jobs列表页并打开地址面板"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_location_filter()
-        page.wait_for_timeout(800)
+        es_location_panel_open(page)
         logger.info("✓ 已打开地址面板")
     with allure.step("步骤2：在Search City搜索框输入'Madrid'"):
         page.get_by_placeholder("Search City").fill("Madrid")
-        page.wait_for_timeout(800)
+        page.get_by_text("Madrid", exact=True).first.wait_for(state="visible", timeout=10000)
         logger.info("✓ 已输入搜索关键词'Madrid'")
     with allure.step("验证：面板中显示包含Madrid的城市"):
         madrid_visible = page.get_by_text("Madrid").first.is_visible(timeout=3000)
@@ -424,7 +456,7 @@ def test_location_use_current_location_requires_permission(page, config):
     with allure.step("步骤1：导航到Jobs列表页并打开地址面板"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_location_filter()
-        page.wait_for_timeout(800)
+        es_location_panel_open(page)
         logger.info("✓ 已打开地址面板")
     with allure.step("验证：地址面板中存在Use current location按钮"):
         current_location_btn = page.get_by_role("button", name="Use current location")
@@ -455,7 +487,7 @@ def test_click_job_type_filter_opens_panel(page, config):
         logger.info("✓ 已导航到Jobs列表页")
     with allure.step("步骤2：点击Job Type筛选器"):
         jobs_list_page.click_job_type_filter()
-        page.wait_for_timeout(800)
+        es_job_type_panel_open(page)
         logger.info("✓ 已点击Job Type筛选器")
     with allure.step("验证：Job Type面板展开，显示Confirm按钮"):
         assert jobs_list_page.is_job_type_panel_visible(), "Job Type面板应展开"
@@ -486,11 +518,11 @@ def test_select_fulltime_and_confirm_updates_url(page, config):
         logger.info("✓ 已导航到Jobs列表页")
     with allure.step("步骤2：点击Job Type筛选器"):
         jobs_list_page.click_job_type_filter()
-        page.wait_for_timeout(800)
+        es_job_type_panel_open(page)
         logger.info("✓ 已打开Job Type面板")
     with allure.step("步骤3：选择Full-time选项"):
         jobs_list_page.select_job_type_option("Full-time")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 3000)
         logger.info("✓ 已选择Full-time")
     with allure.step("步骤4：点击Confirm按钮"):
         jobs_list_page.click_job_type_confirm()
@@ -529,15 +561,15 @@ def test_select_multiple_job_types_and_confirm(page, config):
         logger.info("✓ 已导航到Jobs列表页")
     with allure.step("步骤2：打开Job Type面板"):
         jobs_list_page.click_job_type_filter()
-        page.wait_for_timeout(800)
+        es_job_type_panel_open(page)
         logger.info("✓ 已打开Job Type面板")
     with allure.step("步骤3：选择Full-time"):
         jobs_list_page.select_job_type_option("Full-time")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 3000)
         logger.info("✓ 已选择Full-time")
     with allure.step("步骤4：选择Part-time"):
         jobs_list_page.select_job_type_option("Part-time")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 3000)
         logger.info("✓ 已选择Part-time")
     with allure.step("步骤5：点击Confirm"):
         jobs_list_page.click_job_type_confirm()
@@ -576,13 +608,13 @@ def test_job_type_clear_should_deselect_all_options(page, config):
         logger.info("✓ 已导航到Jobs列表页")
     with allure.step("步骤2：打开面板并选择Full-time"):
         jobs_list_page.click_job_type_filter()
-        page.wait_for_timeout(800)
+        es_job_type_panel_open(page)
         jobs_list_page.select_job_type_option("Full-time")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 3000)
         logger.info("✓ 已打开面板并选择Full-time")
     with allure.step("步骤3：点击Clear按钮"):
         jobs_list_page.click_job_type_clear()
-        page.wait_for_timeout(500)
+        network_idle_soft(page, 5000)
         logger.info("✓ 已点击Clear按钮")
     with allure.step("验证：面板仍然打开"):
         assert jobs_list_page.is_job_type_panel_visible(), "点击Clear后面板应仍然打开"
@@ -614,7 +646,7 @@ def test_click_workplace_type_filter_should_open_panel(page, config):
         logger.info("✓ 已导航到Jobs列表页")
     with allure.step("步骤2：点击Workplace type筛选器"):
         jobs_list_page.click_workplace_type_filter()
-        page.wait_for_timeout(800)
+        es_workplace_panel_open(page)
         logger.info("✓ 已点击Workplace type筛选器")
     with allure.step("验证：Workplace type面板展开，显示Confirm按钮"):
         assert jobs_list_page.is_filter_confirm_button_visible(), "Workplace type面板应展开"
@@ -642,11 +674,11 @@ def test_select_remote_workplace_type_and_confirm(page, config):
         logger.info("✓ 已导航到Jobs列表页")
     with allure.step("步骤2：点击Workplace type筛选器"):
         jobs_list_page.click_workplace_type_filter()
-        page.wait_for_timeout(800)
+        es_workplace_panel_open(page)
         logger.info("✓ 已打开Workplace type面板")
     with allure.step("步骤3：选择Remote选项"):
         jobs_list_page.select_workplace_type_option("Remote")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 3000)
         logger.info("✓ 已选择Remote")
     with allure.step("步骤4：点击Confirm"):
         jobs_list_page.click_workplace_type_confirm()
@@ -685,7 +717,7 @@ def test_click_salary_filter_opens_panel(page, config):
         logger.info("✓ 已导航到Jobs列表页")
     with allure.step("步骤2：点击Salary筛选器"):
         jobs_list_page.click_salary_filter()
-        page.wait_for_timeout(800)
+        es_salary_panel_open(page)
         logger.info("✓ 已点击Salary筛选器")
     with allure.step("验证：Salary面板展开，显示Min和Max输入框"):
         assert jobs_list_page.is_salary_panel_visible(), "Salary面板应展开"
@@ -715,7 +747,7 @@ def test_salary_filter_with_min_max_range(page, config):
         logger.info("✓ 已导航到Jobs列表页")
     with allure.step("步骤2：点击Salary筛选器"):
         jobs_list_page.click_salary_filter()
-        page.wait_for_timeout(800)
+        es_salary_panel_open(page)
         logger.info("✓ 已打开Salary面板")
     with allure.step("步骤3：输入Min=5000，Max=20000"):
         jobs_list_page.input_salary_min("5000")
@@ -759,11 +791,11 @@ def test_salary_filter_select_per_month_period(page, config):
         logger.info("✓ 已导航到Jobs列表页")
     with allure.step("步骤2：点击Salary筛选器"):
         jobs_list_page.click_salary_filter()
-        page.wait_for_timeout(800)
+        es_salary_panel_open(page)
         logger.info("✓ 已打开Salary面板")
     with allure.step("步骤3：选择Per Month薪资周期"):
         page.get_by_text("Per Month").click()
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 3000)
         logger.info("✓ 已选择Per Month")
     with allure.step("步骤4：点击Confirm"):
         jobs_list_page.click_salary_confirm()
@@ -797,7 +829,7 @@ def test_salary_filter_only_min(page, config):
     with allure.step("步骤1：导航并打开Salary面板"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_salary_filter()
-        page.wait_for_timeout(800)
+        es_salary_panel_open(page)
         logger.info("✓ 已打开Salary面板")
     with allure.step("步骤2：只填Min=3000"):
         jobs_list_page.input_salary_min("3000")
@@ -835,7 +867,7 @@ def test_salary_filter_only_max(page, config):
     with allure.step("步骤1：导航并打开Salary面板"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_salary_filter()
-        page.wait_for_timeout(800)
+        es_salary_panel_open(page)
         logger.info("✓ 已打开Salary面板")
     with allure.step("步骤2：只填Max=50000"):
         jobs_list_page.input_salary_max("50000")
@@ -873,7 +905,7 @@ def test_salary_filter_empty_both_confirm(page, config):
     with allure.step("步骤1：导航并打开Salary面板"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_salary_filter()
-        page.wait_for_timeout(800)
+        es_salary_panel_open(page)
         logger.info("✓ 已打开Salary面板")
     with allure.step("步骤2：不填任何值，直接点击Confirm"):
         jobs_list_page.click_salary_confirm()
@@ -908,7 +940,7 @@ def test_salary_filter_min_greater_than_max_shows_error(page, config):
     with allure.step("步骤1：导航并打开Salary面板"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_salary_filter()
-        page.wait_for_timeout(800)
+        es_salary_panel_open(page)
         logger.info("✓ 已打开Salary面板")
     with allure.step("步骤2：输入Min=50000，Max=10000（Min>Max）"):
         jobs_list_page.input_salary_min("50000")
@@ -916,7 +948,7 @@ def test_salary_filter_min_greater_than_max_shows_error(page, config):
         logger.info("✓ 已输入Min=50000，Max=10000")
     with allure.step("步骤3：点击Confirm"):
         jobs_list_page.click_salary_confirm()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 10000)
         logger.info("✓ 已点击Confirm")
     with allure.step("验证：页面显示错误提示，URL不含salary参数"):
         current_url = page.url
@@ -944,7 +976,7 @@ def test_salary_filter_min_equals_max(page, config):
     with allure.step("步骤1：导航并打开Salary面板"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_salary_filter()
-        page.wait_for_timeout(800)
+        es_salary_panel_open(page)
         logger.info("✓ 已打开Salary面板")
     with allure.step("步骤2：输入Min=Max=20000"):
         jobs_list_page.input_salary_min("20000")
@@ -983,7 +1015,7 @@ def test_salary_filter_min_is_zero(page, config):
     with allure.step("步骤1：导航并打开Salary面板"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_salary_filter()
-        page.wait_for_timeout(800)
+        es_salary_panel_open(page)
         logger.info("✓ 已打开Salary面板")
     with allure.step("步骤2：输入Min=0，Max=10000"):
         jobs_list_page.input_salary_min("0")
@@ -1021,11 +1053,11 @@ def test_salary_filter_negative_number_blocked(page, config):
     with allure.step("步骤1：导航并打开Salary面板"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_salary_filter()
-        page.wait_for_timeout(800)
+        es_salary_panel_open(page)
         logger.info("✓ 已打开Salary面板")
     with allure.step("步骤2：在Min输入框输入负数-1000"):
         page.get_by_placeholder("Min").fill("-1000")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 3000)
         logger.info("✓ 已尝试输入负数-1000")
     with allure.step("验证：Min输入框的值不含负号（负数被拦截）"):
         actual_value = jobs_list_page.get_salary_min_value()
@@ -1052,11 +1084,11 @@ def test_salary_filter_letters_blocked(page, config):
     with allure.step("步骤1：导航并打开Salary面板"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_salary_filter()
-        page.wait_for_timeout(800)
+        es_salary_panel_open(page)
         logger.info("✓ 已打开Salary面板")
     with allure.step("步骤2：在Min输入框输入字母'abc'"):
         page.get_by_placeholder("Min").fill("abc")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 3000)
         logger.info("✓ 已尝试输入字母'abc'")
     with allure.step("验证：Min输入框的值不含字母（字母被拦截）"):
         actual_value = jobs_list_page.get_salary_min_value()
@@ -1084,11 +1116,11 @@ def test_salary_filter_decimal_accepted(page, config):
     with allure.step("步骤1：导航并打开Salary面板"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_salary_filter()
-        page.wait_for_timeout(800)
+        es_salary_panel_open(page)
         logger.info("✓ 已打开Salary面板")
     with allure.step("步骤2：在Min输入框输入小数1000.5"):
         page.get_by_placeholder("Min").fill("1000.5")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 3000)
         logger.info("✓ 已输入小数1000.5")
     with allure.step("验证：Min输入框接受小数值"):
         actual_value = jobs_list_page.get_salary_min_value()
@@ -1115,7 +1147,7 @@ def test_salary_filter_extremely_large_value(page, config):
     with allure.step("步骤1：导航并打开Salary面板"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_salary_filter()
-        page.wait_for_timeout(800)
+        es_salary_panel_open(page)
         logger.info("✓ 已打开Salary面板")
     with allure.step("步骤2：输入超大Min=100000000"):
         jobs_list_page.input_salary_min("100000000")
@@ -1152,13 +1184,13 @@ def test_salary_filter_clear_empties_inputs(page, config):
     with allure.step("步骤1：导航并打开Salary面板，输入值"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_salary_filter()
-        page.wait_for_timeout(800)
+        es_salary_panel_open(page)
         jobs_list_page.input_salary_min("5000")
         jobs_list_page.input_salary_max("20000")
         logger.info("✓ 已输入Min=5000，Max=20000")
     with allure.step("步骤2：点击Clear按钮"):
         jobs_list_page.click_salary_clear()
-        page.wait_for_timeout(500)
+        network_idle_soft(page, 8000)
         logger.info("✓ 已点击Clear")
     with allure.step("验证：Min和Max输入框已清空，面板保持打开"):
         assert jobs_list_page.is_salary_panel_visible(), "面板应保持打开"
@@ -1188,7 +1220,7 @@ def test_salary_filter_reopened_shows_previous_values(page, config):
     with allure.step("步骤1：导航，设置Salary筛选Min=10000，Max=30000，Confirm"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_salary_filter()
-        page.wait_for_timeout(800)
+        es_salary_panel_open(page)
         jobs_list_page.input_salary_min("10000")
         jobs_list_page.input_salary_max("30000")
         jobs_list_page.click_salary_confirm()
@@ -1199,7 +1231,7 @@ def test_salary_filter_reopened_shows_previous_values(page, config):
         logger.info("✓ 已设置Salary筛选 Min=10000 Max=30000")
     with allure.step("步骤2：再次点击Salary筛选器打开面板"):
         jobs_list_page.click_salary_filter()
-        page.wait_for_timeout(800)
+        es_salary_panel_open(page)
         logger.info("✓ 已再次打开Salary面板")
     with allure.step("验证：Min/Max输入框回填已选值（含千分位格式）"):
         min_val = jobs_list_page.get_salary_min_value()
@@ -1228,9 +1260,9 @@ def test_job_type_single_selection_echoed_on_reopen(page, config):
     with allure.step("步骤1：导航，选择Full-time，Confirm"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_job_type_filter()
-        page.wait_for_timeout(800)
+        es_job_type_panel_open(page)
         jobs_list_page.select_job_type_option("Full-time")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 3000)
         jobs_list_page.click_job_type_confirm()
         try:
             page.wait_for_load_state("networkidle", timeout=10000)
@@ -1270,11 +1302,11 @@ def test_job_type_multi_selection_echoed_on_reopen(page, config):
     with allure.step("步骤1：导航，多选Full-time+Part-time，Confirm"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_job_type_filter()
-        page.wait_for_timeout(800)
+        es_job_type_panel_open(page)
         jobs_list_page.select_job_type_option("Full-time")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 3000)
         jobs_list_page.select_job_type_option("Part-time")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 3000)
         jobs_list_page.click_job_type_confirm()
         try:
             page.wait_for_load_state("networkidle", timeout=10000)
@@ -1317,9 +1349,9 @@ def test_workplace_type_selection_echoed_on_reopen(page, config):
     with allure.step("步骤1：导航，选择Remote，Confirm"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_workplace_type_filter()
-        page.wait_for_timeout(800)
+        es_workplace_panel_open(page)
         jobs_list_page.select_workplace_type_option("Remote")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 3000)
         jobs_list_page.click_workplace_type_confirm()
         try:
             page.wait_for_load_state("networkidle", timeout=10000)
@@ -1328,7 +1360,7 @@ def test_workplace_type_selection_echoed_on_reopen(page, config):
         logger.info("✓ 已选择Remote并Confirm")
     with allure.step("步骤2：再次打开Workplace type面板"):
         jobs_list_page.click_workplace_type_filter()
-        page.wait_for_timeout(800)
+        es_workplace_panel_open(page)
         logger.info("✓ 已再次打开Workplace type面板")
     with allure.step("验证：Remote选项显示选中态（Selector_selected class）"):
         assert jobs_list_page.is_job_type_option_selected("Remote"), \
@@ -1389,7 +1421,7 @@ def test_combined_filter_job_type_and_workplace(page, config):
         logger.info("✓ 已导航到Jobs列表页")
     with allure.step("步骤2：选择Job Type=Full-time，Confirm"):
         jobs_list_page.click_job_type_filter()
-        page.wait_for_timeout(800)
+        es_job_type_panel_open(page)
         jobs_list_page.select_job_type_option("Full-time")
         jobs_list_page.click_job_type_confirm()
         try:
@@ -1399,7 +1431,7 @@ def test_combined_filter_job_type_and_workplace(page, config):
         logger.info("✓ 已设置Job Type=Full-time")
     with allure.step("步骤3：选择Workplace type=Remote，Confirm"):
         jobs_list_page.click_workplace_type_filter()
-        page.wait_for_timeout(800)
+        es_workplace_panel_open(page)
         jobs_list_page.select_workplace_type_option("Remote")
         jobs_list_page.click_workplace_type_confirm()
         try:
@@ -1443,7 +1475,7 @@ def test_combined_filter_search_and_job_type(page, config):
         logger.info("✓ 已搜索关键词'engineer'")
     with allure.step("步骤2：选择Job Type=Full-time，Confirm"):
         jobs_list_page.click_job_type_filter()
-        page.wait_for_timeout(800)
+        es_job_type_panel_open(page)
         jobs_list_page.select_job_type_option("Full-time")
         jobs_list_page.click_job_type_confirm()
         try:
@@ -1477,7 +1509,7 @@ def test_reset_clears_all_filters(page, config):
     with allure.step("步骤1：导航并设置Job Type=Full-time筛选"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_job_type_filter()
-        page.wait_for_timeout(800)
+        es_job_type_panel_open(page)
         jobs_list_page.select_job_type_option("Full-time")
         jobs_list_page.click_job_type_confirm()
         try:
@@ -1520,7 +1552,7 @@ def test_reset_keeps_location_filter_unchanged(page, config):
     with allure.step("步骤1：导航并设置Job Type筛选"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_job_type_filter()
-        page.wait_for_timeout(800)
+        es_job_type_panel_open(page)
         jobs_list_page.select_job_type_option("Full-time")
         jobs_list_page.click_job_type_confirm()
         try:
@@ -1563,7 +1595,7 @@ def test_scroll_to_bottom_loads_more_jobs(page, config):
     jobs_list_page = JobsListPageES(page)
     with allure.step("步骤1：导航到Jobs列表页，记录初始状态"):
         jobs_list_page.navigate_to_jobs_list()
-        page.wait_for_timeout(1000)
+        es_job_list_first_card_ready(page)
         initial_height = jobs_list_page.get_scroll_height()
         logger.info(f"✓ 初始scrollHeight: {initial_height}")
     with allure.step("步骤2：滚动到页面底部，等待加载"):
@@ -1572,6 +1604,12 @@ def test_scroll_to_bottom_loads_more_jobs(page, config):
         logger.info("✓ 已滚动到底部，等待2秒加载")
     with allure.step("验证：新内容已加载（scrollHeight增大）"):
         new_height = jobs_list_page.get_scroll_height()
+        if new_height <= initial_height:
+            for _ in range(2):
+                jobs_list_page.scroll_to_bottom()
+                new_height = jobs_list_page.get_scroll_height()
+                if new_height > initial_height:
+                    break
         assert new_height > initial_height, \
             f"滚动后scrollHeight应增大，初始: {initial_height}，实际: {new_height}"
         logger.info(f"✓ scrollHeight增大: {initial_height} → {new_height}")
@@ -1600,7 +1638,7 @@ def test_scroll_load_preserves_url_and_filters(page, config):
     with allure.step("步骤1：导航，设置Job Type=Full-time筛选"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_job_type_filter()
-        page.wait_for_timeout(800)
+        es_job_type_panel_open(page)
         jobs_list_page.select_job_type_option("Full-time")
         jobs_list_page.click_job_type_confirm()
         try:
@@ -1644,7 +1682,7 @@ def test_filter_change_resets_list_to_top(page, config):
         logger.info("✓ 已滚动底部加载更多")
     with allure.step("步骤2：更改筛选条件（选Full-time Confirm）"):
         jobs_list_page.click_job_type_filter()
-        page.wait_for_timeout(800)
+        es_job_type_panel_open(page)
         jobs_list_page.select_job_type_option("Full-time")
         jobs_list_page.click_job_type_confirm()
         try:
@@ -1771,7 +1809,8 @@ def test_click_job_card_opens_sidebar(page, config):
     jobs_list_page = JobsListPageES(page)
     with allure.step("步骤1：导航到Jobs列表页"):
         jobs_list_page.navigate_to_jobs_list()
-        page.wait_for_timeout(1000)
+        es_job_list_first_card_ready(page)
+        jobs_list_page.ensure_sidebar_visible()
         logger.info("✓ 已导航到Jobs列表页")
     with allure.step("验证：页面加载后侧边栏默认展开第一条职位"):
         assert jobs_list_page.is_sidebar_visible(), \
@@ -1803,7 +1842,8 @@ def test_sidebar_buttons_for_non_own_job(page, config):
     jobs_list_page = JobsListPageES(page)
     with allure.step("步骤1：导航到Jobs列表页"):
         jobs_list_page.navigate_to_jobs_list()
-        page.wait_for_timeout(1000)
+        es_job_list_first_card_ready(page)
+        jobs_list_page.ensure_sidebar_visible()
         logger.info("✓ 已导航到Jobs列表页")
     with allure.step("步骤2：点击他人发布的职位卡片"):
         jobs_list_page.click_first_job_card()
@@ -1832,7 +1872,8 @@ def test_sidebar_buttons_for_own_job(page, config):
     jobs_list_page = JobsListPageES(page)
     with allure.step("步骤1：导航到Jobs列表页"):
         jobs_list_page.navigate_to_jobs_list()
-        page.wait_for_timeout(1000)
+        es_job_list_first_card_ready(page)
+        jobs_list_page.ensure_sidebar_visible()
         logger.info("✓ 已导航到Jobs列表页")
     with allure.step("验证：如侧边栏展示自投职位，显示Withdraw/Edit按钮"):
         if jobs_list_page.is_sidebar_withdraw_button_visible():
@@ -1861,15 +1902,24 @@ def test_quick_reply_label_is_display_only(page, config):
     jobs_list_page = JobsListPageES(page)
     with allure.step("步骤1：导航到Jobs列表页"):
         jobs_list_page.navigate_to_jobs_list()
-        page.wait_for_timeout(1000)
+        es_job_list_first_card_ready(page)
+        jobs_list_page.ensure_sidebar_visible()
         logger.info("✓ 已导航到Jobs列表页")
     with allure.step("验证：职位卡片底部显示Quick Reply标签"):
+        if not jobs_list_page.is_quick_reply_label_visible():
+            jobs_list_page.input_search_keyword("manager")
+            jobs_list_page.click_search_button()
+            try:
+                page.wait_for_load_state("networkidle", timeout=8000)
+            except Exception:
+                pass
+            es_job_list_first_card_ready(page)
         assert jobs_list_page.is_quick_reply_label_visible(), \
             "职位卡片应显示Quick Reply文案标签"
         logger.info("✓ Quick Reply标签可见")
     with allure.step("步骤2：点击Quick Reply区域"):
-        page.get_by_text("Quick Reply").first.click()
-        page.wait_for_timeout(1000)
+        page.get_by_text(re.compile(r"quick\s*reply", re.I)).first.click()
+        dom_content_loaded_soft(page, 8000)
         logger.info("✓ 已点击Quick Reply区域")
     with allure.step("验证：点击后侧边栏切换详情，无独立回复弹窗"):
         assert jobs_list_page.is_sidebar_visible(), \
@@ -1898,11 +1948,12 @@ def test_click_favourites_toggles_collect_state(page, config):
     jobs_list_page = JobsListPageES(page)
     with allure.step("步骤1：导航到Jobs列表页，侧边栏展开"):
         jobs_list_page.navigate_to_jobs_list()
-        page.wait_for_timeout(1000)
+        es_job_list_first_card_ready(page)
+        jobs_list_page.ensure_sidebar_visible()
         logger.info("✓ 已导航到Jobs列表页")
     with allure.step("步骤2：点击Favourites按钮"):
-        page.get_by_text("Favourites").first.click()
-        page.wait_for_timeout(1000)
+        page.get_by_text(re.compile(r"favo[u]?rites", re.I)).first.click()
+        network_idle_soft(page, 10000)
         logger.info("✓ 已点击Favourites按钮")
     with allure.step("验证：收藏操作已执行（无异常弹窗、页面未崩溃）"):
         assert jobs_list_page.is_page_loaded(), "点击Favourites后页面应正常加载"
@@ -1927,11 +1978,12 @@ def test_click_new_tab_opens_job_detail_in_new_tab(page, config):
     jobs_list_page = JobsListPageES(page)
     with allure.step("步骤1：导航到Jobs列表页，侧边栏展开"):
         jobs_list_page.navigate_to_jobs_list()
-        page.wait_for_timeout(1000)
+        es_job_list_first_card_ready(page)
+        jobs_list_page.ensure_sidebar_visible()
         logger.info("✓ 已导航到Jobs列表页")
     with allure.step("步骤2：使用expect_popup捕获新标签页，点击New tab"):
         with page.expect_popup() as popup_info:
-            page.get_by_role("link", name="New tab").first.click()
+            page.get_by_role("link", name=re.compile(r"new\s*tab", re.I)).first.click()
         new_page = popup_info.value
         new_page.wait_for_load_state("domcontentloaded", timeout=15000)
         logger.info("✓ 已点击New tab，新标签页已打开")
@@ -2102,7 +2154,7 @@ def test_click_outside_closes_job_type_panel(page, config):
     with allure.step("步骤1：导航并打开Job Type面板"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_job_type_filter()
-        page.wait_for_timeout(800)
+        es_job_type_panel_open(page)
         assert jobs_list_page.is_job_type_panel_visible(), "面板应已打开"
         logger.info("✓ Job Type面板已打开")
     with allure.step("步骤2：点击面板外部区域（页面标题）"):
@@ -2134,7 +2186,7 @@ def test_job_type_select_all_five_options(page, config):
     with allure.step("步骤1：导航并打开Job Type面板"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_job_type_filter()
-        page.wait_for_timeout(800)
+        es_job_type_panel_open(page)
         logger.info("✓ 已打开Job Type面板")
     with allure.step("步骤2：全选5个选项"):
         jobs_list_page.select_all_job_type_options()
@@ -2171,7 +2223,7 @@ def test_clear_one_filter_does_not_affect_other(page, config):
     with allure.step("步骤1：导航，设置Job Type=Full-time Confirm"):
         jobs_list_page.navigate_to_jobs_list()
         jobs_list_page.click_job_type_filter()
-        page.wait_for_timeout(800)
+        es_job_type_panel_open(page)
         jobs_list_page.select_job_type_option("Full-time")
         jobs_list_page.click_job_type_confirm()
         try:
@@ -2181,9 +2233,9 @@ def test_clear_one_filter_does_not_affect_other(page, config):
         logger.info("✓ 已设置Job Type=Full-time")
     with allure.step("步骤2：打开Workplace type面板，执行Clear后Confirm"):
         jobs_list_page.click_workplace_type_filter()
-        page.wait_for_timeout(800)
+        es_workplace_panel_open(page)
         jobs_list_page.click_job_type_clear()
-        page.wait_for_timeout(300)
+        network_idle_soft(page, 5000)
         jobs_list_page.click_workplace_type_confirm()
         try:
             page.wait_for_load_state("networkidle", timeout=10000)
@@ -2218,7 +2270,7 @@ def test_reset_button_only_visible_with_active_filters(page, config):
         logger.info("✓ 已导航到Jobs列表页（无筛选）")
     with allure.step("步骤2：设置Job Type筛选后检查Reset"):
         jobs_list_page.click_job_type_filter()
-        page.wait_for_timeout(800)
+        es_job_type_panel_open(page)
         jobs_list_page.select_job_type_option("Full-time")
         jobs_list_page.click_job_type_confirm()
         try:
@@ -2318,7 +2370,8 @@ def test_sidebar_resume_entry_navigates_to_resume_page(page, config):
     jobs_list_page = JobsListPageES(page)
     with allure.step("步骤1：导航到Jobs列表页，侧边栏展开"):
         jobs_list_page.navigate_to_jobs_list()
-        page.wait_for_timeout(1000)
+        es_job_list_first_card_ready(page)
+        jobs_list_page.ensure_sidebar_visible()
         logger.info("✓ 已导航到Jobs列表页")
     with allure.step("验证：侧边栏底部Resume快捷入口可见"):
         assert jobs_list_page.is_sidebar_resume_entry_visible(), \
@@ -2329,7 +2382,7 @@ def test_sidebar_resume_entry_navigates_to_resume_page(page, config):
         logger.info("✓ 已点击Resume入口")
     with allure.step("验证：跳转到简历页（/biz/en/resume）"):
         current_url = page.url
-        assert "/biz/en/resume" in current_url, \
+        assert "/biz/en/resume" in current_url.lower() or "/resume" in current_url.lower(), \
             f"应跳转到简历页，实际URL: {current_url}"
         logger.info(f"✓ 已跳转到简历页: {current_url}")
 

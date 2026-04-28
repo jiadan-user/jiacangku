@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="8" time="351.452" timestamp="2026-04-27T11:58:15.224712+08:00" hostname="wangyonglideMacBook-Pro.local"><testcase classname="test_cases.zhaopin.test_sg_job_preferences_add_from_list" name="test_sg_add_pref_authenticated_no_pref_should_show_add_banner" time="56.685" /><testcase classname="test_cases.zhaopin.test_sg_job_preferences_add_from_list" name="test_sg_add_pref_unauthenticated_should_show_add_banner" time="32.552" /><testcase classname="test_cases.zhaopin.test_sg_job_preferences_add_from_list" name="test_sg_add_pref_authenticated_should_redirect_directly_to_add_page" time="69.057"><failure message="playwright._impl._errors.TimeoutError: Locator.wait_for: Timeout 25000ms exceeded.&#10;Call log:&#10;  - waiting for get_by_text(re.compile(r&quot;Add\s*Job\s*Preference\s*Unlock\s+more&quot;, re.IGNORECASE)).or_(get_by_text(re.compile(r&quot;Add\s+Job\s+Preference&quot;, re.IGNORECASE))).or_(get_by_text(re.compile(r&quot;Unlock\s+more\s+opportunities&quot;, re.IGNORECASE))).first">test_cases/zhaopin/test_sg_job_preferences_add_from_list.py:471: in test_sg_add_pref_authenticated_should_redirect_directly_to_add_page
+    _click_sg_add_job_preference_card(page)
+test_cases/zhaopin/test_sg_job_preferences_add_from_list.py:196: in _click_sg_add_job_preference_card
+    _wait_sg_jobs_list_preference_banner(page, timeout_ms=timeout_ms)
+test_cases/zhaopin/test_sg_job_preferences_add_from_list.py:183: in _wait_sg_jobs_list_preference_banner
+    loc.wait_for(state="attached", timeout=timeout_ms)
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/sync_api/_generated.py:17975: in wait_for
+    self._sync(self._impl_obj.wait_for(timeout=timeout, state=state))
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_locator.py:692: in wait_for
+    await self._frame.wait_for_selector(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:369: in wait_for_selector
+    await self._channel.send(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_connection.py:69: in send
+    return await self._connection.wrap_api_call(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_connection.py:558: in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+E   playwright._impl._errors.TimeoutError: Locator.wait_for: Timeout 25000ms exceeded.
+E   Call log:
+E     - waiting for get_by_text(re.compile(r"Add\s*Job\s*Preference\s*Unlock\s+more", re.IGNORECASE)).or_(get_by_text(re.compile(r"Add\s+Job\s+Preference", re.IGNORECASE))).or_(get_by_text(re.compile(r"Unlock\s+more\s+opportunities", re.IGNORECASE))).first</failure></testcase><testcase classname="test_cases.zhaopin.test_sg_job_preferences_add_from_list" name="test_sg_add_pref_add_page_should_show_empty_form" time="36.219" /><testcase classname="test_cases.zhaopin.test_sg_job_preferences_add_from_list" name="test_sg_add_pref_empty_form_continue_should_show_three_validation_errors" time="32.856" /><testcase classname="test_cases.zhaopin.test_sg_job_preferences_add_from_list" name="test_sg_add_pref_back_button_should_redirect_to_jobs_list" time="63.513" /><testcase classname="test_cases.zhaopin.test_sg_job_preferences_add_from_list" name="test_sg_add_pref_login_via_banner_should_redirect_to_add_page" time="30.438" /><testcase classname="test_cases.zhaopin.test_sg_job_preferences_add_from_list" name="test_sg_add_pref_unauthenticated_click_should_show_login_dialog" time="28.873" /></testsuite></testsuites>

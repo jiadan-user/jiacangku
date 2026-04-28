@@ -1,6 +1,6 @@
 # pages/marketplace_list_page_ae.py
 import re
-from typing import Optional
+import time
 from urllib.parse import urljoin
 
 from pages.base_page import BasePage
@@ -48,9 +48,13 @@ class MarketplaceListPageAe(BasePage):
         
         for attempt in range(max_retries):
             try:
-                self.page.goto(url, wait_until="domcontentloaded", timeout=30000)
-                self.page.wait_for_load_state("load", timeout=15000)
-                self.page.wait_for_timeout(2000)
+                self.page.goto(url, wait_until="load", timeout=45000)
+                try:
+                    self.page.wait_for_load_state("networkidle", timeout=20000)
+                except Exception:
+                    pass
+                self.page.wait_for_timeout(1500)
+                self.wait_for_marketplace_list_interactive(timeout=40000)
                 
                 # 验证是否成功加载（不是错误页）
                 if "chrome-error://" in self.page.url or "about:blank" in self.page.url:
@@ -132,6 +136,106 @@ class MarketplaceListPageAe(BasePage):
             return False
         except Exception:
             return False
+
+    def _search_input_locator_strategies(self):
+        """多策略：与 input_search_keyword 保持顺序一致，兼容 placeholder 为 Search for anything 等变体（无头/多语言）。"""
+        return [
+            lambda: self.page.get_by_role("textbox", name="Search for anything"),
+            lambda: self.page.get_by_placeholder("Search").first,
+            lambda: self.page.locator('input[placeholder*="Search" i]').first,
+            lambda: self.page.locator("input.search-input").first,
+        ]
+
+    def _try_pick_visible_search(self):
+        for factory in self._search_input_locator_strategies():
+            try:
+                loc = factory()
+                if loc.is_visible(timeout=1200):
+                    return loc
+            except Exception:
+                continue
+        return None
+
+    def get_search_input_locator(self, overall_timeout: int = 45000):
+        """
+        获取当前可见的列表页搜索框 Locator（轮询到任一策略可交互）。
+        """
+        deadline = time.time() + max(1, overall_timeout) / 1000.0
+        while time.time() < deadline:
+            pick = self._try_pick_visible_search()
+            if pick is not None:
+                return pick
+            time.sleep(0.35)
+        return self.page.locator('input[placeholder*="Search" i]').first
+
+    def wait_for_marketplace_list_interactive(self, timeout: int = 45000) -> None:
+        """
+        SPA/无头下 domcontentloaded 时首屏可能未挂载：轮询至搜索框可见（可辅以一次整页重载）。
+        """
+        deadline = time.time() + max(5, timeout) / 1000.0
+        reloaded = False
+        while time.time() < deadline:
+            try:
+                self.page.wait_for_load_state("load", timeout=15000)
+            except Exception:
+                pass
+            try:
+                self.page.evaluate("window.scrollTo(0,0)")
+            except Exception:
+                pass
+            if self._try_pick_visible_search() is not None:
+                return
+            if not reloaded and (deadline - time.time()) < max(12.0, timeout / 1000.0 * 0.4):
+                try:
+                    self.page.reload(wait_until="load", timeout=40000)
+                    reloaded = True
+                    self.page.wait_for_timeout(1500)
+                except Exception as e:
+                    self.logger.debug(f"list interactive soft reload: {e}")
+            time.sleep(0.45)
+        if self._try_pick_visible_search() is not None:
+            return
+        raise RuntimeError("Marketplace 列表页在超时内未出现可交互的搜索框（无头/首屏可检查 viewport 与 URL）")
+
+    def is_filter_cta_visible(self, timeout: int = 20000) -> bool:
+        """顶栏 Filter/筛选入口（文案随版本可能为 Filter· 或 Filter）。"""
+        factories = [
+            lambda: self.page.get_by_text("Filter·").first,
+            lambda: self.page.get_by_text("Filter", exact=True).first,
+            lambda: self.page.locator('button:has-text("Filter")').first,
+            lambda: self.page.locator('button:has([class*="filter-icon"])').first,
+        ]
+        t0 = time.time()
+        while time.time() - t0 < max(0.2, timeout) / 1000.0:
+            for f in factories:
+                try:
+                    loc = f()
+                    if loc.is_visible(timeout=1000):
+                        return True
+                except Exception:
+                    continue
+            time.sleep(0.2)
+        return False
+
+    def get_filter_entry_locator(self, overall_timeout: int = 20000):
+        """返回当前可见的 Filter 入口（与 open_filter_panel 选择器一致）。"""
+        deadline = time.time() + max(0.5, overall_timeout) / 1000.0
+        factories = [
+            lambda: self.page.get_by_text("Filter·").first,
+            lambda: self.page.get_by_text("Filter", exact=True).first,
+            lambda: self.page.locator('button:has-text("Filter")').first,
+            lambda: self.page.locator('button:has([class*="filter-icon"])').first,
+        ]
+        while time.time() < deadline:
+            for f in factories:
+                try:
+                    loc = f()
+                    if loc.is_visible(timeout=1200):
+                        return loc
+                except Exception:
+                    continue
+            time.sleep(0.25)
+        return self.page.locator('button:has([class*="filter-icon"])').first
     
     # ========== 搜索功能 ==========
     
@@ -157,33 +261,10 @@ class MarketplaceListPageAe(BasePage):
             keyword: 搜索关键词
         """
         try:
-            # 等待页面稳定
             self.page.wait_for_load_state("domcontentloaded", timeout=10000)
             self.page.wait_for_timeout(500)
-            
-            # 多种定位策略，按优先级尝试
-            search_box = None
-            locators = [
-                lambda: self.page.get_by_role('textbox', name='Search for anything'),
-                lambda: self.page.get_by_placeholder('Search').first,
-                lambda: self.page.locator('input[placeholder*="Search"]').first,
-                lambda: self.page.locator('input[type="text"]').first,
-                lambda: self.page.locator('input.search-input').first,
-            ]
-            
-            for i, locator_func in enumerate(locators):
-                try:
-                    search_box = locator_func()
-                    if search_box.is_visible(timeout=3000):
-                        self.logger.info(f"✓ 使用定位器{i+1}找到搜索框")
-                        break
-                except Exception as e:
-                    self.logger.debug(f"定位器{i+1}失败: {e}")
-                    continue
-            
-            if search_box is None:
-                raise Exception("无法定位搜索框（尝试了5种选择器）")
-            
+            search_box = self.get_search_input_locator(overall_timeout=30000)
+            self.logger.info("✓ 已定位搜索框 (get_search_input_locator)")
             search_box.fill(keyword)
             self.page.wait_for_timeout(500)
         except Exception as e:
@@ -195,9 +276,8 @@ class MarketplaceListPageAe(BasePage):
         提交搜索（按回车或点击搜索按钮）
         """
         try:
-            # 方法1：按回车键
-            search_box = self.page.get_by_placeholder('Search').first
-            search_box.press('Enter')
+            search_box = self.get_search_input_locator(overall_timeout=25000)
+            search_box.press("Enter")
             self.page.wait_for_load_state("domcontentloaded", timeout=15000)
             self.page.wait_for_timeout(1000)
         except Exception as e:
@@ -209,7 +289,7 @@ class MarketplaceListPageAe(BasePage):
         清空搜索框并提交（使搜索参数生效）
         """
         try:
-            search_box = self.page.get_by_placeholder('Search').first
+            search_box = self.get_search_input_locator(overall_timeout=25000)
             
             # 方法1：三次点击选中所有文本并删除
             search_box.click()
@@ -238,7 +318,7 @@ class MarketplaceListPageAe(BasePage):
             str: 搜索框内容
         """
         try:
-            search_box = self.page.get_by_placeholder('Search').first
+            search_box = self.get_search_input_locator(overall_timeout=15000)
             return search_box.input_value()
         except Exception as e:
             self.logger.error(f"获取搜索框值失败: {e}")
@@ -627,6 +707,28 @@ class MarketplaceListPageAe(BasePage):
         except Exception as e:
             self.logger.error(f"打开筛选器面板失败: {e}")
             raise
+
+    def fill_price_range_inputs(self, min_price: str, max_price: str):
+        """
+        在已打开的筛选面板内填写价格区间。
+        使用 placeholder 属性匹配（大小写不敏感），避免 get_by_placeholder 与页面文案不一致。
+        """
+        try:
+            min_loc = self.page.locator(
+                'input[placeholder*="Min" i], input[placeholder*="最低" i]'
+            ).first
+            min_loc.wait_for(state="visible", timeout=20000)
+            min_loc.fill(min_price)
+            self.page.wait_for_timeout(300)
+            max_loc = self.page.locator(
+                'input[placeholder*="Max" i], input[placeholder*="最高" i]'
+            ).first
+            max_loc.wait_for(state="visible", timeout=15000)
+            max_loc.fill(max_price)
+            self.page.wait_for_timeout(300)
+        except Exception as e:
+            self.logger.error(f"填写价格区间失败: {e}")
+            raise
     
     def select_category_filter(self, category_name):
         """
@@ -767,9 +869,12 @@ class MarketplaceListPageAe(BasePage):
             target_option.click()
             self.page.wait_for_timeout(500)
             
-            # 第3步：点击确认按钮
-            confirm_btn = self.page.get_by_role('button', name='Confirm')
-            confirm_btn.click()
+            # 第3步：点击确认按钮（排序弹层可能被遮挡或存在多枚 Confirm，需显式等待可见）
+            confirm_btn = self.page.get_by_role(
+                "button", name=re.compile(r"^(Confirm|确认)$", re.IGNORECASE)
+            ).first
+            confirm_btn.wait_for(state="visible", timeout=20000)
+            confirm_btn.click(timeout=20000)
             self.page.wait_for_load_state("domcontentloaded", timeout=15000)
             self.page.wait_for_timeout(2000)
             
@@ -842,7 +947,17 @@ class MarketplaceListPageAe(BasePage):
         """
         try:
             first_card = self.page.locator('[class*="list-components-item-card"]').first
-            first_card.click()
+            first_card.wait_for(state="visible", timeout=20000)
+            first_card.scroll_into_view_if_needed(timeout=5000)
+            self.page.wait_for_timeout(300)
+            inner = first_card.locator("a").first
+            try:
+                if inner.is_visible(timeout=4000):
+                    inner.click(timeout=15000)
+                else:
+                    first_card.click(timeout=15000)
+            except Exception:
+                first_card.click(timeout=15000)
             self.page.wait_for_load_state("domcontentloaded", timeout=15000)
             self.page.wait_for_timeout(2000)
         except Exception as e:
@@ -965,7 +1080,7 @@ class MarketplaceListPageAe(BasePage):
             self.logger.error(f"点击下一页失败: {e}")
             raise
     
-    def _marketplace_list_url_for_page(self, page_num: int) -> Optional[str]:
+    def _marketplace_list_url_for_page(self, page_num: int) -> str | None:
         """
         AE Marketplace 列表分页 URL：第1页 .../cate-marketplace/，第N页 .../cate-marketplace-pageN/
         保留原有 query 参数。
