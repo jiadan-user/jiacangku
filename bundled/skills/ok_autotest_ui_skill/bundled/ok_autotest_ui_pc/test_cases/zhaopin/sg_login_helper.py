@@ -3,6 +3,8 @@
 新加坡站招聘模块 - 登录辅助（Session 复用）
 仅第一次需要完整登录，后续用例加载已保存的 Cookie
 """
+import re
+
 from utils.logger import setup_logger
 
 logger = setup_logger()
@@ -28,7 +30,15 @@ def ensure_sg_logged_in(page, config):
         home_page.navigate_to_home(base_url)
         page.wait_for_load_state("domcontentloaded", timeout=10000)
         home_page.handle_cookie_popup()
-        page.wait_for_timeout(1500)
+        try:
+            page.get_by_text(
+                re.compile(
+                    r"Log\s*in|OKer|Account|Sign\s*out|Skip|Singapore|Jobs",
+                    re.I,
+                )
+            ).first.wait_for(state="visible", timeout=12000)
+        except Exception:
+            pass
         if home_page.is_logged_in():
             logger.info("✓ 已加载 Session，跳过登录")
             return
@@ -41,19 +51,48 @@ def ensure_sg_logged_in(page, config):
     home_page.navigate_to_home(base_url)
     page.wait_for_load_state("domcontentloaded", timeout=10000)
     home_page.handle_cookie_popup()
-    page.wait_for_timeout(1500)
+    try:
+        page.get_by_text(
+            re.compile(
+                r"Log\s*in|OKer|Account|Sign\s*out|Skip|Singapore|Jobs",
+                re.I,
+            )
+        ).first.wait_for(state="visible", timeout=12000)
+    except Exception:
+        pass
 
     if not home_page.is_logged_in():
         logger.info("未登录，开始执行登录流程")
         login_page.click_login_register_button()
-        page.wait_for_timeout(1500)
+        try:
+            page.get_by_role("textbox", name="Email or phone number").first.wait_for(
+                state="visible", timeout=15000
+            )
+        except Exception:
+            pass
         login_page.input_email(config["test_account"]["username"])
         login_page.click_continue_button()
-        page.wait_for_timeout(2000)
+        try:
+            page.locator('input[type="password"]').first.wait_for(
+                state="visible", timeout=15000
+            )
+        except Exception:
+            pass
         login_page.input_password(config["test_account"]["password"])
         login_page.click_login_button()
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(2000)
+        try:
+            page.get_by_text(re.compile(r"Log\s*in\s*/\s*Register", re.I)).first.wait_for(
+                state="hidden", timeout=20000
+            )
+        except Exception:
+            pass
+        try:
+            page.get_by_text(re.compile(r"OKer|Sign out|Log\s*out|Account|Skip", re.I)).first.wait_for(
+                state="visible", timeout=10000
+            )
+        except Exception:
+            pass
         assert home_page.is_logged_in(), "登录失败"
         session_manager.save_session()
         logger.info("✓ 登录成功并保存 Session")

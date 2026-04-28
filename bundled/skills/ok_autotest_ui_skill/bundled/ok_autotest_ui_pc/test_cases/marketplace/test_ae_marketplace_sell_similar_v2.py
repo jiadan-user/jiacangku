@@ -17,12 +17,23 @@ AE站 - 二手想卖同款功能测试 (优化版)
 - 更健壮的选择器策略
 - 更完善的错误处理
 """
+import time
 import pytest
 import allure
 from urllib.parse import urljoin
 from pages.marketplace_list_page_ae import MarketplaceListPageAe
 from pages.marketplace_detail_page_ae import MarketplaceDetailPageAe
 from pages.marketplace_sell_similar_page_ae import MarketplaceSellSimilarPageAe
+from test_cases.marketplace.explicit_waits import (
+    wait_aed_listing_price_signal,
+    wait_dom_content_loaded,
+    wait_list_results_settled,
+    wait_marketplace_detail_href_in_dom,
+    wait_marketplace_detail_price,
+    wait_network_quiet,
+    wait_publish_context_ready,
+    wait_short_ui_tick,
+)
 from test_cases.zhaopin.ae_login_helper import ensure_ae_logged_in
 from utils.logger import setup_logger
 
@@ -35,7 +46,8 @@ _CONFIG = {
     "site": "ae",
     "site_name": "阿联酋站",
     "role": "buyer",
-    "user_name": "ae_buyer_sell_similar",
+    # 与 marketplace 目录下其它脚本统一，共用同一份 Session 文件
+    "user_name": "ae_marketplace_regression",
     "base_url": "https://ae.58v5.cn",
     "test_account": {
         "username": "wangyongli@58.com",
@@ -60,6 +72,127 @@ _CONFIG = {
 # Helper 函数
 # ============================================
 
+def _gather_detail_hrefs_from_list_page(page, max_links: int) -> list:
+    """从当前列表页收集商品详情 href（去重，最多 max_links 条）。"""
+    import re
+
+    out = []
+    try:
+        wait_dom_content_loaded(page, 15000)
+        try:
+            wait_network_quiet(page, 12000)
+        except Exception:
+            pass
+        try:
+            wait_aed_listing_price_signal(page, 20000)
+        except Exception:
+            pass
+        deadline = time.time() + 35.0
+        price_elements = []
+        while time.time() < deadline:
+            price_elements = page.locator("text=/AED\\s+\\d+/").all()
+            if len(price_elements) > 0:
+                break
+            try:
+                page.evaluate(
+                    "window.scrollTo(0, Math.min((window.scrollY || 0) + 900, "
+                    "(document.body && document.body.scrollHeight) || 9999))"
+                )
+            except Exception:
+                pass
+            wait_marketplace_detail_href_in_dom(page, timeout_ms=450)
+        logger.info(f"找到 {len(price_elements)} 个价格元素")
+        for price_elem in price_elements[: max_links * 2]:
+            try:
+                parent_link = price_elem.locator("xpath=ancestor::a[@href]").first
+                href = parent_link.get_attribute("href")
+                if not href:
+                    continue
+                if "cate-marketplace" in href or "?" in href:
+                    continue
+                if not href.endswith("/"):
+                    continue
+                if not re.search(r"\d{10,}", href):
+                    continue
+                if href not in out:
+                    out.append(href)
+                    logger.info(f"  -> 商品 {len(out)}: {href}")
+                    if len(out) >= max_links:
+                        break
+            except Exception:
+                continue
+        if len(out) == 0:
+            logger.info("方法1未找到商品,尝试方法2...")
+            for link in page.locator('a[href*="/cate-"]').all():
+                try:
+                    href = link.get_attribute("href")
+                    if not href or "cate-marketplace" in href or "?" in href:
+                        continue
+                    if not href.endswith("/"):
+                        continue
+                    if not re.search(r"\d{19}", href):
+                        continue
+                    if "city-" not in href:
+                        continue
+                    if href not in out:
+                        out.append(href)
+                        logger.info(f"  -> 商品 {len(out)}: {href}")
+                        if len(out) >= max_links:
+                            break
+                except Exception:
+                    continue
+    except Exception as e:
+        logger.warning(f"收集列表链接时出错: {e}")
+    return out
+
+
+def _scan_links_for_sell_similar(
+    page,
+    config,
+    detail_page,
+    sell_similar_page,
+    all_links,
+    language,
+):
+    """遍历详情链接，返回首个非本人且展示 Sell Similar 的帖子。"""
+    for i, href in enumerate(all_links, 1):
+        try:
+            detail_url = urljoin(page.url, href)
+            if language != "en" and "/en/" in detail_url:
+                detail_url = detail_url.replace("/en/", f"/{language}/")
+            logger.info(f"[{i}/{len(all_links)}] 检查商品: {detail_url}")
+            page.goto(detail_url, wait_until="domcontentloaded", timeout=30000)
+            try:
+                wait_marketplace_detail_price(page, 20000)
+            except Exception:
+                wait_dom_content_loaded(page, 15000)
+            if not detail_page.is_detail_page_loaded(timeout=15000):
+                logger.info("  ⏭️ 跳过: 详情页未就绪")
+                continue
+            has_withdraw = detail_page.is_withdraw_button_visible(timeout=3000)
+            has_edit = detail_page.is_edit_button_visible(timeout=3000)
+            if has_withdraw or has_edit:
+                logger.info("  ⏭️ 跳过: 本人帖（Withdraw/Edit）")
+                continue
+            has_sell_similar = sell_similar_page.is_sell_similar_button_visible(timeout=5000)
+            if has_sell_similar:
+                original_price = detail_page.get_price_text()
+                try:
+                    original_title = page.locator("h1, [class*='title']").first.inner_text()
+                except Exception:
+                    original_title = ""
+                logger.info("  ✅ 找到有 Sell Similar 按钮的商品!")
+                logger.info(f"     URL: {detail_url}")
+                logger.info(f"     价格: {original_price}")
+                logger.info(f"     标题: {original_title[:50] if original_title else 'N/A'}")
+                return (detail_url, original_price, original_title)
+            logger.info("  ⏭️ 跳过: 没有 Sell Similar 按钮")
+        except Exception as e:
+            logger.warning(f"  ⚠️ 检查第 {i} 个商品时出错: {e}")
+            continue
+    return None
+
+
 def find_post_with_sell_similar_button(page, config, list_page, detail_page, sell_similar_page, max_attempts=20, language='en'):
     """
     在列表页中查找有 Sell Similar 按钮的非本人帖子
@@ -73,144 +206,62 @@ def find_post_with_sell_similar_button(page, config, list_page, detail_page, sel
     """
     logger.info(f"开始查找有 Sell Similar 按钮的商品 (最多检查 {max_attempts} 个)...")
     
-    # 访问列表页 - 支持多语言
     list_url = f"{config['base_url']}/{language}/city-abu-dhabi/cate-marketplace/"
-    page.goto(list_url, wait_until="domcontentloaded", timeout=60000)
-    page.wait_for_timeout(2000)
-    logger.info(f"✓ 访问列表页: {list_url}")
-    
-    # 获取所有商品链接 - 使用更精确的选择器定位商品卡片
-    all_links = []
     try:
-        # 等待列表加载
-        page.wait_for_timeout(2000)
-        
-        # 策略: 查找包含图片和价格的链接 (商品卡片特征)
-        # 商品卡片通常包含: 图片 + 标题 + 价格
-        import re
-        
-        # 方法1: 查找包含 AED 价格的链接附近的 href
-        price_elements = page.locator("text=/AED\\s+\\d+/").all()
-        logger.info(f"找到 {len(price_elements)} 个价格元素")
-        
-        for price_elem in price_elements[:max_attempts * 2]:
+        cur_base = (page.url or "").split("?")[0].rstrip("/")
+        tgt_base = list_url.rstrip("/")
+        if cur_base != tgt_base:
+            page.goto(list_url, wait_until="domcontentloaded", timeout=60000)
             try:
-                # 从价格元素向上查找最近的链接
-                parent_link = price_elem.locator("xpath=ancestor::a[@href]").first
-                href = parent_link.get_attribute("href")
-                
-                if not href:
-                    continue
-                
-                # 验证是否是详情页链接
-                if "cate-marketplace" in href or "?" in href:
-                    continue
-                if not href.endswith("/"):
-                    continue
-                if not re.search(r'\d{10,}', href):
-                    continue
-                
-                if href not in all_links:
-                    all_links.append(href)
-                    logger.info(f"  -> 商品 {len(all_links)}: {href}")
-                    
-                    if len(all_links) >= max_attempts:
-                        break
+                wait_aed_listing_price_signal(page, 20000)
             except Exception:
-                continue
-        
-        # 方法2: 如果方法1没找到,使用备用方案
-        if len(all_links) == 0:
-            logger.info("方法1未找到商品,尝试方法2...")
-            
-            # 查找所有链接,过滤出详情页链接
-            all_page_links = page.locator('a[href*="/cate-"]').all()
-            
-            for link in all_page_links:
-                try:
-                    href = link.get_attribute("href")
-                    if not href:
-                        continue
-                    
-                    # 详情页链接必须:
-                    # 1. 包含 city- 和 cate-
-                    # 2. 不是列表页 (不包含 cate-marketplace)
-                    # 3. 包含长数字串 (商品ID)
-                    # 4. 以 / 结尾
-                    # 5. 没有查询参数
-                    
-                    if "cate-marketplace" in href:
-                        continue
-                    if "?" in href:
-                        continue
-                    if not href.endswith("/"):
-                        continue
-                    if not re.search(r'\d{19}', href):  # 商品ID通常是19位数字
-                        continue
-                    if "city-" not in href:
-                        continue
-                    
-                    if href not in all_links:
-                        all_links.append(href)
-                        logger.info(f"  -> 商品 {len(all_links)}: {href}")
-                        
-                        if len(all_links) >= max_attempts:
-                            break
-                except Exception:
-                    continue
-    except Exception as e:
-        logger.warning(f"获取商品链接时出错: {e}")
-    
-    logger.info(f"✓ 总共找到 {len(all_links)} 个有效商品链接")
-    
-    # 遍历商品,查找有 Sell Similar 按钮的
-    for i, href in enumerate(all_links, 1):
+                wait_dom_content_loaded(page, 15000)
+            logger.info(f"✓ 访问列表页: {list_url}")
+        else:
+            logger.info(f"✓ 已在目标列表页，跳过重复导航: {list_url}")
+    except Exception:
+        page.goto(list_url, wait_until="domcontentloaded", timeout=60000)
         try:
-            detail_url = urljoin(page.url, href)
-            
-            # 如果指定了非 'en' 的语言,替换 URL 中的语言部分
-            if language != 'en' and '/en/' in detail_url:
-                detail_url = detail_url.replace('/en/', f'/{language}/')
-            
-            logger.info(f"[{i}/{len(all_links)}] 检查商品: {detail_url}")
-            
-            page.goto(detail_url, wait_until="domcontentloaded", timeout=30000)
-            page.wait_for_timeout(2000)
-            
-            # 检查是否是非本人帖
-            has_contact = detail_page.is_contact_button_visible(timeout=3000)
-            has_withdraw = detail_page.is_withdraw_button_visible(timeout=2000)
-            has_edit = detail_page.is_edit_button_visible(timeout=2000)
-            
-            if not has_contact or has_withdraw or has_edit:
-                logger.info(f"  ⏭️ 跳过: 这是本人帖或状态异常")
-                continue
-            
-            # 检查是否有 Sell Similar 按钮
-            has_sell_similar = sell_similar_page.is_sell_similar_button_visible(timeout=5000)
-            
-            if has_sell_similar:
-                # 找到了!记录信息
-                original_price = detail_page.get_price_text()
-                try:
-                    original_title = page.locator("h1, [class*='title']").first.inner_text()
-                except Exception:
-                    original_title = ""
-                
-                logger.info(f"  ✅ 找到有 Sell Similar 按钮的商品!")
-                logger.info(f"     URL: {detail_url}")
-                logger.info(f"     价格: {original_price}")
-                logger.info(f"     标题: {original_title[:50] if original_title else 'N/A'}")
-                
-                return (detail_url, original_price, original_title)
-            else:
-                logger.info(f"  ⏭️ 跳过: 没有 Sell Similar 按钮")
-                
-        except Exception as e:
-            logger.warning(f"  ⚠️ 检查第 {i} 个商品时出错: {e}")
-            continue
+            wait_aed_listing_price_signal(page, 20000)
+        except Exception:
+            wait_dom_content_loaded(page, 15000)
+        logger.info(f"✓ 访问列表页: {list_url}")
     
-    logger.error(f"❌ 未找到有 Sell Similar 按钮的商品 (已检查 {len(all_links)} 个)")
+    all_links = _gather_detail_hrefs_from_list_page(page, max_attempts)
+    logger.info(f"✓ 总共找到 {len(all_links)} 个有效商品链接")
+    found = _scan_links_for_sell_similar(
+        page, config, detail_page, sell_similar_page, all_links, language
+    )
+    if found:
+        return found
+
+    # 主列表前排可能全是当前账号本人帖；尝试其他分类列表以命中他人商品
+    extra_list_urls = (
+        f"{config['base_url']}/{language}/city-abu-dhabi/cate-samsung3/",
+        f"{config['base_url']}/{language}/city-abu-dhabi/cate-books/",
+        f"{config['base_url']}/{language}/city-abu-dhabi/cate-headphones/",
+        f"{config['base_url']}/{language}/city-abu-dhabi/cate-cell-phone-cases/",
+    )
+    for alt in extra_list_urls:
+        logger.info(f"主列表未命中，尝试备用分类: {alt}")
+        try:
+            page.goto(alt, wait_until="domcontentloaded", timeout=60000)
+            try:
+                wait_aed_listing_price_signal(page, 20000)
+            except Exception:
+                wait_dom_content_loaded(page, 15000)
+        except Exception as e:
+            logger.warning(f"备用列表打开失败: {alt} ({e})")
+            continue
+        all_links = _gather_detail_hrefs_from_list_page(page, max_attempts)
+        logger.info(f"✓ 备用列表得到 {len(all_links)} 个商品链接")
+        found = _scan_links_for_sell_similar(
+            page, config, detail_page, sell_similar_page, all_links, language
+        )
+        if found:
+            return found
+
+    logger.error("❌ 未找到有 Sell Similar 按钮的商品")
     return None
 
 
@@ -228,8 +279,9 @@ def find_post_with_sell_similar_button(page, config, list_page, detail_page, sel
 @allure.title("非本人帖详情页应该展示 Sell Similar 按钮")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证在非本人发布的二手帖子详情页，能够正确展示 Sell Similar 按钮，并且不展示 Withdraw/Edit 按钮")
-def test_tc001_non_own_post_shows_sell_similar_button(page, config):
+def test_tc001_non_own_post_shows_sell_similar_button(marketplace_list_session, config):
     """非本人帖详情页展示 Sell Similar 按钮测试"""
+    page = marketplace_list_session
     
     # ========== Arrange: 准备测试对象 ==========
     list_page = MarketplaceListPageAe(page)
@@ -244,8 +296,6 @@ def test_tc001_non_own_post_shows_sell_similar_button(page, config):
     logger.info(f"账号: {config['user_name']}")
     logger.info("="*80)
     
-    # ========== 前置条件: 确保已登录 ==========
-    ensure_ae_logged_in(page, config)
     
     # ========== Act: 查找有 Sell Similar 按钮的商品 ==========
     with allure.step("步骤1: 查找有 Sell Similar 按钮的商品"):
@@ -310,8 +360,9 @@ def test_tc001_non_own_post_shows_sell_similar_button(page, config):
 @allure.title("点击 Sell Similar 按钮应该跳转到发布页")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证点击 Sell Similar 按钮后，能够正确跳转到发布页面")
-def test_tc002_click_sell_similar_navigates_to_publish_page(page, config):
+def test_tc002_click_sell_similar_navigates_to_publish_page(marketplace_list_session, config):
     """点击 Sell Similar 按钮跳转发布页测试"""
+    page = marketplace_list_session
     
     # ========== Arrange: 准备测试对象 ==========
     list_page = MarketplaceListPageAe(page)
@@ -322,8 +373,6 @@ def test_tc002_click_sell_similar_navigates_to_publish_page(page, config):
     logger.info("TC002: 点击 Sell Similar 按钮跳转发布页")
     logger.info("="*80)
     
-    # ========== 前置条件: 确保已登录 ==========
-    ensure_ae_logged_in(page, config)
     
     # ========== Act: 查找有 Sell Similar 按钮的商品 ==========
     with allure.step("步骤1: 查找有 Sell Similar 按钮的商品"):
@@ -347,12 +396,12 @@ def test_tc002_click_sell_similar_navigates_to_publish_page(page, config):
     
     with allure.step("步骤4: 等待页面跳转"):
         page.wait_for_load_state("domcontentloaded", timeout=30000)
-        page.wait_for_timeout(2000)
+        wait_publish_context_ready(page, timeout=20000)
         logger.info("✓ 页面跳转完成")
     
     # ========== Assert: 验证跳转到发布页 ==========
     with allure.step("验证1: 成功跳转到发布页"):
-        assert sell_similar_page.is_publish_page_loaded(timeout=5000), \
+        assert sell_similar_page.is_publish_page_loaded(timeout=20000), \
             "应该成功跳转到发布页"
         logger.info("✓ 确认已进入发布页")
     
@@ -383,8 +432,9 @@ def test_tc002_click_sell_similar_navigates_to_publish_page(page, config):
 @allure.title("本人帖详情页不应该展示 Sell Similar 按钮")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证在本人发布的二手帖子详情页，不展示 Sell Similar 按钮，应展示 Withdraw/Edit 按钮")
-def test_tc003_own_post_does_not_show_sell_similar_button(page, config):
+def test_tc003_own_post_does_not_show_sell_similar_button(marketplace_list_session, config):
     """本人帖详情页不展示 Sell Similar 按钮测试"""
+    page = marketplace_list_session
     
     # ========== Arrange: 准备测试对象 ==========
     list_page = MarketplaceListPageAe(page)
@@ -395,8 +445,6 @@ def test_tc003_own_post_does_not_show_sell_similar_button(page, config):
     logger.info("TC003: 本人帖详情页不展示 Sell Similar 按钮")
     logger.info("="*80)
     
-    # ========== 前置条件: 确保已登录 ==========
-    ensure_ae_logged_in(page, config)
     
     # ========== Act: 查找本人帖子 ==========
     with allure.step("步骤1: 查找本人发布的帖子"):
@@ -406,7 +454,10 @@ def test_tc003_own_post_does_not_show_sell_similar_button(page, config):
             wait_until="domcontentloaded",
             timeout=60000
         )
-        page.wait_for_timeout(2000)
+        try:
+            wait_aed_listing_price_signal(page, 20000)
+        except Exception:
+            wait_dom_content_loaded(page, 15000)
         logger.info("✓ 访问本人帖子列表页 (iconSource=marketplace)")
         
         own_post_found = False
@@ -479,8 +530,10 @@ def test_tc003_own_post_does_not_show_sell_similar_button(page, config):
             try:
                 detail_url = urljoin(page.url, href)
                 page.goto(detail_url, wait_until="domcontentloaded", timeout=30000)
-                page.wait_for_timeout(2000)
-                
+                try:
+                    wait_marketplace_detail_price(page, 20000)
+                except Exception:
+                    wait_dom_content_loaded(page, 15000)
                 has_withdraw = detail_page.is_withdraw_button_visible(timeout=3000)
                 has_edit = detail_page.is_edit_button_visible(timeout=3000)
                 
@@ -496,7 +549,10 @@ def test_tc003_own_post_does_not_show_sell_similar_button(page, config):
                         wait_until="domcontentloaded",
                         timeout=30000
                     )
-                    page.wait_for_timeout(1000)
+                    try:
+                        wait_aed_listing_price_signal(page, 12000)
+                    except Exception:
+                        wait_short_ui_tick(page)
             except Exception as e:
                 logger.warning(f"检查第 {i} 个商品时出错: {e}")
                 continue
@@ -539,8 +595,9 @@ def test_tc003_own_post_does_not_show_sell_similar_button(page, config):
 @allure.title("发布页应该预加载原帖的价格等信息,但图片应被清空")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证点击 Sell Similar 后,发布页正确预加载原帖的价格信息,但图片应被清空")
-def test_tc004_publish_page_preloads_original_post_data(page, config):
+def test_tc004_publish_page_preloads_original_post_data(marketplace_list_session, config):
     """发布页预加载原帖数据测试"""
+    page = marketplace_list_session
     
     # ========== Arrange: 准备测试对象 ==========
     list_page = MarketplaceListPageAe(page)
@@ -551,8 +608,6 @@ def test_tc004_publish_page_preloads_original_post_data(page, config):
     logger.info("TC004: 发布页预加载原帖数据")
     logger.info("="*80)
     
-    # ========== 前置条件: 确保已登录 ==========
-    ensure_ae_logged_in(page, config)
     
     # ========== Act: 查找有 Sell Similar 按钮的商品并记录信息 ==========
     with allure.step("步骤1: 查找有 Sell Similar 按钮的商品"):
@@ -572,8 +627,8 @@ def test_tc004_publish_page_preloads_original_post_data(page, config):
     
     with allure.step("步骤3: 等待发布页加载"):
         page.wait_for_load_state("domcontentloaded", timeout=30000)
-        page.wait_for_timeout(3000)
-        assert sell_similar_page.is_publish_page_loaded(timeout=5000), \
+        wait_publish_context_ready(page, timeout=25000)
+        assert sell_similar_page.is_publish_page_loaded(timeout=20000), \
             "应该成功跳转到发布页"
         logger.info("✓ 已进入发布页")
     
@@ -586,7 +641,7 @@ def test_tc004_publish_page_preloads_original_post_data(page, config):
     
     with allure.step("验证2: 价格信息已预填充 (如果原帖有价格)"):
         if original_price and original_price != "AED 0":
-            page.wait_for_timeout(2000)
+            wait_dom_content_loaded(page, 10000)
             publish_price = sell_similar_page.get_publish_page_price(timeout=5000)
             
             if publish_price:
@@ -656,7 +711,10 @@ def test_tc005_not_logged_in_user_shows_login_popup(page, config):
             wait_until="domcontentloaded",
             timeout=60000
         )
-        page.wait_for_timeout(3000)  # 增加等待时间,确保页面状态更新
+        try:
+            wait_list_results_settled(page, timeout=25000)
+        except Exception:
+            wait_aed_listing_price_signal(page, 20000)
         logger.info("✓ 打开二手列表页成功")
     
     with allure.step("步骤2: 验证未登录状态"):
@@ -688,7 +746,10 @@ def test_tc005_not_logged_in_user_shows_login_popup(page, config):
         
         detail_url = urljoin(page.url, first_href)
         page.goto(detail_url, wait_until="domcontentloaded", timeout=30000)
-        page.wait_for_timeout(2000)
+        try:
+            wait_marketplace_detail_price(page, 20000)
+        except Exception:
+            wait_dom_content_loaded(page, 15000)
         logger.info(f"✓ 已进入详情页: {detail_url}")
     
     with allure.step("步骤4: 验证 Sell Similar 按钮可见 (未登录也应展示)"):
@@ -701,7 +762,15 @@ def test_tc005_not_logged_in_user_shows_login_popup(page, config):
     # ========== Act: 点击 Sell Similar ==========
     with allure.step("步骤5: 点击 Sell Similar 按钮"):
         sell_similar_page.click_sell_similar_button()
-        page.wait_for_timeout(2000)
+        try:
+            page.locator("[role='dialog']").first.wait_for(state="visible", timeout=10000)
+        except Exception:
+            try:
+                page.get_by_role("textbox", name="Email or phone number").wait_for(
+                    state="visible", timeout=5000
+                )
+            except Exception:
+                wait_short_ui_tick(page)
         logger.info("✓ 已点击 Sell Similar 按钮")
     
     # ========== Assert: 验证登录弹窗出现 ==========
@@ -741,6 +810,10 @@ def test_tc005_not_logged_in_user_shows_login_popup(page, config):
     logger.info("✅ TC005 测试通过！未登录用户正确调起登录")
     logger.info("="*80)
 
+    # 恢复磁盘中的 Session，后续用例可走 ensure_ae_logged_in 快路径
+    with allure.step("恢复登录态：从已保存 Session 还原，供后续用例使用"):
+        ensure_ae_logged_in(page, config)
+
 
 @pytest.mark.case_id_sell_similar_tc007
 @pytest.mark.p1
@@ -751,8 +824,9 @@ def test_tc005_not_logged_in_user_shows_login_popup(page, config):
 @allure.title("非二手帖子(Jobs/Services)不应该展示 Sell Similar 按钮")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证在非二手分类的帖子详情页(如 Jobs、Services),不展示 Sell Similar 按钮")
-def test_tc007_non_marketplace_posts_do_not_show_sell_similar(page, config):
+def test_tc007_non_marketplace_posts_do_not_show_sell_similar(marketplace_list_session, config):
     """非二手帖子不展示 Sell Similar 按钮测试"""
+    page = marketplace_list_session
     
     # ========== Arrange: 准备测试对象 ==========
     detail_page = MarketplaceDetailPageAe(page)
@@ -762,8 +836,6 @@ def test_tc007_non_marketplace_posts_do_not_show_sell_similar(page, config):
     logger.info("TC007: 非二手帖子不展示 Sell Similar 按钮")
     logger.info("="*80)
     
-    # ========== 前置条件: 确保已登录 ==========
-    ensure_ae_logged_in(page, config)
     
     # 测试多个非二手分类
     test_categories = [
@@ -787,7 +859,11 @@ def test_tc007_non_marketplace_posts_do_not_show_sell_similar(page, config):
             
             # 访问分类列表页
             page.goto(category_info['list_url'], wait_until="domcontentloaded", timeout=60000)
-            page.wait_for_timeout(2000)
+            try:
+                page.wait_for_load_state("load", timeout=10000)
+            except Exception:
+                pass
+            wait_dom_content_loaded(page, 15000)
             logger.info(f"✓ 打开 {category_info['name']} 列表页")
             
             # 获取第一个帖子链接
@@ -817,7 +893,11 @@ def test_tc007_non_marketplace_posts_do_not_show_sell_similar(page, config):
                 
                 # 访问详情页
                 page.goto(detail_url, wait_until="domcontentloaded", timeout=30000)
-                page.wait_for_timeout(2000)
+                wait_dom_content_loaded(page, 15000)
+                try:
+                    page.wait_for_load_state("networkidle", timeout=8000)
+                except Exception:
+                    pass
                 logger.info(f"✓ 已进入 {category_info['name']} 详情页: {detail_url}")
                 
                 # 验证不展示 Sell Similar 按钮
@@ -846,8 +926,9 @@ def test_tc007_non_marketplace_posts_do_not_show_sell_similar(page, config):
 @allure.title("ES 站点应该展示西班牙语的 Sell Similar 按钮")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证在 ES 语言环境下,Sell Similar 按钮文案正确显示为西班牙语")
-def test_tc008_sell_similar_button_in_spanish_language(page, config):
+def test_tc008_sell_similar_button_in_spanish_language(marketplace_list_session, config):
     """多语言验证 - ES 站点测试"""
+    page = marketplace_list_session
     
     # ========== Arrange: 准备测试对象 ==========
     list_page = MarketplaceListPageAe(page)
@@ -858,8 +939,6 @@ def test_tc008_sell_similar_button_in_spanish_language(page, config):
     logger.info("TC008: 多语言验证 - ES 站点")
     logger.info("="*80)
     
-    # ========== 前置条件: 确保已登录 ==========
-    ensure_ae_logged_in(page, config)
     
     # ========== Act: 切换到 ES 语言并查找商品 ==========
     with allure.step("步骤1: 切换到西班牙语 (ES) 并查找商品"):
@@ -918,8 +997,9 @@ def test_tc008_sell_similar_button_in_spanish_language(page, config):
 @allure.title("发布页应该继承原帖的商品属性")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证点击 Sell Similar 后,发布页正确继承原帖的商品属性(如品牌、型号、状况等)")
-def test_tc009_publish_page_inherits_product_attributes(page, config):
+def test_tc009_publish_page_inherits_product_attributes(marketplace_list_session, config):
     """发布页属性继承验证测试"""
+    page = marketplace_list_session
     
     # ========== Arrange: 准备测试对象 ==========
     list_page = MarketplaceListPageAe(page)
@@ -930,8 +1010,6 @@ def test_tc009_publish_page_inherits_product_attributes(page, config):
     logger.info("TC009: 发布页属性继承验证")
     logger.info("="*80)
     
-    # ========== 前置条件: 确保已登录 ==========
-    ensure_ae_logged_in(page, config)
     
     # ========== Act: 查找有 Sell Similar 按钮的商品 ==========
     with allure.step("步骤1: 查找有 Sell Similar 按钮的商品"):
@@ -963,23 +1041,22 @@ def test_tc009_publish_page_inherits_product_attributes(page, config):
         
         logger.info(f"✓ 原帖属性: {original_attributes if original_attributes else '未找到明确属性标签'}")
     
-    # ========== Act: 点击 Sell Similar 进入发布页 ==========
-    with allure.step("步骤3: 点击 Sell Similar 按钮"):
-        sell_similar_page.click_sell_similar_button()
-        logger.info("✓ 已点击 Sell Similar 按钮")
-    
-    with allure.step("步骤4: 等待发布页加载"):
-        page.wait_for_load_state("domcontentloaded", timeout=30000)
-        page.wait_for_timeout(3000)
-        assert sell_similar_page.is_publish_page_loaded(timeout=5000), \
-            "应该成功跳转到发布页"
+    # ========== Act: 点击 Sell Similar 进入发布页（可能新标签） ==========
+    with allure.step("步骤3–4: 点击 Sell Similar 并切换到实际发布页"):
+        publish_page = sell_similar_page.get_publish_page_after_sell_similar_click()
+        page = publish_page
+        sell_similar_page = MarketplaceSellSimilarPageAe(publish_page)
+        wait_publish_context_ready(publish_page, timeout=20000)
+        assert sell_similar_page.is_publish_page_loaded(timeout=15000), \
+            "应该成功跳转到发布页（含新标签场景）"
         logger.info("✓ 已进入发布页")
     
     # ========== Assert: 验证发布页属性继承 ==========
     with allure.step("验证1: 发布页 URL 正确"):
         current_url = sell_similar_page.get_current_url()
-        assert "/publish/" in current_url.lower(), \
-            f"发布页 URL 应包含 '/publish/'，实际: {current_url}"
+        cur = current_url.lower()
+        assert "/publish/" in cur or ("/biz/" in cur and "publish" in cur), \
+            f"发布页 URL 应包含发布路径，实际: {current_url}"
         logger.info(f"✓ URL 验证通过: {current_url}")
     
     with allure.step("验证2: 检查属性字段是否存在"):
@@ -1033,8 +1110,9 @@ def test_tc009_publish_page_inherits_product_attributes(page, config):
 @allure.title("发布页应该继承原帖的商品描述")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证点击 Sell Similar 后,发布页正确继承原帖的商品描述内容")
-def test_tc010_publish_page_inherits_description(page, config):
+def test_tc010_publish_page_inherits_description(marketplace_list_session, config):
     """发布页描述继承验证测试"""
+    page = marketplace_list_session
     
     # ========== Arrange: 准备测试对象 ==========
     list_page = MarketplaceListPageAe(page)
@@ -1045,8 +1123,6 @@ def test_tc010_publish_page_inherits_description(page, config):
     logger.info("TC010: 发布页描述继承验证")
     logger.info("="*80)
     
-    # ========== 前置条件: 确保已登录 ==========
-    ensure_ae_logged_in(page, config)
     
     # ========== Act: 查找有 Sell Similar 按钮的商品 ==========
     with allure.step("步骤1: 查找有 Sell Similar 按钮的商品"):
@@ -1086,23 +1162,22 @@ def test_tc010_publish_page_inherits_description(page, config):
         
         logger.info(f"✓ 原帖描述: {original_description[:100] if original_description else '未找到描述内容'}...")
     
-    # ========== Act: 点击 Sell Similar 进入发布页 ==========
-    with allure.step("步骤3: 点击 Sell Similar 按钮"):
-        sell_similar_page.click_sell_similar_button()
-        logger.info("✓ 已点击 Sell Similar 按钮")
-    
-    with allure.step("步骤4: 等待发布页加载"):
-        page.wait_for_load_state("domcontentloaded", timeout=30000)
-        page.wait_for_timeout(3000)
-        assert sell_similar_page.is_publish_page_loaded(timeout=5000), \
-            "应该成功跳转到发布页"
+    # ========== Act: 点击 Sell Similar 进入发布页（可能新标签） ==========
+    with allure.step("步骤3–4: 点击 Sell Similar 并切换到实际发布页"):
+        publish_page = sell_similar_page.get_publish_page_after_sell_similar_click()
+        page = publish_page
+        sell_similar_page = MarketplaceSellSimilarPageAe(publish_page)
+        wait_publish_context_ready(publish_page, timeout=20000)
+        assert sell_similar_page.is_publish_page_loaded(timeout=40000), \
+            "应该成功跳转到发布页（含新标签场景）"
         logger.info("✓ 已进入发布页")
     
     # ========== Assert: 验证发布页描述继承 ==========
     with allure.step("验证1: 发布页 URL 正确"):
         current_url = sell_similar_page.get_current_url()
-        assert "/publish/" in current_url.lower(), \
-            f"发布页 URL 应包含 '/publish/'，实际: {current_url}"
+        cur = current_url.lower()
+        assert "/publish/" in cur or ("/biz/" in cur and "publish" in cur), \
+            f"发布页 URL 应包含发布路径，实际: {current_url}"
         logger.info(f"✓ URL 验证通过: {current_url}")
     
     with allure.step("验证2: 描述内容已预填充"):

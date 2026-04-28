@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="7" time="187.177" timestamp="2026-04-27T11:58:15.224214+08:00" hostname="wangyonglideMacBook-Pro.local"><testcase classname="test_cases.zhaopin.test_zhaopin_job_preferences" name="test_tc001_unnamed" time="78.819"><failure message="playwright._impl._errors.TimeoutError: Timeout 45000ms exceeded.&#10;=========================== logs ===========================&#10;waiting for navigation to &quot;**/cate-jobs**&quot; until 'load'&#10;  navigated to &quot;https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs&quot;&#10;  navigated to &quot;https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs&quot;&#10;  navigated to &quot;https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs&quot;&#10;============================================================">test_cases/zhaopin/test_zhaopin_job_preferences.py:67: in test_tc001_unnamed
+    sg_wait_jobs_list_url(page, timeout=45000)
+test_cases/zhaopin/explicit_waits.py:143: in sg_wait_jobs_list_url
+    page.wait_for_url("**/cate-jobs**", timeout=timeout)
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/sync_api/_generated.py:9162: in wait_for_url
+    self._sync(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_page.py:584: in wait_for_url
+    return await self._main_frame.wait_for_url(**locals_to_params(locals()))
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:266: in wait_for_url
+    pass
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_event_context_manager.py:33: in __aexit__
+    await self._future
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:239: in continuation
+    event = await waiter.result()
+E   playwright._impl._errors.TimeoutError: Timeout 45000ms exceeded.
+E   =========================== logs ===========================
+E   waiting for navigation to "**/cate-jobs**" until 'load'
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E   ============================================================</failure></testcase><testcase classname="test_cases.zhaopin.test_zhaopin_job_preferences" name="test_tc002_unnamed" time="47.976"><failure message="playwright._impl._errors.TimeoutError: Timeout 45000ms exceeded.&#10;=========================== logs ===========================&#10;waiting for navigation to &quot;**/cate-jobs**&quot; until 'load'&#10;  navigated to &quot;https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs&quot;&#10;  navigated to &quot;https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs&quot;&#10;  navigated to &quot;https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs&quot;&#10;============================================================">test_cases/zhaopin/test_zhaopin_job_preferences.py:91: in test_tc002_unnamed
+    sg_wait_jobs_list_url(page, timeout=45000)
+test_cases/zhaopin/explicit_waits.py:143: in sg_wait_jobs_list_url
+    page.wait_for_url("**/cate-jobs**", timeout=timeout)
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/sync_api/_generated.py:9162: in wait_for_url
+    self._sync(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_page.py:584: in wait_for_url
+    return await self._main_frame.wait_for_url(**locals_to_params(locals()))
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:266: in wait_for_url
+    pass
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_event_context_manager.py:33: in __aexit__
+    await self._future
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:239: in continuation
+    event = await waiter.result()
+E   playwright._impl._errors.TimeoutError: Timeout 45000ms exceeded.
+E   =========================== logs ===========================
+E   waiting for navigation to "**/cate-jobs**" until 'load'
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E   ============================================================</failure></testcase><testcase classname="test_cases.zhaopin.test_zhaopin_job_preferences" name="test_tc003_unnamed" time="1.393" /><testcase classname="test_cases.zhaopin.test_zhaopin_job_preferences" name="test_tc004_unnamed" time="0.731" /><testcase classname="test_cases.zhaopin.test_zhaopin_job_preferences" name="test_tc005_0_999999" time="26.815" /><testcase classname="test_cases.zhaopin.test_zhaopin_job_preferences" name="test_tc006_unnamed" time="28.094" /><testcase classname="test_cases.zhaopin.test_zhaopin_job_preferences" name="test_tc007_unnamed" time="1.391"><failure message="AssertionError: 未登录应触发登录流程，当前: https://sgpub.58v5.cn/biz/en/jobPreference?showSkip=1&amp;returnUrl=https%3A%2F%2Fsg.58v5.cn%2Fen%2Fcity-singapore%2Fcate-jobs%2F%3FiconSource%3Djobs&#10;assert ('login' in 'https://sgpub.58v5.cn/biz/en/jobpreference?showskip=1&amp;returnurl=https%3a%2f%2fsg.58v5.cn%2fen%2fcity-singapore%2fcate-jobs%2f%3ficonsource%3djobs' or False)">test_cases/zhaopin/test_zhaopin_job_preferences.py:205: in test_tc007_unnamed
+    assert "login" in url or login_visible, f"未登录应触发登录流程，当前: {page.url}"
+E   AssertionError: 未登录应触发登录流程，当前: https://sgpub.58v5.cn/biz/en/jobPreference?showSkip=1&amp;returnUrl=https%3A%2F%2Fsg.58v5.cn%2Fen%2Fcity-singapore%2Fcate-jobs%2F%3FiconSource%3Djobs
+E   assert ('login' in 'https://sgpub.58v5.cn/biz/en/jobpreference?showskip=1&amp;returnurl=https%3a%2f%2fsg.58v5.cn%2fen%2fcity-singapore%2fcate-jobs%2f%3ficonsource%3djobs' or False)</failure></testcase></testsuite></testsuites>

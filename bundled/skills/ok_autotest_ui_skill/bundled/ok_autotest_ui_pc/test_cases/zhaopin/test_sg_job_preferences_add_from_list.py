@@ -32,6 +32,8 @@ SG 站（新加坡站）- Job Preferences Add Job Preference 入口功能测试
   - Google 登录图标：page.get_by_role('img', name='google').first
   - 邮箱输入框（弹窗内）：page.locator('[role=dialog]').first.get_by_role('textbox').first
 """
+import re
+
 import pytest
 import allure
 from pages.login_page import LoginPage
@@ -41,6 +43,8 @@ from utils.session_manager import SessionManager
 from utils.logger import setup_logger
 
 logger = setup_logger()
+
+from test_cases.zhaopin.explicit_waits import dom_content_loaded_soft, network_idle_soft, sg_wait_jobs_list_url, sg_after_home_jobs_icon
 
 # ============================================
 # 测试环境配置（来自录制文档，录制与运行使用同一账号）
@@ -90,7 +94,7 @@ def _prepare_unauthenticated_state(page, config):
     # 步骤1：先导航到 SG 站再清除本地存储
     try:
         page.goto(config["base_url"], wait_until="domcontentloaded", timeout=15000)
-        page.wait_for_timeout(500)
+        dom_content_loaded_soft(page, 20000)
         page.evaluate("() => { localStorage.clear(); sessionStorage.clear(); }")
     except Exception as e:
         logger.warning(f"清除本地存储时出现异常（忽略）: {e}")
@@ -101,13 +105,12 @@ def _prepare_unauthenticated_state(page, config):
 
     # 步骤3：先跳到空白页，再导航到目标，避免残留导航干扰
     page.goto("about:blank")
-    page.wait_for_timeout(500)
-
+    dom_content_loaded_soft(page, 20000)
     # 步骤4：重新访问 Jobs 列表页（带重试）
     for retry in range(3):
         try:
             page.goto(jobs_list_url, wait_until="domcontentloaded", timeout=20000)
-            page.wait_for_timeout(2000)
+            dom_content_loaded_soft(page, 20000)
             logger.info(f"✓ 已进入 Jobs 列表页（未登录）: {page.url}")
             return
         except Exception as e:
@@ -115,9 +118,7 @@ def _prepare_unauthenticated_state(page, config):
                 raise
             logger.warning(f"导航 Jobs 列表页失败（第{retry + 1}次），重试: {e}")
             page.goto("about:blank")
-            page.wait_for_timeout(1000)
-
-
+            dom_content_loaded_soft(page, 20000)
 def _handle_cookie_popup(page):
     """
     处理 Cookie 弹窗（如果存在）。
@@ -130,7 +131,7 @@ def _handle_cookie_popup(page):
         cookie_btn = page.locator(".CookieConsent_cookieConsent__xhIgs button").first
         if cookie_btn.is_visible(timeout=3000):
             cookie_btn.click()
-            page.wait_for_timeout(800)
+            dom_content_loaded_soft(page, 20000)
             logger.info("✓ 已处理 Cookie 弹窗（CookieConsent class 选择器）")
             return
     except Exception:
@@ -141,7 +142,7 @@ def _handle_cookie_popup(page):
         accept_btn = page.get_by_role("button", name="Accept all").first
         if accept_btn.is_visible(timeout=2000):
             accept_btn.click()
-            page.wait_for_timeout(800)
+            dom_content_loaded_soft(page, 20000)
             logger.info("✓ 已处理 Cookie 弹窗（Accept all）")
             return
     except Exception:
@@ -152,10 +153,48 @@ def _handle_cookie_popup(page):
         essential_btn = page.get_by_role("button", name="Only essential").first
         if essential_btn.is_visible(timeout=2000):
             essential_btn.click()
-            page.wait_for_timeout(800)
+            dom_content_loaded_soft(page, 20000)
             logger.info("✓ 已处理 Cookie 弹窗（Only essential）")
     except Exception:
         pass
+
+
+def _sg_add_job_preference_locator(page):
+    """
+    Jobs 列表页「Add Job Preference」入口。
+    录制为标题与副文案同一可点区域（甚至紧连为 Add Job PreferenceUnlock more）；
+    无头模式下常在列表区懒加载或需滚入视口，单一精确文案易误判不可见。
+    """
+    p = page
+    tight = p.get_by_text(re.compile(r"Add\s*Job\s*Preference\s*Unlock\s+more", re.I))
+    title = p.get_by_text(re.compile(r"Add\s+Job\s+Preference", re.I))
+    sub = p.get_by_text(re.compile(r"Unlock\s+more\s+opportunities", re.I))
+    return tight.or_(title).or_(sub).first
+
+
+def _wait_sg_jobs_list_preference_banner(page, timeout_ms: int = 25000):
+    """等待列表区就绪，将 Job Preference 卡片滚入视口后再断言/点击。"""
+    network_idle_soft(page, min(12000, timeout_ms))
+    try:
+        sg_wait_jobs_list_url(page, timeout=min(timeout_ms, 30000))
+    except Exception:
+        dom_content_loaded_soft(page, min(15000, timeout_ms))
+    loc = _sg_add_job_preference_locator(page)
+    loc.wait_for(state="attached", timeout=timeout_ms)
+    try:
+        loc.scroll_into_view_if_needed(timeout=10000)
+    except Exception:
+        try:
+            page.evaluate("() => window.scrollTo(0, 0)")
+        except Exception:
+            pass
+        page.wait_for_timeout(300)
+    loc.wait_for(state="visible", timeout=timeout_ms)
+
+
+def _click_sg_add_job_preference_card(page, timeout_ms: int = 25000):
+    _wait_sg_jobs_list_preference_banner(page, timeout_ms=timeout_ms)
+    _sg_add_job_preference_locator(page).click(timeout=min(15000, timeout_ms))
 
 
 def _ensure_sg_logged_in(page, config, force_relogin=False):
@@ -184,15 +223,14 @@ def _ensure_sg_logged_in(page, config, force_relogin=False):
         logger.info("🔄 强制重新登录模式：清除旧的登录状态")
         _prepare_unauthenticated_state(page, config)
         session_manager.clear_session()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     if not force_relogin and session_manager.load_session():
         # 导航到 Jobs 列表页验证 Session 是否有效
         page.goto(jobs_list_url, wait_until="domcontentloaded", timeout=15000)
         page.wait_for_load_state("domcontentloaded", timeout=10000)
         home_page = SgHomePage(page)
         _handle_cookie_popup(page)
-        page.wait_for_timeout(500)
+        dom_content_loaded_soft(page, 20000)
         if home_page.is_logged_in():
             logger.info("✓ SG 站 Session 有效，已跳过登录")
             return
@@ -204,21 +242,37 @@ def _ensure_sg_logged_in(page, config, force_relogin=False):
     page.goto(jobs_list_url, wait_until="domcontentloaded")
     page.wait_for_load_state("domcontentloaded", timeout=15000)
     _handle_cookie_popup(page)
-    page.wait_for_timeout(1000)
-
+    dom_content_loaded_soft(page, 20000)
     if not home_page.is_logged_in():
         logger.info("SG 站未登录，开始执行登录流程")
         login_page.click_login_register_button()
-        page.wait_for_timeout(1500)
-        # 来自 MCP 录制：在 dialog 上下文内操作
-        dialog = page.locator("[role=dialog]").first
-        dialog.get_by_role("textbox").first.fill(config["test_account"]["username"])
+        dom_content_loaded_soft(page, 20000)
+        # ARIA role=dialog 常见，未必是原生 dialog[open]；与 LoginPage 保持一致
+        dialog = login_page.active_login_dialog()
+        dialog.wait_for(state="visible", timeout=15000)
+        dialog.get_by_role("textbox", name="Email or phone number").fill(
+            config["test_account"]["username"]
+        )
         dialog.get_by_role("button", name="Continue").click()
-        page.wait_for_timeout(2000)
-        dialog.get_by_role("textbox").first.fill(config["test_account"]["password"])
-        dialog.get_by_role("button", name="Log in").evaluate("el => el.click()")
+        dom_content_loaded_soft(page, 20000)
+        # 密码步：用「含密码框」的 dialog，避免与首屏邮箱框定位歧义
+        pw_dialog = page.get_by_role("dialog").filter(
+            has=page.get_by_role("textbox", name="Enter password")
+        ).first
+        pw_dialog.wait_for(state="visible", timeout=15000)
+        pw_dialog.get_by_role("textbox", name="Enter password").fill(
+            config["test_account"]["password"]
+        )
+        pw_dialog.get_by_role("button", name="Log in").evaluate("el => el.click()")
+        try:
+            page.get_by_role("dialog").first.wait_for(state="hidden", timeout=20000)
+        except Exception:
+            pass
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(2000)
+        dom_content_loaded_soft(page, 20000)
+        if not home_page.is_logged_in():
+            page.reload(wait_until="domcontentloaded", timeout=30000)
+            dom_content_loaded_soft(page, 20000)
         assert home_page.is_logged_in(), "SG 站登录失败"
         session_manager.save_session()
         logger.info("✓ SG 站登录成功并保存 Session")
@@ -247,29 +301,24 @@ def _login_via_add_job_pref_banner(page, config):
       await loginDialog.getByRole('button', { name: 'Log in' }).evaluate('el => el.click()');
       // 验证：page.url() → 'https://sgpub.58v5.cn/biz/en/jobPreference'（无 returnUrl）
     """
-    # 验证前置条件：Add Job Preference 卡片可见
-    assert page.get_by_text("Add Job Preference").first.is_visible(timeout=5000), \
-        "调用 _login_via_add_job_pref_banner 前，Add Job Preference 卡片应可见（未登录状态）"
-
-    # 步骤1：点击 Add Job Preference 卡片，弹出登录弹窗
-    # 来自 MCP 录制：await page.getByText('Add Job Preference').first().click()
-    page.get_by_text("Add Job Preference").first.click()
-    page.wait_for_timeout(1500)
-
-    # 步骤2：在 dialog 内完成两步登录
-    # 来自 MCP 录制：const loginDialog = page.locator('[role=dialog]').first()
-    login_dialog = page.locator("[role=dialog]").first
+    # 步骤1：点击 Add Job Preference 卡片，弹出登录弹窗（内含列表区等待与滚入视口）
+    _click_sg_add_job_preference_card(page)
+    dom_content_loaded_soft(page, 20000)
+    # 步骤2：在 dialog 内完成两步登录（与顶部入口一致：ARIA dialog）
+    login_dialog = LoginPage(page).active_login_dialog()
+    login_dialog.wait_for(state="visible", timeout=15000)
 
     # 第一步：输入邮箱并点击 Continue
-    # 来自 MCP 录制：await loginDialog.getByRole('textbox').first().fill('wang@58.com')
-    login_dialog.get_by_role("textbox").first.fill(config["test_account"]["username"])
-    # 来自 MCP 录制：await loginDialog.getByRole('button', { name: 'Continue' }).click()
+    login_dialog.get_by_role("textbox", name="Email or phone number").fill(
+        config["test_account"]["username"]
+    )
     login_dialog.get_by_role("button", name="Continue").click()
-    page.wait_for_timeout(2000)
-
-    # 第二步：输入密码并点击 Log in
-    # 来自 MCP 录制：await loginDialog.getByRole('textbox').first().fill('Qwer1234')
-    login_dialog.get_by_role("textbox").first.fill(config["test_account"]["password"])
+    dom_content_loaded_soft(page, 20000)
+    # 第二步：输入密码并点击 Log in（密码步须用具名框，避免仍命中邮箱 textbox）
+    login_dialog = LoginPage(page).active_login_dialog()
+    login_dialog.get_by_role("textbox", name="Enter password").fill(
+        config["test_account"]["password"]
+    )
     # 来自 MCP 录制：await loginDialog.getByRole('button', { name: 'Log in' }).evaluate('el => el.click()')
     login_dialog.get_by_role("button", name="Log in").evaluate("el => el.click()")
 
@@ -279,7 +328,7 @@ def _login_via_add_job_pref_banner(page, config):
         logger.info(f"✓ 已跳转至添加页: {page.url}")
     except Exception:
         page.wait_for_load_state("domcontentloaded", timeout=20000)
-        page.wait_for_timeout(3000)
+        dom_content_loaded_soft(page, 20000)
         logger.info(f"✓ 登录完成（wait_for_url 超时后回退），当前 URL: {page.url}")
 
 
@@ -309,20 +358,24 @@ def test_sg_add_pref_authenticated_no_pref_should_show_add_banner(page, config):
     # ========== Act ==========
     with allure.step("步骤1：以已登录状态导航到 Jobs 列表页"):
         page.goto(config["jobs_list_url"], wait_until="domcontentloaded")
-        page.wait_for_timeout(1500)
+        dom_content_loaded_soft(page, 20000)
+        _handle_cookie_popup(page)
+        _wait_sg_jobs_list_preference_banner(page)
         logger.info(f"✓ 已进入 Jobs 列表页（已登录）: {page.url}")
 
     # ========== Assert ==========
     with allure.step("验证：页面顶部显示 Add Job Preference 文本"):
         # 来自 MCP 录制：SG 站已登录（无偏好数据）与未登录态相同，顶部显示 Add Job Preference 卡片
-        add_pref_text = page.get_by_text("Add Job Preference").first
+        add_pref_text = page.get_by_text(re.compile(r"Add\s+Job\s+Preference", re.I)).first
         assert add_pref_text.is_visible(timeout=8000), \
             "已登录（无偏好）用户访问 Jobs 列表页，应显示 'Add Job Preference' 卡片"
         logger.info("✓ Add Job Preference 卡片文本可见")
 
     with allure.step("验证：卡片显示副文本 Unlock more opportunities tailored for you."):
         # 来自 MCP 录制：卡片副文本 "Unlock more opportunities tailored for you."
-        unlock_text = page.get_by_text("Unlock more opportunities tailored for you.").first
+        unlock_text = page.get_by_text(
+            re.compile(r"Unlock\s+more\s+opportunities\s+tailored\s+for\s+you\.?", re.I)
+        ).first
         assert unlock_text.is_visible(timeout=5000), \
             "未找到副文本 'Unlock more opportunities tailored for you.'"
         logger.info("✓ 副文本可见")
@@ -355,18 +408,22 @@ def test_sg_add_pref_unauthenticated_should_show_add_banner(page, config):
     # ========== Act：清除登录状态并导航到 Jobs 列表页 ==========
     with allure.step("步骤1：清除所有登录状态，导航到 Jobs 列表页（模拟未登录状态）"):
         _prepare_unauthenticated_state(page, config)
+        _handle_cookie_popup(page)
+        _wait_sg_jobs_list_preference_banner(page)
         logger.info(f"✓ 已进入 Jobs 列表页（未登录）: {page.url}")
 
     # ========== Assert ==========
     with allure.step("验证：页面顶部显示 Add Job Preference 文本"):
         # 来自 MCP 录制：未登录状态下顶部第一个卡片为 Add Job Preference
-        add_pref_text = page.get_by_text("Add Job Preference").first
+        add_pref_text = page.get_by_text(re.compile(r"Add\s+Job\s+Preference", re.I)).first
         assert add_pref_text.is_visible(timeout=8000), \
             "未登录状态下应显示 'Add Job Preference' 卡片"
         logger.info("✓ Add Job Preference 卡片文本可见")
 
     with allure.step("验证：卡片显示副文本 Unlock more opportunities tailored for you."):
-        unlock_text = page.get_by_text("Unlock more opportunities tailored for you.").first
+        unlock_text = page.get_by_text(
+            re.compile(r"Unlock\s+more\s+opportunities\s+tailored\s+for\s+you\.?", re.I)
+        ).first
         assert unlock_text.is_visible(timeout=5000), \
             "未找到副文本 'Unlock more opportunities tailored for you.'"
         logger.info("✓ 副文本可见")
@@ -406,14 +463,14 @@ def test_sg_add_pref_authenticated_should_redirect_directly_to_add_page(page, co
     # ========== Act ==========
     with allure.step("步骤1：以已登录状态导航到 Jobs 列表页"):
         page.goto(config["jobs_list_url"], wait_until="domcontentloaded")
-        page.wait_for_timeout(1500)
+        dom_content_loaded_soft(page, 20000)
+        _handle_cookie_popup(page)
         logger.info(f"✓ 已进入 Jobs 列表页: {page.url}")
 
     with allure.step("步骤2：点击 Add Job Preference 卡片"):
-        # 来自 MCP 录制：await page.getByText('Add Job Preference').first().click()
-        page.get_by_text("Add Job Preference").first.click()
+        _click_sg_add_job_preference_card(page)
         page.wait_for_load_state("domcontentloaded", timeout=20000)
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         logger.info(f"✓ 点击后跳转至: {page.url}")
 
     # ========== Assert ==========
@@ -466,11 +523,11 @@ def test_sg_add_pref_add_page_should_show_empty_form(page, config):
     # ========== Act ==========
     with allure.step("步骤1：以已登录状态进入添加页"):
         page.goto(config["jobs_list_url"], wait_until="domcontentloaded")
-        page.wait_for_timeout(1000)
-        # 来自 MCP 录制：await page.getByText('Add Job Preference').first().click()
-        page.get_by_text("Add Job Preference").first.click()
+        dom_content_loaded_soft(page, 20000)
+        _handle_cookie_popup(page)
+        _click_sg_add_job_preference_card(page)
         page.wait_for_url("**/jobPreference**", timeout=20000)
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         logger.info(f"✓ 已进入添加页: {page.url}")
 
     # ========== Assert ==========
@@ -554,11 +611,11 @@ def test_sg_add_pref_empty_form_continue_should_show_three_validation_errors(pag
 
     with allure.step("步骤1：进入添加页"):
         page.goto(config["jobs_list_url"], wait_until="domcontentloaded")
-        page.wait_for_timeout(1000)
-        # 来自 MCP 录制：await page.getByText('Add Job Preference').first().click()
-        page.get_by_text("Add Job Preference").first.click()
+        dom_content_loaded_soft(page, 20000)
+        _handle_cookie_popup(page)
+        _click_sg_add_job_preference_card(page)
         page.wait_for_url("**/jobPreference**", timeout=20000)
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         logger.info(f"✓ 已进入添加页: {page.url}")
 
     # ========== Act ==========
@@ -566,7 +623,7 @@ def test_sg_add_pref_empty_form_continue_should_show_three_validation_errors(pag
         # 来自 MCP 录制：
         # await page.getByRole('button', { name: 'Continue' }).evaluate('el => el.click()')
         page.get_by_role("button", name="Continue").evaluate("el => el.click()")
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         logger.info("✓ 已点击 Continue 按钮")
 
     # ========== Assert ==========
@@ -628,11 +685,11 @@ def test_sg_add_pref_back_button_should_redirect_to_jobs_list(page, config):
 
     with allure.step("步骤1：以已登录状态进入添加页"):
         page.goto(config["jobs_list_url"], wait_until="domcontentloaded")
-        page.wait_for_timeout(1000)
-        # 来自 MCP 录制：await page.getByText('Add Job Preference').first().click()
-        page.get_by_text("Add Job Preference").first.click()
+        dom_content_loaded_soft(page, 20000)
+        _handle_cookie_popup(page)
+        _click_sg_add_job_preference_card(page)
         page.wait_for_url("**/jobPreference**", timeout=20000)
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         logger.info(f"✓ 已进入添加页: {page.url}")
 
     with allure.step("步骤2：确认当前在添加页且 URL 无 returnUrl"):
@@ -649,7 +706,7 @@ def test_sg_add_pref_back_button_should_redirect_to_jobs_list(page, config):
         # page.url() → 'https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs'
         page.get_by_role("button", name="Back").click()
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(1500)
+        dom_content_loaded_soft(page, 20000)
         logger.info(f"✓ 点击 Back 后跳转至: {page.url}")
 
     # ========== Assert ==========
@@ -662,7 +719,9 @@ def test_sg_add_pref_back_button_should_redirect_to_jobs_list(page, config):
 
     with allure.step("验证：列表页仍显示 Add Job Preference 卡片（未提交，偏好未保存）"):
         # 来自 MCP 录制：未提交，账号无偏好数据，Back 后仍显示 Add Job Preference 卡片
-        add_pref_visible = page.get_by_text("Add Job Preference").first.is_visible(timeout=5000)
+        _handle_cookie_popup(page)
+        _wait_sg_jobs_list_preference_banner(page)
+        add_pref_visible = _sg_add_job_preference_locator(page).is_visible(timeout=5000)
         assert add_pref_visible, \
             "Back 后 Jobs 列表页应仍显示 'Add Job Preference' 卡片（未提交，偏好未保存）"
         logger.info("✓ 列表页仍显示 Add Job Preference 卡片，符合预期")
@@ -772,17 +831,15 @@ def test_sg_add_pref_unauthenticated_click_should_show_login_dialog(page, config
 
     # ========== Act ==========
     with allure.step("步骤3：点击 Add Job Preference 卡片"):
-        # 来自 MCP 录制（流程A 步骤1）：
-        # await page.getByText('Add Job Preference').first().click()
-        # page.url() 仍为 'https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs'
-        page.get_by_text("Add Job Preference").first.click()
-        page.wait_for_timeout(1500)
+        # 来自 MCP 录制（流程A 步骤1）；列表区懒加载时需等待并滚入视口
+        _click_sg_add_job_preference_card(page)
+        dom_content_loaded_soft(page, 20000)
         logger.info("✓ 已点击 Add Job Preference 卡片")
 
     # ========== Assert ==========
     with allure.step("验证：弹出登录弹窗（dialog）"):
         # 来自 MCP 录制：dialog 弹出，ref: e903，包含 "Welcome to OK.com" 标题
-        dialog = page.locator("[role=dialog]").first
+        dialog = LoginPage(page).active_login_dialog()
         assert dialog.is_visible(timeout=5000), \
             "点击 Add Job Preference 后应弹出登录弹窗"
         logger.info("✓ 登录弹窗已弹出")

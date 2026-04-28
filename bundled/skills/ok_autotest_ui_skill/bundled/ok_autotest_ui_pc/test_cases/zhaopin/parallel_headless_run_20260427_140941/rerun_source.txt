@@ -1,0 +1,3 @@
+source_junit=/Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/parallel_headless_run_20260427_122819/zhaopin_parallel_merged_junit.xml
+failed_basenames=['test_ae_job_preferences_add_from_list.py', 'test_ae_job_preferences_edit.py', 'test_ae_resume_edit.py', 'test_es_jobs_detail_panel.py', 'test_es_resume_add.py', 'test_es_resume_submit.py', 'test_sg_job_preferences.py', 'test_sg_job_preferences_add_from_list.py', 'test_zhaopin_job_preferences.py']
+selected_count=9

@@ -1,4 +1,7 @@
 # pages/marketplace_sell_similar_page_ae.py
+import re
+import time
+
 from pages.base_page import BasePage
 from utils.logger import setup_logger
 
@@ -121,17 +124,132 @@ class MarketplaceSellSimilarPageAe(BasePage):
             self.logger.error(f"点击 Sell Similar 按钮失败: {e}")
             raise
 
+    def _url_looks_like_publish(self, url: str) -> bool:
+        u = (url or "").lower()
+        if not u or u.strip() in ("about:blank", "chrome://newtab/"):
+            return False
+        return (
+            "/publish" in u
+            or ("/biz/" in u and "publish" in u)
+            or ("/biz/" in u and "classified" in u)
+        )
+
+    def _publish_form_dom_ready(self) -> bool:
+        """无头/重定向时 URL 可能晚于表单挂载：用语义 DOM 作辅助判定。"""
+        for sel in (
+            'input[placeholder*="What" i]',
+            "input[name*='title' i]",
+            'textarea[placeholder*="description" i]',
+            'textarea[name*="description" i]',
+        ):
+            try:
+                if self.page.locator(sel).first.is_visible(timeout=2000):
+                    return True
+            except Exception:
+                continue
+        return False
+
+    def get_publish_page_after_sell_similar_click(self, poll_ms=30000):
+        """
+        点击 Sell Similar 后，返回实际进入发布页的 Page 对象。
+        若站点以新标签打开发布页，原 page 仍停留在详情页会导致 is_publish_page_loaded 误判，需切到新标签。
+
+        注意：上下文中可能残留历史「发布页」标签，不能取「第一个匹配 /publish/ 的页」，
+        必须优先：① 本次点击新出现的页；② 当前页已导航到发布路径。
+        """
+        ctx = self.page.context
+        pages_before_ids = {id(p) for p in ctx.pages}
+        self.click_sell_similar_button()
+        deadline = time.time() + poll_ms / 1000.0
+        while time.time() < deadline:
+            # 1) 新开的标签页（优先）
+            for p in ctx.pages:
+                if id(p) in pages_before_ids:
+                    continue
+                try:
+                    u = (p.url or "").lower()
+                    if self._url_looks_like_publish(u):
+                        p.wait_for_load_state("domcontentloaded", timeout=30000)
+                        try:
+                            p.wait_for_url("**/publish/**", timeout=30000)
+                        except Exception:
+                            try:
+                                p.wait_for_url(re.compile(r".*/publish/.*|.*publish.*|.*biz/.*/(publish|classified).*"), timeout=10000)
+                            except Exception:
+                                pass
+                        return p
+                except Exception:
+                    continue
+            # 2) 同页跳转发布（无新 tab）
+            try:
+                if self._url_looks_like_publish(self.page.url):
+                    self.page.wait_for_load_state("domcontentloaded", timeout=30000)
+                    return self.page
+            except Exception:
+                pass
+            # 3) 新 tab 仍在加载，URL 尚未就绪：取新 tab 等其非 about:blank
+            for p in ctx.pages:
+                if id(p) not in pages_before_ids:
+                    try:
+                        u = (p.url or "").strip()
+                        if u and u != "about:blank":
+                            p.wait_for_load_state("domcontentloaded", timeout=5000)
+                            if self._url_looks_like_publish(p.url):
+                                return p
+                    except Exception:
+                        continue
+            self.page.wait_for_timeout(200)
+        # 兜底：取最后一个新 tab 或当前页
+        for p in ctx.pages:
+            if id(p) not in pages_before_ids:
+                try:
+                    p.wait_for_load_state("domcontentloaded", timeout=30000)
+                except Exception:
+                    pass
+                return p
+        self.page.wait_for_load_state("domcontentloaded", timeout=30000)
+        return self.page
+
     def is_publish_page_loaded(self, timeout=10000):
         """
         检查是否成功进入发布页
-        验证 URL 包含 /publish/ 或 /biz/en/publish/
+        验证 URL 包含 /publish 或 /biz/.../publish/...，或标题含 Post
         """
         try:
-            self.page.wait_for_load_state("domcontentloaded", timeout=timeout)
-            url = self.page.url.lower()
-            return "/publish/" in url or "post" in self.page.title().lower()
+            try:
+                w = min(30000, max(3000, int(timeout * 2)))
+                self.page.wait_for_url("**/publish/**", timeout=w)
+            except Exception:
+                try:
+                    self.page.wait_for_url("**/biz/**/publish/**", timeout=5000)
+                except Exception:
+                    pass
+            deadline = time.time() + timeout / 1000.0
+            while time.time() < deadline:
+                try:
+                    self.page.wait_for_load_state("load", timeout=5000)
+                except Exception:
+                    try:
+                        self.page.wait_for_load_state("domcontentloaded", timeout=3000)
+                    except Exception:
+                        pass
+                url = (self.page.url or "").lower()
+                title = (self.page.title() or "").lower()
+                if self._url_looks_like_publish(url):
+                    return True
+                if "post" in title and ("publish" in url or "classified" in url):
+                    return True
+                if (not url or url in ("about:blank", "chrome://newtab/")):
+                    self.page.wait_for_timeout(500)
+                    continue
+                if self._publish_form_dom_ready():
+                    return True
+                self.page.wait_for_timeout(400)
+            u = (self.page.url or "").lower()
+            return self._url_looks_like_publish(u) or self._publish_form_dom_ready()
         except Exception:
-            return False
+            u = (getattr(self.page, "url", None) or "").lower()
+            return self._url_looks_like_publish(u) or self._publish_form_dom_ready()
 
     def get_current_url(self):
         """获取当前页面 URL"""

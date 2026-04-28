@@ -1,0 +1,397 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Library/Developer/CommandLineTools/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc
+configfile: pytest.ini
+plugins: order-1.2.0, dependency-0.5.1, allure-pytest-2.15.3
+collecting ... collected 6 items
+
+test_cases/zhaopin/test_es_resume_submit.py::TestESResumeSubmit::test_submit_resume_with_work_experience 14:09:42 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+
+-------------------------------- live log setup --------------------------------
+2026-04-27 14:09:42 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+14:09:44 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+2026-04-27 14:09:44 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+14:09:44 [INFO] [zhaopin] 已创建共享 BrowserContext: site=es headless=True
+2026-04-27 14:09:44 [INFO] [zhaopin] 已创建共享 BrowserContext: site=es headless=True
+14:09:45 [INFO] ✓ 数据库清理完成 (user_id=796567146451408960)
+2026-04-27 14:09:45 [INFO] ✓ 数据库清理完成 (user_id=796567146451408960)
+14:09:45 [INFO] ✓ 测试前数据库清理完成
+2026-04-27 14:09:45 [INFO] ✓ 测试前数据库清理完成
+14:09:45 [INFO] ================================================================================
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:09:45 [INFO] ================================================================================
+14:09:45 [INFO] TC001: 完整提交流程 - 有工作经验场景
+2026-04-27 14:09:45 [INFO] TC001: 完整提交流程 - 有工作经验场景
+14:09:45 [INFO] ================================================================================
+2026-04-27 14:09:45 [INFO] ================================================================================
+14:09:45 [INFO] 站点: ES (西班牙站)
+2026-04-27 14:09:45 [INFO] 站点: ES (西班牙站)
+14:09:45 [INFO] 角色: BUYER (求职者)
+2026-04-27 14:09:45 [INFO] 角色: BUYER (求职者)
+14:09:45 [INFO] 账号: es_buyer_wangyongli
+2026-04-27 14:09:45 [INFO] 账号: es_buyer_wangyongli
+14:09:45 [INFO] 邮箱: wangyongli@58.com
+2026-04-27 14:09:45 [INFO] 邮箱: wangyongli@58.com
+14:09:45 [INFO] ================================================================================
+2026-04-27 14:09:45 [INFO] ================================================================================
+14:09:45 [INFO] ✓ 成功加载已保存的 Session
+2026-04-27 14:09:45 [INFO] ✓ 成功加载已保存的 Session
+14:09:49 [INFO] ✓ Session 有效，已登录状态
+2026-04-27 14:09:49 [INFO] ✓ Session 有效，已登录状态
+14:09:49 [INFO] ✅ 跳过登录步骤，直接进入测试！
+2026-04-27 14:09:49 [INFO] ✅ 跳过登录步骤，直接进入测试！
+14:09:50 [INFO] ✓ 已导航到简历添加页
+2026-04-27 14:09:50 [INFO] ✓ 已导航到简历添加页
+14:09:50 [INFO] ✓ Step1 Personal Information 表单已加载
+2026-04-27 14:09:50 [INFO] ✓ Step1 Personal Information 表单已加载
+14:09:50 [INFO] ✓ 输入 First Name: AutoTest
+2026-04-27 14:09:50 [INFO] ✓ 输入 First Name: AutoTest
+14:09:51 [INFO] ✓ 输入 Last Name: Submit
+2026-04-27 14:09:51 [INFO] ✓ 输入 Last Name: Submit
+14:09:51 [INFO] ✓ Email 预填正确: wangyongli@58.com
+2026-04-27 14:09:51 [INFO] ✓ Email 预填正确: wangyongli@58.com
+14:09:51 [INFO] ✓ Current Location 预填正确: Spain
+2026-04-27 14:09:51 [INFO] ✓ Current Location 预填正确: Spain
+14:09:53 [INFO] ✓ 点击 Continue 按钮
+2026-04-27 14:09:53 [INFO] ✓ 点击 Continue 按钮
+14:09:53 [INFO] ✓ 进入 Step2 Recent Experience
+2026-04-27 14:09:53 [INFO] ✓ 进入 Step2 Recent Experience
+14:09:53 [INFO] ✓ Job Function API Mock 已注册
+2026-04-27 14:09:53 [INFO] ✓ Job Function API Mock 已注册
+14:09:54 [INFO] ✓ Job Function API Mock 已取消
+2026-04-27 14:09:54 [INFO] ✓ Job Function API Mock 已取消
+14:09:54 [INFO] ✓ 选择 Job Function: Testing & Quality Assurance
+2026-04-27 14:09:54 [INFO] ✓ 选择 Job Function: Testing & Quality Assurance
+14:09:55 [INFO] ✓ 选择 Work Experience From: 2020-01
+2026-04-27 14:09:55 [INFO] ✓ 选择 Work Experience From: 2020-01
+14:09:55 [INFO] ✓ 'I currently work here' 默认已勾选（To 为 Present）
+2026-04-27 14:09:55 [INFO] ✓ 'I currently work here' 默认已勾选（To 为 Present）
+14:09:57 [INFO] ✓ 已设置 Work Experience To: 2023-12（仍覆盖「有工作经验」主流程）
+2026-04-27 14:09:57 [INFO] ✓ 已设置 Work Experience To: 2023-12（仍覆盖「有工作经验」主流程）
+14:09:58 [INFO] ✓ 选择 Education Level: Bachelor's Degree
+2026-04-27 14:09:58 [INFO] ✓ 选择 Education Level: Bachelor's Degree
+14:09:59 [INFO] ✓ 选择 Education From: 2016-09
+2026-04-27 14:09:59 [INFO] ✓ 选择 Education From: 2016-09
+14:10:00 [INFO] ✓ 选择 Education To: 2020-06
+2026-04-27 14:10:00 [INFO] ✓ 选择 Education To: 2020-06
+14:10:00 [INFO] ✓ Done 按钮已激活
+2026-04-27 14:10:00 [INFO] ✓ Done 按钮已激活
+14:10:02 [INFO] ✓ 点击 Done 按钮
+2026-04-27 14:10:02 [INFO] ✓ 点击 Done 按钮
+14:10:02 [INFO] ✅ 提交成功！页面已跳转: https://espub.58v5.cn/biz/en/resume
+2026-04-27 14:10:02 [INFO] ✅ 提交成功！页面已跳转: https://espub.58v5.cn/biz/en/resume
+14:10:02 [INFO] ✓ resume 表数据验证通过
+2026-04-27 14:10:02 [INFO] ✓ resume 表数据验证通过
+14:10:02 [INFO] ✓ resume_person_info 表数据验证通过
+2026-04-27 14:10:02 [INFO] ✓ resume_person_info 表数据验证通过
+14:10:02 [INFO] ✓ resume_work_experience 表数据验证通过
+2026-04-27 14:10:02 [INFO] ✓ resume_work_experience 表数据验证通过
+14:10:02 [INFO] ✓ resume_education 表数据验证通过
+2026-04-27 14:10:02 [INFO] ✓ resume_education 表数据验证通过
+14:10:02 [INFO] ================================================================================
+2026-04-27 14:10:02 [INFO] ================================================================================
+14:10:02 [INFO] ✅ TC001 测试全部通过！
+2026-04-27 14:10:02 [INFO] ✅ TC001 测试全部通过！
+14:10:02 [INFO] ================================================================================
+2026-04-27 14:10:02 [INFO] ================================================================================
+PASSED14:10:03 [INFO] ✓ 数据库清理完成 (user_id=796567146451408960)
+
+------------------------------ live log teardown -------------------------------
+2026-04-27 14:10:03 [INFO] ✓ 数据库清理完成 (user_id=796567146451408960)
+14:10:03 [INFO] ✓ 测试后数据库清理完成
+2026-04-27 14:10:03 [INFO] ✓ 测试后数据库清理完成
+
+test_cases/zhaopin/test_es_resume_submit.py::TestESResumeSubmit::test_submit_resume_without_work_experience 14:10:04 [INFO] ✓ 数据库清理完成 (user_id=796567146451408960)
+
+-------------------------------- live log setup --------------------------------
+2026-04-27 14:10:04 [INFO] ✓ 数据库清理完成 (user_id=796567146451408960)
+14:10:04 [INFO] ✓ 测试前数据库清理完成
+2026-04-27 14:10:04 [INFO] ✓ 测试前数据库清理完成
+14:10:04 [INFO] ================================================================================
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:10:04 [INFO] ================================================================================
+14:10:04 [INFO] TC005: 完整提交流程 - 无工作经验场景
+2026-04-27 14:10:04 [INFO] TC005: 完整提交流程 - 无工作经验场景
+14:10:04 [INFO] ================================================================================
+2026-04-27 14:10:04 [INFO] ================================================================================
+14:10:07 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 14:10:07 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+14:10:08 [INFO] ✓ 进入简历添加页成功
+2026-04-27 14:10:08 [INFO] ✓ 进入简历添加页成功
+14:10:11 [INFO] ✓ Step1 完成
+2026-04-27 14:10:11 [INFO] ✓ Step1 完成
+14:10:12 [INFO] ✓ 开启无工作经验开关
+2026-04-27 14:10:12 [INFO] ✓ 开启无工作经验开关
+14:10:12 [INFO] ✓ 工作经验字段已隐藏
+2026-04-27 14:10:12 [INFO] ✓ 工作经验字段已隐藏
+14:10:16 [INFO] ✓ Education Experience 填写完成
+2026-04-27 14:10:16 [INFO] ✓ Education Experience 填写完成
+14:12:18 [WARNING] click_done 首次未离开 add 页，force 重试: Page.wait_for_function: Timeout 120000ms exceeded.
+2026-04-27 14:12:18 [WARNING] click_done 首次未离开 add 页，force 重试: Page.wait_for_function: Timeout 120000ms exceeded.
+14:14:20 [ERROR] 点击 Done 失败: Page.wait_for_function: Timeout 120000ms exceeded.
+2026-04-27 14:14:20 [ERROR] 点击 Done 失败: Page.wait_for_function: Timeout 120000ms exceeded.
+14:14:20 [ERROR] 测试失败 URL: https://espub.58v5.cn/biz/en/resume/add
+2026-04-27 14:14:20 [ERROR] 测试失败 URL: https://espub.58v5.cn/biz/en/resume/add
+FAILED14:14:21 [INFO] ✓ 数据库清理完成 (user_id=796567146451408960)
+
+------------------------------ live log teardown -------------------------------
+2026-04-27 14:14:21 [INFO] ✓ 数据库清理完成 (user_id=796567146451408960)
+14:14:21 [INFO] ✓ 测试后数据库清理完成
+2026-04-27 14:14:21 [INFO] ✓ 测试后数据库清理完成
+
+test_cases/zhaopin/test_es_resume_submit.py::TestESResumeSubmit::test_database_cleanup 14:14:23 [INFO] ✓ 数据库清理完成 (user_id=796567146451408960)
+
+-------------------------------- live log setup --------------------------------
+2026-04-27 14:14:23 [INFO] ✓ 数据库清理完成 (user_id=796567146451408960)
+14:14:23 [INFO] ✓ 测试前数据库清理完成
+2026-04-27 14:14:23 [INFO] ✓ 测试前数据库清理完成
+14:14:23 [INFO] ================================================================================
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:14:23 [INFO] ================================================================================
+14:14:23 [INFO] TC008: 数据库清理测试 (user_id=796567146451408960)
+2026-04-27 14:14:23 [INFO] TC008: 数据库清理测试 (user_id=796567146451408960)
+14:14:23 [INFO] ================================================================================
+2026-04-27 14:14:23 [INFO] ================================================================================
+14:14:23 [INFO] ✓ 删除 resume_work_experience 表 0 条记录
+2026-04-27 14:14:23 [INFO] ✓ 删除 resume_work_experience 表 0 条记录
+14:14:23 [INFO] ✓ 删除 resume_education 表 0 条记录
+2026-04-27 14:14:23 [INFO] ✓ 删除 resume_education 表 0 条记录
+14:14:23 [INFO] ✓ 删除 resume_person_info 表 0 条记录
+2026-04-27 14:14:23 [INFO] ✓ 删除 resume_person_info 表 0 条记录
+14:14:23 [INFO] ✓ 删除 resume 表 0 条记录
+2026-04-27 14:14:23 [INFO] ✓ 删除 resume 表 0 条记录
+14:14:23 [INFO] ✓ resume 表已清理
+2026-04-27 14:14:23 [INFO] ✓ resume 表已清理
+14:14:23 [INFO] ✓ resume_person_info 表已清理
+2026-04-27 14:14:23 [INFO] ✓ resume_person_info 表已清理
+14:14:23 [INFO] ✓ resume_work_experience 表已清理
+2026-04-27 14:14:23 [INFO] ✓ resume_work_experience 表已清理
+14:14:23 [INFO] ✓ resume_education 表已清理
+2026-04-27 14:14:23 [INFO] ✓ resume_education 表已清理
+14:14:23 [INFO] ================================================================================
+2026-04-27 14:14:23 [INFO] ================================================================================
+14:14:23 [INFO] ✅ TC008 数据库清理测试全部通过！
+2026-04-27 14:14:23 [INFO] ✅ TC008 数据库清理测试全部通过！
+14:14:23 [INFO] ================================================================================
+2026-04-27 14:14:23 [INFO] ================================================================================
+PASSED14:14:24 [INFO] ✓ 数据库清理完成 (user_id=796567146451408960)
+
+------------------------------ live log teardown -------------------------------
+2026-04-27 14:14:24 [INFO] ✓ 数据库清理完成 (user_id=796567146451408960)
+14:14:24 [INFO] ✓ 测试后数据库清理完成
+2026-04-27 14:14:24 [INFO] ✓ 测试后数据库清理完成
+
+test_cases/zhaopin/test_es_resume_submit.py::TestESResumeSubmit::test_submit_resume_change_location 14:14:25 [INFO] ✓ 数据库清理完成 (user_id=796567146451408960)
+
+-------------------------------- live log setup --------------------------------
+2026-04-27 14:14:25 [INFO] ✓ 数据库清理完成 (user_id=796567146451408960)
+14:14:25 [INFO] ✓ 测试前数据库清理完成
+2026-04-27 14:14:25 [INFO] ✓ 测试前数据库清理完成
+14:14:25 [INFO] ================================================================================
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:14:25 [INFO] ================================================================================
+14:14:25 [INFO] TC003: 完整提交流程 - 修改 Current Location 场景
+2026-04-27 14:14:25 [INFO] TC003: 完整提交流程 - 修改 Current Location 场景
+14:14:25 [INFO] ================================================================================
+2026-04-27 14:14:25 [INFO] ================================================================================
+14:14:27 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 14:14:27 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+14:14:29 [INFO] ✓ 进入简历添加页成功
+2026-04-27 14:14:29 [INFO] ✓ 进入简历添加页成功
+14:14:30 [INFO] ✓ 选择 Current Location: France
+2026-04-27 14:14:30 [INFO] ✓ 选择 Current Location: France
+14:14:30 [INFO] ✓ Current Location 验证通过: France
+2026-04-27 14:14:30 [INFO] ✓ Current Location 验证通过: France
+14:14:33 [INFO] ✓ Step1 完成
+2026-04-27 14:14:33 [INFO] ✓ Step1 完成
+14:14:33 [INFO] ✓ Job Function API Mock 已注册
+2026-04-27 14:14:33 [INFO] ✓ Job Function API Mock 已注册
+14:14:34 [INFO] ✓ Job Function API Mock 已取消
+2026-04-27 14:14:34 [INFO] ✓ Job Function API Mock 已取消
+14:14:37 [INFO] ✓ Work Experience 填写完成（含结束日期）
+2026-04-27 14:14:37 [INFO] ✓ Work Experience 填写完成（含结束日期）
+14:14:40 [INFO] ✓ Education Experience 填写完成
+2026-04-27 14:14:40 [INFO] ✓ Education Experience 填写完成
+14:16:42 [WARNING] click_done 首次未离开 add 页，force 重试: Page.wait_for_function: Timeout 120000ms exceeded.
+2026-04-27 14:16:42 [WARNING] click_done 首次未离开 add 页，force 重试: Page.wait_for_function: Timeout 120000ms exceeded.
+14:16:44 [INFO] ✓ 点击 Done 按钮
+2026-04-27 14:16:44 [INFO] ✓ 点击 Done 按钮
+14:16:44 [INFO] ✅ 提交成功！页面已跳转: https://espub.58v5.cn/biz/en/resume
+2026-04-27 14:16:44 [INFO] ✅ 提交成功！页面已跳转: https://espub.58v5.cn/biz/en/resume
+14:16:44 [ERROR] 测试失败 URL: https://espub.58v5.cn/biz/en/resume
+2026-04-27 14:16:44 [ERROR] 测试失败 URL: https://espub.58v5.cn/biz/en/resume
+FAILED14:16:44 [INFO] ✓ 数据库清理完成 (user_id=796567146451408960)
+
+------------------------------ live log teardown -------------------------------
+2026-04-27 14:16:44 [INFO] ✓ 数据库清理完成 (user_id=796567146451408960)
+14:16:44 [INFO] ✓ 测试后数据库清理完成
+2026-04-27 14:16:44 [INFO] ✓ 测试后数据库清理完成
+
+test_cases/zhaopin/test_es_resume_submit.py::TestESResumeSubmit::test_submit_resume_set_work_to_date 14:16:46 [INFO] ✓ 数据库清理完成 (user_id=796567146451408960)
+
+-------------------------------- live log setup --------------------------------
+2026-04-27 14:16:46 [INFO] ✓ 数据库清理完成 (user_id=796567146451408960)
+14:16:46 [INFO] ✓ 测试前数据库清理完成
+2026-04-27 14:16:46 [INFO] ✓ 测试前数据库清理完成
+14:16:46 [INFO] ================================================================================
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:16:46 [INFO] ================================================================================
+14:16:46 [INFO] TC004: 完整提交流程 - 取消 'I currently work here' 场景
+2026-04-27 14:16:46 [INFO] TC004: 完整提交流程 - 取消 'I currently work here' 场景
+14:16:46 [INFO] ================================================================================
+2026-04-27 14:16:46 [INFO] ================================================================================
+14:16:48 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 14:16:48 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+14:16:52 [INFO] ✓ Step1 完成
+2026-04-27 14:16:52 [INFO] ✓ Step1 完成
+14:16:52 [INFO] ✓ Job Function API Mock 已注册
+2026-04-27 14:16:52 [INFO] ✓ Job Function API Mock 已注册
+14:16:53 [INFO] ✓ Job Function API Mock 已取消
+2026-04-27 14:16:53 [INFO] ✓ Job Function API Mock 已取消
+14:16:53 [INFO] ✓ 选择 Job Function
+2026-04-27 14:16:53 [INFO] ✓ 选择 Job Function
+14:16:54 [INFO] ✓ 选择 From: 2020-01
+2026-04-27 14:16:54 [INFO] ✓ 选择 From: 2020-01
+14:16:54 [INFO] ✓ 'I currently work here' 已勾选
+2026-04-27 14:16:54 [INFO] ✓ 'I currently work here' 已勾选
+14:16:55 [INFO] ✓ 取消 'I currently work here' 勾选
+2026-04-27 14:16:55 [INFO] ✓ 取消 'I currently work here' 勾选
+14:16:55 [INFO] ✓ To 字段已变为可编辑状态
+2026-04-27 14:16:55 [INFO] ✓ To 字段已变为可编辑状态
+14:16:56 [INFO] ✓ 选择 To: 2023-12
+2026-04-27 14:16:56 [INFO] ✓ 选择 To: 2023-12
+14:16:59 [INFO] ✓ Education Experience 填写完成
+2026-04-27 14:16:59 [INFO] ✓ Education Experience 填写完成
+14:17:01 [INFO] ✓ 点击 Done 按钮
+2026-04-27 14:17:01 [INFO] ✓ 点击 Done 按钮
+14:17:01 [INFO] ✅ 提交成功！页面已跳转: https://espub.58v5.cn/biz/en/resume
+2026-04-27 14:17:01 [INFO] ✅ 提交成功！页面已跳转: https://espub.58v5.cn/biz/en/resume
+14:17:01 [INFO] ✓ from_date: 2020-01-01
+2026-04-27 14:17:01 [INFO] ✓ from_date: 2020-01-01
+14:17:01 [INFO] ✓ to_date: 2023-12-01
+2026-04-27 14:17:01 [INFO] ✓ to_date: 2023-12-01
+14:17:01 [INFO] ✓ to_date 字段验证通过（已设置具体日期）
+2026-04-27 14:17:01 [INFO] ✓ to_date 字段验证通过（已设置具体日期）
+14:17:01 [INFO] ================================================================================
+2026-04-27 14:17:01 [INFO] ================================================================================
+14:17:01 [INFO] ✅ TC004 测试全部通过！
+2026-04-27 14:17:01 [INFO] ✅ TC004 测试全部通过！
+14:17:01 [INFO] ================================================================================
+2026-04-27 14:17:01 [INFO] ================================================================================
+PASSED
+test_cases/zhaopin/test_es_resume_submit.py::TestESResumeSubmit::test_verify_resume_data_display 14:17:02 [INFO] ================================================================================
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:17:02 [INFO] ================================================================================
+14:17:02 [INFO] TC006: 提交后数据回显验证
+2026-04-27 14:17:02 [INFO] TC006: 提交后数据回显验证
+14:17:02 [INFO] ================================================================================
+2026-04-27 14:17:02 [INFO] ================================================================================
+14:17:02 [INFO] ✓ 数据库简历与工作履历记录存在
+2026-04-27 14:17:02 [INFO] ✓ 数据库简历与工作履历记录存在
+14:17:04 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 14:17:04 [INFO] 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+14:17:04 [INFO] ✓ 访问招聘列表页
+2026-04-27 14:17:04 [INFO] ✓ 访问招聘列表页
+14:17:06 [INFO] ✓ 点击 Resume 按钮
+2026-04-27 14:17:06 [INFO] ✓ 点击 Resume 按钮
+14:17:06 [INFO] 当前 URL: https://espub.58v5.cn/biz/en/resume
+2026-04-27 14:17:06 [INFO] 当前 URL: https://espub.58v5.cn/biz/en/resume
+14:17:06 [INFO] ✓ 页面可见简历相关文案（正则）
+2026-04-27 14:17:06 [INFO] ✓ 页面可见简历相关文案（正则）
+14:17:06 [INFO] ================================================================================
+2026-04-27 14:17:06 [INFO] ================================================================================
+14:17:06 [INFO] ✅ TC006 数据回显验证全部通过！
+2026-04-27 14:17:06 [INFO] ✅ TC006 数据回显验证全部通过！
+14:17:06 [INFO] ================================================================================
+2026-04-27 14:17:06 [INFO] ================================================================================
+PASSED14:17:06 [INFO] ✓ 数据库清理完成 (user_id=796567146451408960)
+
+------------------------------ live log teardown -------------------------------
+2026-04-27 14:17:06 [INFO] ✓ 数据库清理完成 (user_id=796567146451408960)
+14:17:06 [INFO] ✓ 测试后数据库清理完成
+2026-04-27 14:17:06 [INFO] ✓ 测试后数据库清理完成
+14:17:07 [INFO] [PLAYWRIGHT] 清理全局 Playwright 实例
+---------------------------- live log sessionfinish ----------------------------
+2026-04-27 14:17:07 [INFO] [PLAYWRIGHT] 清理全局 Playwright 实例
+14:17:07 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例已清理
+2026-04-27 14:17:07 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例已清理
+
+
+=================================== FAILURES ===================================
+________ TestESResumeSubmit.test_submit_resume_without_work_experience _________
+test_cases/zhaopin/test_es_resume_submit.py:426: in test_submit_resume_without_work_experience
+    resume_page.click_done()
+pages/resume_add_page_es.py:1022: in click_done
+    _attempt(force_click=True)
+pages/resume_add_page_es.py:1015: in _attempt
+    self.page.wait_for_function(js_leave_add, timeout=120000)
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/sync_api/_generated.py:11559: in wait_for_function
+    self._sync(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_page.py:1113: in wait_for_function
+    return await self._main_frame.wait_for_function(**locals_to_params(locals()))
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:860: in wait_for_function
+    await self._channel.send("waitForFunction", self._timeout, params)
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_connection.py:69: in send
+    return await self._connection.wrap_api_call(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_connection.py:558: in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+E   playwright._impl._errors.TimeoutError: Page.wait_for_function: Timeout 120000ms exceeded.
+------------------------------ Captured log setup ------------------------------
+INFO     AutoTest:test_es_resume_submit.py:105 ✓ 数据库清理完成 (user_id=796567146451408960)
+INFO     AutoTest:test_es_resume_submit.py:77 ✓ 测试前数据库清理完成
+------------------------------ Captured log call -------------------------------
+INFO     AutoTest:test_es_resume_submit.py:367 ================================================================================
+INFO     AutoTest:test_es_resume_submit.py:368 TC005: 完整提交流程 - 无工作经验场景
+INFO     AutoTest:test_es_resume_submit.py:369 ================================================================================
+INFO     AutoTest:jobs_list_page_es.py:92 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+INFO     AutoTest:test_es_resume_submit.py:396 ✓ 进入简历添加页成功
+INFO     AutoTest:test_es_resume_submit.py:404 ✓ Step1 完成
+INFO     AutoTest:test_es_resume_submit.py:409 ✓ 开启无工作经验开关
+INFO     AutoTest:test_es_resume_submit.py:414 ✓ 工作经验字段已隐藏
+INFO     AutoTest:test_es_resume_submit.py:421 ✓ Education Experience 填写完成
+WARNING  AutoTest:resume_add_page_es.py:1020 click_done 首次未离开 add 页，force 重试: Page.wait_for_function: Timeout 120000ms exceeded.
+ERROR    AutoTest:resume_add_page_es.py:1024 点击 Done 失败: Page.wait_for_function: Timeout 120000ms exceeded.
+---------------------------- Captured log teardown -----------------------------
+INFO     AutoTest:test_es_resume_submit.py:105 ✓ 数据库清理完成 (user_id=796567146451408960)
+INFO     AutoTest:test_es_resume_submit.py:83 ✓ 测试后数据库清理完成
+____________ TestESResumeSubmit.test_submit_resume_change_location _____________
+test_cases/zhaopin/test_es_resume_submit.py:657: in test_submit_resume_change_location
+    assert rows[0][0] == "FR", f"country_code 不正确，期望: FR (France), 实际: {rows[0][0]}"
+E   AssertionError: country_code 不正确，期望: FR (France), 实际: ES
+E   assert 'ES' == 'FR'
+E     
+E     - FR
+E     + ES
+------------------------------ Captured log setup ------------------------------
+INFO     AutoTest:test_es_resume_submit.py:105 ✓ 数据库清理完成 (user_id=796567146451408960)
+INFO     AutoTest:test_es_resume_submit.py:77 ✓ 测试前数据库清理完成
+------------------------------ Captured log call -------------------------------
+INFO     AutoTest:test_es_resume_submit.py:571 ================================================================================
+INFO     AutoTest:test_es_resume_submit.py:572 TC003: 完整提交流程 - 修改 Current Location 场景
+INFO     AutoTest:test_es_resume_submit.py:573 ================================================================================
+INFO     AutoTest:jobs_list_page_es.py:92 导航到Jobs列表页: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+INFO     AutoTest:test_es_resume_submit.py:599 ✓ 进入简历添加页成功
+INFO     AutoTest:test_es_resume_submit.py:604 ✓ 选择 Current Location: France
+INFO     AutoTest:test_es_resume_submit.py:609 ✓ Current Location 验证通过: France
+INFO     AutoTest:test_es_resume_submit.py:617 ✓ Step1 完成
+INFO     AutoTest:resume_add_page_es.py:428 ✓ Job Function API Mock 已注册
+INFO     AutoTest:resume_add_page_es.py:434 ✓ Job Function API Mock 已取消
+INFO     AutoTest:test_es_resume_submit.py:629 ✓ Work Experience 填写完成（含结束日期）
+INFO     AutoTest:test_es_resume_submit.py:635 ✓ Education Experience 填写完成
+WARNING  AutoTest:resume_add_page_es.py:1020 click_done 首次未离开 add 页，force 重试: Page.wait_for_function: Timeout 120000ms exceeded.
+INFO     AutoTest:test_es_resume_submit.py:642 ✓ 点击 Done 按钮
+INFO     AutoTest:test_es_resume_submit.py:648 ✅ 提交成功！页面已跳转: https://espub.58v5.cn/biz/en/resume
+---------------------------- Captured log teardown -----------------------------
+INFO     AutoTest:test_es_resume_submit.py:105 ✓ 数据库清理完成 (user_id=796567146451408960)
+INFO     AutoTest:test_es_resume_submit.py:83 ✓ 测试后数据库清理完成
+- generated xml file: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/parallel_headless_run_20260427_140941/junit/test_es_resume_submit_junit.xml -
+=========================== short test summary info ============================
+FAILED test_cases/zhaopin/test_es_resume_submit.py::TestESResumeSubmit::test_submit_resume_without_work_experience - playwright._impl._errors.TimeoutError: Page.wait_for_function: Timeout 120000ms exceeded.
+FAILED test_cases/zhaopin/test_es_resume_submit.py::TestESResumeSubmit::test_submit_resume_change_location - AssertionError: country_code 不正确，期望: FR (France), 实际: ES
+assert 'ES' == 'FR'
+  
+  - FR
+  + ES
+=================== 2 failed, 4 passed in 445.91s (0:07:25) ====================

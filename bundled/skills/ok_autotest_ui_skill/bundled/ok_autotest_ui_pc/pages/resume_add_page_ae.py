@@ -28,8 +28,9 @@ class ResumeAddPageAe(BasePage):
         """导航到简历视图页（Online Resume）"""
         try:
             url = "https://aepub.58v5.cn/biz/en/resume"
-            self.page.goto(url, wait_until="domcontentloaded", timeout=30000)
-            self.page.wait_for_timeout(3000)
+            self.page.goto(url, wait_until="domcontentloaded", timeout=60000)
+            self.page.wait_for_load_state("load", timeout=30000)
+            self.page.wait_for_timeout(2000)
             self.logger.info(f"已导航到简历视图页: {self.page.url}")
         except Exception as e:
             self.logger.error(f"导航到简历视图页失败: {e}")
@@ -93,8 +94,19 @@ class ResumeAddPageAe(BasePage):
         """点击编辑个人信息图标，打开 Personal Information 弹窗"""
         try:
             edit_icon = self.page.locator("img[class*='editPersonInfoIcon']").first
-            edit_icon.click()
-            self.page.wait_for_selector("[class*='EditPersonInfoModal']", timeout=8000)
+            edit_icon.wait_for(state="visible", timeout=20000)
+            edit_icon.scroll_into_view_if_needed()
+            self.page.wait_for_timeout(400)
+            try:
+                edit_icon.evaluate(
+                    "el => { const y = el.getBoundingClientRect().top + window.pageYOffset - 160;"
+                    " window.scrollTo({ top: y, behavior: 'instant' }); }"
+                )
+                self.page.wait_for_timeout(400)
+            except Exception:
+                pass
+            edit_icon.click(timeout=45000)
+            self.page.wait_for_selector("[class*='EditPersonInfoModal']", timeout=15000)
             self.page.wait_for_timeout(500)
             self.logger.info("Personal Information 弹窗已打开")
         except Exception as e:

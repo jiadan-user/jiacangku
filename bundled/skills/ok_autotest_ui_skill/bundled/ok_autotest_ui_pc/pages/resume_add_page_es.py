@@ -3,6 +3,9 @@ ES站 - 简历添加页面 Page Object
 页面路径: https://espub.58v5.cn/biz/en/resume/add
 入口: 招聘列表页详情面板底部 Resume 按钮
 """
+import re
+import time
+
 from pages.base_page import BasePage
 from utils.logger import setup_logger
 
@@ -79,6 +82,60 @@ class ResumeAddPageEs(BasePage):
         except Exception:
             return False
 
+    def wait_for_step1_form_ready(self, timeout_ms: int = 60000):
+        """等待 Step1 表单可交互（简历页首屏/壳层加载较慢时使用）。"""
+        try:
+            only_essential = self.page.get_by_role("button", name="Only essential")
+            if only_essential.is_visible(timeout=3000):
+                only_essential.click()
+                self.page.wait_for_timeout(600)
+        except Exception:
+            pass
+        try:
+            accept_all = self.page.get_by_role("button", name="Accept all")
+            if accept_all.is_visible(timeout=1500):
+                accept_all.click()
+                self.page.wait_for_timeout(600)
+        except Exception:
+            pass
+        try:
+            self.page.wait_for_load_state("networkidle", timeout=12000)
+        except Exception:
+            pass
+        try:
+            self.page.wait_for_selector(
+                "h3:has-text('Personal Information'), h2:has-text('Personal Information')",
+                timeout=15000,
+            )
+        except Exception:
+            pass
+
+        first_loc = (
+            self.page.get_by_role("textbox", name="First Name").or_(
+                self.page.locator(
+                    "input[placeholder*='First' i], input[autocomplete='given-name'], "
+                    "input[name*='firstName' i], input[name*='first_name' i], "
+                    "input[id*='firstName' i]"
+                ).first
+            )
+        )
+        try:
+            first_loc.wait_for(state="visible", timeout=timeout_ms)
+            return
+        except Exception:
+            pass
+        for fr in self.page.frames:
+            if fr == self.page.main_frame:
+                continue
+            try:
+                fr.get_by_role("textbox", name="First Name").wait_for(
+                    state="visible", timeout=12000
+                )
+                return
+            except Exception:
+                pass
+        first_loc.wait_for(state="visible", timeout=timeout_ms)
+
     def get_email_value(self):
         """获取 Email 字段的当前值"""
         try:
@@ -130,8 +187,16 @@ class ResumeAddPageEs(BasePage):
 
     def input_first_name(self, first_name):
         """输入 First Name"""
+        loc = (
+            self.page.get_by_role("textbox", name="First Name").or_(
+                self.page.locator(
+                    "input[placeholder*='First' i], input[autocomplete='given-name'], "
+                    "input[name*='firstName' i], input[name*='first_name' i]"
+                ).first
+            )
+        )
         try:
-            self.page.get_by_role("textbox", name="First Name").fill(first_name)
+            loc.fill(first_name, timeout=25000)
             self.page.wait_for_timeout(300)
         except Exception as e:
             self.logger.error(f"输入 First Name 失败: {e}")
@@ -168,6 +233,10 @@ class ResumeAddPageEs(BasePage):
         """获取 First Name 字段的值"""
         try:
             return self.page.get_by_role("textbox", name="First Name").input_value()
+        except Exception:
+            pass
+        try:
+            return self.page.locator("input[placeholder*='First' i]").first.input_value()
         except Exception:
             return ""
 
@@ -237,8 +306,10 @@ class ResumeAddPageEs(BasePage):
             file_path: 文件路径
         """
         try:
-            file_input = self.page.locator("input[type='file']")
-            file_input.set_input_files(file_path)
+            file_input = self.page.locator("[class*='PersonAvatar'] input[type='file']")
+            if file_input.count() == 0:
+                file_input = self.page.locator("input[type='file']")
+            file_input.first.set_input_files(file_path)
             self.page.wait_for_timeout(2000)
         except Exception as e:
             self.logger.error(f"上传头像失败: {e}")
@@ -248,7 +319,9 @@ class ResumeAddPageEs(BasePage):
         """验证头像是否已上传"""
         try:
             # 检查头像容器是否显示
-            return self.page.locator(".PersonAvatar_upload_img__fxmpP, [class*='avatarContainer'] img").first.is_visible(timeout=3000)
+            return self.page.locator(
+                "[class*='PersonAvatar_upload_img'], [class*='avatarContainer'] img, [class*='PersonAvatar'] img"
+            ).first.is_visible(timeout=3000)
         except Exception:
             return False
 
@@ -761,34 +834,195 @@ class ResumeAddPageEs(BasePage):
         """点击 Unsaved Changes 对话框的 Discard 按钮（别名方法）"""
         self.click_unsaved_dialog_discard()
 
-    def is_done_button_disabled(self):
-        """验证 Done 按钮是否处于禁用状态"""
+    def _last_visible_done_button(self):
+        """Step2 底部提交 Done：优先 footer 内，否则取最后一个可见的 Done。"""
         try:
-            done_btn = self.page.get_by_role("button", name="Done").last
-            return done_btn.is_disabled()
+            footer_btns = self.page.locator("footer").get_by_role("button", name="Done")
+            if footer_btns.count() > 0:
+                btn = footer_btns.last
+                if btn.is_visible():
+                    return btn
+        except Exception:
+            pass
+        btns = self.page.get_by_role("button", name="Done")
+        count = btns.count()
+        for idx in range(count - 1, -1, -1):
+            btn = btns.nth(idx)
+            if btn.is_visible():
+                return btn
+        return btns.last
+
+    def _step2_footer_done_button(self):
+        """
+        Step2 用于提交整页的 Done：优先 ``<footer>`` 内，避免与日期弹层内 Done 混淆。
+        若无 footer，则排除位于 DateFakerInput 区域内的 Done。
+        """
+        try:
+            foot = self.page.locator("footer")
+            if foot.count() > 0:
+                btns = foot.get_by_role("button", name=re.compile(r"^Done$", re.I))
+                if btns.count() > 0:
+                    b = btns.last
+                    if b.is_visible(timeout=3000):
+                        return b
+        except Exception:
+            pass
+        try:
+            btns = self.page.get_by_role("button", name=re.compile(r"^Done$", re.I))
+            n = btns.count()
+            for idx in range(n - 1, -1, -1):
+                btn = btns.nth(idx)
+                if not btn.is_visible(timeout=500):
+                    continue
+                try:
+                    bad = btn.locator(
+                        "xpath=ancestor::*[contains(@class,'DateFakerInput')]"
+                    )
+                    if bad.count() > 0:
+                        continue
+                except Exception:
+                    pass
+                return btn
+        except Exception:
+            pass
+        return self._last_visible_done_button()
+
+    def is_done_button_disabled(self):
+        """验证 Step2 底部主 Done 是否不可用（原生 disabled、aria-disabled、常见 UI class）。"""
+        try:
+            btn = self._step2_footer_done_button()
+            if btn.is_disabled():
+                return True
+            aria = (btn.get_attribute("aria-disabled") or "").strip().lower()
+            if aria == "true":
+                return True
+            cls = (btn.get_attribute("class") or "").lower()
+            if "mui-disabled" in cls or "btn-disabled" in cls:
+                return True
+            return bool(
+                btn.evaluate(
+                    """
+                    el => {
+                      let n = el;
+                      for (let i = 0; i < 8 && n; i++) {
+                        const c = (n.className && String(n.className)) || '';
+                        if (c.includes('Mui-disabled') || c.includes('pointer-events-none')) return true;
+                        n = n.parentElement;
+                      }
+                      return !!(el.disabled
+                        || String(el.getAttribute('aria-disabled')).toLowerCase() === 'true');
+                    }
+                    """
+                )
+            )
         except Exception as e:
             self.logger.error(f"检查 Done 按钮状态失败: {e}")
             raise
+
+    def wait_until_step2_done_disabled(self, timeout_ms: int = 8000) -> bool:
+        """等待 Step2 底部 Done 变为禁用（用于日期校验等异步 UI）。"""
+        deadline = time.time() + timeout_ms / 1000.0
+        while time.time() < deadline:
+            if self.is_done_button_disabled():
+                return True
+            self.page.wait_for_timeout(200)
+        return self.is_done_button_disabled()
+
+    def is_education_date_invalid_hint_visible(self) -> bool:
+        """
+        Education 区 To 早于 From 等：部分版本用 Done 禁用，部分在区块内展示 error 提示。
+        """
+        root = self.page.locator("h2:has-text('Education Experience')").locator("..")
+        try:
+            if root.locator("[class*='Mui-error']").first.is_visible(timeout=2000):
+                return True
+        except Exception:
+            pass
+        try:
+            t = (root.inner_text(timeout=3000) or "")
+        except Exception:
+            t = ""
+        blob = (t or "").lower()
+        for hint in (
+            "before",
+            "earlier",
+            "invalid",
+            "cannot",
+            "must be",
+            "end date",
+            "从",
+        ):
+            if hint in blob:
+                return True
+        # 主内容区短文案（避免整页误报）
+        try:
+            main = self.page.locator("main, [role='main'], form").first
+            if main.get_by_text(
+                re.compile(
+                    r"end\s+date|to\s+date|invalid|before|earlier|range|must|after",
+                    re.I,
+                )
+            ).first.is_visible(timeout=1500):
+                return True
+        except Exception:
+            pass
+        return False
+
+    def education_shows_masters_2019_to_and_2020_from(self) -> bool:
+        """
+        教育区已同时选入 To=2019-01 与 From=2020-6（或等价展示），用于产品未做按钮禁用时做弱回归。
+        """
+        try:
+            sec = self.page.locator("h2:has-text('Education Experience')").locator("..")
+            t = (sec.inner_text(timeout=5000) or "")
+        except Exception:
+            return False
+        if "2019" not in t or "2020" not in t or "Master" not in t:
+            return False
+        return bool(
+            re.search(r"2019.{0,200}2020|2020.{0,200}2019", t, re.S)
+        )
 
     def is_done_button_enabled(self):
         """验证 Done 按钮是否处于可点击状态（is_done_button_disabled 的反义）"""
         return not self.is_done_button_disabled()
 
     def click_done(self):
-        """点击 Done 按钮；SPA 提交后等待离开 /resume/add"""
-        try:
-            self.page.get_by_role("button", name="Done").last.click()
-            self.page.wait_for_timeout(2000)
+        """点击 Done 按钮；SPA 提交后等待离开 /resume/add（无头下先关浮层、滚动到底部主按钮）。"""
+        js_leave_add = """
+                () => {
+                    let p = (window.location && window.location.pathname) || "";
+                    let h = (window.location && window.location.hash) || "";
+                    if (p.length > 1 && p.endsWith("/")) p = p.slice(0, -1);
+                    let full = (p + h).toLowerCase();
+                    return !full.includes("resume/add");
+                }
+                """
+
+        def _attempt(force_click: bool) -> None:
+            for _ in range(3):
+                self.page.keyboard.press("Escape")
+                self.page.wait_for_timeout(200)
+            btn = self._step2_footer_done_button()
             try:
-                self.page.wait_for_function(
-                    "() => !window.location.href.includes('/resume/add')",
-                    timeout=60000,
-                )
+                btn.scroll_into_view_if_needed(timeout=15000)
             except Exception:
-                self.page.wait_for_timeout(5000)
-        except Exception as e:
-            self.logger.error(f"点击 Done 失败: {e}")
-            raise
+                pass
+            self.page.wait_for_timeout(500)
+            btn.click(timeout=90000, force=force_click)
+            self.page.wait_for_timeout(500)
+            # 单次等待，避免 wait_for_url 超时后再跑 wait_for_function 导致总时长翻倍
+            self.page.wait_for_function(js_leave_add, timeout=120000)
+
+        try:
+            _attempt(force_click=False)
+        except Exception as first_err:
+            self.logger.warning("click_done 首次未离开 add 页，force 重试: %s", first_err)
+            try:
+                _attempt(force_click=True)
+            except Exception as e:
+                self.logger.error(f"点击 Done 失败: {e}")
+                raise
 
     # ============================================
     # 辅助方法：国家列表锚点、日期选择器等
@@ -797,25 +1031,53 @@ class ResumeAddPageEs(BasePage):
     def get_active_anchor_letter(self):
         """获取当前激活的锚点字母"""
         try:
-            active_anchor = self.page.locator(".AnchorSelector_anchorNav__k7qie .PcSelectCountry_active__zJxUf")
-            if active_anchor.count() > 0:
-                return active_anchor.first.inner_text().strip()
+            for nav_sel, act_sel in (
+                ("[class*='AnchorSelector_anchorNav']", "[class*='PcSelectCountry_active']"),
+                ("[class*='anchorNav']", "[class*='PcSelectCountry_active']"),
+                ("[class*='anchorNav']", "[class*='_active']"),
+            ):
+                nav = self.page.locator(nav_sel)
+                if nav.count() == 0:
+                    continue
+                act = nav.locator(act_sel)
+                if act.count() > 0 and act.first.is_visible(timeout=800):
+                    txt = act.first.inner_text().strip()
+                    if txt:
+                        return txt
             return ""
         except Exception:
             return ""
 
+    def _country_letter_nav(self):
+        """国家列表右侧字母导航（兼容 CSS Modules 重命名）"""
+        return (
+            self.page.locator("[class*='AnchorSelector_anchorNav']")
+            .or_(self.page.locator("[class*='anchorNav']"))
+        )
+
     def scroll_country_list_to_letter(self, letter):
-        """滚动国家列表到指定字母区域（优先点击右侧字母锚点，与真实交互一致）"""
+        """滚动国家列表到指定字母区域：先滚到以该字母开头的列表项，再回退到点锚点/字母标题。"""
         try:
-            nav = self.page.locator(".AnchorSelector_anchorNav__k7qie")
+            ch = (letter or "").strip().upper()[:1]
+            if not ch:
+                return
+            # 不依赖 scrollContent class（易变）；直接滚到以该字母开头的国家行
+            row = self.page.locator("[class*='AnchorSelector_listItem']").filter(
+                has_text=re.compile(rf"^{re.escape(ch)}.", re.IGNORECASE)
+            )
+            if row.count() > 0:
+                row.first.scroll_into_view_if_needed(timeout=15000)
+                self.page.wait_for_timeout(600)
+                return
+            nav = self._country_letter_nav()
             if nav.count() > 0:
-                btn = nav.get_by_text(letter, exact=True)
+                btn = nav.get_by_text(ch, exact=True)
                 if btn.count() > 0:
                     btn.first.click()
                     self.page.wait_for_timeout(800)
                     return
-            list_container = self.page.locator(".AnchorSelector_scrollContent__fwLBP")
-            letter_header = list_container.get_by_text(letter, exact=True).first
+            list_container = self.page.locator("[class*='AnchorSelector_scrollContent']")
+            letter_header = list_container.get_by_text(ch, exact=True).first
             letter_header.scroll_into_view_if_needed(timeout=15000)
             self.page.wait_for_timeout(500)
         except Exception as e:

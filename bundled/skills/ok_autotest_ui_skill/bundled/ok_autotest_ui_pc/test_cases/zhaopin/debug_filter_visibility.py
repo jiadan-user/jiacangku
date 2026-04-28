@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+import sys
+from test_cases.zhaopin.explicit_waits import dom_content_loaded_soft, network_idle_soft, sg_wait_jobs_list_url, sg_after_home_jobs_icon
+env python3
 """
 调试脚本：检查搜索后筛选器区域的可见性状态
 """
@@ -26,13 +28,11 @@ def main():
         # 1. 导航到Jobs列表页
         logger.info("1. 导航到Jobs列表页...")
         jobs_list_page.navigate_to_jobs_list()
-        page.wait_for_timeout(2000)
-        
+        dom_content_loaded_soft(page, 20000)
         # 2. 输入搜索关键词
         logger.info('2. 输入搜索关键词 "manager"')
         jobs_list_page.input_search_keyword("manager")
-        page.wait_for_timeout(500)
-        
+        dom_content_loaded_soft(page, 20000)
         # 3. 点击搜索按钮
         logger.info("3. 点击Search按钮")
         jobs_list_page.click_search_button()
@@ -40,8 +40,7 @@ def main():
             page.wait_for_load_state("networkidle", timeout=10000)
         except Exception:
             pass
-        page.wait_for_timeout(2000)
-        
+        dom_content_loaded_soft(page, 20000)
         logger.info(f"当前URL: {page.url}")
         
         # 4. 检查元素
@@ -74,7 +73,7 @@ def main():
             # 尝试滚动到第一个Madrid元素
             if len(madrid_elements) > 0:
                 madrid_elements[0].scroll_into_view_if_needed()
-                page.wait_for_timeout(500)
+                dom_content_loaded_soft(page, 20000)
                 logger.info(f"滚动后Madrid[0] visible: {madrid_elements[0].is_visible()}")
         except Exception as e:
             logger.error(f"滚动失败: {e}")

@@ -1,0 +1,751 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.11.11, pytest-9.0.2, pluggy-1.5.0 -- /Users/wangyongli/miniconda3/bin/python3.11
+cachedir: .pytest_cache
+metadata: {'Python': '3.11.11', 'Platform': 'macOS-15.4.1-arm64-arm-64bit', 'Packages': {'pytest': '9.0.2', 'pluggy': '1.5.0'}, 'Plugins': {'anyio': '4.9.0', 'xdist': '3.8.0', 'metadata': '3.1.1', 'html': '4.2.0', 'langsmith': '0.3.42', 'rerunfailures': '16.1', 'allure-pytest': '2.15.3'}, 'JAVA_HOME': '/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home'}
+rootdir: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc
+configfile: pytest.ini
+plugins: anyio-4.9.0, xdist-3.8.0, metadata-3.1.1, html-4.2.0, langsmith-0.3.42, rerunfailures-16.1, allure-pytest-2.15.3
+collecting ... collected 62 items
+
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc001_search_keyword_navigates_to_result_page 19:03:15 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+
+-------------------------------- live log setup --------------------------------
+2026-04-17 19:03:15 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+19:03:15 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+2026-04-17 19:03:15 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+19:03:15 [INFO] [ENV] 检测到环境变量 HEADLESS=True 或 CI=False，强制使用无头模式
+2026-04-17 19:03:15 [INFO] [ENV] 检测到环境变量 HEADLESS=True 或 CI=False，强制使用无头模式
+19:03:15 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:03:15 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:03:15 [INFO] 未找到有效Session，将执行登录流程
+2026-04-17 19:03:15 [INFO] 未找到有效Session，将执行登录流程
+19:03:15 [INFO] 开始AE站登录流程...
+2026-04-17 19:03:15 [INFO] 开始AE站登录流程...
+19:03:15 [INFO] 清除失效Cookie并导航到AE站首页...
+2026-04-17 19:03:15 [INFO] 清除失效Cookie并导航到AE站首页...
+19:03:18 [INFO] 处理Cookie弹窗...
+2026-04-17 19:03:18 [INFO] 处理Cookie弹窗...
+19:03:18 [INFO] 点击Log in / Register按钮...
+2026-04-17 19:03:18 [INFO] 点击Log in / Register按钮...
+19:03:21 [WARNING] 登录弹窗未在 5 秒内出现，尝试延长等待时间
+2026-04-17 19:03:21 [WARNING] 登录弹窗未在 5 秒内出现，尝试延长等待时间
+19:03:28 [INFO] 填写用户名...
+2026-04-17 19:03:28 [INFO] 填写用户名...
+19:03:30 [INFO] 点击Continue按钮...
+2026-04-17 19:03:30 [INFO] 点击Continue按钮...
+19:03:34 [INFO] 填写密码...
+2026-04-17 19:03:34 [INFO] 填写密码...
+19:03:36 [INFO] 点击Login按钮提交...
+2026-04-17 19:03:36 [INFO] 点击Login按钮提交...
+19:03:39 [INFO] 验证登录状态...
+2026-04-17 19:03:39 [INFO] 验证登录状态...
+19:03:39 [INFO] ✓ 登录成功！
+2026-04-17 19:03:39 [INFO] ✓ 登录成功！
+19:03:39 [INFO] 保存Session: ae_jobseeker_wangyongli_ae
+2026-04-17 19:03:39 [INFO] 保存Session: ae_jobseeker_wangyongli_ae
+19:03:39 [INFO] ✓ Session已保存，下次测试将自动复用
+2026-04-17 19:03:39 [INFO] ✓ Session已保存，下次测试将自动复用
+19:03:44 [INFO] ✓ TC001 URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?keyword=manager
+2026-04-17 19:03:44 [INFO] ✓ TC001 URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?keyword=manager
+19:03:44 [INFO] ✓ TC001 搜索中间页结构验证通过
+2026-04-17 19:03:44 [INFO] ✓ TC001 搜索中间页结构验证通过
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc002_search_spaces_shows_no_result 19:03:44 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:03:44 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:03:44 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:03:44 [INFO] Session加载成功，验证登录状态...
+19:03:47 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:03:47 [INFO] ✓ Session有效，已登录AE站
+19:03:51 [INFO] ✓ TC002 URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&keyword=%20%20%20
+2026-04-17 19:03:51 [INFO] ✓ TC002 URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&keyword=%20%20%20
+19:03:51 [INFO] ✓ TC002 无结果文案验证通过
+2026-04-17 19:03:51 [INFO] ✓ TC002 无结果文案验证通过
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc003_search_overlong_keyword_no_error 19:03:52 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:03:52 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:03:52 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:03:52 [INFO] Session加载成功，验证登录状态...
+19:03:54 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:03:54 [INFO] ✓ Session有效，已登录AE站
+19:03:58 [INFO] ✓ TC003 URL验证通过（长度片段）: https://ae.58v5.cn/en/city/cate-jobs/?keyword=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...
+2026-04-17 19:03:58 [INFO] ✓ TC003 URL验证通过（长度片段）: https://ae.58v5.cn/en/city/cate-jobs/?keyword=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...
+19:03:58 [INFO] ✓ TC003 超长词搜索无崩溃，正常显示无结果
+2026-04-17 19:03:58 [INFO] ✓ TC003 超长词搜索无崩溃，正常显示无结果
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc004_search_special_chars_url_encoded 19:03:58 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:03:58 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:03:58 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:03:58 [INFO] Session加载成功，验证登录状态...
+19:04:01 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:04:01 [INFO] ✓ Session有效，已登录AE站
+19:04:05 [INFO] ✓ TC004 特殊字符URL编码验证通过: https://ae.58v5.cn/en/city/cate-jobs/?keyword=%40%23%24%25
+2026-04-17 19:04:05 [INFO] ✓ TC004 特殊字符URL编码验证通过: https://ae.58v5.cn/en/city/cate-jobs/?keyword=%40%23%24%25
+19:04:05 [INFO] ✓ TC004 特殊字符搜索无崩溃
+2026-04-17 19:04:05 [INFO] ✓ TC004 特殊字符搜索无崩溃
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc005_search_chinese_keyword_utf8_encoded 19:04:05 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:04:05 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:04:05 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:04:05 [INFO] Session加载成功，验证登录状态...
+19:04:08 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:04:08 [INFO] ✓ Session有效，已登录AE站
+19:04:13 [INFO] ✓ TC005 中文URL编码验证通过: https://ae.58v5.cn/en/city/cate-jobs/?keyword=%E5%B7%A5%E7%A8%8B%E5%B8%88
+2026-04-17 19:04:13 [INFO] ✓ TC005 中文URL编码验证通过: https://ae.58v5.cn/en/city/cate-jobs/?keyword=%E5%B7%A5%E7%A8%8B%E5%B8%88
+19:04:13 [INFO] ✓ TC005 中文搜索正常显示无结果
+2026-04-17 19:04:13 [INFO] ✓ TC005 中文搜索正常显示无结果
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc006_enter_key_triggers_search 19:04:13 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:04:13 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:04:13 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:04:13 [INFO] Session加载成功，验证登录状态...
+19:04:15 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:04:15 [INFO] ✓ Session有效，已登录AE站
+19:04:20 [INFO] ✓ TC006 Enter搜索URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?keyword=developer
+2026-04-17 19:04:20 [INFO] ✓ TC006 Enter搜索URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?keyword=developer
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc007_search_preserves_existing_filter_params 19:04:20 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:04:20 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:04:20 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:04:20 [INFO] Session加载成功，验证登录状态...
+19:04:22 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:04:22 [INFO] ✓ Session有效，已登录AE站
+19:04:32 [INFO] ✓ TC007 带筛选搜索URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?attr_60=1&keyword=manager
+2026-04-17 19:04:32 [INFO] ✓ TC007 带筛选搜索URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?attr_60=1&keyword=manager
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc008_search_focus_shows_recent_searches 19:04:32 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:04:32 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:04:32 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:04:32 [INFO] Session加载成功，验证登录状态...
+19:04:35 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:04:35 [INFO] ✓ Session有效，已登录AE站
+19:04:37 [INFO] ✓ TC008 Recent Searches下拉可见
+2026-04-17 19:04:37 [INFO] ✓ TC008 Recent Searches下拉可见
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc009_click_recent_search_item_triggers_search 19:04:37 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:04:37 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:04:37 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:04:37 [INFO] Session加载成功，验证登录状态...
+19:04:40 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:04:40 [INFO] ✓ Session有效，已登录AE站
+19:04:49 [INFO] ✓ TC009 点击历史记录搜索URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?keyword=manager
+2026-04-17 19:04:49 [INFO] ✓ TC009 点击历史记录搜索URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?keyword=manager
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc010_modify_search_keyword_in_result_page 19:04:50 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:04:50 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:04:50 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:04:50 [INFO] Session加载成功，验证登录状态...
+19:04:52 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:04:52 [INFO] ✓ Session有效，已登录AE站
+19:04:57 [INFO] ✓ TC010 修改关键词URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?keyword=engineer
+2026-04-17 19:04:57 [INFO] ✓ TC010 修改关键词URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?keyword=engineer
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc011_click_location_filter_opens_panel 19:04:57 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:04:57 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:04:57 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:04:57 [INFO] Session加载成功，验证登录状态...
+19:04:59 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:04:59 [INFO] ✓ Session有效，已登录AE站
+19:05:02 [INFO] ✓ TC011 Location面板验证通过
+2026-04-17 19:05:02 [INFO] ✓ TC011 Location面板验证通过
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc012_location_select_dubai_updates_url_path 19:05:02 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:05:02 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:05:02 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:05:02 [INFO] Session加载成功，验证登录状态...
+19:05:05 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:05:05 [INFO] ✓ Session有效，已登录AE站
+19:05:10 [INFO] ✓ TC012 选择Dubai URL验证通过: https://ae.58v5.cn/en/city-dubai/cate-jobs/?iconSource=jobs
+2026-04-17 19:05:10 [INFO] ✓ TC012 选择Dubai URL验证通过: https://ae.58v5.cn/en/city-dubai/cate-jobs/?iconSource=jobs
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc013_location_panel_search_city_filters_list 19:05:10 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:05:10 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:05:10 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:05:10 [INFO] Session加载成功，验证登录状态...
+19:05:12 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:05:12 [INFO] ✓ Session有效，已登录AE站
+19:05:16 [INFO] ✓ TC013 城市搜索过滤验证通过
+2026-04-17 19:05:16 [INFO] ✓ TC013 城市搜索过滤验证通过
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc014_location_select_all_uae_resets_url_path 19:05:17 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:05:17 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:05:17 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:05:17 [INFO] Session加载成功，验证登录状态...
+19:05:19 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:05:19 [INFO] ✓ Session有效，已登录AE站
+19:05:27 [INFO] ✓ TC014 选All UAE URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-17 19:05:27 [INFO] ✓ TC014 选All UAE URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc016_location_panel_set_now_link_clickable 19:05:27 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:05:27 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:05:27 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:05:27 [INFO] Session加载成功，验证登录状态...
+19:05:30 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:05:30 [INFO] ✓ Session有效，已登录AE站
+19:05:33 [INFO] ✓ TC016 Set now链接可见
+2026-04-17 19:05:33 [INFO] ✓ TC016 Set now链接可见
+19:05:33 [INFO] ✓ TC016 Set now跳转URL: https://aepub.58v5.cn/biz/en/jobPreference
+2026-04-17 19:05:33 [INFO] ✓ TC016 Set now跳转URL: https://aepub.58v5.cn/biz/en/jobPreference
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc017_click_job_type_filter_opens_panel 19:05:33 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:05:33 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:05:33 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:05:33 [INFO] Session加载成功，验证登录状态...
+19:05:36 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:05:36 [INFO] ✓ Session有效，已登录AE站
+19:05:39 [INFO] ✓ TC017 Job Type面板验证通过
+2026-04-17 19:05:39 [INFO] ✓ TC017 Job Type面板验证通过
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc018_job_type_select_fulltime_confirm_url_contains_attr60 19:05:39 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:05:39 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:05:39 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:05:39 [INFO] Session加载成功，验证登录状态...
+19:05:41 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:05:41 [INFO] ✓ Session有效，已登录AE站
+19:05:48 [INFO] ✓ TC018 Full-time筛选URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&attr_60=1
+2026-04-17 19:05:48 [INFO] ✓ TC018 Full-time筛选URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&attr_60=1
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc019_job_type_multi_select_url_contains_comma_encoded 19:05:48 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:05:48 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:05:48 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:05:48 [INFO] Session加载成功，验证登录状态...
+19:05:51 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:05:51 [INFO] ✓ Session有效，已登录AE站
+19:05:58 [INFO] ✓ TC019 多选Job Type URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&attr_60=1%2C2
+2026-04-17 19:05:58 [INFO] ✓ TC019 多选Job Type URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&attr_60=1%2C2
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc020_job_type_clear_does_not_change_url 19:05:59 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:05:59 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:05:59 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:05:59 [INFO] Session加载成功，验证登录状态...
+19:06:01 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:06:01 [INFO] ✓ Session有效，已登录AE站
+19:06:07 [INFO] ✓ TC020 Clear不改变URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-17 19:06:07 [INFO] ✓ TC020 Clear不改变URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+19:06:07 [INFO] ✓ TC020 Clear后面板保持打开
+2026-04-17 19:06:07 [INFO] ✓ TC020 Clear后面板保持打开
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc021_job_type_confirm_with_no_selection_no_badge 19:06:07 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:06:07 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:06:07 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:06:07 [INFO] Session加载成功，验证登录状态...
+19:06:09 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:06:09 [INFO] ✓ Session有效，已登录AE站
+19:06:16 [INFO] ✓ TC021 空选项Confirm URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-17 19:06:16 [INFO] ✓ TC021 空选项Confirm URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc022_job_type_escape_closes_panel_no_filter 19:06:16 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:06:16 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:06:16 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:06:16 [INFO] Session加载成功，验证登录状态...
+19:06:18 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:06:18 [INFO] ✓ Session有效，已登录AE站
+19:06:23 [INFO] ✓ TC022 Escape关闭面板URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-17 19:06:23 [INFO] ✓ TC022 Escape关闭面板URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc023_click_workplace_type_opens_panel 19:06:23 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:06:23 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:06:23 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:06:23 [INFO] Session加载成功，验证登录状态...
+19:06:26 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:06:26 [INFO] ✓ Session有效，已登录AE站
+19:06:29 [INFO] ✓ TC023 Workplace type面板验证通过
+2026-04-17 19:06:29 [INFO] ✓ TC023 Workplace type面板验证通过
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc024_workplace_onsite_confirm_url_attr61_1 19:06:29 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:06:29 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:06:29 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:06:29 [INFO] Session加载成功，验证登录状态...
+19:06:31 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:06:31 [INFO] ✓ Session有效，已登录AE站
+19:06:38 [INFO] ✓ TC024 Onsite筛选URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&attr_61=1
+2026-04-17 19:06:38 [INFO] ✓ TC024 Onsite筛选URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&attr_61=1
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc025_workplace_remote_confirm_url_attr61_2 19:06:38 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:06:38 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:06:38 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:06:38 [INFO] Session加载成功，验证登录状态...
+19:06:41 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:06:41 [INFO] ✓ Session有效，已登录AE站
+19:06:47 [INFO] ✓ TC025 Remote筛选URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&attr_61=2
+2026-04-17 19:06:47 [INFO] ✓ TC025 Remote筛选URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&attr_61=2
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc026_workplace_hybrid_confirm_url_attr61_3 19:06:47 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:06:47 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:06:47 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:06:47 [INFO] Session加载成功，验证登录状态...
+19:06:50 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:06:50 [INFO] ✓ Session有效，已登录AE站
+19:06:57 [INFO] ✓ TC026 Hybrid筛选URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&attr_61=3
+2026-04-17 19:06:57 [INFO] ✓ TC026 Hybrid筛选URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&attr_61=3
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc027_workplace_clear_deselects_without_submit 19:06:58 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:06:58 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:06:58 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:06:58 [INFO] Session加载成功，验证登录状态...
+19:07:00 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:07:00 [INFO] ✓ Session有效，已登录AE站
+19:07:05 [INFO] ✓ TC027 Workplace Clear验证通过
+2026-04-17 19:07:05 [INFO] ✓ TC027 Workplace Clear验证通过
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc028_click_salary_filter_opens_panel 19:07:05 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:07:05 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:07:05 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:07:05 [INFO] Session加载成功，验证登录状态...
+19:07:08 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:07:08 [INFO] ✓ Session有效，已登录AE站
+19:07:11 [INFO] ✓ TC028 Salary面板验证通过
+2026-04-17 19:07:11 [INFO] ✓ TC028 Salary面板验证通过
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc029_salary_per_month_min_max_confirm_url 19:07:11 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:07:11 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:07:11 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:07:11 [INFO] Session加载成功，验证登录状态...
+19:07:13 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:07:13 [INFO] ✓ Session有效，已登录AE站
+19:07:20 [INFO] ✓ TC029 Salary Per Month URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&lowestPrice=3000&highestPrice=10000&attr_80=4
+2026-04-17 19:07:20 [INFO] ✓ TC029 Salary Per Month URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&lowestPrice=3000&highestPrice=10000&attr_80=4
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc030_salary_only_min_url_contains_lowest_price 19:07:20 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:07:20 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:07:20 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:07:20 [INFO] Session加载成功，验证登录状态...
+19:07:23 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:07:23 [INFO] ✓ Session有效，已登录AE站
+19:07:29 [INFO] ✓ TC030 只填Min URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&lowestPrice=3000&attr_80=4
+2026-04-17 19:07:29 [INFO] ✓ TC030 只填Min URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&lowestPrice=3000&attr_80=4
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc031_salary_only_max_url_contains_highest_price 19:07:29 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:07:29 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:07:29 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:07:29 [INFO] Session加载成功，验证登录状态...
+19:07:31 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:07:31 [INFO] ✓ Session有效，已登录AE站
+19:07:38 [INFO] ✓ TC031 只填Max URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&highestPrice=10000&attr_80=4
+2026-04-17 19:07:38 [INFO] ✓ TC031 只填Max URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&highestPrice=10000&attr_80=4
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc032_salary_min_greater_than_max_silently_ignored 19:07:38 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:07:38 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:07:38 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:07:38 [INFO] Session加载成功，验证登录状态...
+19:07:41 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:07:41 [INFO] ✓ Session有效，已登录AE站
+19:07:47 [INFO] ✓ TC032 Min>Max静默忽略URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-17 19:07:47 [INFO] ✓ TC032 Min>Max静默忽略URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc033_salary_negative_input_filtered_out 19:07:47 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:07:47 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:07:47 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:07:47 [INFO] Session加载成功，验证登录状态...
+19:07:49 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:07:49 [INFO] ✓ Session有效，已登录AE站
+19:07:53 [INFO] ✓ TC033 负数过滤验证通过，Min值为: ''
+2026-04-17 19:07:53 [INFO] ✓ TC033 负数过滤验证通过，Min值为: ''
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc034_salary_decimal_input_accepted 19:07:53 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:07:53 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:07:53 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:07:53 [INFO] Session加载成功，验证登录状态...
+19:07:56 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:07:56 [INFO] ✓ Session有效，已登录AE站
+19:08:00 [INFO] ✓ TC034 小数输入验证通过，Min值为: '500.5'
+2026-04-17 19:08:00 [INFO] ✓ TC034 小数输入验证通过，Min值为: '500.5'
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc035_salary_period_per_month_attr80_4 19:08:00 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:08:00 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:08:00 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:08:00 [INFO] Session加载成功，验证登录状态...
+19:08:03 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:08:03 [INFO] ✓ Session有效，已登录AE站
+19:08:10 [INFO] ✓ TC035 Per Month attr_80=4验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&lowestPrice=1000&attr_80=4
+2026-04-17 19:08:10 [INFO] ✓ TC035 Per Month attr_80=4验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&lowestPrice=1000&attr_80=4
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc036_salary_clear_resets_min_max 19:08:10 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:08:10 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:08:10 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:08:10 [INFO] Session加载成功，验证登录状态...
+19:08:13 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:08:13 [INFO] ✓ Session有效，已登录AE站
+19:08:18 [INFO] ✓ TC036 Salary Clear验证通过：Min=''，Max=''
+2026-04-17 19:08:18 [INFO] ✓ TC036 Salary Clear验证通过：Min=''，Max=''
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc037_job_preference_category_bar_visible 19:08:18 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:08:18 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:08:18 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:08:18 [INFO] Session加载成功，验证登录状态...
+19:08:20 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:08:20 [INFO] ✓ Session有效，已登录AE站
+19:08:22 [INFO] ✓ TC037 岗位偏好类别标签栏验证通过
+2026-04-17 19:08:22 [INFO] ✓ TC037 岗位偏好类别标签栏验证通过
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc038_click_preference_category_updates_url 19:08:22 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:08:22 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:08:22 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:08:22 [INFO] Session加载成功，验证登录状态...
+19:08:25 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:08:25 [INFO] ✓ Session有效，已登录AE站
+19:08:29 [INFO] ✓ TC038 偏好类别标签URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&preferenceCateId=3002
+2026-04-17 19:08:29 [INFO] ✓ TC038 偏好类别标签URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&preferenceCateId=3002
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc039_click_edit_preference_navigates 19:08:29 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:08:29 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:08:29 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:08:29 [INFO] Session加载成功，验证登录状态...
+19:08:31 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:08:31 [INFO] ✓ Session有效，已登录AE站
+19:08:33 [INFO] ✓ TC039 Edit链接跳转URL: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https%3A%2F%2Fae.58v5.cn%2Fen%2Fcity%2Fcate-jobs%2F%3FiconSource%3Djobs
+2026-04-17 19:08:33 [INFO] ✓ TC039 Edit链接跳转URL: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https%3A%2F%2Fae.58v5.cn%2Fen%2Fcity%2Fcate-jobs%2F%3FiconSource%3Djobs
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc040_preference_category_with_existing_filter_preserved 19:08:33 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:08:33 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:08:33 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:08:33 [INFO] Session加载成功，验证登录状态...
+19:08:36 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:08:36 [INFO] ✓ Session有效，已登录AE站
+19:08:44 [INFO] ✓ TC040 偏好类别与筛选参数共存验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&attr_60=1&preferenceCateId=3003
+2026-04-17 19:08:44 [INFO] ✓ TC040 偏好类别与筛选参数共存验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&attr_60=1&preferenceCateId=3003
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc041_anonymous_user_no_preference_bar 19:08:47 [INFO] ✓ TC041 未登录无偏好标签栏验证通过
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:08:47 [INFO] ✓ TC041 未登录无偏好标签栏验证通过
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc042_reset_exists_but_no_effect_without_filter 19:08:48 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:08:48 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:08:48 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:08:48 [INFO] Session加载成功，验证登录状态...
+19:08:51 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:08:51 [INFO] ✓ Session有效，已登录AE站
+19:08:56 [INFO] ✓ TC042 无筛选Reset验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-17 19:08:56 [INFO] ✓ TC042 无筛选Reset验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc043_reset_clears_job_type_filter 19:08:56 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:08:56 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:08:56 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:08:56 [INFO] Session加载成功，验证登录状态...
+19:08:59 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:08:59 [INFO] ✓ Session有效，已登录AE站
+19:09:09 [INFO] ✓ TC043 Reset清除Job Type验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-17 19:09:09 [INFO] ✓ TC043 Reset清除Job Type验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc044_reset_clears_query_params_but_preserves_city_path 19:09:09 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:09:09 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:09:09 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:09:09 [INFO] Session加载成功，验证登录状态...
+19:09:11 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:09:11 [INFO] ✓ Session有效，已登录AE站
+19:09:25 [INFO] ✓ TC044 Reset保留城市路径验证通过: https://ae.58v5.cn/en/city-dubai/cate-jobs/?iconSource=jobs
+2026-04-17 19:09:25 [INFO] ✓ TC044 Reset保留城市路径验证通过: https://ae.58v5.cn/en/city-dubai/cate-jobs/?iconSource=jobs
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc045_search_result_page_has_no_reset_button 19:09:26 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:09:26 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:09:26 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:09:26 [INFO] Session加载成功，验证登录状态...
+19:09:28 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:09:28 [INFO] ✓ Session有效，已登录AE站
+19:09:31 [INFO] ✓ TC045 搜索中间页无Reset按钮验证通过
+2026-04-17 19:09:31 [INFO] ✓ TC045 搜索中间页无Reset按钮验证通过
+19:09:31 [INFO] ✓ TC045 搜索中间页筛选栏结构验证通过
+2026-04-17 19:09:31 [INFO] ✓ TC045 搜索中间页筛选栏结构验证通过
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc046_infinite_scroll_loads_more_jobs 19:09:31 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:09:31 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:09:31 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:09:31 [INFO] Session加载成功，验证登录状态...
+19:09:34 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:09:34 [INFO] ✓ Session有效，已登录AE站
+19:09:36 [INFO] 初始scrollHeight: 7654px
+2026-04-17 19:09:36 [INFO] 初始scrollHeight: 7654px
+19:09:41 [INFO] 滚动后scrollHeight: 9774px
+2026-04-17 19:09:41 [INFO] 滚动后scrollHeight: 9774px
+19:09:41 [INFO] ✓ TC046 无限滚动验证通过，高度7654→9774
+2026-04-17 19:09:41 [INFO] ✓ TC046 无限滚动验证通过，高度7654→9774
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc047_scroll_to_end_shows_end_message 19:09:41 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:09:41 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:09:41 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:09:41 [INFO] Session加载成功，验证登录状态...
+19:09:44 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:09:44 [INFO] ✓ Session有效，已登录AE站
+19:09:58 [INFO] ✓ TC047 底部提示验证通过（end=False, noResult=True）
+2026-04-17 19:09:58 [INFO] ✓ TC047 底部提示验证通过（end=False, noResult=True）
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc048_search_result_page_infinite_scroll 19:09:58 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:09:58 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:09:58 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:09:58 [INFO] Session加载成功，验证登录状态...
+19:10:01 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:10:01 [INFO] ✓ Session有效，已登录AE站
+19:10:07 [INFO] ✓ TC048 搜索中间页无限滚动验证通过
+2026-04-17 19:10:07 [INFO] ✓ TC048 搜索中间页无限滚动验证通过
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc049_filtered_scroll_results_preserve_filter_params 19:10:07 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:10:07 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:10:07 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:10:07 [INFO] Session加载成功，验证登录状态...
+19:10:10 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:10:10 [INFO] ✓ Session有效，已登录AE站
+19:10:23 [INFO] ✓ TC049 筛选后滚动URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&attr_60=1
+2026-04-17 19:10:23 [INFO] ✓ TC049 筛选后滚动URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&attr_60=1
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc050_location_and_job_type_combined 19:10:23 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:10:23 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:10:23 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:10:23 [INFO] Session加载成功，验证登录状态...
+19:10:26 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:10:26 [INFO] ✓ Session有效，已登录AE站
+19:10:36 [INFO] ✓ TC050 Location+Job Type组合URL验证通过: https://ae.58v5.cn/en/city-dubai/cate-jobs/?iconSource=jobs&attr_60=1
+2026-04-17 19:10:36 [INFO] ✓ TC050 Location+Job Type组合URL验证通过: https://ae.58v5.cn/en/city-dubai/cate-jobs/?iconSource=jobs&attr_60=1
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc051_job_type_and_workplace_type_combined 19:10:36 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:10:36 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:10:36 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:10:36 [INFO] Session加载成功，验证登录状态...
+19:10:38 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:10:38 [INFO] ✓ Session有效，已登录AE站
+19:10:50 [INFO] ✓ TC051 Job Type+Workplace组合URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&attr_60=1&attr_61=1
+2026-04-17 19:10:50 [INFO] ✓ TC051 Job Type+Workplace组合URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&attr_60=1&attr_61=1
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc052_job_type_and_salary_combined 19:10:51 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:10:51 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:10:51 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:10:51 [INFO] Session加载成功，验证登录状态...
+19:10:53 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:10:53 [INFO] ✓ Session有效，已登录AE站
+19:11:05 [INFO] ✓ TC052 Job Type+Salary组合URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&attr_60=1&lowestPrice=3000&highestPrice=10000&attr_80=4
+2026-04-17 19:11:05 [INFO] ✓ TC052 Job Type+Salary组合URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&attr_60=1&lowestPrice=3000&highestPrice=10000&attr_80=4
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc053_search_with_job_type_filter_in_result_page 19:11:05 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:11:05 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:11:05 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:11:05 [INFO] Session加载成功，验证登录状态...
+19:11:07 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:11:07 [INFO] ✓ Session有效，已登录AE站
+19:11:15 [INFO] ✓ TC053 搜索+Job Type组合URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?keyword=manager&attr_60=1
+2026-04-17 19:11:15 [INFO] ✓ TC053 搜索+Job Type组合URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?keyword=manager&attr_60=1
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc054_filter_and_preference_category_combined 19:11:15 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:11:15 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:11:15 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:11:15 [INFO] Session加载成功，验证登录状态...
+19:11:17 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:11:17 [INFO] ✓ Session有效，已登录AE站
+19:11:26 [INFO] ✓ TC054 筛选+偏好类别组合URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&attr_60=1&preferenceCateId=3003
+2026-04-17 19:11:26 [INFO] ✓ TC054 筛选+偏好类别组合URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs&attr_60=1&preferenceCateId=3003
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc055_multi_filter_reset_preserves_city_path 19:11:26 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:11:26 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:11:27 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:11:27 [INFO] Session加载成功，验证登录状态...
+19:11:29 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:11:29 [INFO] ✓ Session有效，已登录AE站
+19:11:47 [INFO] ✓ TC055 多筛选Reset城市路径保留验证通过: https://ae.58v5.cn/en/city-dubai/cate-jobs/?iconSource=jobs
+2026-04-17 19:11:47 [INFO] ✓ TC055 多筛选Reset城市路径保留验证通过: https://ae.58v5.cn/en/city-dubai/cate-jobs/?iconSource=jobs
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc056_job_detail_panel_default_open 19:11:47 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:11:47 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:11:47 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:11:47 [INFO] Session加载成功，验证登录状态...
+19:11:49 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:11:49 [INFO] ✓ Session有效，已登录AE站
+19:11:53 [INFO] ✓ TC056 右侧详情面板默认展开验证通过
+2026-04-17 19:11:53 [INFO] ✓ TC056 右侧详情面板默认展开验证通过
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc057_click_job_card_switches_detail_panel 19:11:53 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:11:53 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:11:53 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:11:53 [INFO] Session加载成功，验证登录状态...
+19:12:00 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:12:00 [INFO] ✓ Session有效，已登录AE站
+19:12:03 [INFO] ✓ TC057 职位卡片切换面板URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-17 19:12:03 [INFO] ✓ TC057 职位卡片切换面板URL验证通过: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+19:12:03 [INFO] ✓ TC057 详情面板切换验证通过
+2026-04-17 19:12:03 [INFO] ✓ TC057 详情面板切换验证通过
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc058_popular_cities_link_navigates 19:12:03 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:12:03 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:12:03 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:12:03 [INFO] Session加载成功，验证登录状态...
+19:12:06 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:12:06 [INFO] ✓ Session有效，已登录AE站
+19:12:09 [INFO] ✓ TC058 Popular Cities跳转验证通过: https://ae.58v5.cn/en/city-dubai/cate-jobs/
+2026-04-17 19:12:09 [INFO] ✓ TC058 Popular Cities跳转验证通过: https://ae.58v5.cn/en/city-dubai/cate-jobs/
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc059_detail_panel_contact_button_clickable 19:12:09 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:12:09 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:12:09 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:12:09 [INFO] Session加载成功，验证登录状态...
+19:12:12 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:12:12 [INFO] ✓ Session有效，已登录AE站
+19:12:15 [INFO] ✓ TC059 Contact按钮可见验证通过
+2026-04-17 19:12:15 [INFO] ✓ TC059 Contact按钮可见验证通过
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc060_detail_panel_new_tab_link_exists 19:12:15 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:12:15 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:12:15 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:12:15 [INFO] Session加载成功，验证登录状态...
+19:12:18 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:12:18 [INFO] ✓ Session有效，已登录AE站
+19:12:21 [INFO] ✓ TC060 详情面板次级操作区验证通过
+2026-04-17 19:12:21 [INFO] ✓ TC060 详情面板次级操作区验证通过
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc061_detail_panel_favourites_button_visible 19:12:21 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:12:21 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:12:21 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:12:21 [INFO] Session加载成功，验证登录状态...
+19:12:24 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:12:24 [INFO] ✓ Session有效，已登录AE站
+19:12:27 [INFO] ✓ TC061 Favourites按钮可见验证通过
+2026-04-17 19:12:27 [INFO] ✓ TC061 Favourites按钮可见验证通过
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc062_detail_panel_resume_entry_visible 19:12:27 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:12:27 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:12:27 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:12:27 [INFO] Session加载成功，验证登录状态...
+19:12:30 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:12:30 [INFO] ✓ Session有效，已登录AE站
+19:12:31 [INFO] ✓ TC062 Resume入口可见验证通过
+2026-04-17 19:12:31 [INFO] ✓ TC062 Resume入口可见验证通过
+PASSED
+test_cases/zhaopin/test_ae_jobs_list_search_and_filter.py::test_tc063_jobs_page_load_performance 19:12:32 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:12:32 [INFO] 尝试加载Session: ae_jobseeker_wangyongli_ae
+19:12:32 [INFO] Session加载成功，验证登录状态...
+2026-04-17 19:12:32 [INFO] Session加载成功，验证登录状态...
+19:12:34 [INFO] ✓ Session有效，已登录AE站
+2026-04-17 19:12:34 [INFO] ✓ Session有效，已登录AE站
+19:12:36 [INFO] 页面加载时间: 1137ms，DOMReady: 881ms，TTFB: 787ms
+2026-04-17 19:12:36 [INFO] 页面加载时间: 1137ms，DOMReady: 881ms，TTFB: 787ms
+19:12:36 [INFO] ✓ TC063 页面加载性能验证通过: 1137ms
+2026-04-17 19:12:36 [INFO] ✓ TC063 页面加载性能验证通过: 1137ms
+PASSED19:12:36 [INFO] [PLAYWRIGHT] 清理全局 Playwright 实例
+---------------------------- live log sessionfinish ----------------------------
+2026-04-17 19:12:36 [INFO] [PLAYWRIGHT] 清理全局 Playwright 实例
+19:12:36 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例已清理
+2026-04-17 19:12:36 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例已清理
+
+
+- generated xml file: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/test_ae_jobs_list_search_and_filter_headless_junit.xml -
+======================== 62 passed in 561.78s (0:09:21) ========================
+real 562.40
+user 209.34
+sys 27.92

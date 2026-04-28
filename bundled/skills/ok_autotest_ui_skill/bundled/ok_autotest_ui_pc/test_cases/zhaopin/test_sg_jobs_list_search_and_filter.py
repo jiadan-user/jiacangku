@@ -17,6 +17,8 @@ from utils.logger import setup_logger
 
 logger = setup_logger()
 
+from test_cases.zhaopin.explicit_waits import dom_content_loaded_soft, network_idle_soft, sg_wait_jobs_list_url, sg_after_home_jobs_icon
+
 # ============================================
 # 测试环境配置（来自录制文档，录制与运行使用同一账号）
 # ============================================
@@ -87,8 +89,7 @@ def test_search_with_keyword_should_navigate_to_results(page, config):
     with allure.step("步骤2：导航到Jobs列表页"):
         jobs_list_page.navigate_to_jobs_list(base_url)
         logger.info("✓ 导航到Jobs列表页成功")
-        page.wait_for_timeout(2000)
-    
+        dom_content_loaded_soft(page, 20000)
     with allure.step("步骤3：在搜索框输入关键词 'developer'"):
         jobs_list_page.input_search_keyword("developer")
         logger.info("✓ 输入搜索关键词")
@@ -96,8 +97,7 @@ def test_search_with_keyword_should_navigate_to_results(page, config):
     with allure.step("步骤4：点击Search按钮"):
         jobs_list_page.click_search_button()
         logger.info("✓ 点击Search按钮")
-        page.wait_for_timeout(2000)
-    
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert：验证搜索结果 ==========
     with allure.step("验证搜索结果"):
         current_url = jobs_list_page.get_current_url()
@@ -155,7 +155,7 @@ def test_search_with_empty_keyword_should_stay_or_default(page, config):
     with allure.step("步骤3：点击Search按钮"):
         initial_url = jobs_list_page.get_current_url()
         jobs_list_page.click_search_button()
-        page.wait_for_timeout(2000)
+        dom_content_loaded_soft(page, 20000)
         logger.info("✓ 点击Search按钮")
     
     # ========== Assert ==========
@@ -214,7 +214,7 @@ def test_search_with_special_characters_should_handle(page, config):
     
     with allure.step("步骤3：点击Search按钮"):
         jobs_list_page.click_search_button()
-        page.wait_for_timeout(2000)
+        dom_content_loaded_soft(page, 20000)
         logger.info("✓ 点击Search按钮")
     
     # ========== Assert ==========
@@ -270,7 +270,7 @@ def test_search_with_long_text_should_handle(page, config):
     
     with allure.step("步骤3：点击Search按钮"):
         jobs_list_page.click_search_button()
-        page.wait_for_timeout(2000)
+        dom_content_loaded_soft(page, 20000)
         logger.info("✓ 点击Search按钮")
     
     # ========== Assert ==========
@@ -319,8 +319,7 @@ def test_location_filter_default_value_is_singapore(page, config):
     with allure.step("步骤1：导航到Jobs列表页"):
         jobs_list_page.navigate_to_jobs_list(base_url)
         logger.info("✓ 导航到Jobs列表页")
-        page.wait_for_timeout(2000)
-    
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证Location筛选器默认值"):
         assert jobs_list_page.is_location_filter_visible(), "Location筛选器不可见"
@@ -373,20 +372,17 @@ def test_location_filter_can_switch_city(page, config):
     with allure.step("步骤1：导航到Jobs列表页"):
         jobs_list_page.navigate_to_jobs_list(base_url)
         logger.info("✓ 导航到Jobs列表页")
-        page.wait_for_timeout(2000)
-    
+        dom_content_loaded_soft(page, 20000)
     with allure.step("步骤2：点击Location筛选器"):
         initial_url = jobs_list_page.get_current_url()
         jobs_list_page.click_location_filter()
         logger.info("✓ 点击Location筛选器")
-        page.wait_for_timeout(1000)
-    
+        dom_content_loaded_soft(page, 20000)
     with allure.step("步骤3：选择其他城市选项"):
         # 选择"All Singapore"或面板中的其他选项
         jobs_list_page.select_filter_option("All Singapore")
         logger.info("✓ 选择城市选项")
-        page.wait_for_timeout(2000)
-    
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证筛选结果"):
         current_url = jobs_list_page.get_current_url()
@@ -434,26 +430,23 @@ def test_location_filter_can_select_multiple(page, config):
     with allure.step("步骤1：导航到Jobs列表页"):
         jobs_list_page.navigate_to_jobs_list(base_url)
         logger.info("✓ 导航到Jobs列表页")
-        page.wait_for_timeout(2000)
-    
+        dom_content_loaded_soft(page, 20000)
     with allure.step("步骤2：点击Location筛选器"):
         jobs_list_page.click_location_filter()
         logger.info("✓ 点击Location筛选器")
-        page.wait_for_timeout(1000)
-    
+        dom_content_loaded_soft(page, 20000)
     with allure.step("步骤3：选择多个城市选项"):
         # 尝试选择两个选项
         try:
             jobs_list_page.select_filter_option("Singapore")
-            page.wait_for_timeout(500)
+            dom_content_loaded_soft(page, 20000)
             jobs_list_page.select_filter_option("All Singapore")
-            page.wait_for_timeout(500)
+            dom_content_loaded_soft(page, 20000)
             logger.info("✓ 选择多个城市选项")
         except Exception as e:
             logger.info(f"⚠️ 多选操作异常（可能面板自动关闭）: {e}")
         
-        page.wait_for_timeout(2000)
-    
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证筛选结果"):
         current_url = jobs_list_page.get_current_url()

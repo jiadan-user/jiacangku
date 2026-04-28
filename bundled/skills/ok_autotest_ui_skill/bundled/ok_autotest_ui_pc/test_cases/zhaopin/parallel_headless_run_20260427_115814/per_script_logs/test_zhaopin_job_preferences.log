@@ -1,0 +1,154 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Library/Developer/CommandLineTools/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc
+configfile: pytest.ini
+plugins: order-1.2.0, dependency-0.5.1, allure-pytest-2.15.3
+collecting ... collected 7 items
+
+test_cases/zhaopin/test_zhaopin_job_preferences.py::test_tc001_unnamed 11:58:15 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+
+-------------------------------- live log setup --------------------------------
+2026-04-27 11:58:15 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+11:58:17 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+2026-04-27 11:58:17 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+11:58:17 [INFO] [zhaopin] 已创建共享 BrowserContext: site=sg headless=True
+2026-04-27 11:58:17 [INFO] [zhaopin] 已创建共享 BrowserContext: site=sg headless=True
+11:58:42 [INFO] ✓ 已加载 Session，跳过登录
+2026-04-27 11:58:42 [INFO] ✓ 已加载 Session，跳过登录
+11:58:43 [INFO] ✓ preference 清理: user_id=796568487761138112，删除 0 行
+-------------------------------- live log call ---------------------------------
+2026-04-27 11:58:43 [INFO] ✓ preference 清理: user_id=796568487761138112，删除 0 行
+11:58:44 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 11:58:44 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+11:59:34 [ERROR] 测试失败 URL: https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs
+2026-04-27 11:59:34 [ERROR] 测试失败 URL: https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs
+FAILED
+test_cases/zhaopin/test_zhaopin_job_preferences.py::test_tc002_unnamed 11:59:35 [INFO] ✓ preference 清理: user_id=796568487761138112，删除 1 行
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 11:59:35 [INFO] ✓ preference 清理: user_id=796568487761138112，删除 1 行
+11:59:35 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 11:59:35 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+12:00:23 [ERROR] 测试失败 URL: https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs
+2026-04-27 12:00:23 [ERROR] 测试失败 URL: https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs
+FAILED
+test_cases/zhaopin/test_zhaopin_job_preferences.py::test_tc003_unnamed 12:00:23 [INFO] ✓ preference 清理: user_id=796568487761138112，删除 0 行
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:00:23 [INFO] ✓ preference 清理: user_id=796568487761138112，删除 0 行
+12:00:24 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 12:00:24 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+PASSED
+test_cases/zhaopin/test_zhaopin_job_preferences.py::test_tc004_unnamed 12:00:25 [INFO] ✓ preference 清理: user_id=796568487761138112，删除 0 行
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:00:25 [INFO] ✓ preference 清理: user_id=796568487761138112，删除 0 行
+12:00:25 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 12:00:25 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+PASSED
+test_cases/zhaopin/test_zhaopin_job_preferences.py::test_tc005_0_999999 12:00:48 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:00:48 [INFO] ✓ 已加载 Session，跳过登录
+12:00:48 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 12:00:48 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+PASSED
+test_cases/zhaopin/test_zhaopin_job_preferences.py::test_tc006_unnamed 12:01:17 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:01:17 [INFO] ✓ 已加载 Session，跳过登录
+12:01:17 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 12:01:17 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+PASSED
+test_cases/zhaopin/test_zhaopin_job_preferences.py::test_tc007_unnamed 12:01:22 [ERROR] 测试失败 URL: https://sg.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:01:22 [ERROR] 测试失败 URL: https://sg.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+FAILED12:01:22 [INFO] [PLAYWRIGHT] 清理全局 Playwright 实例
+---------------------------- live log sessionfinish ----------------------------
+2026-04-27 12:01:22 [INFO] [PLAYWRIGHT] 清理全局 Playwright 实例
+12:01:22 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例已清理
+2026-04-27 12:01:22 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例已清理
+
+
+=================================== FAILURES ===================================
+______________________________ test_tc001_unnamed ______________________________
+test_cases/zhaopin/test_zhaopin_job_preferences.py:67: in test_tc001_unnamed
+    sg_wait_jobs_list_url(page, timeout=45000)
+test_cases/zhaopin/explicit_waits.py:143: in sg_wait_jobs_list_url
+    page.wait_for_url("**/cate-jobs**", timeout=timeout)
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/sync_api/_generated.py:9162: in wait_for_url
+    self._sync(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_page.py:584: in wait_for_url
+    return await self._main_frame.wait_for_url(**locals_to_params(locals()))
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:266: in wait_for_url
+    pass
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_event_context_manager.py:33: in __aexit__
+    await self._future
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:239: in continuation
+    event = await waiter.result()
+E   playwright._impl._errors.TimeoutError: Timeout 45000ms exceeded.
+E   =========================== logs ===========================
+E   waiting for navigation to "**/cate-jobs**" until 'load'
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E   ============================================================
+------------------------------ Captured log setup ------------------------------
+INFO     AutoTest:browser_manager.py:42 [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+INFO     AutoTest:browser_manager.py:45 [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+INFO     AutoTest:conftest.py:143 [zhaopin] 已创建共享 BrowserContext: site=sg headless=True
+INFO     AutoTest:sg_login_helper.py:43 ✓ 已加载 Session，跳过登录
+------------------------------ Captured log call -------------------------------
+INFO     AutoTest:test_sg_job_preferences.py:62 ✓ preference 清理: user_id=796568487761138112，删除 0 行
+INFO     AutoTest:job_preference_page.py:66 ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+______________________________ test_tc002_unnamed ______________________________
+test_cases/zhaopin/test_zhaopin_job_preferences.py:91: in test_tc002_unnamed
+    sg_wait_jobs_list_url(page, timeout=45000)
+test_cases/zhaopin/explicit_waits.py:143: in sg_wait_jobs_list_url
+    page.wait_for_url("**/cate-jobs**", timeout=timeout)
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/sync_api/_generated.py:9162: in wait_for_url
+    self._sync(
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_page.py:584: in wait_for_url
+    return await self._main_frame.wait_for_url(**locals_to_params(locals()))
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:266: in wait_for_url
+    pass
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_event_context_manager.py:33: in __aexit__
+    await self._future
+/Users/wangyongli/Library/Python/3.9/lib/python/site-packages/playwright/_impl/_frame.py:239: in continuation
+    event = await waiter.result()
+E   playwright._impl._errors.TimeoutError: Timeout 45000ms exceeded.
+E   =========================== logs ===========================
+E   waiting for navigation to "**/cate-jobs**" until 'load'
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E     navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+E   ============================================================
+------------------------------ Captured log call -------------------------------
+INFO     AutoTest:test_sg_job_preferences.py:62 ✓ preference 清理: user_id=796568487761138112，删除 1 行
+INFO     AutoTest:job_preference_page.py:66 ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+______________________________ test_tc007_unnamed ______________________________
+test_cases/zhaopin/test_zhaopin_job_preferences.py:205: in test_tc007_unnamed
+    assert "login" in url or login_visible, f"未登录应触发登录流程，当前: {page.url}"
+E   AssertionError: 未登录应触发登录流程，当前: https://sgpub.58v5.cn/biz/en/jobPreference?showSkip=1&returnUrl=https%3A%2F%2Fsg.58v5.cn%2Fen%2Fcity-singapore%2Fcate-jobs%2F%3FiconSource%3Djobs
+E   assert ('login' in 'https://sgpub.58v5.cn/biz/en/jobpreference?showskip=1&returnurl=https%3a%2f%2fsg.58v5.cn%2fen%2fcity-singapore%2fcate-jobs%2f%3ficonsource%3djobs' or False)
+- generated xml file: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/parallel_headless_run_20260427_115814/junit/test_zhaopin_job_preferences_junit.xml -
+=========================== short test summary info ============================
+FAILED test_cases/zhaopin/test_zhaopin_job_preferences.py::test_tc001_unnamed - playwright._impl._errors.TimeoutError: Timeout 45000ms exceeded.
+=========================== logs ===========================
+waiting for navigation to "**/cate-jobs**" until 'load'
+  navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+  navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+  navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+============================================================
+FAILED test_cases/zhaopin/test_zhaopin_job_preferences.py::test_tc002_unnamed - playwright._impl._errors.TimeoutError: Timeout 45000ms exceeded.
+=========================== logs ===========================
+waiting for navigation to "**/cate-jobs**" until 'load'
+  navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+  navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+  navigated to "https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs"
+============================================================
+FAILED test_cases/zhaopin/test_zhaopin_job_preferences.py::test_tc007_unnamed - AssertionError: 未登录应触发登录流程，当前: https://sgpub.58v5.cn/biz/en/jobPreference?showSkip=1&returnUrl=https%3A%2F%2Fsg.58v5.cn%2Fen%2Fcity-singapore%2Fcate-jobs%2F%3FiconSource%3Djobs
+assert ('login' in 'https://sgpub.58v5.cn/biz/en/jobpreference?showskip=1&returnurl=https%3a%2f%2fsg.58v5.cn%2fen%2fcity-singapore%2fcate-jobs%2f%3ficonsource%3djobs' or False)
+=================== 3 failed, 4 passed in 187.13s (0:03:07) ====================

@@ -43,6 +43,14 @@ class JobsDetailPanelPageES(BasePage):
                 self.page.wait_for_load_state("networkidle", timeout=8000)
             except Exception:
                 pass
+            try:
+                self.page.wait_for_selector(
+                    '[class*="list-components-item-job-card"], '
+                    '[class*="JobCard"], [class*="job-card"]',
+                    timeout=25000,
+                )
+            except Exception:
+                pass
         except Exception as e:
             self.logger.error(f"导航到ES站招聘列表页失败: {e}")
             raise
@@ -83,12 +91,15 @@ class JobsDetailPanelPageES(BasePage):
 
     # ==================== 卡片点击 ====================
 
-    def click_card_by_info_id(self, info_id: str):
+    def click_card_by_info_id(self, info_id: str, *, title_fallback: str = ""):
         """
         通过帖子 InfoID 点击左侧列表卡片（href 中含 infoId，不受标题文案变更影响）
 
+        若列表链接已改为仅含内部长数字 id、不含 im infoId，可传 ``title_fallback`` 用标题回退点击。
+
         Args:
             info_id: 帖子 InfoID（如非本人帖 6504835552588510）
+            title_fallback: 可选，本人帖标题关键词，用于在 href 中找不到 infoId 时点击
         """
         try:
             scoped = self.page.locator(
@@ -96,12 +107,29 @@ class JobsDetailPanelPageES(BasePage):
             )
             if scoped.count() == 0:
                 scoped = self.page.locator(f'a[href*="{info_id}"]')
+            if scoped.count() == 0 and title_fallback:
+                self.logger.info(
+                    "列表 href 中未出现 infoId=%s，尝试按标题回退: %s",
+                    info_id,
+                    title_fallback[:80],
+                )
+                self.click_card_by_text(title_fallback)
+                return
             link = scoped.first
             link.wait_for(state="visible", timeout=20000)
             link.scroll_into_view_if_needed()
             link.click(timeout=30000)
             self.page.wait_for_timeout(1500)
         except Exception as e:
+            if title_fallback:
+                self.logger.warning(
+                    "通过 infoId 点击失败: %s，尝试标题回退: %s", e, title_fallback[:80]
+                )
+                try:
+                    self.click_card_by_text(title_fallback)
+                    return
+                except Exception as e2:
+                    self.logger.error("标题回退也失败: %s", e2)
             self.logger.error(f"通过 infoId={info_id} 点击列表卡片失败: {e}")
             raise
 
@@ -119,11 +147,109 @@ class JobsDetailPanelPageES(BasePage):
             从卡片 DOM 解析到的帖子 InfoID（若无法解析则为空字符串，可再调用 get_detail_info_id_from_new_tab_href）
         """
         try:
-            self.page.wait_for_selector(
-                '[class*="list-components-item-job-card"]',
-                timeout=20000,
+            # 列表异步渲染：滚动触发懒加载，并兼容类名变更
+            for _ in range(4):
+                try:
+                    self.page.evaluate(
+                        "() => window.scrollBy(0, Math.min(800, "
+                        "document.body.scrollHeight - window.scrollY))"
+                    )
+                except Exception:
+                    pass
+                self.page.wait_for_timeout(400)
+            # 不依赖 cate-jobs 路径；优先从列表卡片行点击，避免单条 a[href] 与站点路由改版不一致
+            try:
+                self.page.wait_for_selector(
+                    "[class*='list-components-item-job-card'], [class*='JobCard'], "
+                    "[class*='job-card']",
+                    timeout=30000,
+                )
+            except Exception:
+                pass
+            try:
+                n_cards = self.page.locator(
+                    "[class*='list-components-item-job-card']"
+                ).count()
+                if n_cards:
+                    for i in range(min(n_cards, 40)):
+                        card = self.page.locator(
+                            "[class*='list-components-item-job-card']"
+                        ).nth(i)
+                        try:
+                            txt = (card.inner_text(timeout=2000) or "")
+                            html = card.evaluate("el => el.innerHTML || ''")
+                        except Exception:
+                            continue
+                        blob = f"{txt}\n{html}"
+                        if own_post_info_id in blob:
+                            continue
+                        m = re.search(
+                            r"-(\d{12,})(?:[\"'/]|$)", blob, re.S
+                        )
+                        info_id = m.group(1) if m else ""
+                        if not info_id:
+                            try:
+                                card.scroll_into_view_if_needed()
+                                card.click(timeout=15000)
+                                self.page.wait_for_timeout(1500)
+                                if self._detail_panel_shows_non_own_post():
+                                    return ""
+                            except Exception:
+                                continue
+                            continue
+                        try:
+                            card.scroll_into_view_if_needed()
+                            card.click(timeout=15000)
+                        except Exception:
+                            al = card.locator("a[href]")
+                            if al.count() > 0:
+                                al.first.click(timeout=15000)
+                            else:
+                                continue
+                        self.page.wait_for_timeout(1500)
+                        if self._detail_panel_shows_non_own_post():
+                            return info_id
+                        self.logger.info(
+                            "本列表项点击后仍非 Contact 态（可能仍为本人帖或加载中），尝试下一条"
+                        )
+            except Exception as e:
+                self.logger.debug("按列表卡片行点击非本人帖失败: %s", e)
+            # JS：任意主区链接，含长数字 id 且非本人
+            try:
+                clicked_id = self.page.evaluate(
+                    r"""(ownId) => {
+                      const links = [...document.querySelectorAll('main a[href], a[href*="/city"], a[href*="/cate"]')];
+                      for (const a of links) {
+                        const href = a.getAttribute('href') || '';
+                        if (!href || href.includes(ownId)) continue;
+                        const idm = href.match(/-(\d{12,})(?:/|\?|#|$)/);
+                        if (!idm) continue;
+                        if (href.length < 28) continue;
+                        try { a.scrollIntoView({ block: 'center' }); } catch (e) {}
+                        a.click();
+                        return idm[1];
+                      }
+                      return '';
+                    }""",
+                    own_post_info_id,
+                )
+                if clicked_id:
+                    self.page.wait_for_timeout(1500)
+                    if self._detail_panel_shows_non_own_post():
+                        return clicked_id
+            except Exception:
+                pass
+            card_sel = (
+                '[class*="list-components-item-job-card"] a[href*="/city-"], '
+                '[class*="list-components-item-job-card"] a[href*="/city/"], '
+                '[class*="JobListItem"] a[href*="/city-"], '
+                '[class*="JobListItem"] a[href*="/city/"], '
+                'main [class*="list"] a[href*="/city-"], '
+                'main [class*="list"] a[href*="/city/"], '
+                'main a[href*="/city/"][href*="cate-"]'
             )
-            cards = self.page.locator('[class*="list-components-item-job-card"]')
+            self.page.wait_for_selector(card_sel, timeout=45000)
+            cards = self.page.locator(card_sel)
             n = cards.count()
             if n == 0:
                 raise RuntimeError("列表页未找到职位卡片")
@@ -147,7 +273,11 @@ class JobsDetailPanelPageES(BasePage):
                 card.scroll_into_view_if_needed()
                 card.click(timeout=20000)
                 self.page.wait_for_timeout(1500)
-                return info_id
+                if self._detail_panel_shows_non_own_post():
+                    return info_id
+                self.logger.info(
+                    "链接列表第 %s 条点击后仍非非本人态，试下一条", i
+                )
 
             raise RuntimeError(
                 f"未找到非本人职位卡片（列表 {n} 条均含本人帖 id {own_post_info_id}）"
@@ -155,6 +285,18 @@ class JobsDetailPanelPageES(BasePage):
         except Exception as e:
             self.logger.error(f"点击非本人职位卡片失败: {e}")
             raise
+
+    def _detail_panel_shows_non_own_post(self) -> bool:
+        """非本人帖：有 Contact 且无 Withdraw；用于列表点击后校验是否真切换到他人帖。"""
+        try:
+            if self.page.get_by_role("button", name="Withdraw").is_visible(timeout=1200):
+                return False
+        except Exception:
+            pass
+        try:
+            return self.page.get_by_role("button", name="Contact").is_visible(timeout=3000)
+        except Exception:
+            return False
 
     def _extract_info_id_from_href(self, href: str) -> str:
         if not href:
@@ -273,11 +415,24 @@ class JobsDetailPanelPageES(BasePage):
         通过帖子标题文本点击对应卡片
 
         Args:
-            title_text: 帖子标题关键词（如 "software engineer"）
+            title_text: 帖子标题关键词（如 "software engineer"），支持子串；匹配多个时优先点左栏列表
         """
         try:
-            # 找到所有匹配文本的元素，选择列表卡片区域内的那个（非详情面板）
-            matches = self.page.get_by_text(title_text).all()
+            if not (title_text or "").strip():
+                raise ValueError("title_text 为空")
+            # 先尝试完整子串（不区分大小写由 Playwright 文本引擎处理）
+            matches = self.page.get_by_text(title_text, exact=False).all()
+            if not matches:
+                # 回退：仅关键词（如 engineer），适配列表只展示部分标题
+                for token in re.split(r"\W+", title_text.strip()):
+                    if len(token) >= 4:
+                        matches = self.page.get_by_text(
+                            re.compile(re.escape(token), re.I)
+                        ).all()
+                        if matches:
+                            break
+            if not matches:
+                raise RuntimeError(f"未找到可点击的「{title_text}」相关列表节点")
             clicked = False
             for el in matches:
                 try:
@@ -292,7 +447,7 @@ class JobsDetailPanelPageES(BasePage):
                 except Exception:
                     continue
             if not clicked:
-                self.page.get_by_text(title_text).first.click()
+                self.page.get_by_text(title_text, exact=False).first.click()
             self.page.wait_for_timeout(1500)
         except Exception as e:
             self.logger.error(f"点击标题为'{title_text}'的卡片失败: {e}")
@@ -300,18 +455,247 @@ class JobsDetailPanelPageES(BasePage):
 
     # ==================== 详情面板 - 文本信息读取 ====================
 
-    def get_detail_panel_title(self) -> str:
-        """获取详情面板帖子标题文本"""
+    def _detail_panel_title_heuristic(self) -> str:
+        """
+        不依赖 detailsCard 类名（线上可能改为 CSS Modules 哈希或结构变化）：
+        从 Favourites 按钮向上找标题，或取视口右侧主标题。
+        """
         try:
-            title_el = self.page.locator("[class*='detailsCardTitle']").first
-            return title_el.text_content(timeout=5000) or ""
+            text = self.page.evaluate(
+                r"""
+                () => {
+                  const EXCLUDE = new Set([
+                    'description','company','location','requirements','similar jobs',
+                    'employment','salary','job type','favourites','new tab','share',
+                    'withdraw','edit','contact','resume',
+                  ]);
+                  const clean = (s) => (s || '').replace(/\s+/g, ' ').trim();
+                  const fav = [...document.querySelectorAll('button, [role="button"], a')].find(
+                    (el) => /^Favourites$/i.test(((el.textContent || '').trim()))
+                  );
+                  const walkUp = (start) => {
+                    let n = start;
+                    for (let d = 0; d < 18 && n; d++) {
+                      const hs = n.querySelectorAll('h1, h2, h3');
+                      for (const h of hs) {
+                        const t = clean(h.innerText);
+                        if (!t || t.length > 500) continue;
+                        const low = t.toLowerCase();
+                        if (EXCLUDE.has(low)) continue;
+                        const r = h.getBoundingClientRect();
+                        if (r.width < 2 || r.height < 2) continue;
+                        return t;
+                      }
+                      n = n.parentElement;
+                    }
+                    return '';
+                  };
+                  if (fav) {
+                    const t = walkUp(fav);
+                    if (t) return t;
+                  }
+                  const vw = window.innerWidth;
+                  const vh = window.innerHeight;
+                  let best = '';
+                  for (const h of document.querySelectorAll('h1, h2, h3')) {
+                    const r = h.getBoundingClientRect();
+                    if (r.bottom < 40 || r.top > vh - 20 || r.width < 2) continue;
+                    if (r.left < vw * 0.35) continue;
+                    const t = clean(h.innerText);
+                    if (!t || t.length > 500) continue;
+                    const low = t.toLowerCase();
+                    if (EXCLUDE.has(low)) continue;
+                    if (t.length > best.length) best = t;
+                  }
+                  return best;
+                }
+                """
+            )
+            return (text or "").strip()
         except Exception:
+            return ""
+
+    def _visible_text_in_right_half(self, substring: str, min_x_ratio: float = 0.30) -> str:
+        """
+        在页面中查找包含 substring 的节点：优先视口右侧（详情区），否则取 **最靠右** 的匹配
+       （列表在左、详情在右，可避免仅命中左栏列表项）。
+        """
+        sub = (substring or "").strip()
+        if len(sub) < 2:
+            return ""
+        try:
+            vw = (self.page.viewport_size or {}).get("width") or 1280
+            loc = self.page.get_by_text(sub, exact=False)
+            n = loc.count()
+            best_txt, best_x = "", -1.0
+            for i in range(min(n, 50)):
+                el = loc.nth(i)
+                try:
+                    box = el.bounding_box()
+                except Exception:
+                    continue
+                if not box or box["width"] <= 0:
+                    continue
+                x = float(box["x"])
+                txt = (el.text_content() or "").strip()
+                if not txt:
+                    continue
+                if x >= vw * min_x_ratio:
+                    return txt
+                if x > best_x:
+                    best_x = x
+                    best_txt = txt
+            if best_txt:
+                return best_txt
+        except Exception:
+            pass
+        try:
+            loc = self.page.get_by_text(sub, exact=False)
+            if loc.count() == 1:
+                return (loc.first.text_content() or "").strip()
+        except Exception:
+            pass
+        return ""
+
+    def _description_content_heuristic(self) -> str:
+        """从 Description 区块或详情区 innerText 中解析首段描述（不依赖 detailsCard）。"""
+        try:
+            text = self.page.evaluate(
+                r"""
+                () => {
+                  const clean = (s) => (s || '').replace(/\s+/g, ' ').trim();
+                  const roots = document.querySelectorAll(
+                    '[class*="JobDetail"], [class*="DetailsCard"], [class*="detail"], aside, main'
+                  );
+                  for (const root of roots) {
+                    const blob = root.innerText || '';
+                    const idx = blob.indexOf('Description');
+                    if (idx < 0) continue;
+                    const after = blob.slice(idx + 11).trim();
+                    const lines = after.split('\n').map((s) => s.trim()).filter(Boolean);
+                    for (const ln of lines) {
+                      if (/^description$/i.test(ln)) continue;
+                      if (ln.length > 2 && ln.length < 4000) return ln;
+                    }
+                  }
+                  const heads = document.querySelectorAll('h2, h3, h4, div, span');
+                  for (const el of heads) {
+                    if (!/^Description$/i.test(clean(el.innerText))) continue;
+                    let p = el.parentElement;
+                    for (let i = 0; i < 6 && p; i++) {
+                      const para = p.querySelector('p');
+                      if (para) {
+                        const t = clean(para.innerText);
+                        if (t && t.length > 2) return t;
+                      }
+                      p = p.nextElementSibling;
+                    }
+                  }
+                  return '';
+                }
+                """
+            )
+            return (text or "").strip()
+        except Exception:
+            return ""
+
+    def get_detail_panel_title(self, *, api_title_hint: str = "") -> str:
+        """获取详情面板帖子标题文本（优先锚定 JobDetail / DetailsCard 根节点，避免全局 aside 误匹配）"""
+        if api_title_hint:
+            hit = self._visible_text_in_right_half(api_title_hint.strip())
+            if hit:
+                return hit
+        fast = self._detail_panel_title_heuristic()
+        if fast:
+            return fast
+
+        try:
+            self.page.locator(
+                "[class*='JobDetail_jobDetail'], [class*='DetailsCard_detailsCard'], "
+                "[class*='detailsCard'], [class*='JobDetail']"
+            ).first.wait_for(state="visible", timeout=12000)
+        except Exception:
+            pass
+        try:
+            self.page.get_by_text("Favourites").first.wait_for(state="visible", timeout=8000)
+        except Exception:
+            pass
+        self.page.wait_for_timeout(400)
+
+        root_selectors = (
+            "[class*='JobDetail_jobDetail']",
+            "[class*='DetailsCard_detailsCard']",
+            "[class*='detailsCard']",
+        )
+        inner_selectors = (
+            "[class*='detailsCardTitle']",
+            "[class*='DetailsCard'] [class*='Title']",
+            "[class*='DetailsCard'] [class*='title']",
+            "h1",
+            "h2",
+            "h3",
+            "[class*='Title']",
+            "[class*='jobTitle']",
+            "[class*='heading']",
+        )
+        for rsel in root_selectors:
+            root = self.page.locator(rsel).first
+            for isel in inner_selectors:
+                try:
+                    title_el = root.locator(isel).first
+                    text = (title_el.text_content(timeout=4000) or "").strip()
+                    if text and len(text) < 600:
+                        return text
+                except Exception:
+                    continue
             try:
-                title_el = self.page.locator(".jobDetail-title, .detail-container h1").first
-                return title_el.text_content(timeout=3000) or ""
-            except Exception as e:
-                self.logger.error(f"获取详情面板标题失败: {e}")
-                return ""
+                ev = root.evaluate(
+                    """(el) => {
+                    const pick = (n) => (n && (n.innerText || '').trim()) || '';
+                    for (const s of ['h1','h2','h3']) {
+                      const h = el.querySelector(s);
+                      const t = pick(h);
+                      if (t && t.length < 600) return t;
+                    }
+                    const cand = el.querySelectorAll('[class*="Title"], [class*="title"]');
+                    for (const n of cand) {
+                      const t = pick(n);
+                      if (t && t.length < 600 && t.length > 1) return t;
+                    }
+                    return '';
+                }"""
+                )
+                text = (ev or "").strip()
+                if text:
+                    return text
+            except Exception:
+                continue
+
+        fallback_global = (
+            "[class*='detailsCardTitle']",
+            "[class*='DetailsCard'] [class*='Title'], [class*='DetailsCard'] [class*='title']",
+            "[class*='detailsCard'] h1",
+            "[class*='detailsCard'] h2",
+            "[class*='detailsCard'] h3",
+            ".jobDetail-title",
+            "[class*='detailPanel'] h1",
+            "[class*='rightPanel'] h1",
+            "[class*='RightPanel'] h1",
+        )
+        for sel in fallback_global:
+            try:
+                title_el = self.page.locator(sel).first
+                text = (title_el.text_content(timeout=4000) or "").strip()
+                if text:
+                    return text
+            except Exception:
+                continue
+        self.logger.error("获取详情面板标题失败：所有候选选择器均未取到文本")
+        if api_title_hint:
+            hit = self._visible_text_in_right_half(api_title_hint.strip())
+            if hit:
+                return hit
+        return ""
 
     def get_detail_salary_text(self) -> str:
         """获取详情面板薪资文本（如 '€ 5,000/year'）"""
@@ -339,14 +723,43 @@ class JobsDetailPanelPageES(BasePage):
         except Exception:
             return 0
 
-    def get_description_content_text(self) -> str:
+    def get_description_content_text(self, *, api_content_hint: str = "") -> str:
         """获取 Description 段落内容文本"""
+        hint = (api_content_hint or "").strip()
+        if hint:
+            hit = self._visible_text_in_right_half(hint[:800])
+            if hit:
+                return hit
+        heur = self._description_content_heuristic()
+        if heur:
+            return heur
+
+        selectors = (
+            "[class*='descriptionWrapper'] p",
+            "[class*='DescriptionContent'] p",
+            "[class*='detailsCard'] [class*='description' i] p",
+            "[class*='detailsCard'] [class*='Description']",
+        )
+        for sel in selectors:
+            try:
+                desc_el = self.page.locator(sel).first
+                text = (desc_el.text_content(timeout=5000) or "").strip()
+                if text:
+                    return text
+            except Exception:
+                continue
         try:
-            desc_el = self.page.locator("[class*='descriptionWrapper'] p, [class*='DescriptionContent'] p").first
-            return (desc_el.text_content(timeout=5000) or "").strip()
+            card = self.page.locator("[class*='detailsCard']").first
+            if card.is_visible(timeout=2000):
+                blob = (card.inner_text(timeout=5000) or "")
+                if "Description" in blob:
+                    after = blob.split("Description", 1)[-1]
+                    lines = [ln.strip() for ln in after.splitlines() if ln.strip()]
+                    if lines:
+                        return lines[0][:2000]
         except Exception as e:
             self.logger.error(f"获取Description内容失败: {e}")
-            return ""
+        return ""
 
     # ==================== 详情面板 - 可见性判断 ====================
 
@@ -360,13 +773,28 @@ class JobsDetailPanelPageES(BasePage):
         except Exception:
             return False
 
-    def is_detail_description_visible(self) -> bool:
+    def is_detail_description_visible(self, *, api_content_hint: str = "") -> bool:
         """检查详情面板 Description 区域标题和内容段落是否均可见"""
+        hint = (api_content_hint or "").strip()
+        if hint and self._visible_text_in_right_half(hint[:200]):
+            return True
+        try:
+            if self._description_content_heuristic().strip():
+                return True
+        except Exception:
+            pass
+        try:
+            if self.page.get_by_text("Description", exact=False).first.is_visible(timeout=3000):
+                return bool(self.get_description_content_text(api_content_hint=hint).strip())
+        except Exception:
+            pass
         try:
             desc_title = self.page.locator("[class*='descriptionTitle']").first
             if not desc_title.is_visible(timeout=5000):
                 return False
-            desc_para = self.page.locator("[class*='descriptionWrapper'] p, [class*='DescriptionContent'] p").first
+            desc_para = self.page.locator(
+                "[class*='descriptionWrapper'] p, [class*='DescriptionContent'] p"
+            ).first
             return desc_para.is_visible(timeout=3000)
         except Exception:
             return False
@@ -662,6 +1090,9 @@ class JobsDetailPanelPageES(BasePage):
         接口：GET https://easypost.58v5.cn/crawl/imcinfo/{infoId}
         主要字段：Title（帖子标题）、Content（帖子描述/正文）
 
+        优先使用 Playwright ``APIRequestContext``（``page.request.get``）发起请求，
+        避免在页面上下文中用 ``fetch`` 受跨域/CORS 限制导致始终拿不到数据。
+
         Args:
             info_id: 帖子 InfoID（如 "6522669642316510"）
             quiet: 为 True 时不记录 imcinfo 空响应错误（用于候选 id 探测）
@@ -669,9 +1100,47 @@ class JobsDetailPanelPageES(BasePage):
         Returns:
             dict，接口返回的 JSON 对象；若请求失败则返回空 dict
         """
+        url = f"https://easypost.58v5.cn/crawl/imcinfo/{info_id}"
+        _imc_headers = {
+            # 部分网关对纯 APIRequest 返回 406，需贴近真实浏览器 Accept/UA/Referer
+            "Accept": "*/*",
+            "Accept-Language": "en-US,en;q=0.9",
+            "User-Agent": (
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+                "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            ),
+            "Referer": "https://es.58v5.cn/",
+        }
         try:
-            url = f"https://easypost.58v5.cn/crawl/imcinfo/{info_id}"
-            result = self.page.evaluate(f"""
+            api_request = getattr(self.page, "request", None) or self.page.context.request
+            resp = api_request.get(url, timeout=30_000, headers=_imc_headers)
+            if resp.status != 200:
+                # 再试一次：个别环境仅接受 application/json
+                if resp.status == 406:
+                    resp = api_request.get(
+                        url,
+                        timeout=30_000,
+                        headers={**_imc_headers, "Accept": "application/json"},
+                    )
+                if resp.status != 200:
+                    if not quiet:
+                        self.logger.error(
+                            f"接口 imcinfo/{info_id} HTTP {resp.status}"
+                        )
+                    return {}
+            data = resp.json()
+            if isinstance(data, dict):
+                return data
+            return {}
+        except Exception as e:
+            if not quiet:
+                self.logger.warning(
+                    f"page.request 拉取 imcinfo 失败，回退到页面 fetch: {e}"
+                )
+        # 回退：部分环境仍可用页面内 fetch
+        try:
+            result = self.page.evaluate(
+                f"""
                 async () => {{
                     try {{
                         const resp = await fetch('{url}', {{
@@ -684,16 +1153,52 @@ class JobsDetailPanelPageES(BasePage):
                         return null;
                     }}
                 }}
-            """)
+                """
+            )
             if result is None:
                 if not quiet:
                     self.logger.error(f"接口 imcinfo/{info_id} 返回 null 或请求失败")
                 return {}
-            return result
-        except Exception as e:
+            return result if isinstance(result, dict) else {}
+        except Exception as e2:
             if not quiet:
-                self.logger.error(f"fetch_post_info_from_api 失败 (infoId={info_id}): {e}")
+                self.logger.error(
+                    f"fetch_post_info_from_api 失败 (infoId={info_id}): {e2}"
+                )
             return {}
+
+    @staticmethod
+    def _imcinfo_pick_title_content(data: dict) -> tuple[str, str]:
+        """兼容多种 JSON 字段命名与一层嵌套。"""
+        if not isinstance(data, dict):
+            return "", ""
+
+        def pick(d: dict) -> tuple[str, str]:
+            title = ""
+            content = ""
+            for k in ("Title", "title", "TITLE", "topic", "Topic"):
+                v = d.get(k)
+                if v is not None and str(v).strip():
+                    title = str(v).strip()
+                    break
+            for k in ("Content", "content", "CONTENT", "Description", "description"):
+                v = d.get(k)
+                if v is not None and str(v).strip():
+                    content = str(v).strip()
+                    break
+            return title, content
+
+        t, c = pick(data)
+        if t and c:
+            return t, c
+        nested = data.get("data") or data.get("result") or data.get("body")
+        if isinstance(nested, dict):
+            nt, nc = pick(nested)
+            if not t:
+                t = nt
+            if not c:
+                c = nc
+        return t, c
 
     def get_post_title_from_api(self, info_id: str) -> str:
         """
@@ -706,7 +1211,8 @@ class JobsDetailPanelPageES(BasePage):
             标题字符串，若接口失败则返回空字符串
         """
         data = self.fetch_post_info_from_api(info_id)
-        return str(data.get("Title", "")).strip()
+        t, _ = self._imcinfo_pick_title_content(data)
+        return t
 
     def get_post_content_from_api(self, info_id: str) -> str:
         """
@@ -719,7 +1225,8 @@ class JobsDetailPanelPageES(BasePage):
             描述字符串，若接口失败则返回空字符串
         """
         data = self.fetch_post_info_from_api(info_id)
-        return str(data.get("Content", "")).strip()
+        _, c = self._imcinfo_pick_title_content(data)
+        return c
 
     # ==================== Toast / Alert 验证 ====================
 

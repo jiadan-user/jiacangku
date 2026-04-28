@@ -6,6 +6,13 @@ AE站二手商品发布页面对象
 """
 import re
 from pathlib import Path
+
+_UPLOAD_INPUT_SELECTORS = (
+    "input[type=file].upload-input",
+    "input.upload-input",
+    "form input[type=file]",
+    "input[type=file]",
+)
 from pages.base_page import BasePage
 from utils.logger import setup_logger
 
@@ -121,17 +128,34 @@ class MarketplacePostPage(BasePage):
             image_path: 图片文件路径
         """
         try:
+            path_resolved = Path(image_path).expanduser().resolve()
+            if not path_resolved.is_file():
+                raise FileNotFoundError(f"测试图片不存在或不可读: {path_resolved}")
+            path_str = str(path_resolved)
+
             self.dismiss_blocking_overlays()
-            file_input = self.page.locator("input[type=file]")
-            try:
-                self.page.wait_for_selector("input[type=file]", state="attached", timeout=20000)
-            except Exception:
-                self.logger.warning("短时间内未检测到 input[type=file]，将尝试 file chooser 路径")
-            if file_input.count() > 0:
-                file_input.first.set_input_files(str(image_path))
-                self.page.wait_for_timeout(2000)
-                self.logger.info(f"✓ 已上传图片: {image_path}")
-                return
+            self.page.evaluate("""
+            () => {
+                const inp = document.querySelector('input.upload-input')
+                    || document.querySelector('input[type=file]');
+                if (inp) inp.scrollIntoView({ block: 'center', inline: 'nearest' });
+            }
+            """)
+            self.page.wait_for_timeout(200)
+
+            for sel in _UPLOAD_INPUT_SELECTORS:
+                loc = self.page.locator(sel).first
+                try:
+                    if loc.count() == 0:
+                        continue
+                    loc.wait_for(state="attached", timeout=20000)
+                    loc.set_input_files(path_str, timeout=90000)
+                    self.page.wait_for_timeout(2000)
+                    self.logger.info(f"✓ 已上传图片: {path_str}")
+                    return
+                except Exception as e:
+                    self.logger.debug(f"upload 选择器 {sel} 失败: {e}")
+                    continue
 
             # 方法2: 隐藏 input 未挂载时，点按钮或脚本触发 file chooser
             self.dismiss_blocking_overlays()
@@ -152,12 +176,17 @@ class MarketplacePostPage(BasePage):
                     }
                     """)
                     if not triggered:
-                        upload_btn.first.evaluate("el => el.click()")
+                        # evaluate 在部分 headless/遮罩 场景会挂起，优先再试直接点第一个 file input
+                        fin = self.page.locator("input[type=file]").first
+                        if fin.count() > 0:
+                            fin.evaluate("el => el.click()")
+                        else:
+                            upload_btn.first.click(timeout=20000, force=True)
 
             file_chooser = fc_info.value
-            file_chooser.set_files(str(image_path))
+            file_chooser.set_files(path_str)
             self.page.wait_for_timeout(2000)
-            self.logger.info(f"✓ 已上传图片: {image_path}")
+            self.logger.info(f"✓ 已上传图片: {path_str}")
         except Exception as e:
             self.logger.error(f"图片上传失败: {e}")
             raise
@@ -469,46 +498,64 @@ class MarketplacePostPage(BasePage):
     # ========== AI功能方法 ==========
     
     def click_write_with_ai(self):
-        """点击 Write with AI（多策略：role 正则、force 点击、JS 遍历可点击节点）。"""
+        """点击描述区 AI 按钮（多文案：Write/Generate/Describe with AI；多策略：role、filter、JS）。"""
         try:
             self.page.wait_for_timeout(800)
-            loc = self.page.get_by_role("button", name=re.compile(r"Write\s*with\s*AI", re.I))
-            if loc.count() > 0:
-                loc.first.click(force=True)
-                self.page.wait_for_timeout(1000)
-                self.logger.info("✓ 已点击 Write with AI（role）")
-                return
+            for cre in (
+                re.compile(r"Write\s*with\s*AI", re.I),
+                re.compile(r"Generate\s+with\s+AI", re.I),
+                re.compile(r"Describe\s+with\s+AI", re.I),
+                re.compile(r"Create\s+with\s+AI", re.I),
+            ):
+                loc = self.page.get_by_role("button", name=cre)
+                if loc.count() > 0:
+                    loc.first.click(force=True)
+                    self.page.wait_for_timeout(1000)
+                    self.logger.info("✓ 已点击描述区 AI（role/button）")
+                    return
         except Exception as e:
-            self.logger.warning(f"role 定位 Write with AI 失败: {e}")
+            self.logger.warning(f"role 定位 AI 描述按钮失败: {e}")
         try:
-            alt = self.page.locator("button").filter(has_text=re.compile(r"Write\s*with\s*AI", re.I))
-            if alt.count() > 0:
-                alt.first.click(force=True)
-                self.page.wait_for_timeout(1000)
-                self.logger.info("✓ 已点击 Write with AI（button filter）")
-                return
+            for cre in (
+                re.compile(r"Write\s*with\s*AI", re.I),
+                re.compile(r"Generate\s+with\s+AI", re.I),
+                re.compile(r"Describe\s+with\s+AI", re.I),
+            ):
+                alt = self.page.locator("button").filter(has_text=cre)
+                if alt.count() > 0:
+                    alt.first.click(force=True)
+                    self.page.wait_for_timeout(1000)
+                    self.logger.info("✓ 已点击描述区 AI（button filter）")
+                    return
         except Exception as e:
             self.logger.warning(f"button filter 失败: {e}")
-        ok = self.page.evaluate("""
-        () => {
+        _js_ai_btn_re = (
+            r"(write|generate|create|describe|polish)\s+with\s+ai|"
+            r"ai\s*[-\u2013]\s*(write|description|generate)|"
+            r"\bAI\s+description\b"
+        )
+        ok = self.page.evaluate(
+            """(pattern) => {
+            const re = new RegExp(pattern, 'i');
             const nodes = Array.from(document.querySelectorAll('button, [role="button"], a, span'));
             for (const el of nodes) {
                 if (!el.offsetParent) continue;
                 const t = (el.innerText || el.textContent || '').replace(/\\s+/g, ' ').trim();
-                if (/write\\s+with\\s+ai/i.test(t)) {
+                if (re.test(t)) {
                     const clickTarget = el.closest('button') || el;
                     clickTarget.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
                     return true;
                 }
             }
             return false;
-        }
-        """)
+        }""",
+            _js_ai_btn_re,
+        )
         if not ok:
-            self.logger.error("未找到 Write with AI 按钮")
+            self.logger.error("未找到描述区 AI 按钮（Write/Generate/Describe with AI 等）")
             raise Exception("未找到 Write with AI 按钮")
         self.page.wait_for_timeout(1000)
-        self.logger.info("✓ 已点击 Write with AI（JS）")
+        self.logger.info("✓ 已点击描述区 AI（JS）")
     
     def wait_for_ai_generation_complete(self, timeout=30000):
         """等待AI生成完成（AI is working on it文本消失）"""
@@ -592,10 +639,12 @@ class MarketplacePostPage(BasePage):
             if not title_val:
                 self.input_title(fallback_title)
             self.logger.info("⏳ 等待 AI 推荐区加载...")
-            for i in range(12):
+            for i in range(30):
                 self.page.wait_for_timeout(1000)
                 if self.page.evaluate("""
-                () => document.querySelectorAll('[class*="recommend-category_moreCategory"]').length > 0
+                () => document.querySelectorAll(
+                    '[class*="recommend-category_moreCategory"], [class*="moreCategory"]'
+                ).length > 0
                 """):
                     self.logger.info(f"  ✓ 第{i+1}秒 More Categories 已出现")
                     return
@@ -702,6 +751,69 @@ class MarketplacePostPage(BasePage):
         except Exception:
             pass
 
+    def _wait_category_modal_any(self, timeout_ms: int = 10000) -> bool:
+        """Search Modal 或已含列表的 Browse Modal 任一出现即视为类别流程已打开。"""
+        try:
+            self.page.wait_for_function(
+                """
+                () => {
+                    if (document.querySelector('.category-search-dialog')) return true;
+                    const m = document.querySelector('.category-select-modal');
+                    return !!(m && m.querySelectorAll('.list-item').length > 0);
+                }
+                """,
+                timeout=timeout_ms,
+            )
+            return True
+        except Exception:
+            return False
+
+    def _try_open_category_search_modal_fallback(self) -> bool:
+        """More Categories 未出现时：主表单 Or browse / Category 行 / 文案入口。"""
+        try:
+            opened = self.page.evaluate("""
+            () => {
+              const hit = (t) => /or browse to find a category/i.test(
+                  (t || '').replace(/\\s+/g, ' ').trim()
+              );
+              for (const el of document.querySelectorAll('a, button, span, div, p')) {
+                if (el.closest('[role="dialog"]') || !el.offsetParent) continue;
+                const tx = (el.textContent || '').trim();
+                if (hit(tx) && tx.length < 140) {
+                  el.scrollIntoView({ block: 'center' });
+                  el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+                  return true;
+                }
+              }
+              return false;
+            }
+            """)
+            if opened and self._wait_category_modal_any(12000):
+                self.logger.info("✓ 已通过主表单 Or browse 打开类别弹层")
+                return True
+        except Exception:
+            pass
+        try:
+            for _ in range(2):
+                self.page.locator(".category.float-label-child").first.click(timeout=10000, force=True)
+                self.page.wait_for_timeout(2200)
+                if self._wait_category_modal_any(8000):
+                    self.logger.info("✓ 已通过 Category 行点击打开类别弹层")
+                    return True
+        except Exception:
+            pass
+        try:
+            self.page.get_by_text(re.compile(r"Select\s+Category", re.I)).first.click(
+                timeout=8000, force=True
+            )
+            self.page.wait_for_timeout(2000)
+            if self._wait_category_modal_any(8000):
+                self.logger.info("✓ 已通过 Select Category 文案打开类别弹层")
+                return True
+        except Exception:
+            pass
+        return False
+
     def click_more_categories(self):
         """点击More Categories链接（打开 Search For Category 对话框）
         
@@ -772,36 +884,65 @@ class MarketplacePostPage(BasePage):
             except Exception:
                 pass
 
-            max_wait = 40
+            # Playwright 层兜底：与旧版 test_post_marketplace 一致，部分构建 class 为 *moreCategory*
+            try:
+                alt = self.page.locator('[class*="moreCategory"]').first
+                if alt.count() > 0:
+                    alt.scroll_into_view_if_needed(timeout=10000)
+                    alt.click(timeout=15000, force=True)
+                    if self._wait_category_modal_any(12000):
+                        self.page.wait_for_timeout(400)
+                        self.logger.info("✓ 已点击 More Categories（[class*=\"moreCategory\"]）")
+                        return
+            except Exception:
+                pass
+            try:
+                cid = self.page.locator("#categoryId")
+                if cid.count() > 0:
+                    cid.scroll_into_view_if_needed(timeout=8000)
+                    cid.click(timeout=10000, force=True)
+                    self.page.wait_for_timeout(1500)
+                    if self._wait_category_modal_any(8000):
+                        self.logger.info("✓ 已通过 #categoryId 打开类别弹层")
+                        return
+            except Exception:
+                pass
+
+            max_wait = 55
             for i in range(max_wait):
                 clicked = self.page.evaluate("""
                 () => {
-                    const nodes = document.querySelectorAll('[class*="recommend-category_moreCategory"]');
-                    for (const el of nodes) {
-                        if (el.closest('[role="dialog"]')) continue;
+                    const clickEl = (el) => {
+                        if (!el || el.closest('[role="dialog"]')) return false;
+                        el.scrollIntoView({ block: 'center', inline: 'nearest' });
                         el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
                         return true;
+                    };
+                    const selectors = [
+                        '[class*="recommend-category_moreCategory"]',
+                        '[class*="moreCategory"]',
+                        '[class*="more_category"]',
+                    ];
+                    for (const sel of selectors) {
+                        for (const el of document.querySelectorAll(sel)) {
+                            if (clickEl(el)) return true;
+                        }
                     }
-                    const byText = Array.from(document.querySelectorAll('*')).find(el =>
-                        el.textContent.trim() === 'More Categories' &&
-                        !el.closest('[role="dialog"]') &&
-                        el.children.length === 0
-                    );
-                    if (byText) {
-                        byText.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-                        return true;
-                    }
+                    const byText = Array.from(document.querySelectorAll('a, button, span, div, p')).find(el => {
+                        if (!el || el.closest('[role="dialog"]') || !el.offsetParent) return false;
+                        const t = (el.textContent || '').replace(/\\s+/g, ' ').trim();
+                        return /^More Categories$/i.test(t) && t.length < 40;
+                    });
+                    if (byText && clickEl(byText)) return true;
                     return false;
                 }
                 """)
                 if clicked:
-                    try:
-                        self.page.wait_for_selector(".category-search-dialog", timeout=8000)
+                    if self._wait_category_modal_any(8000):
                         self.page.wait_for_timeout(500)
-                        self.logger.info("✓ 已点击More Categories，Search Modal已弹出")
+                        self.logger.info("✓ 已点击More Categories，类别弹层已弹出")
                         return
-                    except Exception:
-                        self.logger.warning("点击后未立即出现 Search Modal，重试等待...")
+                    self.logger.warning("点击后未立即出现类别弹层，重试等待...")
                 self.page.wait_for_timeout(1000)
                 if i % 4 == 0:
                     self.dismiss_blocking_overlays()
@@ -814,33 +955,36 @@ class MarketplacePostPage(BasePage):
                 for j in range(18):
                     clicked = self.page.evaluate("""
                     () => {
-                        const nodes = document.querySelectorAll('[class*="recommend-category_moreCategory"]');
-                        for (const el of nodes) {
-                            if (el.closest('[role="dialog"]')) continue;
+                        const clickEl = (el) => {
+                            if (!el || el.closest('[role="dialog"]')) return false;
+                            el.scrollIntoView({ block: 'center', inline: 'nearest' });
                             el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
                             return true;
+                        };
+                        for (const sel of ['[class*="recommend-category_moreCategory"]', '[class*="moreCategory"]']) {
+                            for (const el of document.querySelectorAll(sel)) {
+                                if (clickEl(el)) return true;
+                            }
                         }
-                        const byText = Array.from(document.querySelectorAll('*')).find(el =>
-                            (el.textContent || '').trim() === 'More Categories' &&
-                            !el.closest('[role="dialog"]'));
-                        if (byText) {
-                            byText.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-                            return true;
-                        }
-                        return false;
+                        const byText = Array.from(document.querySelectorAll('a, button, span, div, p')).find(el => {
+                            if (!el || el.closest('[role="dialog"]') || !el.offsetParent) return false;
+                            const t = (el.textContent || '').replace(/\\s+/g, ' ').trim();
+                            return /^More Categories$/i.test(t) && t.length < 40;
+                        });
+                        return byText ? clickEl(byText) : false;
                     }
                     """)
                     if clicked:
-                        try:
-                            self.page.wait_for_selector(".category-search-dialog", timeout=6000)
+                        if self._wait_category_modal_any(6000):
                             self.page.wait_for_timeout(400)
-                            self.logger.info("✓ 已点击More Categories（面包屑展开后），Search Modal已弹出")
+                            self.logger.info("✓ 已点击More Categories（面包屑展开后），类别弹层已弹出")
                             return
-                        except Exception:
-                            pass
                     self.page.wait_for_timeout(800)
 
-            raise Exception("未在40秒内找到或可点击 More Categories")
+            if self._try_open_category_search_modal_fallback():
+                return
+
+            raise Exception("未在55秒内找到或可点击 More Categories")
 
         except Exception as e:
             self.logger.error(f"点击More Categories失败: {e}")
@@ -962,6 +1106,16 @@ class MarketplacePostPage(BasePage):
         - Browse Modal 的 visible 属性可能为 False（CSS动画），改用内容存在判断
         """
         try:
+            has_browse = self.page.evaluate("""
+            () => {
+                const m = document.querySelector('.category-select-modal');
+                return !!(m && m.querySelectorAll('.list-item').length > 0);
+            }
+            """)
+            if has_browse:
+                self.logger.info("✓ Browse Modal 已就绪，跳过 Search Modal 内 Or browse")
+                return
+
             # 勿在打开 Browse 前调用强 dismiss：曾误关含「Continue」文案的 Search Modal
             # 确保 Search Modal 已在 DOM（动画期可能不可见，故用 attached）
             self.page.wait_for_selector(".category-search-dialog", state="attached", timeout=15000)
@@ -1129,8 +1283,8 @@ class MarketplacePostPage(BasePage):
     def select_category_electronics_cell_phones_apple(self):
         """Browse Modal 已打开时，短间隔三连选 Electronics → Cell Phones → Apple（避免子列表约700ms被重置）。"""
         try:
-            self._wait_for_category_select_modal(timeout=8000)
-            self.page.wait_for_timeout(150)
+            self._wait_for_category_select_modal(timeout=15000)
+            self.page.wait_for_timeout(400)
 
             def _click_name(name: str) -> bool:
                 return self.page.evaluate(
@@ -1138,9 +1292,29 @@ class MarketplacePostPage(BasePage):
                     (name) => {
                         const modal = document.querySelector('.category-select-modal');
                         if (!modal) return false;
-                        const items = Array.from(modal.querySelectorAll('.list-item'));
-                        const t = items.find(el => el.textContent.trim() === name);
-                        if (t) { t.click(); return true; }
+                        const norm = (s) => (s || '').replace(/\\s+/g, ' ').trim();
+                        const items = Array.from(
+                            modal.querySelectorAll('.list-item, [class*="list-item"], li[role="option"], [class*="ListItem"]')
+                        );
+                        const nlow = (name || '').toLowerCase();
+                        let target = items.find((el) => norm(el.textContent) === name);
+                        if (!target) {
+                            target = items.find((el) => {
+                                const t = norm(el.textContent);
+                                if (!t) return false;
+                                const tl = t.toLowerCase();
+                                if (tl === nlow) return true;
+                                if (t.length < 80) {
+                                    if (t.includes(name) || tl.includes(nlow)) return true;
+                                }
+                                return false;
+                            });
+                        }
+                        if (target) {
+                            target.scrollIntoView({ block: 'center' });
+                            target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+                            return true;
+                        }
                         return false;
                     }
                     """,
@@ -1170,11 +1344,62 @@ class MarketplacePostPage(BasePage):
                     self.page.wait_for_timeout(70)
                 return False
 
-            if not _click_name("Electronics"):
-                raise Exception("未找到 Electronics（.category-select-modal .list-item）")
+            # 顶级常为站点大类（Jobs/Property/Marketplace/…），需先进入 Marketplace 再选 Electronics
+            root_labels = self.page.evaluate("""
+            () => {
+                const m = document.querySelector('.category-select-modal');
+                if (!m) return [];
+                return Array.from(
+                    m.querySelectorAll('.list-item, [class*="list-item"], li[role="option"]')
+                ).map(el => (el.textContent || '').replace(/\\s+/g, ' ').trim()).filter(Boolean);
+            }
+            """)
+            if root_labels and "Marketplace" in root_labels and "Electronics" not in root_labels:
+                if _click_name("Marketplace"):
+                    self.page.wait_for_timeout(500)
+                else:
+                    self.logger.warning("⚠️ 检测到顶级 Marketplace 入口但点击失败，继续尝试 Electronics")
+
+            elec_ok = False
+            for _attempt in range(25):
+                if _click_name("Electronics"):
+                    elec_ok = True
+                    break
+                self.page.wait_for_timeout(350)
+            if not elec_ok:
+                avail = self.page.evaluate("""
+                () => {
+                    const m = document.querySelector('.category-select-modal');
+                    if (!m) return [];
+                    return Array.from(m.querySelectorAll('.list-item, [class*="list-item"], li')).map(
+                        el => (el.textContent || '').replace(/\\s+/g, ' ').trim()
+                    ).filter(Boolean).slice(0, 40);
+                }
+                """)
+                raise Exception(f"未找到 Electronics，当前列表项: {avail}")
             self.page.wait_for_timeout(200)
             if not _click_name("Cell Phones"):
-                raise Exception("未找到 Cell Phones")
+                try:
+                    self.page.wait_for_function(
+                        """
+                        () => {
+                            const m = document.querySelector('.category-select-modal');
+                            if (!m) return false;
+                            return Array.from(
+                                m.querySelectorAll('.list-item, [class*="list-item"], li[role="option"]')
+                            ).some((el) => /cell\\s*phones/i.test((el.textContent || '').trim()));
+                        }
+                        """,
+                        timeout=10000,
+                    )
+                except Exception:
+                    pass
+                for _r in range(20):
+                    if _click_name("Cell Phones"):
+                        break
+                    self.page.wait_for_timeout(200)
+                else:
+                    raise Exception("未找到 Cell Phones")
             self.page.wait_for_timeout(180)
             if not _pick_apple():
                 # 列表偶发回到顶级：再点一次 Cell Phones 路径后重试 Apple
@@ -1724,18 +1949,187 @@ class MarketplacePostPage(BasePage):
     # ========== Details字段方法（动态显示） ==========
     
     def select_condition_excellent(self):
-        """选择Condition: Excellent"""
+        """选择 Condition：优先 Excellent；线上文案可能为 Like New / Good 等，故在 Condition 区域内点第一个匹配项。"""
         try:
-            self.page.get_by_text('Excellent', exact=True).click()
+            self.dismiss_blocking_overlays()
+            self.page.evaluate(
+                "() => window.scrollTo(0, Math.max(0, document.body.scrollHeight * 0.25))"
+            )
+            self.page.wait_for_timeout(500)
+            clicked = self.page.evaluate("""
+            () => {
+                const inDialog = (el) => el && el.closest('[role="dialog"]');
+                const blocks = Array.from(document.querySelectorAll(
+                    '.form-item, [class*="form-item"], section, .float-label-child, [class*="detail"], [class*="Detail"]'
+                ));
+                const block = blocks.find(
+                    (b) => !inDialog(b) && /condition|state|成色/i.test(b.innerText || '')
+                );
+                if (!block) return false;
+                block.scrollIntoView({ block: 'center' });
+                const candidates = Array.from(
+                    block.querySelectorAll(
+                        'button, [role="radio"], label, [role="button"], span, div, p, li, a'
+                    )
+                );
+                const norm = (s) => (s || '').replace(/\\s+/g, ' ').trim();
+                const score = (t) => {
+                    if (!t || t.length < 2 || t.length > 48) return 0;
+                    if (/^excellent$/i.test(t)) return 100;
+                    if (/like\\s*new|like-new/i.test(t)) return 80;
+                    if (/^new$/i.test(t) || /^brand\\s*new$/i.test(t)) return 70;
+                    if (/good|fair|used|refurb/i.test(t)) return 50;
+                    return 0;
+                };
+                let best = null;
+                let bestScore = 0;
+                for (const o of candidates) {
+                    if (!o.offsetParent) continue;
+                    const t = norm(o.textContent);
+                    const sc = score(t);
+                    if (sc > bestScore) {
+                        bestScore = sc;
+                        best = o;
+                    }
+                }
+                if (best && bestScore > 0) {
+                    best.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+                    return true;
+                }
+                return false;
+            }
+            """)
+            if not clicked:
+                for pat in (
+                    r"^Excellent$",
+                    r"Like New",
+                    r"^Good$",
+                    r"^New$",
+                    r"Excellent",
+                ):
+                    try:
+                        self.page.get_by_text(re.compile(pat, re.I)).first.click(
+                            timeout=12000, force=True
+                        )
+                        break
+                    except Exception:
+                        continue
+                else:
+                    raise TimeoutError("未找到 Condition 选项（Excellent / Like New / Good 等）")
             self.page.wait_for_timeout(500)
         except Exception as e:
             self.logger.error(f"选择Excellent条件失败: {e}")
             raise
     
-    def select_storage_128gb(self):
-        """选择Storage: 128 GB"""
+    def _select_storage_native_select_fallback(self) -> bool:
+        """部分构建用原生 <select> 展示容量；选第一个含 GB/TB 的非首项 option。"""
         try:
-            self.page.get_by_text('128 GB').click()
+            selects = self.page.locator("main select")
+            n = selects.count()
+            for i in range(min(n, 15)):
+                sel = selects.nth(i)
+                opts = sel.locator("option")
+                oc = opts.count()
+                if oc < 2:
+                    continue
+                texts = []
+                for j in range(oc):
+                    try:
+                        texts.append((opts.nth(j).inner_text() or "").strip())
+                    except Exception:
+                        texts.append("")
+                if not any(re.search(r"gb|tb", t, re.I) for t in texts):
+                    continue
+                for j in range(1, oc):
+                    t = texts[j] if j < len(texts) else ""
+                    if not t or re.match(r"^choose|^select|^please", t, re.I):
+                        continue
+                    try:
+                        sel.select_option(index=j)
+                        self.page.wait_for_timeout(450)
+                        self.logger.info("✓ 已通过原生 select 选择容量: %s", t[:40])
+                        return True
+                    except Exception:
+                        continue
+        except Exception as e:
+            self.logger.warning("native select 容量兜底失败: %s", e)
+        return False
+
+    def select_storage_128gb(self):
+        """选择 Storage：优先 128 GB；文案可能是 128GB / 128 G / 或列表中首项含 128。"""
+        try:
+            self.dismiss_blocking_overlays()
+            self.page.evaluate(
+                "() => window.scrollTo(0, Math.max(0, document.body.scrollHeight * 0.4))"
+            )
+            self.page.wait_for_timeout(400)
+            clicked = self.page.evaluate("""
+            () => {
+                const blocks = Array.from(document.querySelectorAll(
+                    '.form-item, [class*="form-item"], section, .float-label-child, [class*="detail"]'
+                ));
+                const block = blocks.find(
+                    (b) => /storage|capacity|memory|rom|存储/i.test(b.innerText || '')
+                );
+                if (!block) return false;
+                block.scrollIntoView({ block: 'center' });
+                const opts = Array.from(
+                    block.querySelectorAll('button, [role="radio"], label, span, div, p, li, a')
+                );
+                const norm = (s) => (s || '').replace(/\\s+/g, ' ').trim();
+                let hit = opts.find((o) => {
+                    if (!o.offsetParent) return false;
+                    const t = norm(o.textContent);
+                    return /128/.test(t) && (/gb|g\\b|go/i.test(t) || t.length < 12);
+                });
+                if (!hit) {
+                    hit = opts.find((o) => {
+                        if (!o.offsetParent) return false;
+                        return /^128/.test(norm(o.textContent));
+                    });
+                }
+                if (hit) {
+                    hit.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+                    return true;
+                }
+                const anyCap = opts.find((o) => {
+                    if (!o.offsetParent) return false;
+                    const t = norm(o.textContent);
+                    return /^\\d+\\s*(GB|TB|gb|tb|Go)/i.test(t) || /^\\d+\\s*G\\b/i.test(t);
+                });
+                if (anyCap) {
+                    anyCap.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+                    return true;
+                }
+                return false;
+            }
+            """)
+            if not clicked:
+                for pat in (
+                    r"128\s*GB",
+                    r"128GB",
+                    r"128\s*G\b",
+                    r"\b128\b",
+                ):
+                    try:
+                        self.page.get_by_text(re.compile(pat, re.I)).first.click(
+                            timeout=8000, force=True
+                        )
+                        break
+                    except Exception:
+                        continue
+                else:
+                    try:
+                        self.page.locator("main").get_by_text(
+                            re.compile(r"\d+\s*(GB|TB)", re.I)
+                        ).first.click(timeout=8000, force=True)
+                    except Exception:
+                        if self._select_storage_native_select_fallback():
+                            pass
+                        else:
+                            raise TimeoutError(
+                                "未找到 Storage 容量选项（芯片/文本/native select）"
+                            )
             self.page.wait_for_timeout(500)
         except Exception as e:
             self.logger.error(f"选择128 GB存储失败: {e}")
@@ -1769,12 +2163,89 @@ class MarketplacePostPage(BasePage):
             raise
     
     # ========== 交付选项方法 ==========
-    
+    # 与 `marketplace_post_page.py` 中 MCP 录制路径一致：
+    # getByRole('paragraph').filter({ hasText: '...' }) + 滚到底部 + scrollIntoView + scrollBy(-100) 避开固定 Post 底栏
+    # 线上文案可能从 postage 改为 shipping 等，故同一选项使用多候选串 + radio/label 兜底。
+
+    def _scroll_to_delivery_block(self) -> None:
+        """将 Delivery / Shipping 区域滚入视口，便于选项已渲染。"""
+        self.dismiss_blocking_overlays()
+        for name in ("Delivery", "Delivery options", "Shipping", "Postage"):
+            try:
+                h = self.page.get_by_role("heading", name=re.compile(rf"^{re.escape(name)}", re.I))
+                if h.count() > 0:
+                    h.first.scroll_into_view_if_needed(timeout=5000)
+                    self.page.wait_for_timeout(350)
+                    return
+            except Exception:
+                continue
+        try:
+            self.page.locator("main").get_by_text(re.compile(r"delivery|shipping|postage", re.I)).first.scroll_into_view_if_needed(
+                timeout=5000
+            )
+            self.page.wait_for_timeout(350)
+        except Exception:
+            pass
+
+    def _click_delivery_option_paragraph(self, candidate_texts: list[str]):
+        """按候选文案依次尝试点击配送选项（paragraph/div/label/radio）。"""
+        last_err: Exception | None = None
+        for text in candidate_texts:
+            try:
+                self._scroll_to_delivery_block()
+                self.dismiss_blocking_overlays()
+                self.page.evaluate("() => window.scrollTo(0, document.body.scrollHeight)")
+                self.page.wait_for_timeout(600)
+
+                pat = re.compile(r"\s+".join(re.escape(w) for w in text.split()), re.I)
+
+                loc = None
+                for factory in (
+                    lambda: self.page.get_by_role("radio", name=pat).first,
+                    lambda: self.page.locator("label").filter(has_text=pat).first,
+                    lambda: self.page.get_by_text(pat).first,
+                    lambda: self.page.get_by_role("paragraph").filter(has_text=text).first,
+                    lambda: self.page.locator("main").locator("div,span,p,label").filter(has_text=pat).first,
+                ):
+                    try:
+                        cand = factory()
+                        cand.wait_for(state="attached", timeout=10000)
+                        loc = cand
+                        break
+                    except Exception:
+                        continue
+                if loc is None:
+                    raise TimeoutError(f"未找到配送选项文案: {text}")
+
+                loc.evaluate("el => el.scrollIntoView({ block: 'center', inline: 'nearest' })")
+                self.page.wait_for_timeout(400)
+                self.page.evaluate("window.scrollBy(0, -100)")
+                self.page.wait_for_timeout(300)
+                try:
+                    loc.click(timeout=12000)
+                except Exception as e:
+                    self.logger.warning(f"配送选项常规点击失败，改用 force: {e}")
+                    loc.click(force=True, timeout=15000)
+                self.page.wait_for_timeout(800)
+                self.logger.info(f"✓ 已点击配送选项（匹配: {text!r}）")
+                return
+            except Exception as e:
+                last_err = e
+                self.logger.warning(f"配送候选 {text!r} 未命中，尝试下一文案: {e}")
+        assert last_err is not None
+        raise last_err
+
     def select_delivery_seller_pays(self):
         """选择Seller pays for postage"""
         try:
-            self.page.get_by_role('paragraph').filter(has_text='Seller pays for postage').click()
-            self.page.wait_for_timeout(500)
+            self._click_delivery_option_paragraph(
+                [
+                    "Seller pays for postage",
+                    "Seller pays for shipping",
+                    "Seller pays shipping",
+                ]
+            )
+            self.logger.info("✓ 已选择 Seller pays（postage/shipping）")
         except Exception as e:
             self.logger.error(f"选择Seller pays失败: {e}")
             raise
@@ -1782,8 +2253,16 @@ class MarketplacePostPage(BasePage):
     def select_delivery_buyer_pays(self):
         """选择Buyer pays for postage"""
         try:
-            self.page.get_by_role('paragraph').filter(has_text='Buyer pays for postage').click()
-            self.page.wait_for_timeout(500)
+            self._click_delivery_option_paragraph(
+                [
+                    "Buyer pays for postage",
+                    "Buyer pays for shipping",
+                    "Buyer pays shipping",
+                    "Buyer covers postage",
+                    "Paid by buyer",
+                ]
+            )
+            self.logger.info("✓ 已选择 Buyer pays（postage/shipping）")
         except Exception as e:
             self.logger.error(f"选择Buyer pays失败: {e}")
             raise
@@ -1791,8 +2270,14 @@ class MarketplacePostPage(BasePage):
     def select_delivery_no_delivery(self):
         """选择No delivery required"""
         try:
-            self.page.get_by_role('paragraph').filter(has_text='No delivery required').click()
-            self.page.wait_for_timeout(500)
+            self._click_delivery_option_paragraph(
+                [
+                    "No delivery required",
+                    "No shipping required",
+                    "No delivery",
+                ]
+            )
+            self.logger.info("✓ 已选择 No delivery / no shipping")
         except Exception as e:
             self.logger.error(f"选择No delivery失败: {e}")
             raise
@@ -2001,22 +2486,30 @@ class MarketplacePostPage(BasePage):
         同时按钮文本会变为"Draft saved"
         """
         try:
-            # 检查Toast提示（更可靠）
             toast = self.page.get_by_text('Draft Saved Successfully')
-            return toast.is_visible(timeout=timeout)
+            if toast.count() > 0 and toast.first.is_visible(timeout=min(3000, timeout)):
+                return True
         except Exception:
-            try:
-                saved = self.page.get_by_text(re.compile(r'Saved to Account', re.I))
-                if saved.count() > 0 and saved.first.is_visible(timeout=min(timeout, 3000)):
-                    return True
-            except Exception:
-                pass
-            try:
-                # 备选：检查按钮文本（如果Toast已消失）
-                button = self.page.get_by_role('button', name='Draft saved')
-                return button.is_visible(timeout=timeout)
-            except Exception:
-                return False
+            pass
+        try:
+            saved = self.page.get_by_text(re.compile(r'Saved to Account', re.I))
+            if saved.count() > 0 and saved.first.is_visible(timeout=min(timeout, 3000)):
+                return True
+        except Exception:
+            pass
+        try:
+            button = self.page.get_by_role('button', name='Draft saved')
+            if button.count() > 0 and button.is_visible(timeout=min(3000, timeout)):
+                return True
+        except Exception:
+            pass
+        try:
+            d = self.page.get_by_text(re.compile(r"draft\s*saved|saved\s*success|saved to", re.I))
+            if d.count() > 0 and d.first.is_visible(timeout=min(4000, timeout)):
+                return True
+        except Exception:
+            pass
+        return False
     
     def is_undo_button_visible(self, timeout=3000):
         """判断Undo按钮是否显示（AI生成后）"""
