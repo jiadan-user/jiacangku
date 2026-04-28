@@ -73,7 +73,7 @@ def config_tablet():
 @pytest.mark.mobile
 @allure.feature("OK")
 @allure.story("详情页 - 面包屑导航")
-@allure.title("面包屑导航在移动端应该正常显示")
+@allure.title("TC-BREADCRUMB-D-001：移动端显示（375px）")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证面包屑导航在移动端（375px）的显示和功能")
 def test_breadcrumb_mobile_display(page, config_mobile):
@@ -132,7 +132,7 @@ def test_breadcrumb_mobile_display(page, config_mobile):
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("详情页 - 面包屑导航")
-@allure.title("面包屑导航在平板端应该正常显示")
+@allure.title("TC-BREADCRUMB-D-002：平板端显示（768px）")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证面包屑导航在平板端（768px）的显示和功能")
 def test_breadcrumb_tablet_display(page, config_tablet):
