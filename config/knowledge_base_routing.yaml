@@ -43,3 +43,5 @@ text_case_buckets:
     bucket: Tiyan/列表页
   list_page:
     bucket: Tiyan/列表页
+  settings:
+    bucket: Tiyan/Settings
