@@ -21,6 +21,8 @@ from utils.logger import setup_logger
 
 logger = setup_logger()
 
+from test_cases.zhaopin.explicit_waits import dom_content_loaded_soft, network_idle_soft, sg_wait_jobs_list_url, sg_after_home_jobs_icon
+
 # ============================================
 # 测试环境配置（来自录制文档，录制与运行使用同一账号）
 # ============================================
@@ -63,7 +65,7 @@ def _ensure_ae_logged_in(page, config):
         page.wait_for_load_state("domcontentloaded", timeout=10000)
         home_page = SgHomePage(page)
         home_page.handle_cookie_popup()
-        page.wait_for_timeout(500)
+        dom_content_loaded_soft(page, 20000)
         if home_page.is_logged_in():
             logger.info("✓ AE 站 Session 有效，已跳过登录")
             return
@@ -80,22 +82,21 @@ def _ensure_ae_logged_in(page, config):
             if _retry == 2:
                 raise
             logger.warning(f"⚠️ 导航 AE 首页失败（第{_retry+1}次），重试: {e}")
-            page.wait_for_timeout(2000)
+            dom_content_loaded_soft(page, 20000)
     page.wait_for_load_state("domcontentloaded", timeout=10000)
     home_page.handle_cookie_popup()
-    page.wait_for_timeout(1500)
-
+    dom_content_loaded_soft(page, 20000)
     if not home_page.is_logged_in():
         logger.info("AE 站未登录，开始执行登录流程")
         login_page.click_login_register_button()
-        page.wait_for_timeout(1500)
+        dom_content_loaded_soft(page, 20000)
         login_page.input_email(config["test_account"]["username"])
         login_page.click_continue_button()
-        page.wait_for_timeout(2000)
+        dom_content_loaded_soft(page, 20000)
         login_page.input_password(config["test_account"]["password"])
         login_page.click_login_button()
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(2000)
+        dom_content_loaded_soft(page, 20000)
         assert home_page.is_logged_in(), "AE 站登录失败"
         session_manager.save_session()
         logger.info("✓ AE 站登录成功并保存 Session")
@@ -335,7 +336,7 @@ def test_ae_edit_continue_submits_and_returns_to_return_url(page, config):
     with allure.step("点击 Continue 按钮"):
         job_pref_page.click_continue()
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(2000)
+        dom_content_loaded_soft(page, 20000)
         logger.info(f"✓ Continue 后跳转至: {page.url}")
 
     # ========== Assert ==========
@@ -427,8 +428,7 @@ def test_ae_edit_location_shows_only_uae_cities(page, config):
 
     with allure.step("点击 Location 触发器展开面板"):
         job_pref_page.click_location_trigger()
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：面板包含 Dubai"):
         assert job_pref_page.is_location_city_visible("Dubai"), \
@@ -519,8 +519,7 @@ def test_ae_edit_back_without_changes_goes_directly_to_return_url(page, config):
 
     with allure.step("点击 Back 按钮"):
         job_pref_page.click_back()
-        page.wait_for_timeout(1500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：未弹出 Unsaved Changes 确认弹窗"):
         dialog_count = job_pref_page.get_no_unsaved_dialog_count()
@@ -565,8 +564,7 @@ def test_ae_edit_back_with_unsaved_changes_shows_dialog_and_discards(page, confi
 
     with allure.step("点击 Back 按钮"):
         job_pref_page.click_back()
-        page.wait_for_timeout(1500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：弹出 Unsaved Changes 确认弹窗"):
         assert job_pref_page.is_unsaved_changes_dialog_visible(), \
@@ -616,7 +614,7 @@ def test_ae_edit_open_redirect_tampered_return_url_blocked(page, config):
     with allure.step("步骤2：点击 Back 按钮"):
         job_pref_page.click_back()
         page.wait_for_load_state("domcontentloaded", timeout=10000)
-        page.wait_for_timeout(1500)
+        dom_content_loaded_soft(page, 20000)
         logger.info(f"✓ Back 点击后跳转至: {page.url}")
 
     # ========== Assert ==========

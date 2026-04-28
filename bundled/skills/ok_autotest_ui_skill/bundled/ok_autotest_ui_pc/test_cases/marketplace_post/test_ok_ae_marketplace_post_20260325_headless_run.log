@@ -1,0 +1,915 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0
+rootdir: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc
+configfile: pytest.ini
+plugins: order-1.2.0, dependency-0.5.1, allure-pytest-2.15.3
+collected 109 items
+
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc001_full_publish_apple_phone 11:06:47 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:06:47 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+11:06:47 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+2026-04-24 11:06:47 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+11:06:47 [INFO] [ENV] 检测到环境变量 HEADLESS=True 或 CI=False，强制使用无头模式
+2026-04-24 11:06:47 [INFO] [ENV] 检测到环境变量 HEADLESS=True 或 CI=False，强制使用无头模式
+11:06:50 [INFO] ✓ 已导航到Marketplace发布页面
+2026-04-24 11:06:50 [INFO] ✓ 已导航到Marketplace发布页面
+11:06:53 [INFO] 检测到未登录（访客欢迎层或 Log In），执行账号密码登录
+2026-04-24 11:06:53 [INFO] 检测到未登录（访客欢迎层或 Log In），执行账号密码登录
+11:06:53 [INFO] 检测到登录/欢迎 Modal，执行登录流程...
+2026-04-24 11:06:53 [INFO] 检测到登录/欢迎 Modal，执行登录流程...
+11:06:54 [INFO] ✓ 已填写账号（邮箱或手机）
+2026-04-24 11:06:54 [INFO] ✓ 已填写账号（邮箱或手机）
+11:06:55 [INFO] 已点击 Continue，轮询等待密码输入框（最长约 28s）...
+2026-04-24 11:06:55 [INFO] 已点击 Continue，轮询等待密码输入框（最长约 28s）...
+11:06:58 [INFO] ✓ 登录成功，Modal已关闭
+2026-04-24 11:06:58 [INFO] ✓ 登录成功，Modal已关闭
+11:06:59 [INFO] ✓ 已登录并进入发布页面
+2026-04-24 11:06:59 [INFO] ✓ 已登录并进入发布页面
+11:07:02 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:07:02 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:07:04 [INFO] ⏳ 等待 AI 推荐区加载...
+2026-04-24 11:07:04 [INFO] ⏳ 等待 AI 推荐区加载...
+11:07:05 [INFO]   ✓ 第1秒 More Categories 已出现
+2026-04-24 11:07:05 [INFO]   ✓ 第1秒 More Categories 已出现
+11:07:07 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+2026-04-24 11:07:07 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+11:07:10 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+2026-04-24 11:07:10 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+11:07:11 [INFO] ✓ Category Modal已关闭
+2026-04-24 11:07:11 [INFO] ✓ Category Modal已关闭
+11:07:12 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+2026-04-24 11:07:12 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+11:07:47 [INFO] ✓ 已点击配送选项（匹配: 'Seller pays for postage'）
+2026-04-24 11:07:47 [INFO] ✓ 已点击配送选项（匹配: 'Seller pays for postage'）
+11:07:47 [INFO] ✓ 已选择 Seller pays（postage/shipping）
+2026-04-24 11:07:47 [INFO] ✓ 已选择 Seller pays（postage/shipping）
+11:07:50 [INFO] ✓ 已点击Post按钮（正常点击）
+2026-04-24 11:07:50 [INFO] ✓ 已点击Post按钮（正常点击）
+11:07:50 [INFO] ✅ TC001通过：完整发布流程成功
+2026-04-24 11:07:50 [INFO] ✅ TC001通过：完整发布流程成功
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc002_ai_generate_description 11:07:53 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:07:53 [INFO] ✓ 已导航到Marketplace发布页面
+11:07:56 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:07:56 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:07:59 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:07:59 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:08:02 [INFO] ✓ 已点击描述区 AI（role/button）
+2026-04-24 11:08:02 [INFO] ✓ 已点击描述区 AI（role/button）
+11:08:11 [INFO] ✓ 已选择第一个AI推荐类别: MarketplaceTransportationOthers
+2026-04-24 11:08:11 [INFO] ✓ 已选择第一个AI推荐类别: MarketplaceTransportationOthers
+11:08:11 [INFO] ✓ 已选择AI推荐类别
+2026-04-24 11:08:11 [INFO] ✓ 已选择AI推荐类别
+11:08:15 [INFO] ✓ 已点击Post按钮（正常点击）
+2026-04-24 11:08:15 [INFO] ✓ 已点击Post按钮（正常点击）
+11:08:15 [INFO] ✅ TC002通过：AI生成描述功能正常
+2026-04-24 11:08:15 [INFO] ✅ TC002通过：AI生成描述功能正常
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc003_ai_suggest_category 11:08:17 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:08:17 [INFO] ✓ 已导航到Marketplace发布页面
+11:08:20 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:08:20 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:08:24 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:08:24 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:08:35 [INFO] ✓ 已选择第一个AI推荐类别: MarketplaceElectronicsTablets EbooksSamsung
+2026-04-24 11:08:35 [INFO] ✓ 已选择第一个AI推荐类别: MarketplaceElectronicsTablets EbooksSamsung
+11:08:35 [INFO] ✓ 已选择AI推荐类别
+2026-04-24 11:08:35 [INFO] ✓ 已选择AI推荐类别
+11:08:39 [INFO] ✓ 已点击Post按钮（正常点击）
+2026-04-24 11:08:39 [INFO] ✓ 已点击Post按钮（正常点击）
+11:08:39 [INFO] ✅ TC003通过：AI推荐类别功能正常
+2026-04-24 11:08:39 [INFO] ✅ TC003通过：AI推荐类别功能正常
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc004_draft_save_and_load 11:08:41 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:08:41 [INFO] ✓ 已导航到Marketplace发布页面
+11:08:44 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:08:44 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:08:48 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:08:48 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:08:52 [INFO] ✓ 已点击Save the draft
+2026-04-24 11:08:52 [INFO] ✓ 已点击Save the draft
+11:08:53 [INFO] ✓ Draft保存成功Toast已显示
+2026-04-24 11:08:53 [INFO] ✓ Draft保存成功Toast已显示
+11:08:57 [INFO] ✓ 已刷新页面
+2026-04-24 11:08:57 [INFO] ✓ 已刷新页面
+11:08:57 [INFO] ✓ 已点击Draft按钮
+2026-04-24 11:08:57 [INFO] ✓ 已点击Draft按钮
+11:08:59 [INFO] ✓ Draft Box Modal已打开
+2026-04-24 11:08:59 [INFO] ✓ Draft Box Modal已打开
+11:09:00 [INFO] ✓ 已点击草稿: Laptop for Sale
+2026-04-24 11:09:00 [INFO] ✓ 已点击草稿: Laptop for Sale
+11:09:00 [INFO] ✓ 草稿编辑页面已加载
+2026-04-24 11:09:00 [INFO] ✓ 草稿编辑页面已加载
+11:09:02 [INFO] ✓ 草稿数据已正确恢复
+2026-04-24 11:09:02 [INFO] ✓ 草稿数据已正确恢复
+11:09:07 [INFO] ✓ 已选择第一个AI推荐类别: MarketplaceElectronicsComputersLaptops
+2026-04-24 11:09:07 [INFO] ✓ 已选择第一个AI推荐类别: MarketplaceElectronicsComputersLaptops
+11:09:07 [INFO] ✓ 已选择AI推荐类别（草稿编辑页）
+2026-04-24 11:09:07 [INFO] ✓ 已选择AI推荐类别（草稿编辑页）
+11:09:07 [INFO] ✓ 已填写Price
+2026-04-24 11:09:07 [INFO] ✓ 已填写Price
+11:09:07 [INFO] ✅ TC004通过：草稿保存和恢复功能正常（未执行提交，因已知bug）
+2026-04-24 11:09:07 [INFO] ✅ TC004通过：草稿保存和恢复功能正常（未执行提交，因已知bug）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc005_upload_single_image 11:09:10 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:09:10 [INFO] ✓ 已导航到Marketplace发布页面
+11:09:13 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:09:13 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:09:17 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:09:17 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:09:17 [INFO] ✅ TC005通过：单张图片上传功能正常
+2026-04-24 11:09:17 [INFO] ✅ TC005通过：单张图片上传功能正常
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc006_upload_multiple_images 11:09:19 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:09:19 [INFO] ✓ 已导航到Marketplace发布页面
+11:09:22 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:09:22 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:09:26 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:09:26 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:09:29 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:09:29 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:09:33 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:09:33 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:09:33 [INFO] ✅ TC006通过：多张图片上传功能正常
+2026-04-24 11:09:33 [INFO] ✅ TC006通过：多张图片上传功能正常
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc007_upload_max_9_images 11:09:35 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:09:35 [INFO] ✓ 已导航到Marketplace发布页面
+11:09:38 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:09:38 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:09:42 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:09:42 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:09:42 [INFO] 已上传 1/9 张
+2026-04-24 11:09:42 [INFO] 已上传 1/9 张
+11:09:46 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:09:46 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:09:46 [INFO] 已上传 2/9 张
+2026-04-24 11:09:46 [INFO] 已上传 2/9 张
+11:09:49 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:09:49 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:09:49 [INFO] 已上传 3/9 张
+2026-04-24 11:09:49 [INFO] 已上传 3/9 张
+11:09:52 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:09:52 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:09:52 [INFO] 已上传 4/9 张
+2026-04-24 11:09:52 [INFO] 已上传 4/9 张
+11:09:56 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:09:56 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:09:56 [INFO] 已上传 5/9 张
+2026-04-24 11:09:56 [INFO] 已上传 5/9 张
+11:09:59 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:09:59 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:09:59 [INFO] 已上传 6/9 张
+2026-04-24 11:09:59 [INFO] 已上传 6/9 张
+11:10:03 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:10:03 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:10:03 [INFO] 已上传 7/9 张
+2026-04-24 11:10:03 [INFO] 已上传 7/9 张
+11:10:06 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:10:06 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:10:06 [INFO] 已上传 8/9 张
+2026-04-24 11:10:06 [INFO] 已上传 8/9 张
+11:10:09 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:10:09 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:10:09 [INFO] 已上传 9/9 张
+2026-04-24 11:10:09 [INFO] 已上传 9/9 张
+11:10:39 [WARNING] 获取图片计数器失败（可能已隐藏）: Locator.inner_text: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("text=/\\d+\\/9/").first
+
+2026-04-24 11:10:39 [WARNING] 获取图片计数器失败（可能已隐藏）: Locator.inner_text: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("text=/\\d+\\/9/").first
+
+11:10:39 [INFO] ✅ TC007通过：9张图片上限功能正常
+2026-04-24 11:10:39 [INFO] ✅ TC007通过：9张图片上限功能正常
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc008_upload_10th_image_blocked 11:10:42 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:10:42 [INFO] ✓ 已导航到Marketplace发布页面
+11:10:45 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:10:45 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:10:49 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:10:49 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:10:52 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:10:52 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:10:56 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:10:56 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:10:59 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:10:59 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:11:02 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:11:02 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:11:06 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:11:06 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:11:09 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:11:09 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:11:13 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:11:13 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:11:16 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:11:16 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:11:16 [INFO] ✅ TC008通过：第10张图片上传被正确阻止
+2026-04-24 11:11:16 [INFO] ✅ TC008通过：第10张图片上传被正确阻止
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc009_delete_uploaded_image 11:11:18 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:11:18 [INFO] ✓ 已导航到Marketplace发布页面
+11:11:22 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:11:22 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:11:25 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:11:25 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:11:29 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:11:29 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:11:32 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:11:32 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:11:33 [INFO] ✓ 已打开第2张图片预览Modal
+2026-04-24 11:11:33 [INFO] ✓ 已打开第2张图片预览Modal
+11:11:34 [INFO] ✓ 已点击删除按钮
+2026-04-24 11:11:34 [INFO] ✓ 已点击删除按钮
+11:11:36 [WARNING] 删除确认对话框未出现或已自动关闭: Page.wait_for_selector: Timeout 2000ms exceeded.
+Call log:
+  - waiting for locator("text=Are you sure") to be visible
+
+2026-04-24 11:11:36 [WARNING] 删除确认对话框未出现或已自动关闭: Page.wait_for_selector: Timeout 2000ms exceeded.
+Call log:
+  - waiting for locator("text=Are you sure") to be visible
+
+11:11:38 [INFO] ✓ 已删除第2张图片
+2026-04-24 11:11:38 [INFO] ✓ 已删除第2张图片
+11:11:38 [INFO] ✅ TC009通过：图片删除功能正常
+2026-04-24 11:11:38 [INFO] ✅ TC009通过：图片删除功能正常
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc010_delete_main_image_auto_reassign 11:11:41 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:11:41 [INFO] ✓ 已导航到Marketplace发布页面
+11:11:44 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:11:44 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:11:48 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:11:48 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:11:51 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:11:51 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:11:54 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:11:54 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:11:55 [INFO] ✓ 已打开第1张图片预览Modal
+2026-04-24 11:11:55 [INFO] ✓ 已打开第1张图片预览Modal
+11:11:57 [INFO] ✓ 已点击删除按钮
+2026-04-24 11:11:57 [INFO] ✓ 已点击删除按钮
+11:11:59 [WARNING] 删除确认对话框未出现或已自动关闭: Page.wait_for_selector: Timeout 2000ms exceeded.
+Call log:
+  - waiting for locator("text=Are you sure") to be visible
+
+2026-04-24 11:11:59 [WARNING] 删除确认对话框未出现或已自动关闭: Page.wait_for_selector: Timeout 2000ms exceeded.
+Call log:
+  - waiting for locator("text=Are you sure") to be visible
+
+11:12:01 [INFO] ✓ 已删除第1张图片
+2026-04-24 11:12:01 [INFO] ✓ 已删除第1张图片
+11:12:01 [INFO] ✅ TC010通过：删除主图后自动设置新主图功能正常
+2026-04-24 11:12:01 [INFO] ✅ TC010通过：删除主图后自动设置新主图功能正常
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc011_set_non_first_as_main 11:12:03 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:12:03 [INFO] ✓ 已导航到Marketplace发布页面
+11:12:06 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:12:06 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:12:10 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:12:10 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:12:13 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:12:13 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:12:17 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:12:17 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:12:18 [INFO] ✓ 已打开第2张图片预览Modal
+2026-04-24 11:12:18 [INFO] ✓ 已打开第2张图片预览Modal
+11:12:19 [INFO] ✓ 已点击第2个Set as Main按钮
+2026-04-24 11:12:19 [INFO] ✓ 已点击第2个Set as Main按钮
+11:12:19 [INFO] ✓ 已关闭图片预览Modal
+2026-04-24 11:12:19 [INFO] ✓ 已关闭图片预览Modal
+11:12:19 [WARNING] ⚠️ TC011: Set as Main功能存在Bug（Main标记未转移）
+2026-04-24 11:12:19 [WARNING] ⚠️ TC011: Set as Main功能存在Bug（Main标记未转移）
+XPASS (Bug: Set as Main操作未持久化到缩略图列表)
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc012_modal_navigation 11:12:22 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:12:22 [INFO] ✓ 已导航到Marketplace发布页面
+11:12:25 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:12:25 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:12:29 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:12:29 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:12:32 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:12:32 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:12:35 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:12:35 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:12:39 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:12:39 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:12:42 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:12:42 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:12:43 [INFO] ✓ 已打开第3张图片预览Modal
+2026-04-24 11:12:43 [INFO] ✓ 已打开第3张图片预览Modal
+11:12:44 [INFO] ✓ 已点击Next按钮
+2026-04-24 11:12:44 [INFO] ✓ 已点击Next按钮
+11:12:44 [INFO] ✓ 已点击Prev按钮
+2026-04-24 11:12:44 [INFO] ✓ 已点击Prev按钮
+11:12:45 [INFO] ✓ 已点击底部缩略图（index=-1）
+2026-04-24 11:12:45 [INFO] ✓ 已点击底部缩略图（index=-1）
+11:12:46 [INFO] ✓ 已关闭图片预览Modal
+2026-04-24 11:12:46 [INFO] ✓ 已关闭图片预览Modal
+11:12:46 [INFO] ✅ TC012通过：Modal翻页导航功能正常
+2026-04-24 11:12:46 [INFO] ✅ TC012通过：Modal翻页导航功能正常
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc013_file_accept_attribute 11:12:48 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:12:48 [INFO] ✓ 已导航到Marketplace发布页面
+11:12:51 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:12:51 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:12:51 [INFO] 文件上传accept属性: image/jpeg, image/jpg, image/png, video/mp4, video/quicktime, video/webm
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:12:51 [INFO] 文件上传accept属性: image/jpeg, image/jpg, image/png, video/mp4, video/quicktime, video/webm
+11:12:51 [INFO] ✅ TC013通过：文件选择器正确限制支持的文件类型
+2026-04-24 11:12:51 [INFO] ✅ TC013通过：文件选择器正确限制支持的文件类型
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc014_oversized_image 11:12:54 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:12:54 [INFO] ✓ 已导航到Marketplace发布页面
+11:12:57 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:12:57 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:12:57 [INFO] ✓ 创建15MB模拟图片: /private/var/folders/dr/ntf7xq_j2zn97fvc32nh64740000gn/T/pytest-of-wangyongli/pytest-69/test_tc014_oversized_image0/large_image_15mb.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:12:57 [INFO] ✓ 创建15MB模拟图片: /private/var/folders/dr/ntf7xq_j2zn97fvc32nh64740000gn/T/pytest-of-wangyongli/pytest-69/test_tc014_oversized_image0/large_image_15mb.jpg
+11:13:00 [INFO] TC014: 当前构建未拦截约15MB 图片（计数已增长），按线上行为记为通过
+2026-04-24 11:13:00 [INFO] TC014: 当前构建未拦截约15MB 图片（计数已增长），按线上行为记为通过
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc018_corrupted_image 11:13:03 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:13:03 [INFO] ✓ 已导航到Marketplace发布页面
+11:13:06 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:13:06 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:13:06 [INFO] ✓ 创建损坏图片文件: /private/var/folders/dr/ntf7xq_j2zn97fvc32nh64740000gn/T/pytest-of-wangyongli/pytest-69/test_tc018_corrupted_image0/corrupted.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:13:06 [INFO] ✓ 创建损坏图片文件: /private/var/folders/dr/ntf7xq_j2zn97fvc32nh64740000gn/T/pytest-of-wangyongli/pytest-69/test_tc018_corrupted_image0/corrupted.jpg
+11:13:09 [INFO] TC018: 当前构建接受损坏图片（计数已增长且无明确错误文案），按线上行为记为通过
+2026-04-24 11:13:09 [INFO] TC018: 当前构建接受损坏图片（计数已增长且无明确错误文案），按线上行为记为通过
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_price_field_validation[abc123--reject-tc050_letters] 11:13:12 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:13:12 [INFO] ✓ 已导航到Marketplace发布页面
+11:13:15 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:13:15 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:13:18 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:13:18 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:13:21 [INFO] ✅ tc050_letters通过：Price正确过滤'abc123'→''
+2026-04-24 11:13:21 [INFO] ✅ tc050_letters通过：Price正确过滤'abc123'→''
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_price_field_validation[$100--reject-tc051_dollar_sign_clears] 11:13:23 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:13:23 [INFO] ✓ 已导航到Marketplace发布页面
+11:13:26 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:13:26 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:13:30 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:13:30 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:13:33 [INFO] ✅ tc051_dollar_sign_clears通过：Price正确过滤'$100'→''
+2026-04-24 11:13:33 [INFO] ✅ tc051_dollar_sign_clears通过：Price正确过滤'$100'→''
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_price_field_validation[100000000-100000000-accept-tc052_large_amount] 11:13:35 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:13:35 [INFO] ✓ 已导航到Marketplace发布页面
+11:13:38 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:13:38 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:13:42 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:13:42 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:13:49 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+2026-04-24 11:13:49 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+11:13:51 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+2026-04-24 11:13:51 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+11:13:52 [INFO] ✓ Category Modal已关闭
+2026-04-24 11:13:52 [INFO] ✓ Category Modal已关闭
+11:13:53 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+2026-04-24 11:13:53 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+11:14:22 [INFO] ✓ 已点击配送选项（匹配: 'No delivery required'）
+2026-04-24 11:14:22 [INFO] ✓ 已点击配送选项（匹配: 'No delivery required'）
+11:14:22 [INFO] ✓ 已选择 No delivery / no shipping
+2026-04-24 11:14:22 [INFO] ✓ 已选择 No delivery / no shipping
+11:14:26 [INFO] ✓ 已点击Post按钮（正常点击）
+2026-04-24 11:14:26 [INFO] ✓ 已点击Post按钮（正常点击）
+11:14:26 [INFO] ✅ tc052_large_amount通过：Price接受'100000000'→'100000000'
+2026-04-24 11:14:26 [INFO] ✅ tc052_large_amount通过：Price接受'100000000'→'100000000'
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_price_field_validation[--reject_required-tc053_empty] 11:14:28 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:14:28 [INFO] ✓ 已导航到Marketplace发布页面
+11:14:31 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:14:31 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:14:35 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:14:35 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:14:42 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+2026-04-24 11:14:42 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+11:14:44 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+2026-04-24 11:14:44 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+11:14:45 [INFO] ✓ Category Modal已关闭
+2026-04-24 11:14:45 [INFO] ✓ Category Modal已关闭
+11:14:46 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+2026-04-24 11:14:46 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+11:14:49 [INFO] ✓ 已点击Post按钮（正常点击）
+2026-04-24 11:14:49 [INFO] ✓ 已点击Post按钮（正常点击）
+11:14:50 [INFO] ✅ tc053_empty通过：Price空值正确阻止提交
+2026-04-24 11:14:50 [INFO] ✅ tc053_empty通过：Price空值正确阻止提交
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc080_page_refresh_clears_form 11:14:52 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:14:52 [INFO] ✓ 已导航到Marketplace发布页面
+11:14:55 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:14:55 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:14:59 [INFO] ✅ TC080通过：页面刷新后表单数据正确清空
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:14:59 [INFO] ✅ TC080通过：页面刷新后表单数据正确清空
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc090_placeholder_text 11:15:02 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:15:02 [INFO] ✓ 已导航到Marketplace发布页面
+11:15:05 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:15:05 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:15:07 [INFO] Title placeholder/label: Title *
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:15:07 [INFO] Title placeholder/label: Title *
+11:15:07 [INFO] Description placeholder/label: Description *
+2026-04-24 11:15:07 [INFO] Description placeholder/label: Description *
+11:15:07 [INFO] Price placeholder: None
+2026-04-24 11:15:07 [INFO] Price placeholder: None
+11:15:07 [INFO] ✅ TC090通过：输入框和标签/placeholder显示正确
+2026-04-24 11:15:07 [INFO] ✅ TC090通过：输入框和标签/placeholder显示正确
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc091_required_field_asterisk 11:15:09 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:15:09 [INFO] ✓ 已导航到Marketplace发布页面
+11:15:12 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:15:12 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:15:14 [INFO] ✓ 必填字段列表（required属性）: []
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:15:14 [INFO] ✓ 必填字段列表（required属性）: []
+11:15:14 [INFO] ✅ TC091通过：必填字段存在且表单验证机制正常
+2026-04-24 11:15:14 [INFO] ✅ TC091通过：必填字段存在且表单验证机制正常
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc059_seller_pays_postage 11:15:17 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:15:17 [INFO] ✓ 已导航到Marketplace发布页面
+11:15:20 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:15:20 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:15:24 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:15:24 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:15:27 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+2026-04-24 11:15:27 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+11:15:30 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+2026-04-24 11:15:30 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+11:15:33 [INFO] ✓ Category Modal已关闭
+2026-04-24 11:15:33 [INFO] ✓ Category Modal已关闭
+11:15:33 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+2026-04-24 11:15:33 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+11:16:16 [INFO] ✓ 已点击配送选项（匹配: 'Seller pays for postage'）
+2026-04-24 11:16:16 [INFO] ✓ 已点击配送选项（匹配: 'Seller pays for postage'）
+11:16:16 [INFO] ✓ 已选择 Seller pays（postage/shipping）
+2026-04-24 11:16:16 [INFO] ✓ 已选择 Seller pays（postage/shipping）
+11:16:16 [INFO] ✓ 已选择Seller pays for postage
+2026-04-24 11:16:16 [INFO] ✓ 已选择Seller pays for postage
+11:16:19 [INFO] ✓ 已点击Post按钮（正常点击）
+2026-04-24 11:16:19 [INFO] ✓ 已点击Post按钮（正常点击）
+11:16:19 [INFO] ✅ TC059通过：Seller pays选项提交成功
+2026-04-24 11:16:19 [INFO] ✅ TC059通过：Seller pays选项提交成功
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc060_buyer_pays_postage 11:16:21 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:16:21 [INFO] ✓ 已导航到Marketplace发布页面
+11:16:24 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:16:24 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:16:28 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:16:28 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:16:31 [INFO] ⏳ 等待 AI 推荐区加载...
+2026-04-24 11:16:31 [INFO] ⏳ 等待 AI 推荐区加载...
+11:16:32 [INFO]   ✓ 第1秒 More Categories 已出现
+2026-04-24 11:16:32 [INFO]   ✓ 第1秒 More Categories 已出现
+11:16:34 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+2026-04-24 11:16:34 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+11:16:37 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+2026-04-24 11:16:37 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+11:16:39 [INFO] ✓ Category Modal已关闭
+2026-04-24 11:16:39 [INFO] ✓ Category Modal已关闭
+11:16:40 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+2026-04-24 11:16:40 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+11:17:22 [INFO] ✓ 已点击配送选项（匹配: 'Buyer pays for postage'）
+2026-04-24 11:17:22 [INFO] ✓ 已点击配送选项（匹配: 'Buyer pays for postage'）
+11:17:22 [INFO] ✓ 已选择 Buyer pays（postage/shipping）
+2026-04-24 11:17:22 [INFO] ✓ 已选择 Buyer pays（postage/shipping）
+11:17:22 [INFO] ✓ 已选择Buyer pays for postage
+2026-04-24 11:17:22 [INFO] ✓ 已选择Buyer pays for postage
+11:17:25 [INFO] ✓ 已点击Post按钮（正常点击）
+2026-04-24 11:17:25 [INFO] ✓ 已点击Post按钮（正常点击）
+11:20:26 [ERROR] 测试失败 URL: https://aepub.58v5.cn/biz/en/publish/classified
+2026-04-24 11:20:26 [ERROR] 测试失败 URL: https://aepub.58v5.cn/biz/en/publish/classified
+FAILED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc061_no_delivery_required 11:20:28 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:20:28 [INFO] ✓ 已导航到Marketplace发布页面
+11:20:31 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:20:31 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:20:35 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:20:35 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:20:37 [INFO] ⏳ 等待 AI 推荐区加载...
+2026-04-24 11:20:37 [INFO] ⏳ 等待 AI 推荐区加载...
+11:20:38 [INFO]   ✓ 第1秒 More Categories 已出现
+2026-04-24 11:20:38 [INFO]   ✓ 第1秒 More Categories 已出现
+11:20:40 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+2026-04-24 11:20:40 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+11:20:43 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+2026-04-24 11:20:43 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+11:20:46 [INFO] ✓ Category Modal已关闭
+2026-04-24 11:20:46 [INFO] ✓ Category Modal已关闭
+11:20:46 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+2026-04-24 11:20:46 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+11:21:29 [INFO] ✓ 已点击配送选项（匹配: 'No delivery required'）
+2026-04-24 11:21:29 [INFO] ✓ 已点击配送选项（匹配: 'No delivery required'）
+11:21:29 [INFO] ✓ 已选择 No delivery / no shipping
+2026-04-24 11:21:29 [INFO] ✓ 已选择 No delivery / no shipping
+11:21:29 [INFO] ✓ 已选择No delivery required
+2026-04-24 11:21:29 [INFO] ✓ 已选择No delivery required
+11:21:32 [INFO] ✓ 已点击Post按钮（正常点击）
+2026-04-24 11:21:32 [INFO] ✓ 已点击Post按钮（正常点击）
+11:21:32 [INFO] ✅ TC061通过：No delivery选项提交成功
+2026-04-24 11:21:32 [INFO] ✅ TC061通过：No delivery选项提交成功
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc062_arrange_pickup_toggle 11:21:34 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:21:34 [INFO] ✓ 已导航到Marketplace发布页面
+11:21:37 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:21:37 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:21:41 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:21:41 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:21:45 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+2026-04-24 11:21:45 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+11:21:48 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+2026-04-24 11:21:48 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+11:21:50 [INFO] ✓ Category Modal已关闭
+2026-04-24 11:21:50 [INFO] ✓ Category Modal已关闭
+11:21:51 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+2026-04-24 11:21:51 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+11:22:34 [INFO] ✓ 已点击配送选项（匹配: 'Seller pays for postage'）
+2026-04-24 11:22:34 [INFO] ✓ 已点击配送选项（匹配: 'Seller pays for postage'）
+11:22:34 [INFO] ✓ 已选择 Seller pays（postage/shipping）
+2026-04-24 11:22:34 [INFO] ✓ 已选择 Seller pays（postage/shipping）
+11:22:34 [INFO] ✓ 已开启Arrange pickup toggle
+2026-04-24 11:22:34 [INFO] ✓ 已开启Arrange pickup toggle
+11:22:37 [INFO] ✓ 已点击Post按钮（正常点击）
+2026-04-24 11:22:37 [INFO] ✓ 已点击Post按钮（正常点击）
+11:22:37 [INFO] ✅ TC062通过：Arrange pickup toggle功能正常
+2026-04-24 11:22:37 [INFO] ✅ TC062通过：Arrange pickup toggle功能正常
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc063_delivery_options_empty_validation 11:22:40 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:22:40 [INFO] ✓ 已导航到Marketplace发布页面
+11:22:43 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:22:43 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:22:47 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:22:47 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:22:49 [INFO] ⏳ 等待 AI 推荐区加载...
+2026-04-24 11:22:49 [INFO] ⏳ 等待 AI 推荐区加载...
+11:22:50 [INFO]   ✓ 第1秒 More Categories 已出现
+2026-04-24 11:22:50 [INFO]   ✓ 第1秒 More Categories 已出现
+11:22:52 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+2026-04-24 11:22:52 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+11:22:55 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+2026-04-24 11:22:55 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+11:22:57 [INFO] ✓ Category Modal已关闭
+2026-04-24 11:22:57 [INFO] ✓ Category Modal已关闭
+11:22:58 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+2026-04-24 11:22:58 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+11:23:06 [INFO] ✓ Delivery Options区域已显示
+2026-04-24 11:23:06 [INFO] ✓ Delivery Options区域已显示
+11:23:09 [INFO] ✓ 已选择位置: Dubai
+2026-04-24 11:23:09 [INFO] ✓ 已选择位置: Dubai
+11:23:13 [INFO] ✓ 已点击Post按钮（正常点击）
+2026-04-24 11:23:13 [INFO] ✓ 已点击Post按钮（正常点击）
+11:23:15 [INFO] ✓ 验证通过 - 停留在发布页: True, 显示错误: False
+2026-04-24 11:23:15 [INFO] ✓ 验证通过 - 停留在发布页: True, 显示错误: False
+11:23:15 [INFO] ✅ TC063通过：Delivery Options必填验证正常
+2026-04-24 11:23:15 [INFO] ✅ TC063通过：Delivery Options必填验证正常
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc055_select_all_details 11:23:18 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:23:18 [INFO] ✓ 已导航到Marketplace发布页面
+11:23:21 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:23:21 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:23:25 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:23:25 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:23:32 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+2026-04-24 11:23:32 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+11:23:35 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+2026-04-24 11:23:35 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+11:23:38 [INFO] ✓ Category Modal已关闭
+2026-04-24 11:23:38 [INFO] ✓ Category Modal已关闭
+11:23:38 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+2026-04-24 11:23:38 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+11:23:42 [INFO] ✓ 已选择Condition: Excellent
+2026-04-24 11:23:42 [INFO] ✓ 已选择Condition: Excellent
+11:23:42 [INFO] ✓ 已选择Originality: 100% Original
+2026-04-24 11:23:42 [INFO] ✓ 已选择Originality: 100% Original
+11:23:43 [INFO] ✓ 已选择Battery health: 90%+
+2026-04-24 11:23:43 [INFO] ✓ 已选择Battery health: 90%+
+11:23:45 [INFO] ✓ 已选择Storage: 128 GB
+2026-04-24 11:23:45 [INFO] ✓ 已选择Storage: 128 GB
+11:24:14 [INFO] ✓ 已点击配送选项（匹配: 'Seller pays for postage'）
+2026-04-24 11:24:14 [INFO] ✓ 已点击配送选项（匹配: 'Seller pays for postage'）
+11:24:14 [INFO] ✓ 已选择 Seller pays（postage/shipping）
+2026-04-24 11:24:14 [INFO] ✓ 已选择 Seller pays（postage/shipping）
+11:24:18 [INFO] ✓ 已点击Post按钮（正常点击）
+2026-04-24 11:24:18 [INFO] ✓ 已点击Post按钮（正常点击）
+11:24:18 [INFO] ✅ TC055通过：所有Details选项选择成功
+2026-04-24 11:24:18 [INFO] ✅ TC055通过：所有Details选项选择成功
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc056_details_empty_submit 11:24:20 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:24:20 [INFO] ✓ 已导航到Marketplace发布页面
+11:24:24 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:24:24 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:24:27 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:24:27 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:24:35 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+2026-04-24 11:24:35 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+11:24:38 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+2026-04-24 11:24:38 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+11:24:41 [INFO] ✓ Category Modal已关闭
+2026-04-24 11:24:41 [INFO] ✓ Category Modal已关闭
+11:24:41 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+2026-04-24 11:24:41 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+11:25:12 [INFO] ✓ 已点击配送选项（匹配: 'No delivery required'）
+2026-04-24 11:25:12 [INFO] ✓ 已点击配送选项（匹配: 'No delivery required'）
+11:25:12 [INFO] ✓ 已选择 No delivery / no shipping
+2026-04-24 11:25:12 [INFO] ✓ 已选择 No delivery / no shipping
+11:25:16 [INFO] ✓ 已点击Post按钮（正常点击）
+2026-04-24 11:25:16 [INFO] ✓ 已点击Post按钮（正常点击）
+11:25:16 [INFO] ✅ TC056通过：Details为空可正常提交（可选字段）
+2026-04-24 11:25:16 [INFO] ✅ TC056通过：Details为空可正常提交（可选字段）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc057_details_reselect 11:25:18 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:25:18 [INFO] ✓ 已导航到Marketplace发布页面
+11:25:21 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:25:21 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:25:25 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:25:25 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:25:33 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+2026-04-24 11:25:33 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+11:25:36 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+2026-04-24 11:25:36 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+11:25:38 [INFO] ✓ Category Modal已关闭
+2026-04-24 11:25:38 [INFO] ✓ Category Modal已关闭
+11:25:39 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+2026-04-24 11:25:39 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+11:25:42 [INFO] ✓ 第一次选择Excellent
+2026-04-24 11:25:42 [INFO] ✓ 第一次选择Excellent
+11:25:45 [INFO] ✓ 第二次点击Excellent
+2026-04-24 11:25:45 [INFO] ✓ 第二次点击Excellent
+11:25:45 [INFO] ✅ TC057通过：重复选择不取消（单选行为正确）
+2026-04-24 11:25:45 [INFO] ✅ TC057通过：重复选择不取消（单选行为正确）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc058_storage_1tb_boundary 11:25:48 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:25:48 [INFO] ✓ 已导航到Marketplace发布页面
+11:25:51 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:25:51 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:25:55 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:25:55 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:26:02 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+2026-04-24 11:26:02 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+11:26:05 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+2026-04-24 11:26:05 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+11:26:08 [INFO] ✓ Category Modal已关闭
+2026-04-24 11:26:08 [INFO] ✓ Category Modal已关闭
+11:26:08 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+2026-04-24 11:26:08 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+11:26:10 [INFO] ✓ 已选择Storage: 1 TB
+2026-04-24 11:26:10 [INFO] ✓ 已选择Storage: 1 TB
+11:26:40 [INFO] ✓ 已点击配送选项（匹配: 'No delivery required'）
+2026-04-24 11:26:40 [INFO] ✓ 已点击配送选项（匹配: 'No delivery required'）
+11:26:40 [INFO] ✓ 已选择 No delivery / no shipping
+2026-04-24 11:26:40 [INFO] ✓ 已选择 No delivery / no shipping
+11:26:43 [INFO] ✓ 已点击Post按钮（正常点击）
+2026-04-24 11:26:43 [INFO] ✓ 已点击Post按钮（正常点击）
+11:26:43 [INFO] ✅ TC058通过：1TB Storage选项提交成功
+2026-04-24 11:26:43 [INFO] ✅ TC058通过：1TB Storage选项提交成功
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc064_default_location_dubai 11:26:46 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:26:46 [INFO] ✓ 已导航到Marketplace发布页面
+11:26:49 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:26:49 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:26:49 [INFO] ✓ 当前默认位置: Dubai
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:26:49 [INFO] ✓ 当前默认位置: Dubai
+11:26:49 [INFO] ✓ 默认位置为Dubai（预期）
+2026-04-24 11:26:49 [INFO] ✓ 默认位置为Dubai（预期）
+11:26:52 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 11:26:52 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:27:00 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+2026-04-24 11:27:00 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+11:27:03 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+2026-04-24 11:27:03 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+11:27:05 [INFO] ✓ Category Modal已关闭
+2026-04-24 11:27:05 [INFO] ✓ Category Modal已关闭
+11:27:06 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+2026-04-24 11:27:06 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+11:27:37 [INFO] ✓ 已点击配送选项（匹配: 'No delivery required'）
+2026-04-24 11:27:37 [INFO] ✓ 已点击配送选项（匹配: 'No delivery required'）
+11:27:37 [INFO] ✓ 已选择 No delivery / no shipping
+2026-04-24 11:27:37 [INFO] ✓ 已选择 No delivery / no shipping
+11:27:40 [INFO] ✓ 已点击Post按钮（正常点击）
+2026-04-24 11:27:40 [INFO] ✓ 已点击Post按钮（正常点击）
+11:30:41 [ERROR] 测试失败 URL: https://aepub.58v5.cn/biz/en/publish/classified
+2026-04-24 11:30:41 [ERROR] 测试失败 URL: https://aepub.58v5.cn/biz/en/publish/classified
+FAILED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc065_search_and_select_location 11:30:43 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:30:43 [INFO] ✓ 已导航到Marketplace发布页面
+11:30:46 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:30:46 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:30:50 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:30:50 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:30:58 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+2026-04-24 11:30:58 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+11:31:00 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+2026-04-24 11:31:00 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+11:31:01 [INFO] ✓ Category Modal已关闭
+2026-04-24 11:31:01 [INFO] ✓ Category Modal已关闭
+11:31:02 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+2026-04-24 11:31:02 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+11:31:05 [INFO] ✓ 已选择位置: Abu Dhabi Mall
+2026-04-24 11:31:05 [INFO] ✓ 已选择位置: Abu Dhabi Mall
+11:31:05 [INFO] ✓ 已选择位置: Abu Dhabi Mall
+2026-04-24 11:31:05 [INFO] ✓ 已选择位置: Abu Dhabi Mall
+11:31:44 [INFO] ✓ 已点击配送选项（匹配: 'No delivery required'）
+2026-04-24 11:31:44 [INFO] ✓ 已点击配送选项（匹配: 'No delivery required'）
+11:31:44 [INFO] ✓ 已选择 No delivery / no shipping
+2026-04-24 11:31:44 [INFO] ✓ 已选择 No delivery / no shipping
+11:31:47 [INFO] ✓ 已点击Post按钮（正常点击）
+2026-04-24 11:31:47 [INFO] ✓ 已点击Post按钮（正常点击）
+11:31:47 [INFO] ✅ TC065通过：位置搜索和选择功能正常
+2026-04-24 11:31:47 [INFO] ✅ TC065通过：位置搜索和选择功能正常
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc066_location_search_no_results 11:31:49 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:31:49 [INFO] ✓ 已导航到Marketplace发布页面
+11:31:52 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:31:52 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:31:56 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:31:56 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:31:58 [INFO] ✓ 搜索无结果，搜索框保持可编辑
+2026-04-24 11:31:58 [INFO] ✓ 搜索无结果，搜索框保持可编辑
+11:31:58 [INFO] ✅ TC066通过：位置搜索无结果处理正常
+2026-04-24 11:31:58 [INFO] ✅ TC066通过：位置搜索无结果处理正常
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc069_map_zoom_in 11:32:01 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:32:01 [INFO] ✓ 已导航到Marketplace发布页面
+11:32:04 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:32:04 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:32:05 [INFO] ✓ 第1次点击Zoom in
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:32:05 [INFO] ✓ 第1次点击Zoom in
+11:32:05 [INFO] ✓ 第2次点击Zoom in
+2026-04-24 11:32:05 [INFO] ✓ 第2次点击Zoom in
+11:32:06 [INFO] ✓ 第3次点击Zoom in
+2026-04-24 11:32:06 [INFO] ✓ 第3次点击Zoom in
+11:32:07 [INFO] ✅ TC069通过：地图Zoom in功能正常
+2026-04-24 11:32:07 [INFO] ✅ TC069通过：地图Zoom in功能正常
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc070_map_zoom_out 11:32:09 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:32:09 [INFO] ✓ 已导航到Marketplace发布页面
+11:32:12 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:32:12 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:32:13 [INFO] ✓ 第1次点击Zoom out
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:32:13 [INFO] ✓ 第1次点击Zoom out
+11:32:14 [INFO] ✓ 第2次点击Zoom out
+2026-04-24 11:32:14 [INFO] ✓ 第2次点击Zoom out
+11:32:14 [INFO] ✓ 第3次点击Zoom out
+2026-04-24 11:32:14 [INFO] ✓ 第3次点击Zoom out
+11:32:15 [INFO] ✅ TC070通过：地图Zoom out功能正常
+2026-04-24 11:32:15 [INFO] ✅ TC070通过：地图Zoom out功能正常
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc019_title_with_emoji 11:32:18 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:32:18 [INFO] ✓ 已导航到Marketplace发布页面
+11:32:21 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+2026-04-24 11:32:21 [INFO] ✓ 已登录并进入发布页面（跳过 Modal 流程）
+11:32:24 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:32:24 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+11:32:25 [INFO] ✓ Title计数器: 21/200
+2026-04-24 11:32:25 [INFO] ✓ Title计数器: 21/200
+11:32:31 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+2026-04-24 11:32:31 [INFO] ✓ 已点击 More Categories（[class*="moreCategory"]）
+11:32:34 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+2026-04-24 11:32:34 [INFO] ✓ 已点击browse按钮，Browse Modal已打开
+11:32:37 [INFO] ✓ Category Modal已关闭
+2026-04-24 11:32:37 [INFO] ✓ Category Modal已关闭
+11:32:37 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+2026-04-24 11:32:37 [INFO] ✓ 已选择 Electronics > Cell Phones > Apple
+11:33:08 [INFO] ✓ 已点击配送选项（匹配: 'Seller pays for postage'）
+2026-04-24 11:33:08 [INFO] ✓ 已点击配送选项（匹配: 'Seller pays for postage'）
+11:33:08 [INFO] ✓ 已选择 Seller pays（postage/shipping）
+2026-04-24 11:33:08 [INFO] ✓ 已选择 Seller pays（postage/shipping）
+11:33:12 [INFO] ✓ 已点击Post按钮（正常点击）
+2026-04-24 11:33:12 [INFO] ✓ 已点击Post按钮（正常点击）
+11:33:12 [INFO] ✅ TC019通过：Emoji标题提交成功
+2026-04-24 11:33:12 [INFO] ✅ TC019通过：Emoji标题提交成功
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc020_title_one_character 11:33:14 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:33:14 [INFO] ✓ 已导航到Marketplace发布页面
+11:33:17 [INFO] ✓ 已登录并进入发布页面
+2026-04-24 11:33:17 [INFO] ✓ 已登录并进入发布页面
+11:33:52 [ERROR] 图片上传失败: Locator.click: Timeout 20000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name="Choose File").or_(get_by_role("button").filter(has_text="Upload")).or_(locator("button:has-text('Choose')")).first
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 11:33:52 [ERROR] 图片上传失败: Locator.click: Timeout 20000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name="Choose File").or_(get_by_role("button").filter(has_text="Upload")).or_(locator("button:has-text('Choose')")).first
+
+11:33:52 [ERROR] 测试失败 URL: https://aepub.58v5.cn/biz/en/publish/classified
+2026-04-24 11:33:52 [ERROR] 测试失败 URL: https://aepub.58v5.cn/biz/en/publish/classified
+FAILED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc021_title_200_chars_boundary 11:33:54 [INFO] ✓ 已导航到Marketplace发布页面
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 11:33:54 [INFO] ✓ 已导航到Marketplace发布页面
+11:33:58 [INFO] ✓ 已登录并进入发布页面
+2026-04-24 11:33:58 [INFO] ✓ 已登录并进入发布页面

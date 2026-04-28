@@ -21,6 +21,8 @@ from utils.logger import setup_logger
 
 logger = setup_logger()
 
+from test_cases.zhaopin.explicit_waits import dom_content_loaded_soft, network_idle_soft, sg_wait_jobs_list_url, sg_after_home_jobs_icon
+
 # ============================================
 # 测试环境配置（来自录制文档，录制与运行使用同一账号）
 # ============================================
@@ -74,10 +76,10 @@ def _do_logout(page):
         # 找到包含 OKer 的用户名元素并点击
         user_name_el = page.locator("text=/OKer_/").first
         user_name_el.click()
-        page.wait_for_timeout(800)
+        dom_content_loaded_soft(page, 20000)
         page.get_by_text("Log Out").click()
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         logger.info("✓ 注销成功（OKer_ 用户名点击方式）")
         return
     except Exception as e:
@@ -88,7 +90,7 @@ def _do_logout(page):
         if page.get_by_text("Log Out").is_visible(timeout=2000):
             page.get_by_text("Log Out").click()
             page.wait_for_load_state("domcontentloaded", timeout=15000)
-            page.wait_for_timeout(1000)
+            dom_content_loaded_soft(page, 20000)
             logger.info("✓ 注销成功（直接点击 Log Out）")
             return
     except Exception as e:
@@ -97,10 +99,10 @@ def _do_logout(page):
     # 策略3：hover 顶部右侧用户区域
     try:
         page.locator("header").get_by_role("button").last.hover()
-        page.wait_for_timeout(500)
+        dom_content_loaded_soft(page, 20000)
         page.get_by_text("Log Out").click()
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         logger.info("✓ 注销成功（header button hover 方式）")
         return
     except Exception as e:
@@ -120,7 +122,7 @@ def _ensure_ae_logged_in(page, config):
         page.wait_for_load_state("domcontentloaded", timeout=10000)
         home_page = SgHomePage(page)
         home_page.handle_cookie_popup()
-        page.wait_for_timeout(500)
+        dom_content_loaded_soft(page, 20000)
         if home_page.is_logged_in():
             logger.info("✓ AE 站 Session 有效，已跳过登录")
             return
@@ -132,19 +134,18 @@ def _ensure_ae_logged_in(page, config):
     page.goto(jobs_list_url, wait_until="domcontentloaded")
     page.wait_for_load_state("domcontentloaded", timeout=15000)
     home_page.handle_cookie_popup()
-    page.wait_for_timeout(1000)
-
+    dom_content_loaded_soft(page, 20000)
     if not home_page.is_logged_in():
         logger.info("AE 站未登录，开始执行登录流程")
         login_page.click_login_register_button()
-        page.wait_for_timeout(1500)
+        dom_content_loaded_soft(page, 20000)
         login_page.input_email(config["test_account"]["username"])
         login_page.click_continue_button()
-        page.wait_for_timeout(2000)
+        dom_content_loaded_soft(page, 20000)
         login_page.input_password(config["test_account"]["password"])
         login_page.click_login_button()
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(2000)
+        dom_content_loaded_soft(page, 20000)
         assert home_page.is_logged_in(), "AE 站登录失败"
         session_manager.save_session()
         logger.info("✓ AE 站登录成功并保存 Session")
@@ -162,7 +163,7 @@ def _prepare_unauthenticated_state(page, config):
     # 步骤1：先导航到 AE 站以便执行 JS 清除本地存储
     try:
         page.goto(config["base_url"], wait_until="domcontentloaded", timeout=15000)
-        page.wait_for_timeout(500)
+        dom_content_loaded_soft(page, 20000)
         page.evaluate("() => { localStorage.clear(); sessionStorage.clear(); }")
     except Exception as e:
         logger.warning(f"清除本地存储时出现异常（忽略）: {e}")
@@ -173,13 +174,12 @@ def _prepare_unauthenticated_state(page, config):
 
     # 步骤3：先跳到空白页，再导航到目标，避免残留导航干扰
     page.goto("about:blank")
-    page.wait_for_timeout(500)
-
+    dom_content_loaded_soft(page, 20000)
     # 步骤4：重新访问 Jobs 列表页（带重试）
     for retry in range(3):
         try:
             page.goto(config["jobs_list_url"], wait_until="domcontentloaded", timeout=20000)
-            page.wait_for_timeout(2000)
+            dom_content_loaded_soft(page, 20000)
             logger.info(f"✓ 已进入 Jobs 列表页（未登录）: {page.url}")
             return
         except Exception as e:
@@ -187,9 +187,7 @@ def _prepare_unauthenticated_state(page, config):
                 raise
             logger.warning(f"导航 Jobs 列表页失败（第{retry+1}次），重试: {e}")
             page.goto("about:blank")
-            page.wait_for_timeout(1000)
-
-
+            dom_content_loaded_soft(page, 20000)
 def _login_via_add_job_pref_banner(page, config):
     """
     通过 Add Job Preference 卡片弹出登录弹窗并完成登录。
@@ -208,11 +206,11 @@ def _login_via_add_job_pref_banner(page, config):
         "调用 _login_via_add_job_pref_banner 前，Add Job Preference 卡片应可见（未登录状态）"
     # 点击 Add Job Preference 卡片，弹出登录弹窗
     page.get_by_text("Add Job PreferenceUnlock more").click()
-    page.wait_for_timeout(1500)
+    dom_content_loaded_soft(page, 20000)
     # 第一步：输入邮箱并点击 Continue
     login_page.input_email(config["test_account"]["username"])
     login_page.click_continue_button()
-    page.wait_for_timeout(2000)
+    dom_content_loaded_soft(page, 20000)
     # 第二步：输入密码并点击 Log in
     login_page.input_password(config["test_account"]["password"])
     login_page.click_login_button()
@@ -223,7 +221,7 @@ def _login_via_add_job_pref_banner(page, config):
     except Exception:
         # 备选：等待页面加载完成
         page.wait_for_load_state("domcontentloaded", timeout=20000)
-        page.wait_for_timeout(3000)
+        dom_content_loaded_soft(page, 20000)
         logger.info(f"✓ 登录完成（wait_for_url 超时后回退），当前 URL: {page.url}")
 
 
@@ -299,7 +297,7 @@ def test_ae_add_pref_authenticated_should_show_tag_bar_not_add_banner(page, conf
     # ========== Act ==========
     with allure.step("步骤1：导航到 AE 站 Jobs 列表页"):
         page.goto(config["jobs_list_url"], wait_until="domcontentloaded")
-        page.wait_for_timeout(1500)
+        dom_content_loaded_soft(page, 20000)
         logger.info(f"✓ 已进入 Jobs 列表页: {page.url}")
 
     # ========== Assert ==========
@@ -413,7 +411,7 @@ def test_ae_add_pref_back_button_should_redirect_to_jobs_list(page, config):
     with allure.step("步骤3：点击 Back 按钮"):
         job_pref_page.click_back()
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(1500)
+        dom_content_loaded_soft(page, 20000)
         logger.info(f"✓ 点击 Back 后跳转至: {page.url}")
 
     # ========== Assert ==========
@@ -425,7 +423,7 @@ def test_ae_add_pref_back_button_should_redirect_to_jobs_list(page, config):
 
     with allure.step("验证：列表页展示岗位偏好标签栏（已选类目可见）"):
         # 登录后有数据，Back 后列表页应显示 Job Preference 标签（Edit 链接）
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         has_edit_or_pref = (
             page.get_by_role("link", name="Edit").is_visible() or
             page.get_by_text("Edit").is_visible()
@@ -472,7 +470,7 @@ def test_ae_add_pref_continue_should_submit_and_redirect_to_jobs_list(page, conf
     with allure.step("步骤3：点击 Continue 提交"):
         job_pref_page.click_continue()
         page.wait_for_load_state("domcontentloaded", timeout=20000)
-        page.wait_for_timeout(2000)
+        dom_content_loaded_soft(page, 20000)
         logger.info(f"✓ 点击 Continue 后跳转至: {page.url}")
 
     # ========== Assert ==========
@@ -483,7 +481,7 @@ def test_ae_add_pref_continue_should_submit_and_redirect_to_jobs_list(page, conf
         logger.info(f"✓ 已跳转到: {current_url}")
 
     with allure.step("验证：Jobs 列表页展示岗位偏好类目（Job Preference 标签可见）"):
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         has_pref_tags = (
             page.get_by_role("link", name="Edit").is_visible() or
             page.get_by_text("Edit").is_visible()

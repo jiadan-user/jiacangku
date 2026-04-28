@@ -3,6 +3,8 @@ pytest==8.3.4
 pytest-html==4.1.1
 pytest-xdist==3.6.1
 pytest-rerunfailures==14.0
+pytest-order==1.2.0
+pytest-dependency==0.5.1
 
 # Playwright（支持 Python 3.12+）
 playwright==1.48.0

@@ -17,6 +17,8 @@ from utils.logger import setup_logger
 
 logger = setup_logger()
 
+from test_cases.zhaopin.explicit_waits import dom_content_loaded_soft, network_idle_soft, sg_wait_jobs_list_url, sg_after_home_jobs_icon
+
 # ============================================
 # 测试环境配置（来自录制文档，无需登录）
 # ============================================
@@ -79,7 +81,7 @@ def test_location_filter_shows_specific_city(page, config):
         logger.info("开始导航到首页")
         page.goto(home_url)
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(2000)
+        dom_content_loaded_soft(page, 20000)
         logger.info(f"✓ 成功打开首页: {page.url}")
     
     with allure.step("步骤2：点击Jobs金刚位进入列表页"):
@@ -87,7 +89,7 @@ def test_location_filter_shows_specific_city(page, config):
         # 录制的选择器：page.get_by_role('link', { name: 'Jobs Jobs' })
         page.get_by_role("link", name="Jobs Jobs").click()
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(2000)
+        dom_content_loaded_soft(page, 20000)
         logger.info(f"✓ 成功进入Jobs列表页: {page.url}")
     
     # ========== Assert 阶段1：验证URL跳转成功 ==========
@@ -110,8 +112,7 @@ def test_location_filter_shows_specific_city(page, config):
     # ========== Act 阶段3：定位Location筛选器 ==========
     with allure.step("步骤3：定位Location筛选器"):
         logger.info("开始检查Location筛选器")
-        page.wait_for_timeout(1000)
-        
+        dom_content_loaded_soft(page, 20000)
         # 等待筛选器区域加载
         jobs_list_page.wait_for_filter_area_loaded()
         logger.info("✓ 筛选器区域加载完成")
@@ -178,7 +179,7 @@ def test_add_job_preferences_entry_visible(page, config):
         logger.info("开始导航到首页")
         page.goto(home_url)
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(2000)
+        dom_content_loaded_soft(page, 20000)
         logger.info(f"✓ 成功打开首页: {page.url}")
     
     with allure.step("步骤2：点击Jobs金刚位进入列表页"):
@@ -186,7 +187,7 @@ def test_add_job_preferences_entry_visible(page, config):
         # 录制的选择器：page.get_by_role('link', { name: 'Jobs Jobs' })
         page.get_by_role("link", name="Jobs Jobs").click()
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(2000)
+        dom_content_loaded_soft(page, 20000)
         logger.info(f"✓ 成功进入Jobs列表页: {page.url}")
     
     # ========== Assert 阶段1：验证URL跳转成功 ==========
@@ -199,11 +200,10 @@ def test_add_job_preferences_entry_visible(page, config):
     # ========== Act 阶段3：等待页面完全加载 ==========
     with allure.step("步骤3：等待页面完全加载"):
         logger.info("等待页面完全加载")
-        page.wait_for_timeout(2000)
-        
+        dom_content_loaded_soft(page, 20000)
         # 滚动到顶部确保视口包含Add Job Preference卡片
         page.evaluate("window.scrollTo(0, 0)")
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         logger.info("✓ 页面加载完成，已滚动至顶部")
     
     # ========== Assert 阶段2：验证Add Job Preference入口可见 ==========

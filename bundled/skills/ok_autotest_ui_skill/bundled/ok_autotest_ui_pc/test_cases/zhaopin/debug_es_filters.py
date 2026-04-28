@@ -8,6 +8,8 @@ from utils.logger import setup_logger
 
 logger = setup_logger()
 
+from test_cases.zhaopin.explicit_waits import dom_content_loaded_soft, network_idle_soft, sg_wait_jobs_list_url, sg_after_home_jobs_icon
+
 _CONFIG = {
     "site": "es",
     "site_name": "西班牙站",
@@ -36,8 +38,7 @@ def test_debug_filter_elements(page, config):
     logger.info("✓ 已导航到Jobs列表页")
     
     # 等待额外时间确保页面加载
-    page.wait_for_timeout(2000)
-    
+    dom_content_loaded_soft(page, 20000)
     # 检查各种选择器
     logger.info(f"当前URL: {page.url}")
     

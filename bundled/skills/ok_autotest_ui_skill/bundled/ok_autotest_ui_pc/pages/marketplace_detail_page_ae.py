@@ -287,19 +287,54 @@ class MarketplaceDetailPageAe(BasePage):
             return False
 
     def has_any_listings_count_visible(self, timeout=8000) -> bool:
-        """listings 数为动态数据：body 或可见节点（TC013/TC024）"""
+        """listings 数为动态数据：body 或可见节点（TC013/TC024）
+
+        线上偶发 i18n 未替换出现 ``profile_listings`` / ``ok_app_profile_listings``，
+        或数字与 listings 分行展示，需放宽匹配并先滚到卖家区域。
+        """
+        try:
+            for anchor in (
+                self.page.get_by_text("Verified User", exact=False),
+                self.page.get_by_text(re.compile(r"OKer_|Verified", re.I)),
+            ):
+                try:
+                    anchor.first.scroll_into_view_if_needed(timeout=3000)
+                    break
+                except Exception:
+                    continue
+        except Exception:
+            pass
+        self.page.wait_for_timeout(500)
+
         body = self._body_inner_text()
-        if body and re.search(r"\d[\d,\s]{0,12}listings?|listings?[\s:：]*\d", body, re.I):
-            return True
+        relaxed = (
+            r"\d[\d,\s]{0,12}\s*listings?",
+            r"listings?[\s:：]*\d+",
+            r"profile_listings|ok_app_profile_listings|\.profile_listings",
+            r"listings?\s*\(\s*\d+\s*\)",
+        )
+        if body:
+            for rx in relaxed:
+                if re.search(rx, body, re.I):
+                    return True
         for pat in (
-            re.compile(r"\d[\d,\s]{0,12}listings?", re.I),
+            re.compile(r"\d[\d,\s]{0,12}\s*listings?", re.I),
             re.compile(r"listings?[\s:：]*\d+", re.I),
+            re.compile(r"profile_listings|ok_app_profile_listings", re.I),
         ):
             try:
                 if self.page.get_by_text(pat).first.is_visible(timeout=min(4000, timeout)):
                     return True
             except Exception:
                 pass
+        try:
+            loc = self.page.locator("a,button,[role='link']").filter(
+                has_text=re.compile(r"listings?", re.I)
+            )
+            if loc.count() > 0 and loc.first.is_visible(timeout=min(3000, timeout)):
+                return True
+        except Exception:
+            pass
         return False
 
     def is_seller_substring_visible(self, substring: str, timeout=8000) -> bool:

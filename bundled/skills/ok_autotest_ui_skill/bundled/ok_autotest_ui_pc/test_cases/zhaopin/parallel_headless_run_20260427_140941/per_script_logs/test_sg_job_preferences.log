@@ -1,0 +1,658 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Library/Developer/CommandLineTools/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc
+configfile: pytest.ini
+plugins: order-1.2.0, dependency-0.5.1, allure-pytest-2.15.3
+collecting ... collected 58 items
+
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_jobs_icon_navigates_to_job_preferences_page 14:09:42 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+
+-------------------------------- live log setup --------------------------------
+2026-04-27 14:09:42 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+14:09:44 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+2026-04-27 14:09:44 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+14:09:44 [INFO] [zhaopin] 已创建共享 BrowserContext: site=sg headless=True
+2026-04-27 14:09:44 [INFO] [zhaopin] 已创建共享 BrowserContext: site=sg headless=True
+14:09:44 [INFO] ============================================================
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:09:44 [INFO] ============================================================
+14:09:44 [INFO] TC001: SG站 - 点击Jobs金刚位进入Job Preferences
+2026-04-27 14:09:44 [INFO] TC001: SG站 - 点击Jobs金刚位进入Job Preferences
+14:09:44 [INFO] ============================================================
+2026-04-27 14:09:44 [INFO] ============================================================
+14:10:13 [INFO] ✓ 已加载 Session，跳过登录
+2026-04-27 14:10:13 [INFO] ✓ 已加载 Session，跳过登录
+14:10:13 [INFO] ✓ 点击 Jobs 金刚位，跳转至: https://sg.58v5.cn/en/city-singapore/
+2026-04-27 14:10:13 [INFO] ✓ 点击 Jobs 金刚位，跳转至: https://sg.58v5.cn/en/city-singapore/
+14:10:15 [ERROR] 测试失败 URL: https://sg.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-27 14:10:15 [ERROR] 测试失败 URL: https://sg.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+FAILED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_job_preferences_skip_navigates_to_jobs_list 14:10:38 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:10:38 [INFO] ✓ 已加载 Session，跳过登录
+14:10:39 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:10:39 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:10:40 [INFO] ✅ TC002 通过：Skip 跳转职位列表验证成功: https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs
+2026-04-27 14:10:40 [INFO] ✅ TC002 通过：Skip 跳转职位列表验证成功: https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_job_preferences_back_navigates_to_home 14:11:04 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:11:04 [INFO] ✓ 已加载 Session，跳过登录
+14:11:06 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:11:06 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:11:07 [INFO] ✅ TC003 通过：Back 跳转首页验证成功: https://sg.58v5.cn/en/city-singapore/
+2026-04-27 14:11:07 [INFO] ✅ TC003 通过：Back 跳转首页验证成功: https://sg.58v5.cn/en/city-singapore/
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_empty_form_continue_shows_three_required_errors 14:11:32 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:11:32 [INFO] ✓ 已加载 Session，跳过登录
+14:11:33 [INFO] ✓ preference 清理: user_id=796568487761138112，删除 1 行
+2026-04-27 14:11:33 [INFO] ✓ preference 清理: user_id=796568487761138112，删除 1 行
+14:11:33 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:11:33 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:11:33 [INFO] ✓ 显示 3 条必填错误
+2026-04-27 14:11:33 [INFO] ✓ 显示 3 条必填错误
+14:11:33 [INFO] ✅ TC004 通过：空表单必填校验验证成功
+2026-04-27 14:11:33 [INFO] ✅ TC004 通过：空表单必填校验验证成功
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_only_job_functions_filled_shows_location_salary_errors 14:11:54 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:11:54 [INFO] ✓ 已加载 Session，跳过登录
+14:11:54 [INFO] ✓ preference 清理: user_id=796568487761138112，删除 0 行
+2026-04-27 14:11:54 [INFO] ✓ preference 清理: user_id=796568487761138112，删除 0 行
+14:11:55 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:11:55 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:11:56 [INFO] ✓ 显示 2 条错误
+2026-04-27 14:11:56 [INFO] ✓ 显示 2 条错误
+14:11:56 [INFO] ✅ TC005 通过
+2026-04-27 14:11:56 [INFO] ✅ TC005 通过
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_only_location_filled_shows_job_functions_salary_errors 14:12:17 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:12:17 [INFO] ✓ 已加载 Session，跳过登录
+14:12:17 [INFO] ✓ preference 清理: user_id=796568487761138112，删除 0 行
+2026-04-27 14:12:17 [INFO] ✓ preference 清理: user_id=796568487761138112，删除 0 行
+14:12:18 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:12:18 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:12:18 [INFO] ✅ TC006 通过
+2026-04-27 14:12:18 [INFO] ✅ TC006 通过
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_only_salary_filled_shows_job_functions_location_errors 14:12:39 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:12:39 [INFO] ✓ 已加载 Session，跳过登录
+14:12:39 [INFO] ✓ preference 清理: user_id=796568487761138112，删除 0 行
+2026-04-27 14:12:39 [INFO] ✓ preference 清理: user_id=796568487761138112，删除 0 行
+14:12:40 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:12:40 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:12:40 [INFO] ✅ TC007 通过
+2026-04-27 14:12:40 [INFO] ✅ TC007 通过
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_job_preferences_page_shows_all_form_blocks 14:13:01 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:13:01 [INFO] ✓ 已加载 Session，跳过登录
+14:13:02 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:13:02 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:13:02 [INFO] ✓ Job Functions 可见
+2026-04-27 14:13:02 [INFO] ✓ Job Functions 可见
+14:13:02 [INFO] ✓ Location 可见
+2026-04-27 14:13:02 [INFO] ✓ Location 可见
+14:13:02 [INFO] ✓ Salary 区域可见
+2026-04-27 14:13:02 [INFO] ✓ Salary 区域可见
+14:13:02 [INFO] ✅ TC008 通过：所有表单区块均可见
+2026-04-27 14:13:02 [INFO] ✅ TC008 通过：所有表单区块均可见
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_home_page_jobs_icon_visible_and_clickable 14:13:23 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:13:23 [INFO] ✓ 已加载 Session，跳过登录
+14:13:23 [INFO] ✓ Jobs 金刚位图标可见
+2026-04-27 14:13:23 [INFO] ✓ Jobs 金刚位图标可见
+14:13:23 [ERROR] 测试失败 URL: https://sgpub.58v5.cn/biz/en/jobPreference?showSkip=1&returnUrl=https%3A%2F%2Fsg.58v5.cn%2Fen%2Fcity-singapore%2Fcate-jobs%2F%3FiconSource%3Djobs
+2026-04-27 14:13:23 [ERROR] 测试失败 URL: https://sgpub.58v5.cn/biz/en/jobPreference?showSkip=1&returnUrl=https%3A%2F%2Fsg.58v5.cn%2Fen%2Fcity-singapore%2Fcate-jobs%2F%3FiconSource%3Djobs
+FAILED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_other_category_icon_bypasses_job_preferences 14:13:44 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:13:44 [INFO] ✓ 已加载 Session，跳过登录
+14:13:45 [INFO] ✅ TC010 通过：Marketplace 直接访问，URL 不含 jobPreference: https://sg.58v5.cn/en/city-singapore/cate-marketplace/
+2026-04-27 14:13:45 [INFO] ✅ TC010 通过：Marketplace 直接访问，URL 不含 jobPreference: https://sg.58v5.cn/en/city-singapore/cate-marketplace/
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_job_functions_trigger_expands_two_column_panel 14:14:06 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:14:06 [INFO] ✓ 已加载 Session，跳过登录
+14:14:07 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:14:07 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:14:07 [INFO] ✓ Job Functions 面板已展开
+2026-04-27 14:14:07 [INFO] ✓ Job Functions 面板已展开
+14:14:07 [INFO] ✅ TC011 通过
+2026-04-27 14:14:07 [INFO] ✅ TC011 通过
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_job_functions_full_selection_flow 14:14:29 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:14:29 [INFO] ✓ 已加载 Session，跳过登录
+14:14:29 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:14:29 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:14:30 [INFO] ✓ 触发器文案: Select preferred job function (1/10)
+2026-04-27 14:14:30 [INFO] ✓ 触发器文案: Select preferred job function (1/10)
+14:14:30 [INFO] ✅ TC012 通过：Job Functions 完整选择流程验证成功
+2026-04-27 14:14:30 [INFO] ✅ TC012 通过：Job Functions 完整选择流程验证成功
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_job_functions_max_10_items_boundary 14:14:51 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:14:51 [INFO] ✓ 已加载 Session，跳过登录
+14:14:52 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:14:52 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:15:03 [INFO] ✓ Job Functions 已满 10 项: Select preferred job function (10/10)
+2026-04-27 14:15:03 [INFO] ✓ Job Functions 已满 10 项: Select preferred job function (10/10)
+14:15:04 [INFO] ✓ 已验证 10 项限制，触发器: Select preferred job function (10/10)，提示可见: False
+2026-04-27 14:15:04 [INFO] ✓ 已验证 10 项限制，触发器: Select preferred job function (10/10)，提示可见: False
+14:15:04 [INFO] ✅ TC013 通过：Job Functions 最多 10 项边界验证成功
+2026-04-27 14:15:04 [INFO] ✅ TC013 通过：Job Functions 最多 10 项边界验证成功
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_job_functions_panel_closes_on_outside_click 14:15:25 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:15:25 [INFO] ✓ 已加载 Session，跳过登录
+14:15:25 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:15:25 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:15:25 [INFO] ✓ 面板已展开
+2026-04-27 14:15:25 [INFO] ✓ 面板已展开
+14:15:25 [INFO] ✅ TC014 通过：面板点击外部收起验证成功
+2026-04-27 14:15:25 [INFO] ✅ TC014 通过：面板点击外部收起验证成功
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_job_functions_clear_resets_selections 14:15:47 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:15:47 [INFO] ✓ 已加载 Session，跳过登录
+14:15:47 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:15:47 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:15:49 [INFO] ✅ TC015 通过：Job Functions Clear 验证成功，触发器: Select preferred job function (0/10)
+2026-04-27 14:15:49 [INFO] ✅ TC015 通过：Job Functions Clear 验证成功，触发器: Select preferred job function (0/10)
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_job_functions_reselect_after_clear 14:16:10 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:16:10 [INFO] ✓ 已加载 Session，跳过登录
+14:16:10 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:16:10 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:16:13 [INFO] ✅ TC016 通过：清除后再次选择，触发器: Select preferred job function (1/10)
+2026-04-27 14:16:13 [INFO] ✅ TC016 通过：清除后再次选择，触发器: Select preferred job function (1/10)
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_location_trigger_expands_checkbox_panel 14:16:35 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:16:35 [INFO] ✓ 已加载 Session，跳过登录
+14:16:35 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:16:35 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:16:36 [INFO] ✓ Location 面板已展开，Singapore 可见
+2026-04-27 14:16:36 [INFO] ✓ Location 面板已展开，Singapore 可见
+14:16:36 [INFO] ✅ TC017 通过
+2026-04-27 14:16:36 [INFO] ✅ TC017 通过
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_location_full_selection_flow 14:16:57 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:16:57 [INFO] ✓ 已加载 Session，跳过登录
+14:16:57 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:16:57 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:16:58 [INFO] ✅ TC018 通过：Location 完整流程，触发器: Select preferred work location (1/5)
+2026-04-27 14:16:58 [INFO] ✅ TC018 通过：Location 完整流程，触发器: Select preferred work location (1/5)
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_location_max_5_items_boundary 14:17:19 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:17:19 [INFO] ✓ 已加载 Session，跳过登录
+14:17:19 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:17:19 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:17:20 [INFO] ✓ Location 已选: Select preferred work location (5/5)
+2026-04-27 14:17:20 [INFO] ✓ Location 已选: Select preferred work location (5/5)
+14:17:20 [INFO] ✓ 显示最多选 5 项相关提示
+2026-04-27 14:17:20 [INFO] ✓ 显示最多选 5 项相关提示
+14:17:20 [INFO] ✅ TC019 通过：Location 最多 5 项边界验证成功
+2026-04-27 14:17:20 [INFO] ✅ TC019 通过：Location 最多 5 项边界验证成功
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_location_uncheck_updates_count 14:17:41 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:17:41 [INFO] ✓ 已加载 Session，跳过登录
+14:17:41 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:17:41 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:17:43 [INFO] ✅ TC020 通过：取消勾选后计数: Select preferred work location (1/5)
+2026-04-27 14:17:43 [INFO] ✅ TC020 通过：取消勾选后计数: Select preferred work location (1/5)
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_location_clear_resets_selections 14:18:04 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:18:04 [INFO] ✓ 已加载 Session，跳过登录
+14:18:04 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:18:04 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:18:06 [INFO] ✅ TC021 通过：Location Clear 验证成功，触发器: Select preferred work location (0/5)
+2026-04-27 14:18:06 [INFO] ✅ TC021 通过：Location Clear 验证成功，触发器: Select preferred work location (0/5)
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_location_reselect_after_clear 14:18:27 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:18:27 [INFO] ✓ 已加载 Session，跳过登录
+14:18:27 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:18:27 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:18:29 [INFO] ✅ TC022 通过：清除后再次选择 Location，触发器: Select preferred work location (1/5)
+2026-04-27 14:18:29 [INFO] ✅ TC022 通过：清除后再次选择 Location，触发器: Select preferred work location (1/5)
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_pay_type_button_expands_options 14:18:50 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:18:50 [INFO] ✓ 已加载 Session，跳过登录
+14:18:51 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:18:51 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:18:51 [INFO] ✓ Pay type 三个选项均可见
+2026-04-27 14:18:51 [INFO] ✓ Pay type 三个选项均可见
+14:18:51 [INFO] ✅ TC023 通过
+2026-04-27 14:18:51 [INFO] ✅ TC023 通过
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_salary_full_flow_pay_type_and_amount 14:19:12 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:19:12 [INFO] ✓ 已加载 Session，跳过登录
+14:19:12 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:19:12 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:19:13 [INFO] ✓ Pay type 文案: Select pay type
+Monthly
+2026-04-27 14:19:13 [INFO] ✓ Pay type 文案: Select pay type
+Monthly
+14:19:13 [INFO] ✅ TC024 通过：Salary 完整流程，金额: 3,000
+2026-04-27 14:19:13 [INFO] ✅ TC024 通过：Salary 完整流程，金额: 3,000
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_salary_amount_boundary_values 14:19:34 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:19:34 [INFO] ✓ 已加载 Session，跳过登录
+14:19:34 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:19:34 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:19:36 [INFO] ✓ 输入 0 保留: '0'
+2026-04-27 14:19:36 [INFO] ✓ 输入 0 保留: '0'
+14:19:37 [INFO] ✓ 正常正数保留: '3,000'
+2026-04-27 14:19:37 [INFO] ✓ 正常正数保留: '3,000'
+14:19:39 [INFO] ✓ 超长数字截断后保留 13 位: '9,999,999,999,999'
+2026-04-27 14:19:39 [INFO] ✓ 超长数字截断后保留 13 位: '9,999,999,999,999'
+14:19:39 [INFO] ✅ TC025 通过：Salary 边界值验证成功
+2026-04-27 14:19:39 [INFO] ✅ TC025 通过：Salary 边界值验证成功
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_salary_illegal_chars_blocked 14:20:00 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:20:00 [INFO] ✓ 已加载 Session，跳过登录
+14:20:01 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:20:01 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:20:03 [INFO] ✓ 非法字符已拦截，输入框值: ''
+2026-04-27 14:20:03 [INFO] ✓ 非法字符已拦截，输入框值: ''
+14:20:03 [INFO] ✅ TC026 通过：Salary 非法字符拦截验证成功
+2026-04-27 14:20:03 [INFO] ✅ TC026 通过：Salary 非法字符拦截验证成功
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_salary_amount_clear_resets_input 14:20:24 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:20:24 [INFO] ✓ 已加载 Session，跳过登录
+14:20:24 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:20:24 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:20:26 [INFO] ✓ 金额已清空，当前值: ''
+2026-04-27 14:20:26 [INFO] ✓ 金额已清空，当前值: ''
+14:20:26 [INFO] ✅ TC027 通过：Salary Clear 清除验证成功
+2026-04-27 14:20:26 [INFO] ✅ TC027 通过：Salary Clear 清除验证成功
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_salary_pay_type_can_be_switched 14:20:47 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:20:47 [INFO] ✓ 已加载 Session，跳过登录
+14:20:47 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:20:47 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:20:49 [INFO] ✅ TC028 通过：Pay type 切换，文案: Select pay type
+Yearly
+2026-04-27 14:20:49 [INFO] ✅ TC028 通过：Pay type 切换，文案: Select pay type
+Yearly
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_after_filling_and_clearing_all_fields_errors_reappear 14:21:10 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:21:10 [INFO] ✓ 已加载 Session，跳过登录
+14:21:10 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:21:10 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:21:15 [INFO] ✅ TC029 通过：清除后必填错误数量: 3
+2026-04-27 14:21:15 [INFO] ✅ TC029 通过：清除后必填错误数量: 3
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_workplace_type_and_job_type_are_optional_multiselect 14:21:36 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:21:36 [INFO] ✓ 已加载 Session，跳过登录
+14:21:37 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:21:37 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:21:37 [INFO] ✅ TC030 通过：Workplace Type / Job Type 交互与选中态验证成功
+2026-04-27 14:21:37 [INFO] ✅ TC030 通过：Workplace Type / Job Type 交互与选中态验证成功
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_refresh_page_clears_unfilled_form_data 14:21:58 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:21:58 [INFO] ✓ 已加载 Session，跳过登录
+14:21:58 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:21:58 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:21:59 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:21:59 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:21:59 [INFO] ✅ TC031 通过：刷新后数据已清空，触发器: Select preferred work location (0/5)
+2026-04-27 14:21:59 [INFO] ✅ TC031 通过：刷新后数据已清空，触发器: Select preferred work location (0/5)
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_unauthenticated_access_job_preferences_shows_login_popup 14:22:02 [INFO] ⚠️ 未弹出登录弹窗，当前 URL: https://sgpub.58v5.cn/biz/en/jobPreference?showSkip=1&returnUrl=https%3A%2F%2Fsg.58v5.cn%2Fen%2Fcity-singapore%2Fcate-jobs%2F%3FiconSource%3Djobs（可能已登录或跳转）
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:22:02 [INFO] ⚠️ 未弹出登录弹窗，当前 URL: https://sgpub.58v5.cn/biz/en/jobPreference?showSkip=1&returnUrl=https%3A%2F%2Fsg.58v5.cn%2Fen%2Fcity-singapore%2Fcate-jobs%2F%3FiconSource%3Djobs（可能已登录或跳转）
+14:22:02 [INFO] ✅ TC032 完成（结果取决于账号登录状态）
+2026-04-27 14:22:02 [INFO] ✅ TC032 完成（结果取决于账号登录状态）
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_direct_jobs_list_url_bypasses_job_preferences 14:22:23 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:22:23 [INFO] ✓ 已加载 Session，跳过登录
+14:22:24 [INFO] ✅ TC033 通过：直接进入职位列表: https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs
+2026-04-27 14:22:24 [INFO] ✅ TC033 通过：直接进入职位列表: https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_skip_return_url_contains_icon_source_jobs 14:22:46 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:22:46 [INFO] ✓ 已加载 Session，跳过登录
+14:22:46 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:22:46 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:22:47 [INFO] ✅ TC034 通过：Skip URL 含 iconSource=jobs: https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs
+2026-04-27 14:22:47 [INFO] ✅ TC034 通过：Skip URL 含 iconSource=jobs: https://sg.58v5.cn/en/city-singapore/cate-jobs/?iconSource=jobs
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_pay_type_switch_to_monthly_updates_button_text 14:23:09 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:23:09 [INFO] ✓ 已加载 Session，跳过登录
+14:23:10 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:23:10 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:23:11 [INFO] ✅ TC035 通过：Pay type 文案: Select pay type
+Monthly
+2026-04-27 14:23:11 [INFO] ✅ TC035 通过：Pay type 文案: Select pay type
+Monthly
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_pay_type_monthly_all_required_fields_filled_continue_enabled 14:23:32 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:23:32 [INFO] ✓ 已加载 Session，跳过登录
+14:23:32 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:23:32 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:23:34 [INFO] ✅ TC036 通过：Continue 按钮可点击（disabled=None）
+2026-04-27 14:23:34 [INFO] ✅ TC036 通过：Continue 按钮可点击（disabled=None）
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_pay_type_monthly_yearly_toggle_updates_text 14:23:55 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:23:55 [INFO] ✓ 已加载 Session，跳过登录
+14:23:56 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:23:56 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:23:57 [INFO] ✅ TC037 通过：Monthly→Yearly 切换，文案: Select pay type
+Yearly
+2026-04-27 14:23:57 [INFO] ✅ TC037 通过：Monthly→Yearly 切换，文案: Select pay type
+Yearly
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_monthly_pay_type_empty_amount_triggers_required_error 14:24:19 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:24:19 [INFO] ✓ 已加载 Session，跳过登录
+14:24:19 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:24:19 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:24:20 [INFO] ✅ TC038 通过：Salary 必填校验显示（错误数: 3）
+2026-04-27 14:24:20 [INFO] ✅ TC038 通过：Salary 必填校验显示（错误数: 3）
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_pay_type_switch_to_hourly_updates_button_text 14:24:41 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:24:41 [INFO] ✓ 已加载 Session，跳过登录
+14:24:42 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:24:42 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:24:43 [INFO] ✅ TC039 通过：Pay type 文案: Select pay type
+Hourly
+2026-04-27 14:24:43 [INFO] ✅ TC039 通过：Pay type 文案: Select pay type
+Hourly
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_pay_type_hourly_all_required_fields_filled_continue_enabled 14:25:04 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:25:04 [INFO] ✓ 已加载 Session，跳过登录
+14:25:05 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:25:05 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:25:07 [INFO] ✅ TC040 通过：Hourly 三个必填字段 Continue 可点击
+2026-04-27 14:25:07 [INFO] ✅ TC040 通过：Hourly 三个必填字段 Continue 可点击
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_pay_type_hourly_yearly_toggle_updates_text 14:25:28 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:25:28 [INFO] ✓ 已加载 Session，跳过登录
+14:25:29 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:25:29 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:25:31 [INFO] ✅ TC041 通过：Hourly→Yearly，文案: Select pay type
+Yearly
+2026-04-27 14:25:31 [INFO] ✅ TC041 通过：Hourly→Yearly，文案: Select pay type
+Yearly
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_pay_type_monthly_to_hourly_updates_button_text 14:25:52 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:25:52 [INFO] ✓ 已加载 Session，跳过登录
+14:25:52 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:25:52 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:25:54 [INFO] ✅ TC042 通过：Monthly→Hourly，文案: Select pay type
+Hourly
+2026-04-27 14:25:54 [INFO] ✅ TC042 通过：Monthly→Hourly，文案: Select pay type
+Hourly
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_pay_type_hourly_to_monthly_updates_button_text 14:26:15 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:26:15 [INFO] ✓ 已加载 Session，跳过登录
+14:26:15 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:26:15 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:26:17 [INFO] ✅ TC043 通过：Hourly→Monthly，文案: Select pay type
+Monthly
+2026-04-27 14:26:17 [INFO] ✅ TC043 通过：Hourly→Monthly，文案: Select pay type
+Monthly
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_hourly_pay_type_empty_amount_triggers_required_error 14:26:38 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:26:38 [INFO] ✓ 已加载 Session，跳过登录
+14:26:38 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:26:38 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:26:40 [INFO] ✅ TC044 通过：Hourly 清空金额必填校验（错误数: 3）
+2026-04-27 14:26:40 [INFO] ✅ TC044 通过：Hourly 清空金额必填校验（错误数: 3）
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_monthly_hourly_extreme_salary_boundary_values 14:27:01 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:27:01 [INFO] ✓ 已加载 Session，跳过登录
+14:27:01 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:27:01 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:27:03 [INFO] ✓ Monthly 输入 0 保留: '0'
+2026-04-27 14:27:03 [INFO] ✓ Monthly 输入 0 保留: '0'
+14:27:05 [INFO] ✓ Monthly 超长数字截断后 13 位: '9,999,999,999,999'
+2026-04-27 14:27:05 [INFO] ✓ Monthly 超长数字截断后 13 位: '9,999,999,999,999'
+14:27:07 [INFO] ✓ Hourly 输入 0 保留: '0'
+2026-04-27 14:27:07 [INFO] ✓ Hourly 输入 0 保留: '0'
+14:27:09 [INFO] ✓ Hourly 超长数字截断后 13 位: '9,999,999,999,999'
+2026-04-27 14:27:09 [INFO] ✓ Hourly 超长数字截断后 13 位: '9,999,999,999,999'
+14:27:09 [INFO] ✓ Monthly 与 Hourly 对超长数字处理行为一致
+2026-04-27 14:27:09 [INFO] ✓ Monthly 与 Hourly 对超长数字处理行为一致
+14:27:09 [INFO] ✅ TC045 通过：Monthly 和 Hourly 极端金额边界验证成功
+2026-04-27 14:27:09 [INFO] ✅ TC045 通过：Monthly 和 Hourly 极端金额边界验证成功
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_salary_two_decimal_places_preserved 14:27:30 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:27:30 [INFO] ✓ 已加载 Session，跳过登录
+14:27:30 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:27:30 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:27:32 [INFO] ✅ TC046 通过：两位小数输入，当前值: 1,234.56
+2026-04-27 14:27:32 [INFO] ✅ TC046 通过：两位小数输入，当前值: 1,234.56
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_salary_more_than_two_decimals_truncated 14:27:53 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:27:53 [INFO] ✓ 已加载 Session，跳过登录
+14:27:54 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:27:54 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:27:56 [INFO] ✅ TC047 通过：三位小数处理，当前值: 1,000.99
+2026-04-27 14:27:56 [INFO] ✅ TC047 通过：三位小数处理，当前值: 1,000.99
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_salary_one_decimal_place_allowed 14:28:17 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:28:17 [INFO] ✓ 已加载 Session，跳过登录
+14:28:18 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:28:18 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:28:20 [INFO] ✅ TC048 通过：一位小数输入，当前值: 500.5
+2026-04-27 14:28:20 [INFO] ✅ TC048 通过：一位小数输入，当前值: 500.5
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_salary_negative_sign_blocked 14:28:41 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:28:41 [INFO] ✓ 已加载 Session，跳过登录
+14:28:41 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:28:41 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:28:43 [INFO] ✅ TC049 通过：负号已阻止，当前值: 500
+2026-04-27 14:28:43 [INFO] ✅ TC049 通过：负号已阻止，当前值: 500
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_salary_paste_with_illegal_chars_filtered 14:29:04 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:29:04 [INFO] ✓ 已加载 Session，跳过登录
+14:29:05 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:29:05 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:29:06 [INFO] ✅ TC050 通过：粘贴非法字符串处理，当前值: 
+2026-04-27 14:29:06 [INFO] ✅ TC050 通过：粘贴非法字符串处理，当前值: 
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_job_functions_deselect_item_in_panel 14:29:27 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:29:27 [INFO] ✓ 已加载 Session，跳过登录
+14:29:28 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:29:28 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:29:30 [INFO] ✅ TC051 通过：Job Functions 反选取消，触发器: Select preferred job function (1/10)
+2026-04-27 14:29:30 [INFO] ✅ TC051 通过：Job Functions 反选取消，触发器: Select preferred job function (1/10)
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_job_functions_deselect_all_restores_placeholder 14:29:51 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:29:51 [INFO] ✓ 已加载 Session，跳过登录
+14:29:51 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:29:51 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:29:53 [INFO] ✅ TC052 通过：全部反选后占位文案: Select preferred job function (0/10)
+2026-04-27 14:29:53 [INFO] ✅ TC052 通过：全部反选后占位文案: Select preferred job function (0/10)
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_location_deselect_item_in_panel 14:30:14 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:30:14 [INFO] ✓ 已加载 Session，跳过登录
+14:30:15 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:30:15 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:30:16 [INFO] ✅ TC053 通过：Location 反选取消，触发器: Select preferred work location (0/5)
+2026-04-27 14:30:16 [INFO] ✅ TC053 通过：Location 反选取消，触发器: Select preferred work location (0/5)
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_location_deselect_all_restores_placeholder 14:30:37 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:30:37 [INFO] ✓ 已加载 Session，跳过登录
+14:30:37 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:30:37 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:30:39 [INFO] ✅ TC054 通过：Location 全部反选后占位文案: Select preferred work location (0/5)
+2026-04-27 14:30:39 [INFO] ✅ TC054 通过：Location 全部反选后占位文案: Select preferred work location (0/5)
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_workplace_type_deselect_item 14:31:00 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:31:00 [INFO] ✓ 已加载 Session，跳过登录
+14:31:00 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:31:00 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:31:00 [INFO] ✅ TC055 通过：Workplace Type 末次为 Hybrid
+2026-04-27 14:31:00 [INFO] ✅ TC055 通过：Workplace Type 末次为 Hybrid
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_workplace_type_deselect_all_items 14:31:21 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:31:21 [INFO] ✓ 已加载 Session，跳过登录
+14:31:22 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:31:22 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:31:22 [INFO] ✅ TC056 通过：Workplace Type 多项切换交互完成
+2026-04-27 14:31:22 [INFO] ✅ TC056 通过：Workplace Type 多项切换交互完成
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_job_type_deselect_item 14:31:43 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:31:43 [INFO] ✓ 已加载 Session，跳过登录
+14:31:43 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:31:43 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:31:43 [INFO] ✅ TC057 通过：Job Type 末次为 Contract
+2026-04-27 14:31:43 [INFO] ✅ TC057 通过：Job Type 末次为 Contract
+PASSED
+test_cases/zhaopin/test_sg_job_preferences.py::test_sg_job_type_deselect_all_items 14:32:04 [INFO] ✓ 已加载 Session，跳过登录
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:32:04 [INFO] ✓ 已加载 Session，跳过登录
+14:32:05 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:32:05 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:32:05 [INFO] ✅ TC058 通过：Job Type 多项切换交互完成
+2026-04-27 14:32:05 [INFO] ✅ TC058 通过：Job Type 多项切换交互完成
+PASSED14:32:05 [INFO] [PLAYWRIGHT] 清理全局 Playwright 实例
+---------------------------- live log sessionfinish ----------------------------
+2026-04-27 14:32:05 [INFO] [PLAYWRIGHT] 清理全局 Playwright 实例
+14:32:05 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例已清理
+2026-04-27 14:32:05 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例已清理
+
+
+=================================== FAILURES ===================================
+_____________ test_sg_jobs_icon_navigates_to_job_preferences_page ______________
+test_cases/zhaopin/test_sg_job_preferences.py:148: in test_sg_jobs_icon_navigates_to_job_preferences_page
+    assert "cate-jobs" in current_url and "iconSource=jobs" in current_url, \
+E   AssertionError: 期望 jobPreference 中间页或带 iconSource=jobs 的职位列表，当前: https://sg.58v5.cn/en/city-singapore/
+E   assert ('cate-jobs' in 'https://sg.58v5.cn/en/city-singapore/')
+------------------------------ Captured log setup ------------------------------
+INFO     AutoTest:browser_manager.py:42 [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+INFO     AutoTest:browser_manager.py:45 [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+INFO     AutoTest:conftest.py:143 [zhaopin] 已创建共享 BrowserContext: site=sg headless=True
+------------------------------ Captured log call -------------------------------
+INFO     AutoTest:test_sg_job_preferences.py:127 ============================================================
+INFO     AutoTest:test_sg_job_preferences.py:128 TC001: SG站 - 点击Jobs金刚位进入Job Preferences
+INFO     AutoTest:test_sg_job_preferences.py:129 ============================================================
+INFO     AutoTest:sg_login_helper.py:43 ✓ 已加载 Session，跳过登录
+INFO     AutoTest:test_sg_job_preferences.py:137 ✓ 点击 Jobs 金刚位，跳转至: https://sg.58v5.cn/en/city-singapore/
+______________ test_sg_home_page_jobs_icon_visible_and_clickable _______________
+test_cases/zhaopin/test_sg_job_preferences.py:451: in test_sg_home_page_jobs_icon_visible_and_clickable
+    assert "city-singapore" not in current_url or "cate-jobs" in current_url or "jobPreference" in current_url, \
+E   AssertionError: 点击 Jobs 后 URL 未变化: https://sg.58v5.cn/en/city-singapore/
+E   assert ('city-singapore' not in 'https://sg....y-singapore/'
+E     
+E     'city-singapore' is contained here:
+E       https://sg.58v5.cn/en/city-singapore/
+E     ?                       ++++++++++++++ or 'cate-jobs' in 'https://sg.58v5.cn/en/city-singapore/' or 'jobPreference' in 'https://sg.58v5.cn/en/city-singapore/')
+------------------------------ Captured log call -------------------------------
+INFO     AutoTest:sg_login_helper.py:43 ✓ 已加载 Session，跳过登录
+INFO     AutoTest:test_sg_job_preferences.py:443 ✓ Jobs 金刚位图标可见
+- generated xml file: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/parallel_headless_run_20260427_140941/junit/test_sg_job_preferences_junit.xml -
+=========================== short test summary info ============================
+FAILED test_cases/zhaopin/test_sg_job_preferences.py::test_sg_jobs_icon_navigates_to_job_preferences_page - AssertionError: 期望 jobPreference 中间页或带 iconSource=jobs 的职位列表，当前: https://sg.58v5.cn/en/city-singapore/
+assert ('cate-jobs' in 'https://sg.58v5.cn/en/city-singapore/')
+FAILED test_cases/zhaopin/test_sg_job_preferences.py::test_sg_home_page_jobs_icon_visible_and_clickable - AssertionError: 点击 Jobs 后 URL 未变化: https://sg.58v5.cn/en/city-singapore/
+assert ('city-singapore' not in 'https://sg....y-singapore/'
+  
+  'city-singapore' is contained here:
+    https://sg.58v5.cn/en/city-singapore/
+  ?                       ++++++++++++++ or 'cate-jobs' in 'https://sg.58v5.cn/en/city-singapore/' or 'jobPreference' in 'https://sg.58v5.cn/en/city-singapore/')
+================== 2 failed, 56 passed in 1343.65s (0:22:23) ===================

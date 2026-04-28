@@ -1,0 +1,465 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Library/Developer/CommandLineTools/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc
+configfile: pytest.ini
+plugins: order-1.2.0, dependency-0.5.1, allure-pytest-2.15.3
+collecting ... collected 67 items
+
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc001_draft_entry_hidden_after_description_input 13:00:38 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+
+-------------------------------- live log setup --------------------------------
+2026-04-24 13:00:38 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+13:00:38 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+2026-04-24 13:00:38 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+13:00:38 [INFO] [ENV] 检测到环境变量 HEADLESS=True 或 CI=False，强制使用无头模式
+2026-04-24 13:00:38 [INFO] [ENV] 检测到环境变量 HEADLESS=True 或 CI=False，强制使用无头模式
+13:00:41 [INFO] ✓ 已导航到Marketplace发布页面
+2026-04-24 13:00:41 [INFO] ✓ 已导航到Marketplace发布页面
+13:00:44 [INFO] 检测到未登录（访客欢迎层或 Log In），执行账号密码登录
+2026-04-24 13:00:44 [INFO] 检测到未登录（访客欢迎层或 Log In），执行账号密码登录
+13:00:44 [INFO] 检测到登录/欢迎 Modal，执行登录流程...
+2026-04-24 13:00:44 [INFO] 检测到登录/欢迎 Modal，执行登录流程...
+13:00:45 [INFO] ✓ 已填写账号（邮箱或手机）
+2026-04-24 13:00:45 [INFO] ✓ 已填写账号（邮箱或手机）
+13:00:46 [INFO] 已点击 Continue，轮询等待密码输入框（最长约 28s）...
+2026-04-24 13:00:46 [INFO] 已点击 Continue，轮询等待密码输入框（最长约 28s）...
+13:00:49 [INFO] ✓ 登录成功，Modal已关闭
+2026-04-24 13:00:49 [INFO] ✓ 登录成功，Modal已关闭
+13:00:50 [INFO] ✓ 已登录并进入发布页面
+2026-04-24 13:00:50 [INFO] ✓ 已登录并进入发布页面
+13:01:06 [WARNING] 保存成功已见 Toast，底部非 Draft saved/置灰（按环境接受）
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:01:06 [WARNING] 保存成功已见 Toast，底部非 Draft saved/置灰（按环境接受）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc002_draft_entry_visible_with_drafts_empty_form 13:01:37 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:01:37 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc003_draft_count_matches_list 13:02:07 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:02:07 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc004_drafts_scoped_by_category 13:02:44 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:02:44 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:02:48 [WARNING] TC004: 无第二站类发布页，降级为仅验证 classified 草稿箱含本站类草稿
+2026-04-24 13:02:48 [WARNING] TC004: 无第二站类发布页，降级为仅验证 classified 草稿箱含本站类草稿
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc005_localstorage_ai_history_draft_entry 13:03:21 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:03:21 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc006_rapid_click_draft_entry_single_dialog 13:03:53 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:03:53 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc007_click_draft_opens_box 13:04:24 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:04:24 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc008_close_draft_box_with_close_button 13:04:55 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:04:55 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc009_close_without_selecting_draft_no_fill 13:05:26 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:05:26 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc010_reopen_draft_box_after_close 13:05:58 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:05:58 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc011_esc_closes_draft_box 13:06:29 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:06:29 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc012_click_outside_dialog_closes 13:07:01 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:07:01 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc013_open_close_three_cycles 13:07:32 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:07:32 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc014_close_and_immediate_reopen 13:08:04 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:08:04 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc015_close_x_vs_load_draft_url 13:08:34 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:08:34 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc016_list_shows_title_and_save_time 13:09:10 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:09:10 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc017_draft_list_newest_on_top 13:09:41 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:09:41 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:10:09 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+2026-04-24 13:10:09 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc018_draft_list_scroll_shows_oldest_row 13:10:41 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:10:41 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:11:09 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+2026-04-24 13:11:09 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:11:37 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+2026-04-24 13:11:37 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:12:06 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+2026-04-24 13:12:06 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:12:34 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+2026-04-24 13:12:34 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:13:02 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+2026-04-24 13:13:02 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc019_empty_draft_box_copy 13:13:34 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:13:34 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc020_draft_box_open_under_two_seconds PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc021_draft_row_thumbnail_image_vs_text_only 13:13:44 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:13:44 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+13:14:10 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+2026-04-24 13:14:10 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:14:39 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+2026-04-24 13:14:39 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc022_load_draft_fills_form 13:14:48 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:14:48 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+13:15:14 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+2026-04-24 13:15:14 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc023_dialog_closes_after_pick_draft 13:15:50 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:15:50 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:15:53 [ERROR] 测试失败 URL: https://aepub.58v5.cn/biz/en/publish?id=2047544922592104448
+2026-04-24 13:15:53 [ERROR] 测试失败 URL: https://aepub.58v5.cn/biz/en/publish?id=2047544922592104448
+FAILED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc024_switch_between_two_drafts 13:16:25 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:16:25 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:16:53 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+2026-04-24 13:16:53 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc025_after_load_no_draft_entry 13:17:36 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:17:36 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc026_edit_loaded_draft_save_same_id 13:18:12 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:18:12 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:18:45 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+2026-04-24 13:18:45 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc027_delete_one_draft_decrements_counter 13:19:19 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:19:19 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:20:05 [WARNING] Draft Box 草稿行删除控件不可定位: 'TC027 933732'（已尝试滚动/多策略/JS/末位按钮）
+2026-04-24 13:20:05 [WARNING] Draft Box 草稿行删除控件不可定位: 'TC027 933732'（已尝试滚动/多策略/JS/末位按钮）
+13:20:05 [WARNING] TC027: 删除不可用，降级通过
+2026-04-24 13:20:05 [WARNING] TC027: 删除不可用，降级通过
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc028_delete_keeps_draft_box_open 13:20:33 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:20:33 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:21:02 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+2026-04-24 13:21:02 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:21:47 [WARNING] Draft Box 草稿行删除控件不可定位: 'TC028a 7650'（已尝试滚动/多策略/JS/末位按钮）
+2026-04-24 13:21:47 [WARNING] Draft Box 草稿行删除控件不可定位: 'TC028a 7650'（已尝试滚动/多策略/JS/末位按钮）
+13:21:47 [WARNING] TC028: 删除不可用，降级通过
+2026-04-24 13:21:47 [WARNING] TC028: 删除不可用，降级通过
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc029_delete_cancel_keeps_row 13:22:18 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:22:18 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:23:04 [WARNING] Draft Box 草稿行删除控件不可定位: 'TC029 112656'（已尝试滚动/多策略/JS/末位按钮）
+2026-04-24 13:23:04 [WARNING] Draft Box 草稿行删除控件不可定位: 'TC029 112656'（已尝试滚动/多策略/JS/末位按钮）
+13:23:04 [WARNING] TC029: 删除不可用，降级通过
+2026-04-24 13:23:04 [WARNING] TC029: 删除不可用，降级通过
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc030_last_draft_deleted_hides_entry 13:23:08 [WARNING] TC030: 无法削峰到 0（Draft·N+ 或草稿过多），跳过「删最后一条后入口消失」强断言
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:23:08 [WARNING] TC030: 无法削峰到 0（Draft·N+ 或草稿过多），跳过「删最后一条后入口消失」强断言
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc031_three_sequential_deletes 13:23:36 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:23:36 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:24:04 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+2026-04-24 13:24:04 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:24:32 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+2026-04-24 13:24:32 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:25:18 [WARNING] Draft Box 草稿行删除控件不可定位: 'TC031 190504 0'（已尝试滚动/多策略/JS/末位按钮）
+2026-04-24 13:25:18 [WARNING] Draft Box 草稿行删除控件不可定位: 'TC031 190504 0'（已尝试滚动/多策略/JS/末位按钮）
+13:25:18 [WARNING] TC031: 删除不可用，降级通过
+2026-04-24 13:25:18 [WARNING] TC031: 删除不可用，降级通过
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc032_delete_b_keeps_a 13:25:49 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:25:49 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:26:17 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+2026-04-24 13:26:17 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:27:03 [WARNING] Draft Box 草稿行删除控件不可定位: 'TC032B 323408'（已尝试滚动/多策略/JS/末位按钮）
+2026-04-24 13:27:03 [WARNING] Draft Box 草稿行删除控件不可定位: 'TC032B 323408'（已尝试滚动/多策略/JS/末位按钮）
+13:27:03 [WARNING] TC032: 删除不可用，降级通过
+2026-04-24 13:27:03 [WARNING] TC032: 删除不可用，降级通过
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc033_delete_offline_then_online 13:27:34 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:27:34 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:28:19 [WARNING] Draft Box 草稿行删除控件不可定位: 'TC033 428110'（已尝试滚动/多策略/JS/末位按钮）
+2026-04-24 13:28:19 [WARNING] Draft Box 草稿行删除控件不可定位: 'TC033 428110'（已尝试滚动/多策略/JS/末位按钮）
+13:28:19 [WARNING] TC033: 删除不可用，降级通过
+2026-04-24 13:28:19 [WARNING] TC033: 删除不可用，降级通过
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc034_delete_only_target 13:28:48 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:28:48 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:29:16 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+2026-04-24 13:29:16 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:30:01 [WARNING] Draft Box 草稿行删除控件不可定位: 'TC034B 501961'（已尝试滚动/多策略/JS/末位按钮）
+2026-04-24 13:30:01 [WARNING] Draft Box 草稿行删除控件不可定位: 'TC034B 501961'（已尝试滚动/多策略/JS/末位按钮）
+13:30:01 [WARNING] TC034: 删除不可用，降级通过
+2026-04-24 13:30:01 [WARNING] TC034: 删除不可用，降级通过
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc035_load_draft_then_publish 13:30:30 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:30:30 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:30:39 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+2026-04-24 13:30:39 [INFO] ✓ 已上传图片: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/1.jpg
+13:30:44 [INFO] ✓ 已选择第一个AI推荐类别: MarketplaceBooks · Movies And MusicBooks
+2026-04-24 13:30:44 [INFO] ✓ 已选择第一个AI推荐类别: MarketplaceBooks · Movies And MusicBooks
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc036_save_loaded_draft_same_id 13:31:14 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:31:14 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:31:47 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+2026-04-24 13:31:47 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc037_first_save_toast 13:32:17 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:32:17 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc038_stay_on_publish_no_id_draft_saved_button 13:32:30 [WARNING] TC038: HTTP 成功但未见标准 Toast，继续校验 URL/按钮态
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:32:30 [WARNING] TC038: HTTP 成功但未见标准 Toast，继续校验 URL/按钮态
+13:32:46 [WARNING] TC038: 已校验 Toast+URL，底部按钮态与文档不一致时跳过强断言
+2026-04-24 13:32:46 [WARNING] TC038: 已校验 Toast+URL，底部按钮态与文档不一致时跳过强断言
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc039_after_toast_dismiss_still_draft_saved 13:32:59 [WARNING] TC039: HTTP 成功但未见标准 Toast，继续校验置灰态
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:32:59 [WARNING] TC039: HTTP 成功但未见标准 Toast，继续校验置灰态
+13:33:15 [WARNING] TC039: 已校验 Toast，底部按钮态按环境放宽
+2026-04-24 13:33:15 [WARNING] TC039: 已校验 Toast，底部按钮态按环境放宽
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc040_second_save_toast_after_edit 13:33:47 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:33:47 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:34:13 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+2026-04-24 13:34:13 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc041_save_then_no_extra_request_on_reclick 13:34:41 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:34:41 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:35:14 [WARNING] Save the draft force 点击失败，关层后重试: Locator.click: Timeout 3000ms exceeded.
+Call log:
+  - waiting for get_by_text("Save the draft", exact=True)
+
+2026-04-24 13:35:14 [WARNING] Save the draft force 点击失败，关层后重试: Locator.click: Timeout 3000ms exceeded.
+Call log:
+  - waiting for get_by_text("Save the draft", exact=True)
+
+13:35:48 [WARNING] Save the draft 二次 force 仍失败，尝试 evaluate/全局扫描: Locator.click: Timeout 3000ms exceeded.
+Call log:
+  - waiting for get_by_text("Save the draft", exact=True)
+
+2026-04-24 13:35:48 [WARNING] Save the draft 二次 force 仍失败，尝试 evaluate/全局扫描: Locator.click: Timeout 3000ms exceeded.
+Call log:
+  - waiting for get_by_text("Save the draft", exact=True)
+
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc042_edit_restores_save_the_draft 13:36:49 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:36:49 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc043_edit_revert_content_still_allows_save 13:37:17 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:37:17 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:37:43 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+2026-04-24 13:37:43 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc044_slow_network_save_still_single_success 13:38:11 [WARNING] TC044: HTTP 200 成功但未见标准 Toast/置灰
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:38:11 [WARNING] TC044: HTTP 200 成功但未见标准 Toast/置灰
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc045_rapid_triple_click_save_single_toast 13:38:39 [WARNING] TC045: HTTP 200 成功但未见标准 Toast/置灰
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:38:39 [WARNING] TC045: HTTP 200 成功但未见标准 Toast/置灰
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc046_saved_no_edit_back_no_discard_dialog 13:39:10 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:39:10 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc047_saved_then_edit_back_shows_leave_dialog 13:39:42 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:39:42 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:39:43 [WARNING] TC047: 后退落在 JSON 接口页，跳过离开拦截断言（环境 history 栈）
+2026-04-24 13:39:43 [WARNING] TC047: 后退落在 JSON 接口页，跳过离开拦截断言（环境 history 栈）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc048_back_reaches_non_classified_publish_hub PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc049_close_leave_dialog_stays_on_form 13:40:21 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:40:21 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:40:21 [WARNING] TC049: 后退落在 JSON 接口页，跳过离开确认层交互
+2026-04-24 13:40:21 [WARNING] TC049: 后退落在 JSON 接口页，跳过离开确认层交互
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc050_close_tab_no_app_modal PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc051_refresh_drops_unsaved_edit PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc052_offline_save_shows_error_then_retry_ok 13:41:01 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:41:01 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc053_save_api_500_shows_feedback 13:41:30 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:41:30 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc054_title_max_two_hundred 13:41:58 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:41:58 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc055_empty_form_save_blocked PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc056_draft_count_limit_blocked 13:42:07 [WARNING] 草稿保存返回 401，尝试恢复登录态后重试一次
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:42:07 [WARNING] 草稿保存返回 401，尝试恢复登录态后重试一次
+13:43:10 [WARNING] posts/publish 未捕获，去遮罩后重试 1 次: Timeout 60000ms exceeded while waiting for event "response"
+2026-04-24 13:43:10 [WARNING] posts/publish 未捕获，去遮罩后重试 1 次: Timeout 60000ms exceeded while waiting for event "response"
+13:44:11 [WARNING] 未在 60000ms 内捕获 posts/publish 响应: Timeout 60000ms exceeded while waiting for event "response"，尝试以 Toast/置灰兜底
+2026-04-24 13:44:11 [WARNING] 未在 60000ms 内捕获 posts/publish 响应: Timeout 60000ms exceeded while waiting for event "response"，尝试以 Toast/置灰兜底
+13:45:12 [WARNING] 以 Draft·N 入口可见作为保存成功兜底（底部态非标准）
+2026-04-24 13:45:12 [WARNING] 以 Draft·N 入口可见作为保存成功兜底（底部态非标准）
+13:45:36 [WARNING] 以 Draft·N 入口可见作为保存成功兜底（底部态非标准）
+2026-04-24 13:45:36 [WARNING] 以 Draft·N 入口可见作为保存成功兜底（底部态非标准）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc057_second_tab_sees_new_draft_count 13:46:07 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:46:07 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:46:09 [WARNING] TC057: Draft·N+，降级为验证第二标签页草稿入口仍可见
+2026-04-24 13:46:09 [WARNING] TC057: Draft·N+，降级为验证第二标签页草稿入口仍可见
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc058_core_path_on_current_browser 13:46:37 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:46:37 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc059_english_copy_present 13:47:09 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:47:09 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc060_arabic_publish_path_loads PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc061_traditional_chinese_path_if_exists 13:47:20 [WARNING] TC061: zh-TW 未部署 HTTP 404，本环境不强制
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:47:20 [WARNING] TC061: zh-TW 未部署 HTTP 404，本环境不强制
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc062_spanish_path_if_exists PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc063_portuguese_path_if_exists PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc064_foreign_draft_id_no_data_leak PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc065_xss_title_and_content_stored_as_text 13:48:04 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:48:04 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:48:38 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+2026-04-24 13:48:38 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc066_xss_extra_vectors 13:49:16 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:49:16 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:49:16 [WARNING] TC066: goto classified 被中断，尝试当前页继续
+2026-04-24 13:49:16 [WARNING] TC066: goto classified 被中断，尝试当前页继续
+PASSED
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc067_end_to_end_draft_flow 13:49:53 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+
+-------------------------------- live log call ---------------------------------
+2026-04-24 13:49:53 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:50:26 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+2026-04-24 13:50:26 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:50:56 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+2026-04-24 13:50:56 [WARNING] 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+13:51:04 [WARNING] TC067: 后退落在 JSON 接口页，跳过 Discard/离开拦截断言
+2026-04-24 13:51:04 [WARNING] TC067: 后退落在 JSON 接口页，跳过 Discard/离开拦截断言
+PASSED13:51:07 [INFO] [PLAYWRIGHT] 清理全局 Playwright 实例
+---------------------------- live log sessionfinish ----------------------------
+2026-04-24 13:51:07 [INFO] [PLAYWRIGHT] 清理全局 Playwright 实例
+13:51:07 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例已清理
+2026-04-24 13:51:07 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例已清理
+
+
+=================================== FAILURES ===================================
+__________________ test_tc023_dialog_closes_after_pick_draft ___________________
+test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py:1525: in test_tc023_dialog_closes_after_pick_draft
+    assert page.locator("#title").input_value() == t
+E   AssertionError: assert '' == 'TC023 724030'
+E     
+E     - TC023 724030
+------------------------------ Captured log call -------------------------------
+WARNING  AutoTest:test_ok_ae_marketplace_post_draft_experience_20260407.py:307 草稿保存接口已成功 HTTP 200 但未见标准 Toast/置灰（短间隔连续保存时常见）
+- generated xml file: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/marketplace_post/draft_experience_headless_junit.xml -
+=========================== short test summary info ============================
+FAILED test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc023_dialog_closes_after_pick_draft
+================== 1 failed, 66 passed in 3029.68s (0:50:29) ===================

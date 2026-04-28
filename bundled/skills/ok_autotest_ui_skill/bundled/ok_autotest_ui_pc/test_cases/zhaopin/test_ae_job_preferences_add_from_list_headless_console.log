@@ -1,0 +1,158 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.11.11, pytest-9.0.2, pluggy-1.5.0 -- /Users/wangyongli/miniconda3/bin/python
+cachedir: .pytest_cache
+metadata: {'Python': '3.11.11', 'Platform': 'macOS-15.4.1-arm64-arm-64bit', 'Packages': {'pytest': '9.0.2', 'pluggy': '1.5.0'}, 'Plugins': {'anyio': '4.9.0', 'xdist': '3.8.0', 'metadata': '3.1.1', 'html': '4.2.0', 'langsmith': '0.3.42', 'rerunfailures': '16.1', 'allure-pytest': '2.15.3'}, 'JAVA_HOME': '/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home'}
+rootdir: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc
+configfile: pytest.ini
+plugins: anyio-4.9.0, xdist-3.8.0, metadata-3.1.1, html-4.2.0, langsmith-0.3.42, rerunfailures-16.1, allure-pytest-2.15.3
+collecting ... collected 5 items
+
+test_cases/zhaopin/test_ae_job_preferences_add_from_list.py::test_ae_add_pref_unauthenticated_should_show_add_banner 19:03:02 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+
+-------------------------------- live log setup --------------------------------
+2026-04-17 19:03:02 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+19:03:02 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+2026-04-17 19:03:02 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+19:03:02 [INFO] [ENV] 检测到环境变量 HEADLESS=True 或 CI=False，强制使用无头模式
+2026-04-17 19:03:02 [INFO] [ENV] 检测到环境变量 HEADLESS=True 或 CI=False，强制使用无头模式
+19:03:02 [INFO] ============================================================
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:03:02 [INFO] ============================================================
+19:03:02 [INFO] TC001: AE站 - 未登录用户 Jobs 列表页显示 Add Job Preference 卡片
+2026-04-17 19:03:02 [INFO] TC001: AE站 - 未登录用户 Jobs 列表页显示 Add Job Preference 卡片
+19:03:02 [INFO] ============================================================
+2026-04-17 19:03:02 [INFO] ============================================================
+19:03:04 [INFO] ✓ 已清除所有 cookies 和本地存储
+2026-04-17 19:03:04 [INFO] ✓ 已清除所有 cookies 和本地存储
+19:03:08 [INFO] ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-17 19:03:08 [INFO] ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+19:03:08 [INFO] ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-17 19:03:08 [INFO] ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+19:03:08 [INFO] ✓ Add Job Preference 卡片文本可见
+2026-04-17 19:03:08 [INFO] ✓ Add Job Preference 卡片文本可见
+19:03:08 [INFO] ✓ 副文本可见
+2026-04-17 19:03:08 [INFO] ✓ 副文本可见
+19:03:08 [INFO] ✓ 未显示 Edit 链接，符合预期
+2026-04-17 19:03:08 [INFO] ✓ 未显示 Edit 链接，符合预期
+19:03:08 [INFO] ✅ TC001 通过：未登录状态下 Add Job Preference 卡片展示验证成功
+2026-04-17 19:03:08 [INFO] ✅ TC001 通过：未登录状态下 Add Job Preference 卡片展示验证成功
+PASSED
+test_cases/zhaopin/test_ae_job_preferences_add_from_list.py::test_ae_add_pref_authenticated_should_show_tag_bar_not_add_banner 19:03:08 [INFO] ============================================================
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:03:08 [INFO] ============================================================
+19:03:08 [INFO] TC002: AE站 - 已登录用户 Jobs 列表页显示 Job Preference 标签栏
+2026-04-17 19:03:08 [INFO] TC002: AE站 - 已登录用户 Jobs 列表页显示 Job Preference 标签栏
+19:03:08 [INFO] ============================================================
+2026-04-17 19:03:08 [INFO] ============================================================
+19:03:14 [INFO] ⚠️ AE 站 Session 已过期，需要重新登录
+2026-04-17 19:03:14 [INFO] ⚠️ AE 站 Session 已过期，需要重新登录
+19:03:21 [INFO] AE 站未登录，开始执行登录流程
+2026-04-17 19:03:21 [INFO] AE 站未登录，开始执行登录流程
+19:03:24 [WARNING] 登录弹窗未在 5 秒内出现，尝试延长等待时间
+2026-04-17 19:03:24 [WARNING] 登录弹窗未在 5 秒内出现，尝试延长等待时间
+19:03:46 [INFO] ✓ AE 站登录成功并保存 Session
+2026-04-17 19:03:46 [INFO] ✓ AE 站登录成功并保存 Session
+19:03:48 [INFO] ✓ 已进入 Jobs 列表页: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-17 19:03:48 [INFO] ✓ 已进入 Jobs 列表页: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+19:03:48 [INFO] ✓ 未显示 Add Job Preference 卡片，符合预期
+2026-04-17 19:03:48 [INFO] ✓ 未显示 Add Job Preference 卡片，符合预期
+19:03:48 [INFO] ✓ Edit 链接可见，符合预期
+2026-04-17 19:03:48 [INFO] ✓ Edit 链接可见，符合预期
+19:03:48 [INFO] ✅ TC002 通过：已登录状态下标签栏展示验证成功
+2026-04-17 19:03:48 [INFO] ✅ TC002 通过：已登录状态下标签栏展示验证成功
+PASSED
+test_cases/zhaopin/test_ae_job_preferences_add_from_list.py::test_ae_add_pref_login_via_banner_should_redirect_to_edit_page 19:03:48 [INFO] ============================================================
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:03:48 [INFO] ============================================================
+19:03:48 [INFO] TC003: AE站 - Add Job Preference 入口登录后跳转编辑页
+2026-04-17 19:03:48 [INFO] TC003: AE站 - Add Job Preference 入口登录后跳转编辑页
+19:03:48 [INFO] ============================================================
+2026-04-17 19:03:48 [INFO] ============================================================
+19:03:50 [INFO] ✓ 已清除所有 cookies 和本地存储
+2026-04-17 19:03:50 [INFO] ✓ 已清除所有 cookies 和本地存储
+19:03:53 [INFO] ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-17 19:03:53 [INFO] ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+19:04:05 [INFO] ✓ 已跳转至编辑页: https://aepub.58v5.cn/biz/en/jobPreference
+2026-04-17 19:04:05 [INFO] ✓ 已跳转至编辑页: https://aepub.58v5.cn/biz/en/jobPreference
+19:04:05 [INFO] ✓ 登录流程完成，当前 URL: https://aepub.58v5.cn/biz/en/jobPreference
+2026-04-17 19:04:05 [INFO] ✓ 登录流程完成，当前 URL: https://aepub.58v5.cn/biz/en/jobPreference
+19:04:05 [INFO] ✓ URL 包含 jobPreference: https://aepub.58v5.cn/biz/en/jobPreference
+2026-04-17 19:04:05 [INFO] ✓ URL 包含 jobPreference: https://aepub.58v5.cn/biz/en/jobPreference
+19:04:05 [INFO] ✓ URL 不含 returnUrl，符合 Add 入口预期
+2026-04-17 19:04:05 [INFO] ✓ URL 不含 returnUrl，符合 Add 入口预期
+19:04:05 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-17 19:04:05 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+19:04:05 [INFO] ✓ Job Preferences 标题已显示
+2026-04-17 19:04:05 [INFO] ✓ Job Preferences 标题已显示
+19:04:05 [INFO] ✓ Job Functions 触发器可见，数据已回填
+2026-04-17 19:04:05 [INFO] ✓ Job Functions 触发器可见，数据已回填
+19:04:05 [INFO] ✅ TC003 通过：Add 入口登录后跳转编辑页验证成功
+2026-04-17 19:04:05 [INFO] ✅ TC003 通过：Add 入口登录后跳转编辑页验证成功
+PASSED
+test_cases/zhaopin/test_ae_job_preferences_add_from_list.py::test_ae_add_pref_back_button_should_redirect_to_jobs_list 19:04:05 [INFO] ============================================================
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:04:05 [INFO] ============================================================
+19:04:05 [INFO] TC004: AE站 - Add入口编辑页 Back 按钮跳转验证
+2026-04-17 19:04:05 [INFO] TC004: AE站 - Add入口编辑页 Back 按钮跳转验证
+19:04:05 [INFO] ============================================================
+2026-04-17 19:04:05 [INFO] ============================================================
+19:04:07 [INFO] ✓ 已清除所有 cookies 和本地存储
+2026-04-17 19:04:07 [INFO] ✓ 已清除所有 cookies 和本地存储
+19:04:10 [INFO] ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-17 19:04:10 [INFO] ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+19:04:22 [INFO] ✓ 已跳转至编辑页: https://aepub.58v5.cn/biz/en/jobPreference
+2026-04-17 19:04:22 [INFO] ✓ 已跳转至编辑页: https://aepub.58v5.cn/biz/en/jobPreference
+19:04:22 [INFO] ✓ 已进入编辑页: https://aepub.58v5.cn/biz/en/jobPreference
+2026-04-17 19:04:22 [INFO] ✓ 已进入编辑页: https://aepub.58v5.cn/biz/en/jobPreference
+19:04:24 [INFO] ✓ 点击 Back 后跳转至: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-17 19:04:24 [INFO] ✓ 点击 Back 后跳转至: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+19:04:24 [INFO] ✓ 已回到: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-17 19:04:24 [INFO] ✓ 已回到: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+19:04:25 [INFO] ✓ 列表页显示 Job Preference 标签栏，符合预期
+2026-04-17 19:04:25 [INFO] ✓ 列表页显示 Job Preference 标签栏，符合预期
+19:04:25 [INFO] ✅ TC004 通过：Add 入口 Back 按钮跳转验证成功
+2026-04-17 19:04:25 [INFO] ✅ TC004 通过：Add 入口 Back 按钮跳转验证成功
+PASSED
+test_cases/zhaopin/test_ae_job_preferences_add_from_list.py::test_ae_add_pref_continue_should_submit_and_redirect_to_jobs_list 19:04:26 [INFO] ============================================================
+
+-------------------------------- live log call ---------------------------------
+2026-04-17 19:04:26 [INFO] ============================================================
+19:04:26 [INFO] TC005: AE站 - Add入口编辑页 Continue 提交验证
+2026-04-17 19:04:26 [INFO] TC005: AE站 - Add入口编辑页 Continue 提交验证
+19:04:26 [INFO] ============================================================
+2026-04-17 19:04:26 [INFO] ============================================================
+19:04:27 [INFO] ✓ 已清除所有 cookies 和本地存储
+2026-04-17 19:04:27 [INFO] ✓ 已清除所有 cookies 和本地存储
+19:04:30 [INFO] ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-17 19:04:30 [INFO] ✓ 已进入 Jobs 列表页（未登录）: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+19:04:42 [INFO] ✓ 已跳转至编辑页: https://aepub.58v5.cn/biz/en/jobPreference
+2026-04-17 19:04:42 [INFO] ✓ 已跳转至编辑页: https://aepub.58v5.cn/biz/en/jobPreference
+19:04:42 [INFO] ✓ 已进入编辑页: https://aepub.58v5.cn/biz/en/jobPreference
+2026-04-17 19:04:42 [INFO] ✓ 已进入编辑页: https://aepub.58v5.cn/biz/en/jobPreference
+19:04:42 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-17 19:04:42 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+19:04:42 [INFO] ✓ 编辑页已有回填数据
+2026-04-17 19:04:42 [INFO] ✓ 编辑页已有回填数据
+19:04:44 [INFO] ✓ 点击 Continue 后跳转至: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-17 19:04:44 [INFO] ✓ 点击 Continue 后跳转至: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+19:04:44 [INFO] ✓ 已跳转到: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-17 19:04:44 [INFO] ✓ 已跳转到: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+19:04:45 [INFO] ✓ Jobs 列表页显示 Job Preference 标签栏，提交成功
+2026-04-17 19:04:45 [INFO] ✓ Jobs 列表页显示 Job Preference 标签栏，提交成功
+19:04:45 [INFO] ✅ TC005 通过：Add 入口 Continue 提交并跳转验证成功
+2026-04-17 19:04:45 [INFO] ✅ TC005 通过：Add 入口 Continue 提交并跳转验证成功
+PASSED19:04:45 [INFO] [PLAYWRIGHT] 清理全局 Playwright 实例
+---------------------------- live log sessionfinish ----------------------------
+2026-04-17 19:04:45 [INFO] [PLAYWRIGHT] 清理全局 Playwright 实例
+19:04:45 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例已清理
+2026-04-17 19:04:45 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例已清理
+
+
+- generated xml file: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/test_ae_job_preferences_add_from_list_headless_junit.xml -
+======================== 5 passed in 103.44s (0:01:43) =========================
+
+real 104.000
+pytest_exit_code 

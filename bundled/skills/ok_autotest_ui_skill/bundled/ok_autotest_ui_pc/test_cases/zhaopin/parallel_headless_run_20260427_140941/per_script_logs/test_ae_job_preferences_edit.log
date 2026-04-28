@@ -1,0 +1,248 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Library/Developer/CommandLineTools/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc
+configfile: pytest.ini
+plugins: order-1.2.0, dependency-0.5.1, allure-pytest-2.15.3
+collecting ... collected 15 items
+
+test_cases/zhaopin/test_ae_job_preferences_edit.py::test_ae_edit_enter_from_jobs_list_should_show_prefilled_data 14:09:42 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+
+-------------------------------- live log setup --------------------------------
+2026-04-27 14:09:42 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+14:09:43 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+2026-04-27 14:09:43 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+14:09:44 [INFO] [zhaopin] 已创建共享 BrowserContext: site=ae headless=True
+2026-04-27 14:09:44 [INFO] [zhaopin] 已创建共享 BrowserContext: site=ae headless=True
+14:09:44 [INFO] ============================================================
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:09:44 [INFO] ============================================================
+14:09:44 [INFO] TC001: AE站 - Jobs列表页点击Edit进入编辑页
+2026-04-27 14:09:44 [INFO] TC001: AE站 - Jobs列表页点击Edit进入编辑页
+14:09:44 [INFO] ============================================================
+2026-04-27 14:09:44 [INFO] ============================================================
+14:09:52 [INFO] ✓ AE 站 Session 有效，已跳过登录
+2026-04-27 14:09:52 [INFO] ✓ AE 站 Session 有效，已跳过登录
+14:09:56 [INFO] ✓ 已进入 Jobs 列表页: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-27 14:09:56 [INFO] ✓ 已进入 Jobs 列表页: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+14:09:58 [INFO] ✓ 点击 Edit 后跳转至: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https%3A%2F%2Fae.58v5.cn%2Fen%2Fcity%2Fcate-jobs%2F%3FiconSource%3Djobs
+2026-04-27 14:09:58 [INFO] ✓ 点击 Edit 后跳转至: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https%3A%2F%2Fae.58v5.cn%2Fen%2Fcity%2Fcate-jobs%2F%3FiconSource%3Djobs
+14:09:58 [INFO] ✓ URL 验证通过: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https%3A%2F%2Fae.58v5.cn%2Fen%2Fcity%2Fcate-jobs%2F%3FiconSource%3Djobs
+2026-04-27 14:09:58 [INFO] ✓ URL 验证通过: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https%3A%2F%2Fae.58v5.cn%2Fen%2Fcity%2Fcate-jobs%2F%3FiconSource%3Djobs
+14:09:58 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+2026-04-27 14:09:58 [INFO] ✓ 找到 Job Preferences 页面元素: h2:has-text('Job Preferences')
+14:09:58 [INFO] ✓ Job Preferences 标题已显示
+2026-04-27 14:09:58 [INFO] ✓ Job Preferences 标题已显示
+14:09:58 [INFO] ✅ TC001 通过：Edit 入口跳转及数据回填验证成功
+2026-04-27 14:09:58 [INFO] ✅ TC001 通过：Edit 入口跳转及数据回填验证成功
+PASSED
+test_cases/zhaopin/test_ae_job_preferences_edit.py::test_ae_edit_prefill_job_functions_tags_and_count 14:09:58 [INFO] TC002: AE站 - 验证 Job Functions 数据回填
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:09:58 [INFO] TC002: AE站 - 验证 Job Functions 数据回填
+14:10:06 [INFO] ✓ AE 站 Session 有效，已跳过登录
+2026-04-27 14:10:06 [INFO] ✓ AE 站 Session 有效，已跳过登录
+14:10:08 [INFO] ✓ Job Functions 计数: Select preferred job function (5/10)
+2026-04-27 14:10:08 [INFO] ✓ Job Functions 计数: Select preferred job function (5/10)
+14:10:08 [INFO] ✅ TC002 通过：Job Functions 数据回填验证成功
+2026-04-27 14:10:08 [INFO] ✅ TC002 通过：Job Functions 数据回填验证成功
+PASSED
+test_cases/zhaopin/test_ae_job_preferences_edit.py::test_ae_edit_prefill_location_tags_and_count 14:10:09 [INFO] TC003: AE站 - 验证 Location 数据回填
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:10:09 [INFO] TC003: AE站 - 验证 Location 数据回填
+14:10:17 [INFO] ✓ AE 站 Session 有效，已跳过登录
+2026-04-27 14:10:17 [INFO] ✓ AE 站 Session 有效，已跳过登录
+14:10:19 [INFO] ✓ Location 计数: Select preferred work location (1/5)
+2026-04-27 14:10:19 [INFO] ✓ Location 计数: Select preferred work location (1/5)
+14:10:19 [INFO] ✅ TC003 通过：Location 数据回填验证成功
+2026-04-27 14:10:19 [INFO] ✅ TC003 通过：Location 数据回填验证成功
+PASSED
+test_cases/zhaopin/test_ae_job_preferences_edit.py::test_ae_edit_prefill_salary_pay_type_and_amount 14:10:19 [INFO] TC004: AE站 - 验证 Salary 数据回填
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:10:19 [INFO] TC004: AE站 - 验证 Salary 数据回填
+14:10:27 [INFO] ✓ AE 站 Session 有效，已跳过登录
+2026-04-27 14:10:27 [INFO] ✓ AE 站 Session 有效，已跳过登录
+14:10:29 [INFO] ✓ 货币前缀: AED
+2026-04-27 14:10:29 [INFO] ✓ 货币前缀: AED
+14:10:29 [INFO] ✓ Salary 回填值: 200,569
+2026-04-27 14:10:29 [INFO] ✓ Salary 回填值: 200,569
+14:10:29 [INFO] ✅ TC004 通过：Salary 数据回填验证成功
+2026-04-27 14:10:29 [INFO] ✅ TC004 通过：Salary 数据回填验证成功
+PASSED
+test_cases/zhaopin/test_ae_job_preferences_edit.py::test_ae_edit_prefill_workplace_type_and_job_type_checkboxes 14:10:30 [INFO] TC005: AE站 - 验证 Workplace Type 和 Job Type 回填
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:10:30 [INFO] TC005: AE站 - 验证 Workplace Type 和 Job Type 回填
+14:10:38 [INFO] ✓ AE 站 Session 有效，已跳过登录
+2026-04-27 14:10:38 [INFO] ✓ AE 站 Session 有效，已跳过登录
+14:10:40 [INFO] ✓ Workplace Type 区域可见
+2026-04-27 14:10:40 [INFO] ✓ Workplace Type 区域可见
+14:10:40 [INFO] ✓ Job Type 区域可见
+2026-04-27 14:10:40 [INFO] ✓ Job Type 区域可见
+14:10:40 [INFO] ✓ Onsite: 已勾选, Remote: 已勾选
+2026-04-27 14:10:40 [INFO] ✓ Onsite: 已勾选, Remote: 已勾选
+14:10:40 [INFO] ✅ TC005 通过：Workplace Type 和 Job Type 回填验证成功
+2026-04-27 14:10:40 [INFO] ✅ TC005 通过：Workplace Type 和 Job Type 回填验证成功
+PASSED
+test_cases/zhaopin/test_ae_job_preferences_edit.py::test_ae_edit_continue_submits_and_returns_to_return_url 14:10:40 [INFO] TC006: AE站 - Continue 提交并回跳 returnUrl
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:10:40 [INFO] TC006: AE站 - Continue 提交并回跳 returnUrl
+14:10:49 [INFO] ✓ AE 站 Session 有效，已跳过登录
+2026-04-27 14:10:49 [INFO] ✓ AE 站 Session 有效，已跳过登录
+14:10:51 [INFO] ✓ Continue 后跳转至: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-27 14:10:51 [INFO] ✓ Continue 后跳转至: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+14:10:51 [ERROR] 测试失败 URL: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-27 14:10:51 [ERROR] 测试失败 URL: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+FAILED
+test_cases/zhaopin/test_ae_job_preferences_edit.py::test_ae_edit_job_functions_has_oil_gas_and_skilled_trades 14:10:51 [INFO] TC007: AE站 - 验证 Oil & Gas / Skilled Trades 特有分类
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:10:51 [INFO] TC007: AE站 - 验证 Oil & Gas / Skilled Trades 特有分类
+14:10:59 [INFO] ✓ AE 站 Session 有效，已跳过登录
+2026-04-27 14:10:59 [INFO] ✓ AE 站 Session 有效，已跳过登录
+14:11:02 [INFO] ✓ Oil & Gas 分类可见
+2026-04-27 14:11:02 [INFO] ✓ Oil & Gas 分类可见
+14:11:02 [INFO] ✓ Skilled Trades 分类可见
+2026-04-27 14:11:02 [INFO] ✓ Skilled Trades 分类可见
+14:11:04 [INFO] ✓ 触发器回显: Select preferred job function (6/10)
+2026-04-27 14:11:04 [INFO] ✓ 触发器回显: Select preferred job function (6/10)
+14:11:04 [INFO] ✅ TC007 通过：Oil & Gas 和 Skilled Trades AE 特有分类验证成功
+2026-04-27 14:11:04 [INFO] ✅ TC007 通过：Oil & Gas 和 Skilled Trades AE 特有分类验证成功
+PASSED
+test_cases/zhaopin/test_ae_job_preferences_edit.py::test_ae_edit_location_shows_only_uae_cities 14:11:04 [INFO] TC008: AE站 - 验证 Location 列表仅含 UAE 城市
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:11:04 [INFO] TC008: AE站 - 验证 Location 列表仅含 UAE 城市
+14:11:12 [INFO] ✓ AE 站 Session 有效，已跳过登录
+2026-04-27 14:11:12 [INFO] ✓ AE 站 Session 有效，已跳过登录
+14:11:14 [INFO] ✓ Dubai 可见
+2026-04-27 14:11:14 [INFO] ✓ Dubai 可见
+14:11:14 [INFO] ✓ Abu Dhabi 可见
+2026-04-27 14:11:14 [INFO] ✓ Abu Dhabi 可见
+14:11:14 [INFO] ✓ 未显示 Singapore（新加坡城市），通过
+2026-04-27 14:11:14 [INFO] ✓ 未显示 Singapore（新加坡城市），通过
+14:11:15 [INFO] ✅ TC008 通过：AE 站 Location 仅含 UAE 城市验证成功
+2026-04-27 14:11:15 [INFO] ✅ TC008 通过：AE 站 Location 仅含 UAE 城市验证成功
+PASSED
+test_cases/zhaopin/test_ae_job_preferences_edit.py::test_ae_edit_salary_currency_prefix_is_aed 14:11:15 [INFO] TC009: AE站 - 验证 Salary 货币前缀为 AED
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:11:15 [INFO] TC009: AE站 - 验证 Salary 货币前缀为 AED
+14:11:23 [INFO] ✓ AE 站 Session 有效，已跳过登录
+2026-04-27 14:11:23 [INFO] ✓ AE 站 Session 有效，已跳过登录
+14:11:25 [INFO] ✓ 货币前缀: AED
+2026-04-27 14:11:25 [INFO] ✓ 货币前缀: AED
+14:11:25 [INFO] ✓ 未显示 S$（新加坡货币），通过
+2026-04-27 14:11:25 [INFO] ✓ 未显示 S$（新加坡货币），通过
+14:11:25 [INFO] ✅ TC009 通过：AED 货币前缀验证成功
+2026-04-27 14:11:25 [INFO] ✅ TC009 通过：AED 货币前缀验证成功
+PASSED
+test_cases/zhaopin/test_ae_job_preferences_edit.py::test_ae_edit_back_without_changes_goes_directly_to_return_url 14:11:25 [INFO] TC010: AE站 - 未修改数据时 Back 直接回跳 returnUrl
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:11:25 [INFO] TC010: AE站 - 未修改数据时 Back 直接回跳 returnUrl
+14:11:33 [INFO] ✓ AE 站 Session 有效，已跳过登录
+2026-04-27 14:11:33 [INFO] ✓ AE 站 Session 有效，已跳过登录
+14:11:36 [INFO] ✓ 已进入编辑页，未修改任何字段
+2026-04-27 14:11:36 [INFO] ✓ 已进入编辑页，未修改任何字段
+14:11:36 [INFO] ✓ 未弹出 Unsaved Changes 确认弹窗（符合预期）
+2026-04-27 14:11:36 [INFO] ✓ 未弹出 Unsaved Changes 确认弹窗（符合预期）
+14:11:38 [INFO] ✓ 已直接跳回: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-27 14:11:38 [INFO] ✓ 已直接跳回: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+14:11:38 [INFO] ✅ TC010 通过：未修改数据时 Back 直接回跳验证成功
+2026-04-27 14:11:38 [INFO] ✅ TC010 通过：未修改数据时 Back 直接回跳验证成功
+PASSED
+test_cases/zhaopin/test_ae_job_preferences_edit.py::test_ae_edit_back_with_unsaved_changes_shows_dialog_and_discards 14:11:39 [INFO] TC011: AE站 - 修改数据后 Back 弹出 Unsaved Changes 弹窗并放弃
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:11:39 [INFO] TC011: AE站 - 修改数据后 Back 弹出 Unsaved Changes 弹窗并放弃
+14:11:47 [INFO] ✓ AE 站 Session 有效，已跳过登录
+2026-04-27 14:11:47 [INFO] ✓ AE 站 Session 有效，已跳过登录
+14:11:49 [INFO] ✓ 已切换 Hybrid 勾选状态，触发修改标记
+2026-04-27 14:11:49 [INFO] ✓ 已切换 Hybrid 勾选状态，触发修改标记
+14:11:49 [INFO] ✓ Unsaved Changes 弹窗已出现
+2026-04-27 14:11:49 [INFO] ✓ Unsaved Changes 弹窗已出现
+14:11:53 [INFO] ✓ 已回跳至: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-27 14:11:53 [INFO] ✓ 已回跳至: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+14:11:53 [INFO] ✅ TC011 通过：有修改时 Back 弹窗 + Discard 回跳验证成功
+2026-04-27 14:11:53 [INFO] ✅ TC011 通过：有修改时 Back 弹窗 + Discard 回跳验证成功
+PASSED
+test_cases/zhaopin/test_ae_job_preferences_edit.py::test_ae_edit_open_redirect_tampered_return_url_blocked 14:11:53 [INFO] TC012: AE站 - Open Redirect 防护验证
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:11:53 [INFO] TC012: AE站 - Open Redirect 防护验证
+14:12:01 [INFO] ✓ AE 站 Session 有效，已跳过登录
+2026-04-27 14:12:01 [INFO] ✓ AE 站 Session 有效，已跳过登录
+14:12:06 [INFO] ✓ 已访问篡改 returnUrl 的编辑页，当前: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https%3A%2F%2Fevil.example.com
+2026-04-27 14:12:06 [INFO] ✓ 已访问篡改 returnUrl 的编辑页，当前: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https%3A%2F%2Fevil.example.com
+14:12:06 [INFO] ✓ Back 点击后跳转至: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https%3A%2F%2Fae.58v5.cn%2Fen%2Fcity%2Fcate-jobs%2F
+2026-04-27 14:12:06 [INFO] ✓ Back 点击后跳转至: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https%3A%2F%2Fae.58v5.cn%2Fen%2Fcity%2Fcate-jobs%2F
+14:12:06 [INFO] ✓ 未跳转至恶意域名，当前: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https%3A%2F%2Fae.58v5.cn%2Fen%2Fcity%2Fcate-jobs%2F
+2026-04-27 14:12:06 [INFO] ✓ 未跳转至恶意域名，当前: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https%3A%2F%2Fae.58v5.cn%2Fen%2Fcity%2Fcate-jobs%2F
+14:12:06 [INFO] ✓ 已跳转至合法域名: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https%3A%2F%2Fae.58v5.cn%2Fen%2Fcity%2Fcate-jobs%2F
+2026-04-27 14:12:06 [INFO] ✓ 已跳转至合法域名: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https%3A%2F%2Fae.58v5.cn%2Fen%2Fcity%2Fcate-jobs%2F
+14:12:06 [INFO] ✓ 系统将恶意 returnUrl 替换为合法地址并停留在编辑页: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https%3A%2F%2Fae.58v5.cn%2Fen%2Fcity%2Fcate-jobs%2F
+2026-04-27 14:12:06 [INFO] ✓ 系统将恶意 returnUrl 替换为合法地址并停留在编辑页: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https%3A%2F%2Fae.58v5.cn%2Fen%2Fcity%2Fcate-jobs%2F
+14:12:06 [INFO] ✅ TC012 通过：Open Redirect 防护验证成功
+2026-04-27 14:12:06 [INFO] ✅ TC012 通过：Open Redirect 防护验证成功
+PASSED
+test_cases/zhaopin/test_ae_job_preferences_edit.py::test_ae_edit_refresh_page_refills_data_from_server 14:12:06 [INFO] TC013: AE站 - 刷新编辑页后数据持久化验证
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:12:06 [INFO] TC013: AE站 - 刷新编辑页后数据持久化验证
+14:12:14 [INFO] ✓ AE 站 Session 有效，已跳过登录
+2026-04-27 14:12:14 [INFO] ✓ AE 站 Session 有效，已跳过登录
+14:12:16 [INFO] 刷新前 Job Functions: Select preferred job function (5/10)
+2026-04-27 14:12:16 [INFO] 刷新前 Job Functions: Select preferred job function (5/10)
+14:12:18 [INFO] ✓ 刷新后 Job Functions: Select preferred job function (5/10)
+2026-04-27 14:12:18 [INFO] ✓ 刷新后 Job Functions: Select preferred job function (5/10)
+14:12:18 [INFO] ✅ TC013 通过：刷新后数据持久化验证成功
+2026-04-27 14:12:18 [INFO] ✅ TC013 通过：刷新后数据持久化验证成功
+PASSED
+test_cases/zhaopin/test_ae_job_preferences_edit.py::test_ae_edit_expired_session_redirects_to_login 14:12:19 [INFO] TC014: AE站 - 登录态过期重定向验证
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 14:12:19 [INFO] TC014: AE站 - 登录态过期重定向验证
+14:12:27 [INFO] ✓ AE 站 Session 有效，已跳过登录
+2026-04-27 14:12:27 [INFO] ✓ AE 站 Session 有效，已跳过登录
+14:12:29 [INFO] ✓ 当前在编辑页: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-27 14:12:29 [INFO] ✓ 当前在编辑页: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+14:12:29 [INFO] ✓ 已清除所有 Cookie 和 localStorage
+2026-04-27 14:12:29 [INFO] ✓ 已清除所有 Cookie 和 localStorage
+14:12:32 [INFO] ✓ 访问编辑页后当前 URL: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-27 14:12:32 [INFO] ✓ 访问编辑页后当前 URL: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+14:12:32 [INFO] ✓ 已重定向至登录页面: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+2026-04-27 14:12:32 [INFO] ✓ 已重定向至登录页面: https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+14:12:32 [INFO] ✅ TC014 通过：登录态过期重定向验证成功
+2026-04-27 14:12:32 [INFO] ✅ TC014 通过：登录态过期重定向验证成功
+PASSED
+test_cases/zhaopin/test_ae_job_preferences_edit.py::test_ae_edit_horizontal_privilege_escalation_blocked PASSED14:12:32 [INFO] [PLAYWRIGHT] 清理全局 Playwright 实例
+
+---------------------------- live log sessionfinish ----------------------------
+2026-04-27 14:12:32 [INFO] [PLAYWRIGHT] 清理全局 Playwright 实例
+14:12:32 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例已清理
+2026-04-27 14:12:32 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例已清理
+
+
+=================================== FAILURES ===================================
+___________ test_ae_edit_continue_submits_and_returns_to_return_url ____________
+test_cases/zhaopin/test_ae_job_preferences_edit.py:346: in test_ae_edit_continue_submits_and_returns_to_return_url
+    assert not job_pref_page.is_url_contains("jobPreference"), \
+E   AssertionError: 仍停留在编辑页，当前 URL: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+E   assert not True
+E    +  where True = is_url_contains('jobPreference')
+E    +    where is_url_contains = <pages.job_preference_page.JobPreferencePage object at 0x104597a30>.is_url_contains
+------------------------------ Captured log call -------------------------------
+INFO     AutoTest:test_ae_job_preferences_edit.py:329 TC006: AE站 - Continue 提交并回跳 returnUrl
+INFO     AutoTest:test_ae_job_preferences_edit.py:70 ✓ AE 站 Session 有效，已跳过登录
+INFO     AutoTest:test_ae_job_preferences_edit.py:340 ✓ Continue 后跳转至: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+- generated xml file: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/parallel_headless_run_20260427_140941/junit/test_ae_job_preferences_edit_junit.xml -
+=========================== short test summary info ============================
+FAILED test_cases/zhaopin/test_ae_job_preferences_edit.py::test_ae_edit_continue_submits_and_returns_to_return_url - AssertionError: 仍停留在编辑页，当前 URL: https://aepub.58v5.cn/biz/en/jobPreference?returnUrl=https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs
+assert not True
+ +  where True = is_url_contains('jobPreference')
+ +    where is_url_contains = <pages.job_preference_page.JobPreferencePage object at 0x104597a30>.is_url_contains
+=================== 1 failed, 14 passed in 170.55s (0:02:50) ===================

@@ -1,0 +1,493 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Library/Developer/CommandLineTools/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc
+configfile: pytest.ini
+plugins: order-1.2.0, dependency-0.5.1, allure-pytest-2.15.3
+collecting ... collected 28 items
+
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestDetailPanelInfoDisplay::test_tc001_default_load_shows_detail_panel 12:28:19 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+
+-------------------------------- live log setup --------------------------------
+2026-04-27 12:28:19 [INFO] [PLAYWRIGHT] 创建全局 Playwright 实例（首次）
+12:28:21 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+2026-04-27 12:28:21 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例创建成功
+12:28:21 [INFO] [zhaopin] 已创建共享 BrowserContext: site=es headless=True
+2026-04-27 12:28:21 [INFO] [zhaopin] 已创建共享 BrowserContext: site=es headless=True
+12:28:22 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:28:22 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:28:22 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:28:22 [INFO] Session加载成功，验证登录状态...
+12:28:31 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:28:31 [INFO] ✓ 检测到登录用户名
+12:28:31 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:28:31 [INFO] ✓ Session有效，已登录ES站
+12:28:37 [INFO] ✓ 导航到招聘列表页成功
+2026-04-27 12:28:37 [INFO] ✓ 导航到招聘列表页成功
+12:28:37 [INFO] 详情面板自动可见: True
+2026-04-27 12:28:37 [INFO] 详情面板自动可见: True
+12:28:37 [INFO] Withdraw=True, Favourites=True, New tab=True
+2026-04-27 12:28:37 [INFO] Withdraw=True, Favourites=True, New tab=True
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestDetailPanelInfoDisplay::test_tc002_own_post_title_correct 12:28:37 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:28:37 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:28:37 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:28:37 [INFO] Session加载成功，验证登录状态...
+12:28:40 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:28:40 [INFO] ✓ 检测到登录用户名
+12:28:40 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:28:40 [INFO] ✓ Session有效，已登录ES站
+12:28:43 [INFO] 列表 href 中未出现 infoId=6522669642316510，尝试按标题回退: drast back
+2026-04-27 12:28:43 [INFO] 列表 href 中未出现 infoId=6522669642316510，尝试按标题回退: drast back
+12:28:45 [INFO] ✓ 已选中本人帖卡片
+2026-04-27 12:28:45 [INFO] ✓ 已选中本人帖卡片
+12:28:45 [INFO] 接口返回 Title: 'drast back'
+2026-04-27 12:28:45 [INFO] 接口返回 Title: 'drast back'
+12:28:45 [INFO] 面板标题: 'drast back'
+2026-04-27 12:28:45 [INFO] 面板标题: 'drast back'
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestDetailPanelInfoDisplay::test_tc003_own_post_salary_correct 12:28:45 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:28:45 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:28:45 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:28:45 [INFO] Session加载成功，验证登录状态...
+12:28:49 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:28:49 [INFO] ✓ 检测到登录用户名
+12:28:49 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:28:49 [INFO] ✓ Session有效，已登录ES站
+12:28:52 [INFO] ✓ 导航到招聘列表页成功
+2026-04-27 12:28:52 [INFO] ✓ 导航到招聘列表页成功
+12:28:52 [INFO] 薪资文本: '€ 15,000-35,000/year'
+2026-04-27 12:28:52 [INFO] 薪资文本: '€ 15,000-35,000/year'
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestDetailPanelInfoDisplay::test_tc004_own_post_company_correct 12:28:52 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:28:52 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:28:52 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:28:52 [INFO] Session加载成功，验证登录状态...
+12:28:55 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:28:55 [INFO] ✓ 检测到登录用户名
+12:28:55 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:28:55 [INFO] ✓ Session有效，已登录ES站
+12:28:59 [INFO] ✓ 导航到招聘列表页成功
+2026-04-27 12:28:59 [INFO] ✓ 导航到招聘列表页成功
+12:28:59 [INFO] 公司名文本: 'EDB'
+2026-04-27 12:28:59 [INFO] 公司名文本: 'EDB'
+12:28:59 [INFO] 详情面板可见: True
+2026-04-27 12:28:59 [INFO] 详情面板可见: True
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestDetailPanelInfoDisplay::test_tc005_own_post_job_tags_count 12:29:00 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:29:00 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:29:00 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:29:00 [INFO] Session加载成功，验证登录状态...
+12:29:03 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:29:03 [INFO] ✓ 检测到登录用户名
+12:29:03 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:29:03 [INFO] ✓ Session有效，已登录ES站
+12:29:08 [INFO] ✓ 导航到招聘列表页成功
+2026-04-27 12:29:08 [INFO] ✓ 导航到招聘列表页成功
+12:29:08 [INFO] 职位标签数量: 95（预期5个）
+2026-04-27 12:29:08 [INFO] 职位标签数量: 95（预期5个）
+12:29:08 [INFO] ✓ 职位标签数量验证通过（统计到95个）
+2026-04-27 12:29:08 [INFO] ✓ 职位标签数量验证通过（统计到95个）
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestDetailPanelInfoDisplay::test_tc006_own_post_description_visible 12:29:08 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:29:08 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:29:08 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:29:08 [INFO] Session加载成功，验证登录状态...
+12:29:11 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:29:11 [INFO] ✓ 检测到登录用户名
+12:29:11 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:29:11 [INFO] ✓ Session有效，已登录ES站
+12:29:15 [INFO] 列表 href 中未出现 infoId=6522669642316510，尝试按标题回退: drast back
+2026-04-27 12:29:15 [INFO] 列表 href 中未出现 infoId=6522669642316510，尝试按标题回退: drast back
+12:29:17 [INFO] ✓ 已选中本人帖卡片
+2026-04-27 12:29:17 [INFO] ✓ 已选中本人帖卡片
+12:29:17 [INFO] 接口返回 Content: 'Vhugfghhfccchjgf'
+2026-04-27 12:29:17 [INFO] 接口返回 Content: 'Vhugfghhfccchjgf'
+12:29:18 [INFO] Description区域可见: False，面板内容: 'Vhugfghhfccchjgf'
+2026-04-27 12:29:18 [INFO] Description区域可见: False，面板内容: 'Vhugfghhfccchjgf'
+12:29:19 [ERROR] 测试失败 URL: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:29:19 [ERROR] 测试失败 URL: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+FAILED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestOwnPostActions::test_tc007_own_post_shows_withdraw_edit_not_contact 12:29:19 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:29:19 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:29:19 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:29:19 [INFO] Session加载成功，验证登录状态...
+12:29:22 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:29:22 [INFO] ✓ 检测到登录用户名
+12:29:22 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:29:22 [INFO] ✓ Session有效，已登录ES站
+12:29:26 [INFO] ✓ 导航到招聘列表页成功
+2026-04-27 12:29:26 [INFO] ✓ 导航到招聘列表页成功
+12:29:26 [INFO] Withdraw=True, Edit=True, Contact=False（预期Contact=False）
+2026-04-27 12:29:26 [INFO] Withdraw=True, Edit=True, Contact=False（预期Contact=False）
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestOwnPostActions::test_tc008_own_post_edit_navigates_to_edit_page 12:29:26 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:29:26 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:29:26 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:29:26 [INFO] Session加载成功，验证登录状态...
+12:29:28 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:29:28 [INFO] ✓ 检测到登录用户名
+12:29:28 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:29:28 [INFO] ✓ Session有效，已登录ES站
+12:29:30 [INFO] ✓ 导航到招聘列表页成功
+2026-04-27 12:29:30 [INFO] ✓ 导航到招聘列表页成功
+12:29:32 [INFO] Edit后URL: https://espub.58v5.cn/biz/en/publish/job?id=2046487377173561344
+2026-04-27 12:29:32 [INFO] Edit后URL: https://espub.58v5.cn/biz/en/publish/job?id=2046487377173561344
+12:29:32 [INFO] ✓ Edit按钮跳转验证成功
+2026-04-27 12:29:32 [INFO] ✓ Edit按钮跳转验证成功
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestOwnPostActions::test_tc009_own_post_withdraw_shows_dialog 12:29:34 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:29:34 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:29:34 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:29:34 [INFO] Session加载成功，验证登录状态...
+12:29:36 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:29:36 [INFO] ✓ 检测到登录用户名
+12:29:36 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:29:36 [INFO] ✓ Session有效，已登录ES站
+12:29:41 [INFO] ✓ 导航到招聘列表页成功
+2026-04-27 12:29:41 [INFO] ✓ 导航到招聘列表页成功
+12:29:42 [INFO] dialog可见=True, body='Do you want to withdraw the listing?', Cancel=True, OK=True
+2026-04-27 12:29:42 [INFO] dialog可见=True, body='Do you want to withdraw the listing?', Cancel=True, OK=True
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestOwnPostActions::test_tc010_withdraw_dialog_cancel_closes_dialog 12:29:43 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:29:43 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:29:43 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:29:43 [INFO] Session加载成功，验证登录状态...
+12:29:45 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:29:45 [INFO] ✓ 检测到登录用户名
+12:29:45 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:29:45 [INFO] ✓ Session有效，已登录ES站
+12:29:50 [INFO] 点击Withdraw后对话框可见: True
+2026-04-27 12:29:50 [INFO] 点击Withdraw后对话框可见: True
+12:29:50 [INFO] 对话框消失: True, Withdraw=True, Edit=True
+2026-04-27 12:29:50 [INFO] 对话框消失: True, Withdraw=True, Edit=True
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestOwnPostActions::test_tc011_withdraw_dialog_close_icon_closes_dialog 12:29:51 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:29:51 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:29:51 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:29:51 [INFO] Session加载成功，验证登录状态...
+12:29:53 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:29:53 [INFO] ✓ 检测到登录用户名
+12:29:53 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:29:53 [INFO] ✓ Session有效，已登录ES站
+12:29:57 [INFO] 对话框消失: True, Withdraw=True, Edit=True
+2026-04-27 12:29:57 [INFO] 对话框消失: True, Withdraw=True, Edit=True
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestOtherPostActions::test_tc012_other_post_shows_contact_not_withdraw_edit 12:29:58 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:29:58 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:29:58 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:29:58 [INFO] Session加载成功，验证登录状态...
+12:30:02 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:30:02 [INFO] ✓ 检测到登录用户名
+12:30:02 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:30:02 [INFO] ✓ Session有效，已登录ES站
+12:30:08 [INFO] ✓ 导航到招聘列表页成功
+2026-04-27 12:30:08 [INFO] ✓ 导航到招聘列表页成功
+12:30:27 [INFO] ✓ 点击非本人帖成功
+2026-04-27 12:30:27 [INFO] ✓ 点击非本人帖成功
+12:30:27 [INFO] Contact=True, Withdraw=False（预期False）, Edit=False（预期False）
+2026-04-27 12:30:27 [INFO] Contact=True, Withdraw=False（预期False）, Edit=False（预期False）
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestOtherPostActions::test_tc013_other_post_contact_navigates_to_chat 12:30:27 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:30:27 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:30:27 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:30:27 [INFO] Session加载成功，验证登录状态...
+12:30:30 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:30:30 [INFO] ✓ 检测到登录用户名
+12:30:30 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:30:30 [INFO] ✓ Session有效，已登录ES站
+12:30:33 [INFO] ✓ 导航到招聘列表页成功
+2026-04-27 12:30:33 [INFO] ✓ 导航到招聘列表页成功
+12:30:52 [INFO] ✓ 点击非本人帖成功
+2026-04-27 12:30:52 [INFO] ✓ 点击非本人帖成功
+12:30:55 [INFO] Contact后URL: https://espub.58v5.cn/biz/en/chat?postId%3D6525017969535710%26shopId%3D796582603612541280%26shopName%3DOKerES_a5wcys9%26shopAvatar%3Dhttps%3A%2F%2Fsgj1.ok.com%2Fyongjia%2Fbkimg%2Fla0se7q6__w192_h152.png%26postName%3Dwhatsapp+test+for+wyl%26shopType%3DB%26cateCode%3Djobs&needLogin=true
+2026-04-27 12:30:55 [INFO] Contact后URL: https://espub.58v5.cn/biz/en/chat?postId%3D6525017969535710%26shopId%3D796582603612541280%26shopName%3DOKerES_a5wcys9%26shopAvatar%3Dhttps%3A%2F%2Fsgj1.ok.com%2Fyongjia%2Fbkimg%2Fla0se7q6__w192_h152.png%26postName%3Dwhatsapp+test+for+wyl%26shopType%3DB%26cateCode%3Djobs&needLogin=true
+12:30:55 [INFO] ✓ Contact按钮跳转聊天页验证成功
+2026-04-27 12:30:55 [INFO] ✓ Contact按钮跳转聊天页验证成功
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestOtherPostActions::test_tc014_other_post_detail_info_complete 12:30:59 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:30:59 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:30:59 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:30:59 [INFO] Session加载成功，验证登录状态...
+12:31:02 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:31:02 [INFO] ✓ 检测到登录用户名
+12:31:02 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:31:02 [INFO] ✓ Session有效，已登录ES站
+12:31:06 [INFO] ✓ 导航到招聘列表页成功
+2026-04-27 12:31:06 [INFO] ✓ 导航到招聘列表页成功
+12:31:25 [INFO] ✓ 点击非本人帖成功
+2026-04-27 12:31:25 [INFO] ✓ 点击非本人帖成功
+12:32:40 [INFO] infoId=6525017969535710，接口 Title: 'whatsapp test for wyl'，Content: 'test'
+2026-04-27 12:32:40 [INFO] infoId=6525017969535710，接口 Title: 'whatsapp test for wyl'，Content: 'test'
+12:33:47 [INFO] 面板可见=True, 面板标题='whatsapp test for wyl', Description可见=True
+2026-04-27 12:33:47 [INFO] 面板可见=True, 面板标题='whatsapp test for wyl', Description可见=True
+12:33:47 [INFO] 面板描述='test', 标签数=95（预期6个）
+2026-04-27 12:33:47 [INFO] 面板描述='test', 标签数=95（预期6个）
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestFavouritesAction::test_tc015_favourites_not_collected_shows_added_toast 12:33:47 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:33:47 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:33:47 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:33:47 [INFO] Session加载成功，验证登录状态...
+12:33:49 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:33:49 [INFO] ✓ 检测到登录用户名
+12:33:49 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:33:49 [INFO] ✓ Session有效，已登录ES站
+12:34:11 [INFO] ✓ 点击非本人帖成功
+2026-04-27 12:34:11 [INFO] ✓ 点击非本人帖成功
+12:34:43 [INFO] 第一次点击 toast: 'Added to favourites'
+2026-04-27 12:34:43 [INFO] 第一次点击 toast: 'Added to favourites'
+12:34:43 [INFO] 当前已变为已收藏，再点一次还原为未收藏
+2026-04-27 12:34:43 [INFO] 当前已变为已收藏，再点一次还原为未收藏
+12:34:43 [INFO] ✓ 前置状态重置完成，当前帖子处于未收藏状态
+2026-04-27 12:34:43 [INFO] ✓ 前置状态重置完成，当前帖子处于未收藏状态
+12:34:43 [INFO] toast文案: 'Added to favourites', URL: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs -> https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:34:43 [INFO] toast文案: 'Added to favourites', URL: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs -> https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestFavouritesAction::test_tc016_favourites_collected_shows_removed_toast 12:34:43 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:34:43 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:34:43 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:34:43 [INFO] Session加载成功，验证登录状态...
+12:34:46 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:34:46 [INFO] ✓ 检测到登录用户名
+12:34:46 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:34:46 [INFO] ✓ Session有效，已登录ES站
+12:35:07 [INFO] ✓ 点击非本人帖成功
+2026-04-27 12:35:07 [INFO] ✓ 点击非本人帖成功
+12:35:07 [INFO] toast出现: True, URL: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs -> https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:35:07 [INFO] toast出现: True, URL: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs -> https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestFavouritesAction::test_tc017_own_post_favourites_works 12:35:07 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:35:07 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:35:07 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:35:07 [INFO] Session加载成功，验证登录状态...
+12:35:10 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:35:10 [INFO] ✓ 检测到登录用户名
+12:35:10 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:35:10 [INFO] ✓ Session有效，已登录ES站
+12:35:12 [INFO] ✓ 导航到招聘列表页成功
+2026-04-27 12:35:12 [INFO] ✓ 导航到招聘列表页成功
+12:35:12 [INFO] Favourites后URL变化: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs -> https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:35:12 [INFO] Favourites后URL变化: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs -> https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestShareAction::test_tc018_share_shows_link_copied_toast 12:35:12 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:35:12 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:35:13 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:35:13 [INFO] Session加载成功，验证登录状态...
+12:35:15 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:35:15 [INFO] ✓ 检测到登录用户名
+12:35:15 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:35:15 [INFO] ✓ Session有效，已登录ES站
+12:35:36 [INFO] ✓ 点击非本人帖成功
+2026-04-27 12:35:36 [INFO] ✓ 点击非本人帖成功
+12:35:37 [INFO] toast出现: True, URL: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs -> https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:35:37 [INFO] toast出现: True, URL: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs -> https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestNewTabAction::test_tc019_new_tab_link_exists 12:35:37 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:35:37 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:35:37 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:35:37 [INFO] Session加载成功，验证登录状态...
+12:35:40 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:35:40 [INFO] ✓ 检测到登录用户名
+12:35:40 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:35:40 [INFO] ✓ Session有效，已登录ES站
+12:35:43 [INFO] ✓ 导航到招聘列表页成功
+2026-04-27 12:35:43 [INFO] ✓ 导航到招聘列表页成功
+12:35:43 [INFO] New tab链接可见: True
+2026-04-27 12:35:43 [INFO] New tab链接可见: True
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestNewTabAction::test_tc020_new_tab_opens_post_detail_in_new_tab 12:35:43 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:35:43 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:35:43 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:35:43 [INFO] Session加载成功，验证登录状态...
+12:35:45 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:35:45 [INFO] ✓ 检测到登录用户名
+12:35:45 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:35:45 [INFO] ✓ Session有效，已登录ES站
+12:35:47 [INFO] 列表 href 中未出现 infoId=6522669642316510，尝试按标题回退: drast back
+2026-04-27 12:35:47 [INFO] 列表 href 中未出现 infoId=6522669642316510，尝试按标题回退: drast back
+12:35:49 [INFO] ✓ 已选中本人帖，准备点 New tab
+2026-04-27 12:35:49 [INFO] ✓ 已选中本人帖，准备点 New tab
+12:35:50 [INFO] 新标签页URL: https://es.58v5.cn/en/city/cate-analysis-reporting/drast-back-6522669642316510/
+2026-04-27 12:35:50 [INFO] 新标签页URL: https://es.58v5.cn/en/city/cate-analysis-reporting/drast-back-6522669642316510/
+12:35:50 [INFO] 新标签页标题: drast back - OK
+2026-04-27 12:35:50 [INFO] 新标签页标题: drast back - OK
+12:35:50 [INFO] ✓ New tab 新标签页验证成功
+2026-04-27 12:35:50 [INFO] ✓ New tab 新标签页验证成功
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestButtonPermissionIsolation::test_tc021_switch_own_to_other_updates_buttons 12:35:51 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:35:51 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:35:51 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:35:51 [INFO] Session加载成功，验证登录状态...
+12:35:53 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:35:53 [INFO] ✓ 检测到登录用户名
+12:35:53 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:35:53 [INFO] ✓ Session有效，已登录ES站
+12:35:55 [INFO] 本人帖: Withdraw=True, Edit=True, Contact=False
+2026-04-27 12:35:55 [INFO] 本人帖: Withdraw=True, Edit=True, Contact=False
+12:36:14 [INFO] ✓ 切换到非本人帖
+2026-04-27 12:36:14 [INFO] ✓ 切换到非本人帖
+12:36:14 [INFO] 非本人帖: Contact=True, Withdraw=False, Edit=False, Favourites=True
+2026-04-27 12:36:14 [INFO] 非本人帖: Contact=True, Withdraw=False, Edit=False, Favourites=True
+12:36:14 [INFO] ✓ 切换帖子操作按钮权限隔离验证成功（本人帖→非本人帖）
+2026-04-27 12:36:14 [INFO] ✓ 切换帖子操作按钮权限隔离验证成功（本人帖→非本人帖）
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestButtonPermissionIsolation::test_tc022_switch_other_to_own_updates_buttons 12:36:15 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:36:15 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:36:15 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:36:15 [INFO] Session加载成功，验证登录状态...
+12:36:17 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:36:17 [INFO] ✓ 检测到登录用户名
+12:36:17 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:36:17 [INFO] ✓ Session有效，已登录ES站
+12:36:38 [INFO] 非本人帖: Contact=True
+2026-04-27 12:36:38 [INFO] 非本人帖: Contact=True
+12:36:41 [INFO] ✓ 切换回本人帖
+2026-04-27 12:36:41 [INFO] ✓ 切换回本人帖
+12:36:41 [INFO] 本人帖: Withdraw=True, Edit=True, Contact=False
+2026-04-27 12:36:41 [INFO] 本人帖: Withdraw=True, Edit=True, Contact=False
+12:36:41 [INFO] ✓ 切换帖子操作按钮权限隔离验证成功（非本人帖→本人帖）
+2026-04-27 12:36:41 [INFO] ✓ 切换帖子操作按钮权限隔离验证成功（非本人帖→本人帖）
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestUnauthenticatedPermissions::test_tc023_unauthenticated_shows_contact_not_withdraw_edit 12:36:44 [INFO] ✓ 未登录状态导航到招聘列表页成功
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:36:44 [INFO] ✓ 未登录状态导航到招聘列表页成功
+12:36:44 [INFO] 未登录状态: True
+2026-04-27 12:36:44 [INFO] 未登录状态: True
+12:36:44 [INFO] Contact=True, Withdraw=False（预期False）, Edit=False（预期False）
+2026-04-27 12:36:44 [INFO] Contact=True, Withdraw=False（预期False）, Edit=False（预期False）
+12:36:44 [INFO] Favourites=True, New tab=True, Share=True
+2026-04-27 12:36:44 [INFO] Favourites=True, New tab=True, Share=True
+12:36:44 [INFO] ✓ 未登录状态权限验证成功
+2026-04-27 12:36:44 [INFO] ✓ 未登录状态权限验证成功
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestUnauthenticatedPermissions::test_tc024_unauthenticated_contact_shows_login_dialog 12:36:47 [INFO] ✓ 未登录状态导航成功
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:36:47 [INFO] ✓ 未登录状态导航成功
+12:36:49 [INFO] Contact后URL: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs -> https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+2026-04-27 12:36:49 [INFO] Contact后URL: https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs -> https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs
+12:36:49 [INFO] 登录引导弹窗可见=True, 有email输入框=True, Continue=disabled: True
+2026-04-27 12:36:49 [INFO] 登录引导弹窗可见=True, 有email输入框=True, Continue=disabled: True
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestUnauthenticatedPermissions::test_tc025_unauthenticated_login_dialog_close 12:36:54 [INFO] 弹窗已出现: True
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:36:54 [INFO] 弹窗已出现: True
+12:36:55 [INFO] 弹窗消失: True, URL=https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs, Contact=True
+2026-04-27 12:36:55 [INFO] 弹窗消失: True, URL=https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs, Contact=True
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestUnauthenticatedPermissions::test_tc026_unauthenticated_all_posts_show_contact 12:36:58 [INFO] ✓ 未登录状态导航成功
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:36:58 [INFO] ✓ 未登录状态导航成功
+12:36:58 [INFO] 本人帖（未登录）: Contact=True, Withdraw=False（预期False）
+2026-04-27 12:36:58 [INFO] 本人帖（未登录）: Contact=True, Withdraw=False（预期False）
+12:37:02 [INFO] 非本人帖（未登录）: Contact=True, Withdraw=False（预期False）
+2026-04-27 12:37:02 [INFO] 非本人帖（未登录）: Contact=True, Withdraw=False（预期False）
+12:37:02 [INFO] ✓ 未登录状态任意帖子均显示 Contact 验证成功
+2026-04-27 12:37:02 [INFO] ✓ 未登录状态任意帖子均显示 Contact 验证成功
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestResumeEntry::test_tc027_resume_entry_visible 12:37:02 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:37:02 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:37:02 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:37:02 [INFO] Session加载成功，验证登录状态...
+12:37:04 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:37:04 [INFO] ✓ 检测到登录用户名
+12:37:04 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:37:04 [INFO] ✓ Session有效，已登录ES站
+12:37:06 [INFO] ✓ 导航到招聘列表页成功
+2026-04-27 12:37:06 [INFO] ✓ 导航到招聘列表页成功
+12:37:06 [INFO] Resume入口可见: True
+2026-04-27 12:37:06 [INFO] Resume入口可见: True
+PASSED
+test_cases/zhaopin/test_es_jobs_detail_panel.py::TestResumeEntry::test_tc028_resume_entry_navigates_to_resume_page 12:37:06 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+
+-------------------------------- live log call ---------------------------------
+2026-04-27 12:37:06 [INFO] 尝试加载Session: es_seller_es_seller_wangyongli
+12:37:06 [INFO] Session加载成功，验证登录状态...
+2026-04-27 12:37:06 [INFO] Session加载成功，验证登录状态...
+12:37:09 [INFO] ✓ 检测到登录用户名
+2026-04-27 12:37:09 [INFO] ✓ 检测到登录用户名
+12:37:09 [INFO] ✓ Session有效，已登录ES站
+2026-04-27 12:37:09 [INFO] ✓ Session有效，已登录ES站
+12:37:11 [INFO] ✓ 导航到招聘列表页成功
+2026-04-27 12:37:11 [INFO] ✓ 导航到招聘列表页成功
+12:37:13 [INFO] 点击Resume后URL: https://espub.58v5.cn/biz/en/resume/add
+2026-04-27 12:37:13 [INFO] 点击Resume后URL: https://espub.58v5.cn/biz/en/resume/add
+12:37:13 [INFO] Personal Information标题可见: True，title 含 resume: False，page.title='Jobs'
+2026-04-27 12:37:13 [INFO] Personal Information标题可见: True，title 含 resume: False，page.title='Jobs'
+12:37:13 [INFO] ✓ Resume 入口跳转验证成功
+2026-04-27 12:37:13 [INFO] ✓ Resume 入口跳转验证成功
+PASSED12:37:13 [INFO] [PLAYWRIGHT] 清理全局 Playwright 实例
+---------------------------- live log sessionfinish ----------------------------
+2026-04-27 12:37:13 [INFO] [PLAYWRIGHT] 清理全局 Playwright 实例
+12:37:13 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例已清理
+2026-04-27 12:37:13 [INFO] [PLAYWRIGHT] ✅ 全局 Playwright 实例已清理
+
+
+=================================== FAILURES ===================================
+______ TestDetailPanelInfoDisplay.test_tc006_own_post_description_visible ______
+test_cases/zhaopin/test_es_jobs_detail_panel.py:282: in test_tc006_own_post_description_visible
+    assert desc_visible, "详情面板应展示 Description 标题和内容段落，无折叠遮挡"
+E   AssertionError: 详情面板应展示 Description 标题和内容段落，无折叠遮挡
+E   assert False
+------------------------------ Captured log call -------------------------------
+INFO     AutoTest:es_login_helper.py:63 尝试加载Session: es_seller_es_seller_wangyongli
+INFO     AutoTest:es_login_helper.py:66 Session加载成功，验证登录状态...
+INFO     AutoTest:es_home_page.py:36 ✓ 检测到登录用户名
+INFO     AutoTest:es_login_helper.py:83 ✓ Session有效，已登录ES站
+INFO     AutoTest:jobs_detail_panel_page_es.py:111 列表 href 中未出现 infoId=6522669642316510，尝试按标题回退: drast back
+INFO     AutoTest:test_es_jobs_detail_panel.py:266 ✓ 已选中本人帖卡片
+INFO     AutoTest:test_es_jobs_detail_panel.py:270 接口返回 Content: 'Vhugfghhfccchjgf'
+INFO     AutoTest:test_es_jobs_detail_panel.py:280 Description区域可见: False，面板内容: 'Vhugfghhfccchjgf'
+- generated xml file: /Users/wangyongli/Documents/okIdeaProject/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/zhaopin/parallel_headless_run_20260427_122819/junit/test_es_jobs_detail_panel_junit.xml -
+=========================== short test summary info ============================
+FAILED test_cases/zhaopin/test_es_jobs_detail_panel.py::TestDetailPanelInfoDisplay::test_tc006_own_post_description_visible - AssertionError: 详情面板应展示 Description 标题和内容段落，无折叠遮挡
+assert False
+=================== 1 failed, 27 passed in 533.95s (0:08:53) ===================

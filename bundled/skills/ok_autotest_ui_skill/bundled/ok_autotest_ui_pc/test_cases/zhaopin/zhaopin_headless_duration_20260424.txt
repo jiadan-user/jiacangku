@@ -1,0 +1,7 @@
+# zhaopin 无头整目录单次 pytest（HEADLESS=1 CI=1）
+# 命令: time -p env HEADLESS=1 CI=1 python3 -m pytest test_cases/zhaopin/ ...
+real_sec=6086.54
+pytest_wall_sec=6086.14
+human=1h41m26s
+result=58 failed, 284 passed, 1 skipped
+date=2026-04-24

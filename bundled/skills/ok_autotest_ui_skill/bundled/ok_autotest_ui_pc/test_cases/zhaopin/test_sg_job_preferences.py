@@ -23,6 +23,8 @@ from utils.logger import setup_logger
 
 logger = setup_logger()
 
+from test_cases.zhaopin.explicit_waits import dom_content_loaded_soft, network_idle_soft, sg_wait_jobs_list_url, sg_after_home_jobs_icon
+
 
 def _resolve_preference_user_id(page, config) -> str:
     """优先环境变量 / 配置，其次从登录 Cookie（uid{bus_id}，如 uid100005）解析。"""
@@ -131,7 +133,7 @@ def test_sg_jobs_icon_navigates_to_job_preferences_page(page, config):
     with allure.step("步骤1：点击首页 Jobs 金刚位图标"):
         home_page.click_jobs_nav()
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(2000)
+        dom_content_loaded_soft(page, 20000)
         logger.info(f"✓ 点击 Jobs 金刚位，跳转至: {page.url}")
 
     # ========== Assert ==========
@@ -169,13 +171,11 @@ def test_sg_job_preferences_skip_navigates_to_jobs_list(page, config):
     with allure.step("导航到 Job Preferences 页面"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("点击 Skip 链接"):
         job_pref_page.click_skip()
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(1500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：URL 为职位列表页且含 iconSource=jobs"):
         current_url = page.url
@@ -205,13 +205,11 @@ def test_sg_job_preferences_back_navigates_to_home(page, config):
     with allure.step("导航到 Job Preferences 页面"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("点击 Back 按钮"):
         job_pref_page.click_back()
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(1500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：URL 为新加坡站首页"):
         current_url = page.url
@@ -245,12 +243,10 @@ def test_sg_empty_form_continue_shows_three_required_errors(page, config):
     with allure.step("导航到 Job Preferences 页面"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("直接点击 Continue（三个必填字段均为空）"):
         job_pref_page.click_continue()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：仍停留在 Job Preferences 且显示至少两条必填错误"):
         assert "jobPreference" in page.url, (
@@ -284,16 +280,13 @@ def test_sg_only_job_functions_filled_shows_location_salary_errors(page, config)
     with allure.step("导航到 Job Preferences 页面"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("选择 Job Functions（Accounting → Accounts Officers/Clerks）"):
         job_pref_page.select_job_function("Accounting", "Accounts Officers/Clerks")
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("点击 Continue（Location 和 Salary 为空）"):
         job_pref_page.click_continue()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：Location 和 Salary 显示必填错误"):
         assert "jobPreference" in page.url, (
@@ -329,16 +322,13 @@ def test_sg_only_location_filled_shows_job_functions_salary_errors(page, config)
     with allure.step("导航到 Job Preferences 页面"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("选择 Location（Singapore）"):
         job_pref_page.select_location_full("Singapore")
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("点击 Continue（Job Functions 和 Salary 为空）"):
         job_pref_page.click_continue()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：显示必填错误且页面未跳转"):
         assert "jobPreference" in page.url, f"期望停留在 jobPreference，当前: {page.url}"
@@ -367,16 +357,13 @@ def test_sg_only_salary_filled_shows_job_functions_location_errors(page, config)
     with allure.step("导航到 Job Preferences 页面"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("选择 Pay type Monthly 并输入金额 3000"):
         job_pref_page.set_salary("Monthly", "3000")
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("点击 Continue（Job Functions 和 Location 为空）"):
         job_pref_page.click_continue()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：显示必填错误且页面未跳转"):
         assert "jobPreference" in page.url, f"期望停留在 jobPreference，当前: {page.url}"
@@ -409,8 +396,7 @@ def test_sg_job_preferences_page_shows_all_form_blocks(page, config):
     with allure.step("导航到 Job Preferences 页面"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：Job Functions 触发器可见"):
         assert page.locator("text=Select preferred job function").first.is_visible(timeout=5000), \
@@ -459,8 +445,7 @@ def test_sg_home_page_jobs_icon_visible_and_clickable(page, config):
     with allure.step("点击 Jobs 金刚位"):
         home_page.click_jobs_nav()
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(1500)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("验证：点击后发生跳转（不停留首页）"):
         current_url = page.url
         assert "city-singapore" not in current_url or "cate-jobs" in current_url or "jobPreference" in current_url, \
@@ -488,8 +473,7 @@ def test_sg_other_category_icon_bypasses_job_preferences(page, config):
         marketplace_url = f"{config['base_url']}/en/city-singapore/cate-marketplace/"
         page.goto(marketplace_url)
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：URL 不含 jobPreference"):
         current_url = page.url
@@ -523,8 +507,7 @@ def test_sg_job_functions_trigger_expands_two_column_panel(page, config):
     with allure.step("导航到 Job Preferences 页面"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("点击 Job Functions 触发器"):
         job_pref_page.click_job_functions_trigger()
 
@@ -537,8 +520,7 @@ def test_sg_job_functions_trigger_expands_two_column_panel(page, config):
 
     with allure.step("按 ESC 关闭面板"):
         page.keyboard.press("Escape")
-        page.wait_for_timeout(300)
-
+        dom_content_loaded_soft(page, 20000)
     logger.info("✅ TC011 通过")
 
 
@@ -561,12 +543,10 @@ def test_sg_job_functions_full_selection_flow(page, config):
     with allure.step("导航到 Job Preferences 页面"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("选择 Job Functions（Accounting → Accounts Officers/Clerks）"):
         job_pref_page.select_job_function("Accounting", "Accounts Officers/Clerks")
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：触发器显示已选数量（含 /10）"):
         trigger_text = job_pref_page.get_job_functions_trigger_text()
@@ -610,13 +590,12 @@ def test_sg_job_functions_max_10_items_boundary(page, config):
     with allure.step("导航到 Job Preferences 页面"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("依次选择 10 个 Job Function 子分类"):
         for i, (cat, sub) in enumerate(selections):
             try:
                 job_pref_page.select_job_function(cat, sub)
-                page.wait_for_timeout(300)
+                dom_content_loaded_soft(page, 20000)
             except Exception as e:
                 logger.info(f"⚠️ 第 {i+1} 项选择异常（可能已满）: {e}")
                 break
@@ -630,17 +609,17 @@ def test_sg_job_functions_max_10_items_boundary(page, config):
 
     with allure.step("展开面板并尝试选择第 11 项"):
         job_pref_page.click_job_functions_trigger()
-        page.wait_for_timeout(800)
+        dom_content_loaded_soft(page, 20000)
         # 尝试点击第 11 个子分类（Finance → Banking）触发限制提示
         try:
             finance_cat = page.get_by_text("Finance", exact=True).first
             if finance_cat.is_visible(timeout=3000):
                 finance_cat.click()
-                page.wait_for_timeout(500)
+                dom_content_loaded_soft(page, 20000)
                 banking_item = page.get_by_text("Banking").first
                 if banking_item.is_visible(timeout=3000):
                     banking_item.click()
-                    page.wait_for_timeout(500)
+                    dom_content_loaded_soft(page, 20000)
         except Exception:
             pass
 
@@ -674,8 +653,7 @@ def test_sg_job_functions_panel_closes_on_outside_click(page, config):
     with allure.step("导航到 Job Preferences 页面"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("点击 Job Functions 触发器展开面板"):
         job_pref_page.click_job_functions_trigger()
         accounting_item = page.get_by_text("Accounting", exact=True).first
@@ -685,8 +663,7 @@ def test_sg_job_functions_panel_closes_on_outside_click(page, config):
     with allure.step("点击页面标题区域（外部区域）关闭面板"):
         # 点击页面标题 "Job Preferences" 关闭浮层
         page.get_by_role("heading", name="Job Preferences").click()
-        page.wait_for_timeout(800)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：面板已收起（Accounting 不可见）"):
         # 面板收起后，Accounting 文本不在可见区域
@@ -714,18 +691,16 @@ def test_sg_job_functions_clear_resets_selections(page, config):
     with allure.step("导航到 Job Preferences 并选择一个 Job Function"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_job_function("Accounting", "Accounts Officers/Clerks")
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("展开面板并点击 Clear"):
         job_pref_page.click_job_functions_trigger()
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.click_clear_in_panel()
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.click_confirm_in_panel()
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：触发器恢复占位文案（含 0/10）"):
         trigger_text = job_pref_page.get_job_functions_trigger_text()
@@ -753,15 +728,13 @@ def test_sg_job_functions_reselect_after_clear(page, config):
     with allure.step("导航并选择→清除→再次选择"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_job_function("Accounting", "Accounts Officers/Clerks")
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.clear_job_functions_selection()
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_job_function("Accounting", "Accounts Payable")
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：触发器显示新的选择（1/10）"):
         trigger_text = job_pref_page.get_job_functions_trigger_text()
@@ -789,12 +762,10 @@ def test_sg_location_trigger_expands_checkbox_panel(page, config):
     with allure.step("导航到 Job Preferences 页面"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("点击 Location 触发器"):
         job_pref_page.click_location_trigger()
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：显示 Singapore checkbox"):
         singapore_cb = page.get_by_role("checkbox", name="Singapore", exact=True).first
@@ -826,10 +797,9 @@ def test_sg_location_full_selection_flow(page, config):
     with allure.step("导航到 Job Preferences 并选择 Location（Singapore）"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_location_full("Singapore")
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：触发器显示已选数量（含 /5）"):
         trigger_text = job_pref_page.get_location_trigger_text()
@@ -857,9 +827,9 @@ def test_sg_location_max_5_items_boundary(page, config):
     with allure.step("导航到 Job Preferences 并在面板内勾选至多 5 个 Location（与线上列表同步）"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.click_location_trigger()
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         # 与 Confirm 同面板的 checkbox（避免点到页面其他区域）
         loc_panel = page.locator("form").filter(
             has=page.get_by_role("button", name="Confirm")
@@ -870,10 +840,9 @@ def test_sg_location_max_5_items_boundary(page, config):
         assert pick >= 1, "Location 面板无可用选项"
         for i in range(pick):
             cbs.nth(i).click()
-            page.wait_for_timeout(150)
+            dom_content_loaded_soft(page, 20000)
         job_pref_page.click_confirm_in_panel()
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：触发器显示已满选计数（面板不足 5 项时按实际数量）"):
         trigger_text = job_pref_page.get_location_trigger_text()
@@ -883,12 +852,12 @@ def test_sg_location_max_5_items_boundary(page, config):
 
     with allure.step("尝试勾选第 6 个 Location 并验证限制提示（选项不足 6 个时跳过）"):
         job_pref_page.click_location_trigger()
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         loc_panel2 = job_pref_page.location_panel_form()
         extra = loc_panel2.get_by_role("checkbox").nth(5)
         if extra.is_visible(timeout=2000):
             extra.click()
-            page.wait_for_timeout(500)
+            dom_content_loaded_soft(page, 20000)
             limit_tip = page.get_by_text(re.compile(r"up to 5|maximum|5 options", re.I)).first
             if limit_tip.is_visible(timeout=3000):
                 logger.info("✓ 显示最多选 5 项相关提示")
@@ -918,20 +887,18 @@ def test_sg_location_uncheck_updates_count(page, config):
     with allure.step("选择两个 Location 并在 Location 浮层内取消 Ang Mo Kio"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_locations(["Singapore", "Ang Mo Kio"])
-        page.wait_for_timeout(400)
-
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.click_location_trigger()
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         loc_panel = job_pref_page.location_panel_form()
         amk_cb = loc_panel.get_by_role("checkbox", name="Ang Mo Kio", exact=True)
         amk_cb.click(force=True)
         expect(amk_cb).not_to_be_checked(timeout=8000)
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.click_confirm_in_location_panel()
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：触发器计数变为 1/5"):
         trigger_text = job_pref_page.get_location_trigger_text()
@@ -959,12 +926,11 @@ def test_sg_location_clear_resets_selections(page, config):
     with allure.step("选择 Location 再通过面板 Clear 清空"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_location_full("Singapore")
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.clear_location_selection()
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：触发器恢复占位文案"):
         trigger_text = job_pref_page.get_location_trigger_text()
@@ -992,14 +958,13 @@ def test_sg_location_reselect_after_clear(page, config):
     with allure.step("选择→清除→再次选择 Ang Mo Kio"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_location_full("Singapore")
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.clear_location_selection()
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_location_full("Ang Mo Kio")
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：触发器显示 1/5"):
         trigger_text = job_pref_page.get_location_trigger_text()
@@ -1027,8 +992,7 @@ def test_sg_pay_type_button_expands_options(page, config):
     with allure.step("导航到 Job Preferences 页面"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("点击 Pay type 按钮"):
         job_pref_page.select_pay_type.__func__  # 不调用，只展开
         for sel in [job_pref_page.PAY_TYPE_BUTTON, job_pref_page.PAY_TYPE_BUTTON_ALT]:
@@ -1037,8 +1001,7 @@ def test_sg_pay_type_button_expands_options(page, config):
                 break
             except Exception:
                 continue
-        page.wait_for_timeout(400)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：展开 Yearly/Monthly/Hourly 选项"):
         yearly_opt = page.get_by_role("checkbox", name="Yearly")
@@ -1071,10 +1034,9 @@ def test_sg_salary_full_flow_pay_type_and_amount(page, config):
     with allure.step("导航并选择 Monthly + 输入 3000"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.set_salary("Monthly", "3000")
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：Pay type 按钮文案包含 Monthly"):
         pay_type_text = job_pref_page.get_pay_type_button_text()
@@ -1108,14 +1070,13 @@ def test_sg_salary_amount_boundary_values(page, config):
     with allure.step("导航到 Job Preferences 并选择 Pay type Yearly"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_pay_type("Yearly")
-        page.wait_for_timeout(300)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("验证边界1：输入 0，失焦后保留不被清空"):
         job_pref_page.type_salary_amount_sequentially("0", delay=80)
         job_pref_page.blur_salary_input()
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         zero_value = job_pref_page.get_salary_input_value()
         assert zero_value == "0", \
             f"输入 0 后失焦值异常（期望 '0'，实际: '{zero_value}'）"
@@ -1123,10 +1084,10 @@ def test_sg_salary_amount_boundary_values(page, config):
 
     with allure.step("验证边界2：输入正常正数 3000，失焦后正确显示"):
         job_pref_page.clear_salary_amount()
-        page.wait_for_timeout(200)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.type_salary_amount_sequentially("3000", delay=80)
         job_pref_page.blur_salary_input()
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         normal_value = job_pref_page.get_salary_input_value()
         assert "3000" in normal_value.replace(",", ""), \
             f"正常正数 3000 显示异常: '{normal_value}'"
@@ -1134,11 +1095,11 @@ def test_sg_salary_amount_boundary_values(page, config):
 
     with allure.step("验证边界3：输入15位超长数字，只保留13位（第14位不可键入）"):
         job_pref_page.clear_salary_amount()
-        page.wait_for_timeout(200)
+        dom_content_loaded_soft(page, 20000)
         # 逐字符输入15位数字，模拟真实键盘输入
         job_pref_page.type_salary_amount_sequentially("999999999999999", delay=50)
         job_pref_page.blur_salary_input()
-        page.wait_for_timeout(500)
+        dom_content_loaded_soft(page, 20000)
         long_value = job_pref_page.get_salary_input_value()
         # 去掉千位分隔符，验证位数 ≤ 13
         digits_only = long_value.replace(",", "").replace(".", "")
@@ -1170,13 +1131,12 @@ def test_sg_salary_illegal_chars_blocked(page, config):
     with allure.step("导航并选择 Pay type，输入非法字符 abc!@#"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_pay_type("Yearly")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.type_salary_amount_sequentially("abc!@#", delay=80)
         job_pref_page.blur_salary_input()
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：输入框不包含字母或特殊字符"):
         value = job_pref_page.get_salary_input_value()
@@ -1207,13 +1167,12 @@ def test_sg_salary_amount_clear_resets_input(page, config):
     with allure.step("导航并输入薪资金额 5000，再清空"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.set_salary("Monthly", "5000")
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.clear_salary_amount()
         job_pref_page.blur_salary_input()
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：金额输入框已清空"):
         value = job_pref_page.get_salary_input_value()
@@ -1243,12 +1202,11 @@ def test_sg_salary_pay_type_can_be_switched(page, config):
     with allure.step("导航并选择 Monthly，再切换为 Yearly"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_pay_type("Monthly")
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_pay_type("Yearly")
-        page.wait_for_timeout(400)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：Pay type 按钮文案变为 Yearly"):
         pay_type_text = job_pref_page.get_pay_type_button_text()
@@ -1276,26 +1234,23 @@ def test_sg_after_filling_and_clearing_all_fields_errors_reappear(page, config):
     with allure.step("导航、填写三个必填字段"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_job_function("Accounting", "Accounts Officers/Clerks")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_location_full("Singapore")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.set_salary("Monthly", "3000")
-        page.wait_for_timeout(300)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("清除三个必填字段"):
         job_pref_page.clear_job_functions_selection()
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.clear_location_selection()
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.clear_salary_amount()
-        page.wait_for_timeout(300)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("点击 Continue"):
         job_pref_page.click_continue()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：必填错误重新出现"):
         error_count = job_pref_page.get_validation_error_count()
@@ -1324,17 +1279,15 @@ def test_sg_workplace_type_and_job_type_are_optional_multiselect(page, config):
     with allure.step("导航并勾选 Workplace Type 和 Job Type"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.workplace_type_checkbox("Onsite").click(force=True)
-        page.wait_for_timeout(200)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.workplace_type_checkbox("Remote").click(force=True)
-        page.wait_for_timeout(200)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.job_type_checkbox("Full-time").click(force=True)
-        page.wait_for_timeout(200)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.job_type_checkbox("Part-time").click(force=True)
-        page.wait_for_timeout(200)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：末次点击的 Workplace / Job Type 为选中（兼容单选互斥与多选）"):
         assert job_pref_page.workplace_type_checkbox("Remote").is_checked(), \
@@ -1367,15 +1320,13 @@ def test_sg_refresh_page_clears_unfilled_form_data(page, config):
     with allure.step("导航并填写部分字段（不提交）"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_location_full("Singapore")
-        page.wait_for_timeout(400)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("刷新页面（F5）"):
         page.reload()
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：刷新后 Location 触发器恢复占位文案（0/5）"):
         trigger_text = job_pref_page.get_location_trigger_text()
@@ -1399,8 +1350,7 @@ def test_sg_unauthenticated_access_job_preferences_shows_login_popup(page, confi
     with allure.step("先导航到 SG 站首页建立上下文"):
         page.goto(config["base_url"] + "/en/city-singapore/")
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("清除 Cookie 模拟未登录状态"):
         page.evaluate("""() => {
             document.cookie.split(';').forEach(function(c) {
@@ -1408,14 +1358,12 @@ def test_sg_unauthenticated_access_job_preferences_shows_login_popup(page, confi
             });
         }""")
         page.evaluate("() => { try { localStorage.clear(); sessionStorage.clear(); } catch(e) {} }")
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Act ==========
     with allure.step("直接访问 Job Preferences URL"):
         page.goto(config["job_pref_url"])
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(2000)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：弹出登录弹窗或重定向登录"):
         login_popup = (
@@ -1448,8 +1396,7 @@ def test_sg_direct_jobs_list_url_bypasses_job_preferences(page, config):
     with allure.step("直接访问 SG 站职位列表 URL"):
         page.goto(config["jobs_list_url"])
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(1500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：URL 不含 jobPreference"):
         current_url = page.url
@@ -1479,11 +1426,10 @@ def test_sg_skip_return_url_contains_icon_source_jobs(page, config):
     with allure.step("导航到 Job Preferences 并点击 Skip"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.click_skip()
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：URL 含 iconSource=jobs"):
         current_url = page.url
@@ -1515,10 +1461,9 @@ def test_sg_pay_type_switch_to_monthly_updates_button_text(page, config):
     with allure.step("导航并选择 Monthly Pay type"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_pay_type("Monthly")
-        page.wait_for_timeout(400)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：按钮文案包含 Monthly"):
         pay_type_text = job_pref_page.get_pay_type_button_text()
@@ -1546,14 +1491,13 @@ def test_sg_pay_type_monthly_all_required_fields_filled_continue_enabled(page, c
     with allure.step("导航并填写三个必填字段（Monthly + 3000）"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.set_salary("Monthly", "3000")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_job_function("Accounting", "Accounts Officers/Clerks")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_location_full("Singapore")
-        page.wait_for_timeout(400)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：Continue 按钮处于可点击状态（非 disabled）"):
         continue_btn = page.get_by_role("button", name="Continue")
@@ -1582,12 +1526,11 @@ def test_sg_pay_type_monthly_yearly_toggle_updates_text(page, config):
     with allure.step("导航并切换 Monthly→Yearly→Monthly"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_pay_type("Monthly")
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_pay_type("Yearly")
-        page.wait_for_timeout(400)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：最终文案为 Yearly"):
         pay_type_text = job_pref_page.get_pay_type_button_text()
@@ -1615,17 +1558,15 @@ def test_sg_monthly_pay_type_empty_amount_triggers_required_error(page, config):
     with allure.step("导航并选择 Monthly + 输入金额，再清空金额"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.set_salary("Monthly", "3000")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.clear_salary_amount()
         job_pref_page.blur_salary_input()
-        page.wait_for_timeout(300)
-
+        dom_content_loaded_soft(page, 20000)
     with allure.step("点击 Continue（三个必填字段均为空或仅 Pay type 有值）"):
         job_pref_page.click_continue()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：显示 Salary 必填错误且页面未跳转"):
         salary_error_visible = job_pref_page.get_salary_error_visible()
@@ -1655,10 +1596,9 @@ def test_sg_pay_type_switch_to_hourly_updates_button_text(page, config):
     with allure.step("导航并切换 Pay type 为 Hourly"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_pay_type("Hourly")
-        page.wait_for_timeout(400)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：按钮文案包含 Hourly"):
         pay_type_text = job_pref_page.get_pay_type_button_text()
@@ -1686,14 +1626,13 @@ def test_sg_pay_type_hourly_all_required_fields_filled_continue_enabled(page, co
     with allure.step("导航并填写三个必填字段（Hourly + 20）"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.set_salary("Hourly", "20")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_job_function("Accounting", "Accounts Officers/Clerks")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_location_full("Singapore")
-        page.wait_for_timeout(400)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：Continue 按钮可点击"):
         continue_btn = page.get_by_role("button", name="Continue")
@@ -1721,12 +1660,11 @@ def test_sg_pay_type_hourly_yearly_toggle_updates_text(page, config):
     with allure.step("切换 Hourly → Yearly"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_pay_type("Hourly")
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_pay_type("Yearly")
-        page.wait_for_timeout(400)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：文案变为 Yearly"):
         pay_type_text = job_pref_page.get_pay_type_button_text()
@@ -1753,12 +1691,11 @@ def test_sg_pay_type_monthly_to_hourly_updates_button_text(page, config):
     with allure.step("切换 Monthly → Hourly"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_pay_type("Monthly")
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_pay_type("Hourly")
-        page.wait_for_timeout(400)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：文案变为 Hourly"):
         pay_type_text = job_pref_page.get_pay_type_button_text()
@@ -1785,12 +1722,11 @@ def test_sg_pay_type_hourly_to_monthly_updates_button_text(page, config):
     with allure.step("切换 Hourly → Monthly"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_pay_type("Hourly")
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_pay_type("Monthly")
-        page.wait_for_timeout(400)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：文案变为 Monthly"):
         pay_type_text = job_pref_page.get_pay_type_button_text()
@@ -1817,15 +1753,14 @@ def test_sg_hourly_pay_type_empty_amount_triggers_required_error(page, config):
     with allure.step("选择 Hourly 输入 20，再清空"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.set_salary("Hourly", "20")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.clear_salary_amount()
         job_pref_page.blur_salary_input()
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.click_continue()
-        page.wait_for_timeout(1000)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：Salary 必填错误出现且页面未跳转"):
         salary_error_visible = job_pref_page.get_salary_error_visible()
@@ -1854,12 +1789,12 @@ def test_sg_monthly_hourly_extreme_salary_boundary_values(page, config):
     with allure.step("Monthly + 输入 0，失焦后保留"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_pay_type("Monthly")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.type_salary_amount_sequentially("0", delay=80)
         job_pref_page.blur_salary_input()
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         zero_monthly = job_pref_page.get_salary_input_value()
         assert zero_monthly == "0", \
             f"Monthly 输入 0 后失焦值异常（期望 '0'，实际: '{zero_monthly}'）"
@@ -1867,10 +1802,10 @@ def test_sg_monthly_hourly_extreme_salary_boundary_values(page, config):
 
     with allure.step("Monthly + 超长数字，只保留13位（第14位不可键入）"):
         job_pref_page.clear_salary_amount()
-        page.wait_for_timeout(200)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.type_salary_amount_sequentially("999999999999999", delay=50)
         job_pref_page.blur_salary_input()
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         monthly_value = job_pref_page.get_salary_input_value()
         monthly_digits = monthly_value.replace(",", "").replace(".", "")
         assert monthly_digits.isdigit(), \
@@ -1882,12 +1817,12 @@ def test_sg_monthly_hourly_extreme_salary_boundary_values(page, config):
     # ========== Act & Assert：Hourly ==========
     with allure.step("Hourly + 输入 0，失焦后保留"):
         job_pref_page.select_pay_type("Hourly")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.clear_salary_amount()
-        page.wait_for_timeout(200)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.type_salary_amount_sequentially("0", delay=80)
         job_pref_page.blur_salary_input()
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         zero_hourly = job_pref_page.get_salary_input_value()
         assert zero_hourly == "0", \
             f"Hourly 输入 0 后失焦值异常（期望 '0'，实际: '{zero_hourly}'）"
@@ -1895,10 +1830,10 @@ def test_sg_monthly_hourly_extreme_salary_boundary_values(page, config):
 
     with allure.step("Hourly + 超长数字，只保留13位（第14位不可键入）"):
         job_pref_page.clear_salary_amount()
-        page.wait_for_timeout(200)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.type_salary_amount_sequentially("999999999999999", delay=50)
         job_pref_page.blur_salary_input()
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         hourly_value = job_pref_page.get_salary_input_value()
         hourly_digits = hourly_value.replace(",", "").replace(".", "")
         assert hourly_digits.isdigit(), \
@@ -1938,13 +1873,12 @@ def test_sg_salary_two_decimal_places_preserved(page, config):
     with allure.step("导航并输入 1234.56"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_pay_type("Yearly")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.type_salary_amount_sequentially("1234.56", delay=80)
         job_pref_page.blur_salary_input()
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：输入框保留两位小数"):
         value = job_pref_page.get_salary_input_value()
@@ -1972,13 +1906,12 @@ def test_sg_salary_more_than_two_decimals_truncated(page, config):
     with allure.step("输入 1000.999（三位小数）"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_pay_type("Yearly")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.type_salary_amount_sequentially("1000.999", delay=80)
         job_pref_page.blur_salary_input()
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：小数位不超过两位"):
         value = job_pref_page.get_salary_input_value()
@@ -2008,13 +1941,12 @@ def test_sg_salary_one_decimal_place_allowed(page, config):
     with allure.step("输入 500.5（一位小数）"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_pay_type("Yearly")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.type_salary_amount_sequentially("500.5", delay=80)
         job_pref_page.blur_salary_input()
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：输入框正常显示，无错误提示"):
         value = job_pref_page.get_salary_input_value()
@@ -2042,13 +1974,12 @@ def test_sg_salary_negative_sign_blocked(page, config):
     with allure.step("尝试输入 -500（含负号）"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_pay_type("Yearly")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.type_salary_amount_sequentially("-500", delay=80)
         job_pref_page.blur_salary_input()
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：输入框不包含负号"):
         value = job_pref_page.get_salary_input_value()
@@ -2076,13 +2007,12 @@ def test_sg_salary_paste_with_illegal_chars_filtered(page, config):
     with allure.step("粘贴 -1,000.50 abc 到 Salary 输入框"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_pay_type("Yearly")
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.paste_to_salary_input("-1,000.50 abc")
         job_pref_page.blur_salary_input()
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：输入框不包含字母或恶意字符"):
         value = job_pref_page.get_salary_input_value()
@@ -2115,21 +2045,19 @@ def test_sg_job_functions_deselect_item_in_panel(page, config):
     with allure.step("选择一个 Job Function，再展开面板反选"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_job_function("Accounting", "Accounts Officers/Clerks")
-        page.wait_for_timeout(400)
-
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.click_job_functions_trigger()
-        page.wait_for_timeout(500)
+        dom_content_loaded_soft(page, 20000)
         page.get_by_text("Accounting", exact=True).first.click()
-        page.wait_for_timeout(600)
+        dom_content_loaded_soft(page, 20000)
         accounts_officers = page.get_by_text("Accounts Officers/Clerks").first
         if accounts_officers.is_visible(timeout=3000):
             accounts_officers.click()
-            page.wait_for_timeout(400)
+            dom_content_loaded_soft(page, 20000)
         job_pref_page.click_confirm_in_panel()
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：触发器计数变为 0/10 或空"):
         trigger_text = job_pref_page.get_job_functions_trigger_text()
@@ -2157,12 +2085,11 @@ def test_sg_job_functions_deselect_all_restores_placeholder(page, config):
     with allure.step("选择一个 Job Function 再用 Clear 全部清除"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_job_function("Accounting", "Accounts Officers/Clerks")
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.clear_job_functions_selection()
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：触发器恢复占位文案"):
         trigger_text = job_pref_page.get_job_functions_trigger_text()
@@ -2190,17 +2117,15 @@ def test_sg_location_deselect_item_in_panel(page, config):
     with allure.step("选择 Singapore，再展开面板反选"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_location_full("Singapore")
-        page.wait_for_timeout(400)
-
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.click_location_trigger()
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         page.get_by_role("checkbox", name="Singapore", exact=True).first.click()
-        page.wait_for_timeout(300)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.click_confirm_in_panel()
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：触发器恢复占位文案（0/5）"):
         trigger_text = job_pref_page.get_location_trigger_text()
@@ -2228,12 +2153,11 @@ def test_sg_location_deselect_all_restores_placeholder(page, config):
     with allure.step("选择 Singapore 再全部清除"):
         page.goto(config["job_pref_url"])
         job_pref_page.wait_for_page_heading()
-        page.wait_for_timeout(1000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.select_location_full("Singapore")
-        page.wait_for_timeout(400)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.clear_location_selection()
-        page.wait_for_timeout(500)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：触发器恢复占位文案"):
         trigger_text = job_pref_page.get_location_trigger_text()
@@ -2263,17 +2187,16 @@ def test_sg_workplace_type_deselect_item(page, config):
     with allure.step("依次选择 Remote → Onsite → Hybrid"):
         page.goto(_CONFIG["job_pref_url"])
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(2000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.wait_for_page_heading()
 
         wt = job_pref_page.workplace_type_checkbox
         wt("Remote").click(force=True)
-        page.wait_for_timeout(200)
+        dom_content_loaded_soft(page, 20000)
         wt("Onsite").click(force=True)
-        page.wait_for_timeout(200)
+        dom_content_loaded_soft(page, 20000)
         wt("Hybrid").click(force=True)
-        page.wait_for_timeout(300)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：末次点击的 Hybrid 为选中"):
         assert wt("Hybrid").is_checked(), "末次选择 Hybrid 应处于选中"
@@ -2299,19 +2222,18 @@ def test_sg_workplace_type_deselect_all_items(page, config):
     with allure.step("勾选三项，再逐一取消"):
         page.goto(_CONFIG["job_pref_url"])
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(2000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.wait_for_page_heading()
 
         for name in ["Onsite", "Remote", "Hybrid"]:
             job_pref_page.workplace_type_checkbox(name).click(force=True)
-            page.wait_for_timeout(200)
+            dom_content_loaded_soft(page, 20000)
         assert job_pref_page.workplace_type_checkbox("Hybrid").is_checked(), \
             "依次切换后末项 Hybrid 应为选中"
 
         for name in ["Onsite", "Remote", "Hybrid"]:
             job_pref_page.workplace_type_checkbox(name).click(force=True)
-            page.wait_for_timeout(200)
-
+            dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：单选互斥场景下末次点击项可再切换（不要求全部为未选）"):
         # 线上多为单选，无法保证三项同时未选；仅确认无异常且存在可交互状态
@@ -2339,17 +2261,16 @@ def test_sg_job_type_deselect_item(page, config):
     with allure.step("依次选择 Part-time → Full-time → Contract"):
         page.goto(_CONFIG["job_pref_url"])
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(2000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.wait_for_page_heading()
 
         jt = job_pref_page.job_type_checkbox
         jt("Part-time").click(force=True)
-        page.wait_for_timeout(200)
+        dom_content_loaded_soft(page, 20000)
         jt("Full-time").click(force=True)
-        page.wait_for_timeout(200)
+        dom_content_loaded_soft(page, 20000)
         jt("Contract").click(force=True)
-        page.wait_for_timeout(300)
-
+        dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：末次点击的 Contract 为选中"):
         assert jt("Contract").is_checked(), "末次选择 Contract 应处于选中"
@@ -2375,20 +2296,19 @@ def test_sg_job_type_deselect_all_items(page, config):
     with allure.step("勾选五项，再逐一取消"):
         page.goto(_CONFIG["job_pref_url"])
         page.wait_for_load_state("domcontentloaded", timeout=15000)
-        page.wait_for_timeout(2000)
+        dom_content_loaded_soft(page, 20000)
         job_pref_page.wait_for_page_heading()
 
         job_types = ["Full-time", "Part-time", "Contract", "Internship", "Temporary"]
         for name in job_types:
             job_pref_page.job_type_checkbox(name).click(force=True)
-            page.wait_for_timeout(200)
+            dom_content_loaded_soft(page, 20000)
         assert job_pref_page.job_type_checkbox("Temporary").is_checked(), \
             "依次切换后末项 Temporary 应为选中"
 
         for name in job_types:
             job_pref_page.job_type_checkbox(name).click(force=True)
-            page.wait_for_timeout(200)
-
+            dom_content_loaded_soft(page, 20000)
     # ========== Assert ==========
     with allure.step("验证：多选/单选混合场景下完成切换交互"):
         logger.info("✅ TC058 通过：Job Type 多项切换交互完成")

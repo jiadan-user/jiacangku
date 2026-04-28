@@ -26,6 +26,8 @@ from utils.logger import setup_logger
 
 logger = setup_logger()
 
+from test_cases.zhaopin.explicit_waits import dom_content_loaded_soft, network_idle_soft, sg_wait_jobs_list_url, sg_after_home_jobs_icon
+
 # ============================================
 # 测试环境配置
 # ============================================
@@ -123,7 +125,7 @@ class TestResumePageLoad:
 
         with allure.step("步骤1：未登录状态访问简历视图页"):
             page.goto(config['resume_view_url'], wait_until="domcontentloaded", timeout=30000)
-            page.wait_for_timeout(3000)
+            dom_content_loaded_soft(page, 20000)
             current_url = page.url
             logger.info(f"访问后URL: {current_url}")
 
@@ -247,7 +249,7 @@ class TestPersonalInfoModal:
 
         with allure.step("步骤2：清空 First Name"):
             self.resume_page.clear_first_name()
-            page.wait_for_timeout(500)
+            dom_content_loaded_soft(page, 20000)
             logger.info("✓ 清空 First Name")
 
         with allure.step("步骤3：验证 Save 按钮为禁用状态"):
@@ -270,7 +272,7 @@ class TestPersonalInfoModal:
 
         with allure.step("步骤2：清空 Last Name"):
             self.resume_page.clear_last_name()
-            page.wait_for_timeout(500)
+            dom_content_loaded_soft(page, 20000)
             logger.info("✓ 清空 Last Name")
 
         with allure.step("步骤3：验证 Save 按钮为禁用状态"):
@@ -294,8 +296,7 @@ class TestPersonalInfoModal:
         with allure.step("步骤2：在 First Name 输入 101 个字符"):
             long_name = "A" * 101
             self.resume_page.input_first_name(long_name)
-            page.wait_for_timeout(300)
-
+            dom_content_loaded_soft(page, 20000)
         with allure.step("步骤3：验证实际输入字符数 <= 100"):
             actual_value = self.resume_page.get_first_name_value()
             actual_length = len(actual_value)
@@ -321,8 +322,7 @@ class TestPersonalInfoModal:
 
         with allure.step("步骤2：点击 Cancel 关闭弹窗"):
             self.resume_page.click_cancel_in_modal()
-            page.wait_for_timeout(2000)
-
+            dom_content_loaded_soft(page, 20000)
         with allure.step("步骤3：验证 Personal Information 编辑弹窗已关闭"):
             # Verify by checking if the EditPersonInfoModal specific class is gone
             modal_still_open = page.locator("[class*='EditPersonInfoModal']").count() > 0
@@ -558,7 +558,7 @@ class TestWorkExperienceModal:
         with allure.step("步骤3：如已勾选，取消勾选"):
             if is_checked:
                 self.resume_page.toggle_currently_work_here()
-                page.wait_for_timeout(500)
+                dom_content_loaded_soft(page, 20000)
                 logger.info("✓ 取消勾选 'I currently work here'")
 
         with allure.step("步骤4：验证 To 字段不再显示 Present，变为可编辑"):
@@ -683,7 +683,7 @@ class TestEducationModal:
             fake_select = modal.locator("[class*='PcFakeSelectInput_pcFakeSelectInput']").first
             if fake_select.count() > 0:
                 fake_select.click()
-                page.wait_for_timeout(500)
+                dom_content_loaded_soft(page, 20000)
                 # Check if options appear - count() avoids strict mode violation
                 options_count = page.locator("[class*='PcSingleSelect_selectItem']").count()
                 logger.info(f"下拉选项数量: {options_count}")
@@ -750,7 +750,7 @@ class TestEducationModal:
 
         with allure.step("步骤5：刷新页面验证数据持久化"):
             page.reload()
-            page.wait_for_timeout(3000)
+            dom_content_loaded_soft(page, 20000)
             self.resume_page.is_resume_view_displayed()
 
         with allure.step("步骤6：重新打开弹窗验证 Institute 和 Major 回显"):
@@ -916,9 +916,11 @@ class TestDataEchoVerification:
             assert not resume_page.is_any_modal_open(), "Save 后弹窗应关闭"
 
         with allure.step("步骤5：刷新页面模拟重新进入"):
-            page.reload()
-            page.wait_for_timeout(3000)
+            page.reload(wait_until="domcontentloaded", timeout=60000)
+            page.wait_for_load_state("load", timeout=30000)
+            dom_content_loaded_soft(page, 20000)
             resume_page.is_resume_view_displayed()
+            page.wait_for_selector("h3:has-text('Online Resume')", state="visible", timeout=20000)
             logger.info("✓ 刷新页面完成")
 
         with allure.step("步骤6：重新打开弹窗验证 Institute 数据回显"):
@@ -957,7 +959,7 @@ class TestDataEchoVerification:
 
         with allure.step("步骤4：刷新页面"):
             page.reload()
-            page.wait_for_timeout(3000)
+            dom_content_loaded_soft(page, 20000)
             resume_page.is_resume_view_displayed()
             logger.info("✓ 刷新页面完成")
 
@@ -997,7 +999,7 @@ class TestDataEchoVerification:
 
         with allure.step("步骤4：刷新页面"):
             page.reload()
-            page.wait_for_timeout(3000)
+            dom_content_loaded_soft(page, 20000)
             resume_page.is_resume_view_displayed()
             logger.info("✓ 刷新页面完成")
 

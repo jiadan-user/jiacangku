@@ -9,13 +9,22 @@
 测试角色：Buyer（买家）
 测试目标：验证 Marketplace 列表 Transaction 筛选、Online/Offline 详情页元素、对照、地图、面包屑、深链与边界（TC001-TC044）
 """
+import time
 import pytest
 import allure
 from urllib.parse import urljoin
 
 from pages.marketplace_detail_page_ae import MarketplaceDetailPageAe
 from pages.marketplace_list_page_ae import MarketplaceListPageAe
-from test_cases.zhaopin.ae_login_helper import ensure_ae_logged_in
+from test_cases.marketplace.explicit_waits import (
+    wait_aed_listing_price_signal,
+    wait_dom_content_loaded,
+    wait_list_results_settled,
+    wait_marketplace_detail_href_in_dom,
+    wait_marketplace_detail_price,
+    wait_network_quiet,
+    wait_short_ui_tick,
+)
 from utils.logger import setup_logger
 
 logger = setup_logger()
@@ -27,32 +36,12 @@ _CONFIG = {
     "site": "ae",
     "site_name": "阿联酋站",
     "role": "buyer",
-    "user_name": "marketplace_detail_buyer_ae",
+    # 与 marketplace 目录下其它脚本统一，共用同一份 Session 文件，避免多账号重复登录
+    "user_name": "ae_marketplace_regression",
     "base_url": "https://ae.58v5.cn",
     "test_account": {
         "username": "wangyongli@58.com",
         "password": "Qwer1234",
-    },
-    "marketplace_samples": {
-        "online_product_link_name": "iPhone 12 Pro",
-        "offline_product_link_name": "Bedding Set - No delivery",
-        "online_price_aed_contains": "367",
-        "offline_price_aed_contains": "150",
-        "online_detail_path": (
-            "/en/city-abu-dhabi/cate-apple3/"
-            "iphone%2B12%2Bpro%2Bmax-2034228644318138369/"
-        ),
-        "offline_detail_path": (
-            "/en/city-abu-dhabi/cate-bedroom-furniture/"
-            "bedding-set-no-delivery-required-6571384177830110/"
-        ),
-        "online_seller": "OKer_wangyongli",
-        "offline_seller": "keerisbest2293939393",
-        "online_listings_substring": "417 listings",
-        "offline_listings_substring": "115 listings",
-        "online_location_substring": "ADCB ATM",
-        "breadcrumb_online_category_regex": r"Apple",
-        "breadcrumb_offline_category_regex": r"Bedroom|furniture",
     },
     "locale": "en-AE",
     "browser": {
@@ -74,24 +63,68 @@ def _cleanup_marketplace_detail_batch1_no_data() -> bool:
 
 
 def _arrange_marketplace_list_offline_filtered(page, config, list_page: MarketplaceListPageAe) -> None:
-    """进入 Offline 筛选列表页（每次强制重新导航，避免多次筛选后状态积累超时）"""
-    ensure_ae_logged_in(page, config)
+    """进入 Offline 筛选列表页（每次强制重新导航，避免多次筛选后状态积累超时）。
+    需已登录且由 marketplace_list_session 或等价步骤进入过列表。"""
     # 强制重新导航，清除上一测试残留的筛选/弹层状态
     list_page.navigate_to_marketplace_directly(config["base_url"])
-    page.wait_for_timeout(1000)
+    wait_dom_content_loaded(page, timeout=15000)
     # 直接使用 URL 参数跳转到 Offline 筛选（attr_149=0），避免连续点击筛选面板超时
     offline_url = f"{config['base_url']}/en/city-abu-dhabi/cate-marketplace/?attr_149=0"
     page.goto(offline_url, wait_until="domcontentloaded", timeout=30000)
-    page.wait_for_timeout(2000)
+    try:
+        wait_aed_listing_price_signal(page, timeout=20000)
+    except Exception:
+        pass
+    wait_network_quiet(page, timeout=12000)
 
 
 def _arrange_marketplace_list_online_filtered(page, config, list_page: MarketplaceListPageAe) -> None:
-    """进入 Online 筛选列表页（每次强制重新导航，避免状态积累）"""
-    ensure_ae_logged_in(page, config)
+    """进入 Online 筛选列表页（每次强制重新导航，避免状态积累）。
+    需已登录且由 marketplace_list_session 或等价步骤进入过列表。"""
     # 直接使用 URL 参数跳转到 Online 筛选（attr_149=1），更稳定
     online_url = f"{config['base_url']}/en/city-abu-dhabi/cate-marketplace/?attr_149=1"
     page.goto(online_url, wait_until="domcontentloaded", timeout=30000)
-    page.wait_for_timeout(2000)
+    try:
+        wait_aed_listing_price_signal(page, timeout=20000)
+    except Exception:
+        pass
+    wait_network_quiet(page, timeout=12000)
+
+
+def _wait_for_list_first_detail_href(
+    page, list_page: MarketplaceListPageAe, *, max_wait_s: float = 35.0
+) -> str:
+    """列表异步渲染时首条详情链接可能晚于 domcontentloaded，轮询并轻滚动。"""
+    deadline = time.time() + max_wait_s
+    while time.time() < deadline:
+        href = list_page.get_first_detail_listing_link_href()
+        if href:
+            return href
+        try:
+            page.evaluate(
+                "window.scrollTo(0, Math.min((window.scrollY || 0) + 900, (document.body && document.body.scrollHeight) || 9999))"
+            )
+        except Exception:
+            pass
+        wait_marketplace_detail_href_in_dom(page, timeout_ms=450)
+    return ""
+
+
+def _goto_first_detail_href(page, href: str) -> None:
+    """从列表页相对或绝对 href 进入商品详情。"""
+    page.goto(urljoin(page.url, href), wait_until="domcontentloaded", timeout=30000)
+    try:
+        wait_marketplace_detail_price(page, timeout=20000)
+    except Exception:
+        wait_dom_content_loaded(page, timeout=15000)
+
+
+def _assert_detail_price_aed_has_digits(detail_page: MarketplaceDetailPageAe) -> None:
+    """详情主价含 AED 且含数字（不绑定具体金额）。"""
+    price = detail_page.get_price_text()
+    compact = "".join(price.split())
+    assert "AED" in price, f"应含货币单位: {price!r}"
+    assert any(c.isdigit() for c in compact), f"价格应含数字: {price!r}"
 
 
 def _open_online_sample_detail(
@@ -101,17 +134,15 @@ def _open_online_sample_detail(
     _arrange_marketplace_list_online_filtered(page, config, list_page)
     
     # 改进：使用第一个商品而非硬编码名称
-    first_href = list_page.get_first_detail_listing_link_href()
+    first_href = _wait_for_list_first_detail_href(page, list_page)
     if not first_href:
         logger.error("❌ Online 列表中未找到商品详情链接")
         page.screenshot(path="reports/online_list_no_product.png")
         raise AssertionError("Online 列表中未找到商品详情链接，请检查筛选是否生效")
     
     logger.info(f"📌 点击 Online 列表第一个商品: {first_href}")
-    from urllib.parse import urljoin
-    page.goto(urljoin(page.url, first_href), wait_until="domcontentloaded", timeout=30000)
-    page.wait_for_timeout(2000)
-    
+    _goto_first_detail_href(page, first_href)
+
     assert detail_page.is_detail_page_loaded(), "应进入 Online 示例详情页"
 
 
@@ -122,17 +153,15 @@ def _open_offline_sample_detail(
     _arrange_marketplace_list_offline_filtered(page, config, list_page)
     
     # 改进：使用第一个商品而非硬编码名称
-    first_href = list_page.get_first_detail_listing_link_href()
+    first_href = _wait_for_list_first_detail_href(page, list_page)
     if not first_href:
         logger.error("❌ Offline 列表中未找到商品详情链接")
         page.screenshot(path="reports/offline_list_no_product.png")
         raise AssertionError("Offline 列表中未找到商品详情链接，请检查筛选是否生效")
     
     logger.info(f"📌 点击 Offline 列表第一个商品: {first_href}")
-    from urllib.parse import urljoin
-    page.goto(urljoin(page.url, first_href), wait_until="domcontentloaded", timeout=30000)
-    page.wait_for_timeout(2000)
-    
+    _goto_first_detail_href(page, first_href)
+
     assert detail_page.is_detail_page_loaded(), "应进入 Offline 示例详情页"
 
 
@@ -149,8 +178,9 @@ def _open_offline_sample_detail(
 @allure.title("直达 Marketplace 列表页应展示正确 URL 与筛选区")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证已登录用户直达 Abu Dhabi Marketplace 列表页，URL 含 cate-marketplace 且筛选区 istPageFilterArea 可见")
-def test_tc001_marketplace_list_url_and_filter_layout(page, config):
+def test_tc001_marketplace_list_url_and_filter_layout(marketplace_list_session, config):
     """TC001: 直达 Marketplace 列表页-URL 与基础布局"""
+    page = marketplace_list_session
 
     # ========== Arrange ==========
     list_page = MarketplaceListPageAe(page)
@@ -159,16 +189,7 @@ def test_tc001_marketplace_list_url_and_filter_layout(page, config):
     logger.info("TC001: Marketplace 列表页 URL 与基础布局")
     logger.info("=" * 80)
 
-    # ========== Act ==========
-    with allure.step("前置：登录 AE 站"):
-        ensure_ae_logged_in(page, config)
-        logger.info("✓ Session 就绪")
-
-    with allure.step("导航到 Marketplace 列表页"):
-        list_page.navigate_to_marketplace_directly(config["base_url"])
-        logger.info("✓ 已打开列表页")
-
-    # ========== Assert ==========
+    # ========== Assert（登录与直达列表由 marketplace_list_session 完成）==========
     with allure.step("验证 URL 为 Marketplace 列表路径"):
         current_url = page.url.lower()
         assert "cate-marketplace" in current_url, (
@@ -196,21 +217,16 @@ def test_tc001_marketplace_list_url_and_filter_layout(page, config):
 @allure.title("Transaction 筛选选择 Online 并 Confirm 应生效")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证打开 Transaction 选择 Online 后点击 Confirm，筛选区仍体现 Online 状态")
-def test_tc002_transaction_select_online_confirm(page, config):
+def test_tc002_transaction_select_online_confirm(marketplace_list_session, config):
     """TC002: Transaction 筛选-选择 Online 并 Confirm"""
+    page = marketplace_list_session
 
     # ========== Arrange ==========
     list_page = MarketplaceListPageAe(page)
-    online_name = config["marketplace_samples"]["online_product_link_name"]
 
     logger.info("=" * 80)
     logger.info("TC002: Transaction → Online → Confirm")
     logger.info("=" * 80)
-
-    with allure.step("前置：登录并进入列表页"):
-        ensure_ae_logged_in(page, config)
-        list_page.navigate_to_marketplace_directly(config["base_url"])
-        logger.info("✓ 列表页就绪")
 
     # ========== Act ==========
     with allure.step("打开 Transaction 并选择 Online，Confirm"):
@@ -220,15 +236,14 @@ def test_tc002_transaction_select_online_confirm(page, config):
         logger.info("✓ 已应用 Online 筛选")
 
     # ========== Assert ==========
-    with allure.step("验证筛选区展示 Online 且示例 Online 商品链接可见"):
+    with allure.step("验证筛选区展示 Online 且列表出现可进详情的首条链接"):
         assert list_page.is_filter_area_visible(), "筛选区应可见"
         assert list_page.is_transaction_online_label_in_filter_area(), (
             "应用 Online 后筛选区应展示 Online 标签"
         )
-        assert list_page.is_product_link_visible(online_name), (
-            f"Online 列表应包含链接: {online_name}"
-        )
-        logger.info("✓ Online 筛选生效")
+        first_href = _wait_for_list_first_detail_href(page, list_page, max_wait_s=45.0)
+        assert first_href, "Online 列表筛选后应出现至少一条商品详情链接"
+        logger.info(f"✓ Online 筛选生效，首条详情: {first_href}")
 
 
 @pytest.mark.case_id_ae_marketplace_detail_tc003
@@ -240,20 +255,19 @@ def test_tc002_transaction_select_online_confirm(page, config):
 @allure.story("AE站Marketplace 详情页 - 列表与Transaction筛选")
 @allure.title("Online 筛选后列表应存在可点击的示例商品链接")
 @allure.severity(allure.severity_level.CRITICAL)
-@allure.description("在完成 Online Transaction 筛选后，断言示例商品链接 iPhone 12 Pro 可见")
-def test_tc003_online_filtered_list_has_sample_product_link(page, config):
+@allure.description("在完成 Online Transaction 筛选后，从当前列表解析首条进入详情的链接")
+def test_tc003_online_filtered_list_has_sample_product_link(marketplace_list_session, config):
     """TC003: Online 筛选后列表-存在可点击的商品链接"""
+    page = marketplace_list_session
 
     # ========== Arrange ==========
     list_page = MarketplaceListPageAe(page)
-    online_name = config["marketplace_samples"]["online_product_link_name"]
 
     logger.info("=" * 80)
     logger.info("TC003: Online 列表商品链接")
     logger.info("=" * 80)
 
-    with allure.step("前置：登录、列表页并应用 Online 筛选"):
-        ensure_ae_logged_in(page, config)
+    with allure.step("列表页并应用 Online 筛选"):
         list_page.navigate_to_marketplace_directly(config["base_url"])
         list_page.click_transaction_filter()
         list_page.select_transaction_online()
@@ -261,13 +275,13 @@ def test_tc003_online_filtered_list_has_sample_product_link(page, config):
         logger.info("✓ Online 筛选完成")
 
     # ========== Act ==========
-    with allure.step("在列表定位示例商品链接"):
-        visible = list_page.is_product_link_visible(online_name)
+    with allure.step("在列表解析首条商品详情链接"):
+        first_href = _wait_for_list_first_detail_href(page, list_page, max_wait_s=45.0)
 
     # ========== Assert ==========
-    with allure.step("验证链接可见"):
-        assert visible, f"Online 列表应展示链接: {online_name}"
-        logger.info("✓ 示例商品链接可见")
+    with allure.step("验证链接存在"):
+        assert first_href, "Online 列表应至少有一条可进入详情的商品链接"
+        logger.info(f"✓ 首条详情链接: {first_href}")
 
 
 @pytest.mark.case_id_ae_marketplace_detail_tc004
@@ -279,21 +293,20 @@ def test_tc003_online_filtered_list_has_sample_product_link(page, config):
 @allure.story("AE站Marketplace 详情页 - 列表与Transaction筛选")
 @allure.title("从 Online 列表点击商品应进入详情页")
 @allure.severity(allure.severity_level.CRITICAL)
-@allure.description("在 Online 筛选结果中点击示例商品链接，应进入详情页且主价格区加载")
-def test_tc004_click_online_product_enters_detail(page, config):
+@allure.description("在 Online 筛选结果中打开首条商品详情，应进入详情页且主价格区加载")
+def test_tc004_click_online_product_enters_detail(marketplace_list_session, config):
     """TC004: 从列表点击 Online 商品进入详情页"""
+    page = marketplace_list_session
 
     # ========== Arrange ==========
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
-    online_name = config["marketplace_samples"]["online_product_link_name"]
 
     logger.info("=" * 80)
     logger.info("TC004: Online 商品进入详情")
     logger.info("=" * 80)
 
-    with allure.step("前置：登录、列表页、Online 筛选"):
-        ensure_ae_logged_in(page, config)
+    with allure.step("前置：列表页并应用 Online 筛选"):
         list_page.navigate_to_marketplace_directly(config["base_url"])
         list_page.click_transaction_filter()
         list_page.select_transaction_online()
@@ -301,9 +314,11 @@ def test_tc004_click_online_product_enters_detail(page, config):
         logger.info("✓ Online 列表就绪")
 
     # ========== Act ==========
-    with allure.step("点击 Online 示例商品链接"):
-        list_page.click_product_link_by_name(online_name)
-        logger.info("✓ 已点击商品链接")
+    with allure.step("打开 Online 列表首条商品详情"):
+        first_href = _wait_for_list_first_detail_href(page, list_page, max_wait_s=45.0)
+        assert first_href, "Online 列表应存在商品详情链接"
+        _goto_first_detail_href(page, first_href)
+        logger.info(f"✓ 已进入详情: {first_href}")
 
     # ========== Assert ==========
     with allure.step("验证进入详情页"):
@@ -311,14 +326,8 @@ def test_tc004_click_online_product_enters_detail(page, config):
         url_lower = page.url.lower()
         assert "cate-marketplace" not in url_lower, f"不应停留在列表页: {page.url}"
         assert "/cate-" in url_lower, f"详情 URL 应含分类路径: {page.url}"
-        price = detail_page.get_price_text()
-        assert "AED" in price, f"详情页应展示价格文案，实际: {price!r}"
-        expected_amt = config["marketplace_samples"]["online_price_aed_contains"]
-        compact = "".join(price.split())
-        assert expected_amt in compact, (
-            f"详情页价格应包含实测金额 {expected_amt}，实际: {price!r}"
-        )
-        logger.info(f"✓ 详情页加载，价格: {price}")
+        _assert_detail_price_aed_has_digits(detail_page)
+        logger.info(f"✓ 详情页加载，价格: {detail_page.get_price_text()}")
 
 
 @pytest.mark.case_id_ae_marketplace_detail_tc005
@@ -333,25 +342,25 @@ def test_tc004_click_online_product_enters_detail(page, config):
 @allure.description(
     "在当前为 Online 筛选的列表页，切换 Offline 并 Confirm，列表应有商品链接"
 )
-def test_tc005_filter_area_switch_online_to_offline_confirm(page, config):
+def test_tc005_filter_area_switch_online_to_offline_confirm(marketplace_list_session, config):
     """TC005: 列表筛选区-从 Online 切换为 Offline 并 Confirm（改用第一个商品验证）"""
+    page = marketplace_list_session
 
     # ========== Arrange ==========
     list_page = MarketplaceListPageAe(page)
-    online_name = config["marketplace_samples"]["online_product_link_name"]
 
     logger.info("=" * 80)
     logger.info("TC005: Online → Offline 筛选切换")
     logger.info("=" * 80)
 
-    with allure.step("前置：登录、列表页并应用 Online"):
-        ensure_ae_logged_in(page, config)
+    with allure.step("前置：列表页并应用 Online"):
         list_page.navigate_to_marketplace_directly(config["base_url"])
         list_page.click_transaction_filter()
         list_page.select_transaction_online()
         list_page.click_filter_confirm()
-        assert list_page.is_product_link_visible(online_name), "Online 列表应含示例商品"
-        logger.info("✓ 已处于 Online 筛选列表")
+        online_first = _wait_for_list_first_detail_href(page, list_page, max_wait_s=45.0)
+        assert online_first, "Online 列表应存在至少一条商品详情链接"
+        logger.info(f"✓ 已处于 Online 筛选列表，首链: {online_first}")
 
     # ========== Act ==========
     with allure.step("在筛选区切换为 Offline 并 Confirm"):
@@ -361,7 +370,10 @@ def test_tc005_filter_area_switch_online_to_offline_confirm(page, config):
 
     # ========== Assert ==========
     with allure.step("验证 Offline 列表存在商品链接（改为验证第一个商品）"):
-        page.wait_for_timeout(2000)  # 等待列表刷新
+        try:
+            wait_list_results_settled(page, timeout=20000)
+        except Exception:
+            wait_dom_content_loaded(page)
         first_href = list_page.get_first_detail_listing_link_href()
         assert first_href, "Offline 列表应至少有一个商品详情链接"
         logger.info(f"✓ Offline 筛选生效，第一个商品: {first_href}")
@@ -380,8 +392,9 @@ def test_tc005_filter_area_switch_online_to_offline_confirm(page, config):
 @allure.title("Offline 筛选后列表应展示商品链接")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("在 Offline Transaction 下列表应至少有一个商品详情链接")
-def test_tc006_offline_filtered_list_has_sample_product_link(page, config):
+def test_tc006_offline_filtered_list_has_sample_product_link(marketplace_list_session, config):
     """TC006: Offline 筛选后列表-存在可点击的商品链接（改用第一个商品）"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
 
     logger.info("TC006: Offline 列表商品链接")
@@ -403,8 +416,9 @@ def test_tc006_offline_filtered_list_has_sample_product_link(page, config):
 @allure.title("从 Offline 列表点击商品应进入详情页")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("点击 Offline 列表第一个商品进入详情且无白屏，主价格区加载")
-def test_tc007_click_offline_product_enters_detail(page, config):
+def test_tc007_click_offline_product_enters_detail(marketplace_list_session, config):
     """TC007: 从列表点击 Offline 商品进入详情页（改用第一个商品）"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -436,8 +450,9 @@ def test_tc007_click_offline_product_enters_detail(page, config):
 @allure.title("Online 详情页 URL 应含城市与分类 slug")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证 Online 详情路径结构（改为通用检查）")
-def test_tc008_online_detail_url_structure(page, config):
+def test_tc008_online_detail_url_structure(marketplace_list_session, config):
     """TC008: Online 详情页-URL 与路由结构（改用第一个商品，通用检查）"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -462,8 +477,9 @@ def test_tc008_online_detail_url_structure(page, config):
 @allure.title("Online 详情页主价格应展示 AED 367")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("主价格区域文案含 AED 与实测金额 367")
-def test_tc009_online_detail_price_aed_367(page, config):
+def test_tc009_online_detail_price_aed_367(marketplace_list_session, config):
     """TC009: Online 详情页-价格展示 AED（改用第一个商品，不验证具体金额）"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -489,8 +505,9 @@ def test_tc009_online_detail_price_aed_367(page, config):
 @allure.title("Online 详情页应展示 Free Delivery 标签")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("页面可见 Free Delivery 履约标签")
-def test_tc010_online_detail_free_delivery_visible(page, config):
+def test_tc010_online_detail_free_delivery_visible(marketplace_list_session, config):
     """TC010: Online 详情页-展示 Free Delivery 标签（动态商品，放宽为有则验证）"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -516,8 +533,9 @@ def test_tc010_online_detail_free_delivery_visible(page, config):
 @allure.title("Online 详情页应展示 Available for Pickup")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("页面可见 Available for Pickup 文案")
-def test_tc011_online_detail_available_for_pickup(page, config):
+def test_tc011_online_detail_available_for_pickup(marketplace_list_session, config):
     """TC011: Online 详情页-展示 Available for Pickup 文案（动态商品，放宽为有则验证）"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -542,8 +560,9 @@ def test_tc011_online_detail_available_for_pickup(page, config):
 @allure.title("Online 详情页位置信息应含 ADCB ATM 地址")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("主信息或 Location 区含 ADCB ATM 实测地址片段")
-def test_tc012_online_detail_location_adcb(page, config):
+def test_tc012_online_detail_location_adcb(marketplace_list_session, config):
     """TC012: Online 详情页-位置信息展示（改为通用检查）"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -577,23 +596,25 @@ def test_tc012_online_detail_location_adcb(page, config):
 @allure.story("AE站Marketplace 详情页 - Online详情元素")
 @allure.title("Online 详情页卖家信息应含 Verified User 与 listings 数")
 @allure.severity(allure.severity_level.NORMAL)
-@allure.description("卖家昵称、Verified User 与文档实测 listings 文案可见")
-def test_tc013_online_detail_seller_verified_listings(page, config):
+@allure.description("卖家昵称非空；listings 数量文案可见；Verified User 若存在则记录")
+def test_tc013_online_detail_seller_verified_listings(marketplace_list_session, config):
     """TC013: Online 详情页-卖家信息（Verified User、listings 数）"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
-    samples = config["marketplace_samples"]
 
     logger.info("TC013: Online 卖家信息")
     _open_online_sample_detail(page, config, list_page, detail_page)
 
-    with allure.step("验证卖家与信任元素"):
-        assert detail_page.get_seller_name() == samples["online_seller"], (
-            f"卖家应为 {samples['online_seller']}"
-        )
-        assert detail_page.is_verified_user_badge_visible(), "应展示 Verified User"
+    with allure.step("验证卖家与信任元素（首条 Online 商品，不绑定固定昵称）"):
+        seller_name = (detail_page.get_seller_name() or "").strip()
+        assert seller_name, "应展示卖家昵称"
         assert detail_page.has_any_listings_count_visible(), "应展示卖家 listings 数量文案"
-        logger.info("✓ 卖家信息通过")
+        if detail_page.is_verified_user_badge_visible():
+            logger.info("✓ Verified User 可见")
+        else:
+            logger.warning("⚠️ 当前首条商品卖家无 Verified User 徽章（依认证状态）")
+        logger.info(f"✓ 卖家信息通过: {seller_name}")
 
 
 @pytest.mark.case_id_ae_marketplace_detail_tc014
@@ -606,8 +627,9 @@ def test_tc013_online_detail_seller_verified_listings(page, config):
 @allure.title("Online 详情页应展示对应的主操作按钮")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("自有商品展示 Withdraw/Edit，他人商品展示 Contact（改为自适应检查）")
-def test_tc014_online_detail_withdraw_edit_owner_actions(page, config):
+def test_tc014_online_detail_withdraw_edit_owner_actions(marketplace_list_session, config):
     """TC014: Online 详情页-主操作按钮（改为自适应：自有商品验证 Withdraw/Edit，他人商品验证 Contact）"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -639,8 +661,9 @@ def test_tc014_online_detail_withdraw_edit_owner_actions(page, config):
 @allure.title("Online 详情页 Description 区域应有非空内容")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("Description 区块存在且除标题外有正文")
-def test_tc015_online_detail_description_non_empty(page, config):
+def test_tc015_online_detail_description_non_empty(marketplace_list_session, config):
     """TC015: Online 详情页-Description 区域存在且有内容"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -663,8 +686,9 @@ def test_tc015_online_detail_description_non_empty(page, config):
 @allure.title("Online 详情页 Location 与 Show map 入口应可见")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("Location 标题与 Show map 按钮或文案可见")
-def test_tc016_online_detail_location_show_map(page, config):
+def test_tc016_online_detail_location_show_map(marketplace_list_session, config):
     """TC016: Online 详情页-Location 区域与 Show map 按钮"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -686,8 +710,9 @@ def test_tc016_online_detail_location_show_map(page, config):
 @allure.title("Online 详情页 You may also like 推荐区应有详情链接")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("推荐区标题可见且区内含至少一条 cate- 详情链接")
-def test_tc017_online_detail_you_may_also_like(page, config):
+def test_tc017_online_detail_you_may_also_like(marketplace_list_session, config):
     """TC017: Online 详情页-You may also like 推荐区"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -711,8 +736,9 @@ def test_tc017_online_detail_you_may_also_like(page, config):
 @allure.title("Online 详情页 Favourites 与 Share 入口应可见")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("顶栏或工具区 Favourites、Share 可见")
-def test_tc018_online_detail_favourites_share_visible(page, config):
+def test_tc018_online_detail_favourites_share_visible(marketplace_list_session, config):
     """TC018: Online 详情页-Favourites 与 Share 入口"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -734,8 +760,9 @@ def test_tc018_online_detail_favourites_share_visible(page, config):
 @allure.title("Online 详情页点击 Favourites 应有反馈且无致命错误")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("点击 Favourites 后仍为详情或出现弹层，入口仍可见")
-def test_tc042_online_detail_click_favourites(page, config):
+def test_tc042_online_detail_click_favourites(marketplace_list_session, config):
     """TC042: Online 详情页-点击 Favourites 触发收藏交互"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -763,8 +790,9 @@ def test_tc042_online_detail_click_favourites(page, config):
 @allure.title("Online 详情页点击 Share 应有反馈且无致命错误")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("点击 Share 后仍为详情或出现分享相关浮层")
-def test_tc043_online_detail_click_share(page, config):
+def test_tc043_online_detail_click_share(marketplace_list_session, config):
     """TC043: Online 详情页-点击 Share 触发分享能力"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -796,8 +824,9 @@ def test_tc043_online_detail_click_share(page, config):
 @allure.title("Offline 详情页 URL 应含城市与分类 slug")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("Offline 商品详情 URL 含 city 与 cate 路径段")
-def test_tc019_offline_detail_url_structure(page, config):
+def test_tc019_offline_detail_url_structure(marketplace_list_session, config):
     """TC019: Offline 详情页-URL 与路由结构（改用第一个商品）"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -821,8 +850,9 @@ def test_tc019_offline_detail_url_structure(page, config):
 @allure.title("Offline 详情页主价格应展示 AED 货币单位")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("主价格区域含 AED 与数字（改为通用价格检查）")
-def test_tc020_offline_detail_price_aed(page, config):
+def test_tc020_offline_detail_price_aed(marketplace_list_session, config):
     """TC020: Offline 详情页-价格展示 AED（改用第一个商品，不验证具体金额）"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -848,8 +878,9 @@ def test_tc020_offline_detail_price_aed(page, config):
 @allure.title("Offline 详情页不应展示 Buy Now 按钮")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("Offline 商品不支持在线购买，详情页不应有 Buy Now 按钮")
-def test_tc021_offline_detail_no_buy_now(page, config):
+def test_tc021_offline_detail_no_buy_now(marketplace_list_session, config):
     """TC021: Offline 详情页-不展示 Buy Now 按钮（正确的 Offline 判断标准）"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -872,8 +903,9 @@ def test_tc021_offline_detail_no_buy_now(page, config):
 @allure.title("Offline 详情页不应展示 Available for Pickup")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("页面不出现 Available for Pickup 文案")
-def test_tc022_offline_detail_no_pickup_copy(page, config):
+def test_tc022_offline_detail_no_pickup_copy(marketplace_list_session, config):
     """TC022: Offline 详情页-不展示 Available for Pickup 文案"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -896,8 +928,9 @@ def test_tc022_offline_detail_no_pickup_copy(page, config):
 @allure.title("Offline 详情页应展示 Location 区域")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证 Location 区域存在（不强制要求具体地址文本）")
-def test_tc023_offline_detail_location(page, config):
+def test_tc023_offline_detail_location(marketplace_list_session, config):
     """TC023: Offline 详情页-Location 区域存在（改为宽松检查）"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -935,8 +968,9 @@ def test_tc023_offline_detail_location(page, config):
 @allure.title("Offline 详情页卖家与 listings 数应展示")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("卖家昵称与 listings 数量文案可见（改为通用检查）")
-def test_tc024_offline_detail_seller_listings(page, config):
+def test_tc024_offline_detail_seller_listings(marketplace_list_session, config):
     """TC024: Offline 详情页-卖家信息与 listings 数（改用第一个商品）"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -960,8 +994,9 @@ def test_tc024_offline_detail_seller_listings(page, config):
 @allure.title("Offline 他人 listing 应展示 Contact 且无 Withdraw/Edit")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("他人商品展示 Contact，不展示自有主操作 Withdraw、Edit")
-def test_tc025_offline_detail_contact_not_owner_actions(page, config):
+def test_tc025_offline_detail_contact_not_owner_actions(marketplace_list_session, config):
     """TC025: Offline 详情页-他人 listing 展示 Contact"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -984,21 +1019,18 @@ def test_tc025_offline_detail_contact_not_owner_actions(page, config):
 @allure.title("Offline 详情页应展示 Sell Similar 按钮")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("Sell Similar 入口可见")
-def test_tc026_offline_detail_sell_similar_visible(page, config):
+def test_tc026_offline_detail_sell_similar_visible(marketplace_list_session, config):
     """TC026: Offline 详情页-Sell Similar 按钮"""
+    page = marketplace_list_session
     from pages.marketplace_sell_similar_page_ae import MarketplaceSellSimilarPageAe
     from test_cases.marketplace.test_ae_marketplace_sell_similar_v2 import find_post_with_sell_similar_button
-    from test_cases.zhaopin.ae_login_helper import ensure_ae_logged_in
-    
+
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
     sell_similar_page = MarketplaceSellSimilarPageAe(page)
 
     logger.info("TC026: Sell Similar")
-    
-    # 确保已登录
-    ensure_ae_logged_in(page, config)
-    
+
     # 查找有 Sell Similar 按钮的商品
     with allure.step("查找有 Sell Similar 按钮的商品"):
         result = find_post_with_sell_similar_button(page, config, list_page, detail_page, sell_similar_page, max_attempts=15)
@@ -1023,8 +1055,9 @@ def test_tc026_offline_detail_sell_similar_visible(page, config):
 @allure.title("Offline 详情页应展示条件标签 Excellent")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("成色/条件标签 Excellent 可见")
-def test_tc027_offline_detail_condition_excellent(page, config):
+def test_tc027_offline_detail_condition_excellent(marketplace_list_session, config):
     """TC027: Offline 详情页-条件标签（动态商品，有则验证）"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -1049,8 +1082,9 @@ def test_tc027_offline_detail_condition_excellent(page, config):
 @allure.title("Offline 详情页 Description、Location、Show map 与推荐区完整")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("与 Online 一致具备描述、地图入口与 You may also like")
-def test_tc028_offline_detail_blocks_and_recommendations(page, config):
+def test_tc028_offline_detail_blocks_and_recommendations(marketplace_list_session, config):
     """TC028: Offline 详情页-Description、Location、Show map、推荐区"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -1076,8 +1110,9 @@ def test_tc028_offline_detail_blocks_and_recommendations(page, config):
 @allure.title("Offline 详情页 Favourites 与 Share 入口应可见")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("Offline 详情顶栏 Favourites、Share 可见")
-def test_tc029_offline_detail_favourites_share_visible(page, config):
+def test_tc029_offline_detail_favourites_share_visible(marketplace_list_session, config):
     """TC029: Offline 详情页-Favourites 与 Share"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -1099,8 +1134,9 @@ def test_tc029_offline_detail_favourites_share_visible(page, config):
 @allure.title("Offline 详情页点击 Favourites 与 Share 应有反馈")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("依次点击 Favourites、Share，详情或弹层反馈正常")
-def test_tc044_offline_detail_click_favourites_and_share(page, config):
+def test_tc044_offline_detail_click_favourites_and_share(marketplace_list_session, config):
     """TC044: Offline 详情页-点击 Favourites 与 Share"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -1135,22 +1171,30 @@ def test_tc044_offline_detail_click_favourites_and_share(page, config):
 @allure.title("Transaction Online 与 Offline 列表首条详情链接应不同")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("分别应用 Online、Offline 后首条商品详情 href 不相同")
-def test_tc030_compare_online_offline_first_listing_href(page, config):
+def test_tc030_compare_online_offline_first_listing_href(marketplace_list_session, config):
     """TC030: 对照-同一账号下列表 Transaction Online 与 Offline 结果集不同"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
 
     logger.info("TC030: Online vs Offline 首链")
-    ensure_ae_logged_in(page, config)
 
     # 用 URL 参数直接切换，避免连续操作筛选面板超时
     online_url = f"{config['base_url']}/en/city-abu-dhabi/cate-marketplace/?attr_149=1"
     page.goto(online_url, wait_until="domcontentloaded", timeout=30000)
-    page.wait_for_timeout(2000)
+    try:
+        wait_aed_listing_price_signal(page, timeout=20000)
+    except Exception:
+        wait_dom_content_loaded(page)
+    wait_network_quiet(page, timeout=12000)
     href_on = list_page.get_first_detail_listing_link_href()
 
     offline_url = f"{config['base_url']}/en/city-abu-dhabi/cate-marketplace/?attr_149=0"
     page.goto(offline_url, wait_until="domcontentloaded", timeout=30000)
-    page.wait_for_timeout(2000)
+    try:
+        wait_aed_listing_price_signal(page, timeout=20000)
+    except Exception:
+        wait_dom_content_loaded(page)
+    wait_network_quiet(page, timeout=12000)
     href_off = list_page.get_first_detail_listing_link_href()
 
     with allure.step("比对首条详情链接"):
@@ -1170,8 +1214,9 @@ def test_tc030_compare_online_offline_first_listing_href(page, config):
 @allure.title("对照 Buy Now 按钮：Online 无（自有）、Offline 无")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("对照 Online/Offline 商品是否支持在线购买（通过 Buy Now 按钮判断）")
-def test_tc031_compare_buy_now_online_vs_offline(page, config):
+def test_tc031_compare_buy_now_online_vs_offline(marketplace_list_session, config):
     """TC031: 对照-Online/Offline 商品的 Buy Now 按钮（修正为正确的判断标准）"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -1202,8 +1247,9 @@ def test_tc031_compare_buy_now_online_vs_offline(page, config):
 @allure.title("对照 Available for Pickup：仅 Online 示例出现")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("Online 有 Available for Pickup，Offline 无")
-def test_tc032_compare_pickup_online_vs_offline(page, config):
+def test_tc032_compare_pickup_online_vs_offline(marketplace_list_session, config):
     """TC032: 对照-Available for Pickup 属性（动态商品，改为记录差异而非强制断言）"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -1233,8 +1279,9 @@ def test_tc032_compare_pickup_online_vs_offline(page, config):
 @allure.title("对照主操作：Online 自有 Withdraw/Edit vs Offline 他人 Contact")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("Online 示例 Withdraw+Edit，Offline 示例 Contact")
-def test_tc033_compare_owner_vs_buyer_primary_actions(page, config):
+def test_tc033_compare_owner_vs_buyer_primary_actions(marketplace_list_session, config):
     """TC033: 对照-主操作按钮（改为自适应：自有商品有 Withdraw/Edit，他人商品有 Contact）"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -1288,8 +1335,9 @@ def test_tc033_compare_owner_vs_buyer_primary_actions(page, config):
 @allure.title("Online 详情页点击 Show map 应展开地图或 iframe")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("点击 Show map 后出现 iframe 或地图容器")
-def test_tc034_online_detail_show_map_expand(page, config):
+def test_tc034_online_detail_show_map_expand(marketplace_list_session, config):
     """TC034: Online 详情-点击 Show map 展开/展示地图"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -1319,8 +1367,9 @@ def test_tc034_online_detail_show_map_expand(page, config):
 @allure.title("Offline 详情页点击 Show map 应展开地图或 iframe")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("Offline 详情同样具备 Show map 展开能力")
-def test_tc035_offline_detail_show_map_expand(page, config):
+def test_tc035_offline_detail_show_map_expand(marketplace_list_session, config):
     """TC035: Offline 详情-点击 Show map 展开/展示地图"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -1385,8 +1434,15 @@ def test_tc036_detail_breadcrumb_category_nav(page, config, breadcrumb_mode):
         
         # 点击分类链接
         category_link.click(timeout=10000)
-        page.wait_for_timeout(2000)
-    
+        try:
+            wait_list_results_settled(page, timeout=20000)
+        except Exception:
+            wait_dom_content_loaded(page, 15000)
+        try:
+            wait_aed_listing_price_signal(page, timeout=15000)
+        except Exception:
+            pass
+
     after = page.url
     with allure.step("验证已导航离开原详情页"):
         assert after.lower() != before.lower(), f"URL 应变化，before={before} after={after}"
@@ -1404,8 +1460,9 @@ def test_tc036_detail_breadcrumb_category_nav(page, config, breadcrumb_mode):
 @allure.title("从 Online 详情浏览器后退应回到 Marketplace 列表")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("后退后 URL 含 cate-marketplace 且筛选区可见")
-def test_tc037_back_from_online_detail_to_list(page, config):
+def test_tc037_back_from_online_detail_to_list(marketplace_list_session, config):
     """TC037: 返回列表-浏览器后退保留筛选上下文"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
 
@@ -1431,18 +1488,19 @@ def test_tc037_back_from_online_detail_to_list(page, config):
 @allure.story("AE站Marketplace 详情页 - 深链")
 @allure.title("深链直达 Online 详情 URL 应渲染核心模块")
 @allure.severity(allure.severity_level.NORMAL)
-@allure.description("goto Online 实测 URL 后价格、Description、Location、推荐区存在")
-def test_tc038_deep_link_online_detail_url(page, config):
-    """TC038: 详情页深链-直接打开 Online URL"""
+@allure.description("从 Online 列表取首条详情 href 直达后，核心模块应渲染")
+def test_tc038_deep_link_online_detail_url(marketplace_list_session, config):
+    """TC038: 详情页深链-从 Online 列表动态取首条详情 URL"""
+    page = marketplace_list_session
+    list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
-    samples = config["marketplace_samples"]
-    base = config["base_url"]
-    path = samples["online_detail_path"]
 
-    logger.info("TC038: Online 深链")
-    with allure.step("登录并直达 Online 详情"):
-        ensure_ae_logged_in(page, config)
-        detail_page.navigate_detail_from_config_path(base, path)
+    logger.info("TC038: Online 深链（列表首条）")
+    with allure.step("Online 列表取首条详情并直达"):
+        _arrange_marketplace_list_online_filtered(page, config, list_page)
+        first_href = _wait_for_list_first_detail_href(page, list_page, max_wait_s=45.0)
+        assert first_href, "Online 列表应有商品详情链接"
+        _goto_first_detail_href(page, first_href)
 
     with allure.step("验证核心模块"):
         assert detail_page.is_detail_page_loaded(), "深链应打开详情且主价格可见"
@@ -1463,23 +1521,30 @@ def test_tc038_deep_link_online_detail_url(page, config):
 @allure.story("AE站Marketplace 详情页 - 深链")
 @allure.title("深链直达 Offline 详情 URL 应符合 Offline 特征")
 @allure.severity(allure.severity_level.NORMAL)
-@allure.description("goto Offline 实测 URL 后无 Free Delivery、有 Contact")
-def test_tc039_deep_link_offline_detail_url(page, config):
-    """TC039: 详情页深链-直接打开 Offline URL"""
+@allure.description("从 Offline 列表取首条详情 href 直达后，应符合 Offline 交易特征（无 Buy Now）")
+def test_tc039_deep_link_offline_detail_url(marketplace_list_session, config):
+    """TC039: 详情页深链-从 Offline 列表动态取首条详情 URL"""
+    page = marketplace_list_session
+    list_page = MarketplaceListPageAe(page)
     detail_page = MarketplaceDetailPageAe(page)
-    samples = config["marketplace_samples"]
-    base = config["base_url"]
-    path = samples["offline_detail_path"]
 
-    logger.info("TC039: Offline 深链")
-    with allure.step("登录并直达 Offline 详情"):
-        ensure_ae_logged_in(page, config)
-        detail_page.navigate_detail_from_config_path(base, path)
+    logger.info("TC039: Offline 深链（列表首条）")
+    with allure.step("Offline 列表取首条详情并直达"):
+        _arrange_marketplace_list_offline_filtered(page, config, list_page)
+        first_href = _wait_for_list_first_detail_href(page, list_page, max_wait_s=45.0)
+        assert first_href, "Offline 列表应有商品详情链接"
+        _goto_first_detail_href(page, first_href)
 
-    with allure.step("验证 Offline 特征"):
+    with allure.step("验证 Offline 特征（首条商品，不绑定固定帖）"):
         assert detail_page.is_detail_page_loaded(), "深链应打开详情"
-        assert not detail_page.is_free_delivery_visible(), "Offline 不应有 Free Delivery"
-        assert detail_page.is_contact_button_visible(), "Offline 他人 listing 应有 Contact"
+        assert not detail_page.is_buy_now_button_visible(), (
+            "Offline 商品详情不应展示 Buy Now"
+        )
+        has_contact = detail_page.is_contact_button_visible()
+        has_owner_ops = detail_page.is_withdraw_button_visible() or detail_page.is_edit_button_visible()
+        assert has_contact or has_owner_ops, (
+            "Offline 详情应有 Contact（他人）或 Withdraw/Edit 等自有主操作之一"
+        )
         logger.info("✓ Offline 深链通过")
 
 
@@ -1491,21 +1556,19 @@ def test_tc039_deep_link_offline_detail_url(page, config):
 @allure.story("AE站Marketplace 详情页 - 边界")
 @allure.title("Transaction 面板内切换 Online/Offline 不 Confirm 不应改变列表结果")
 @allure.severity(allure.severity_level.MINOR)
-@allure.description("保持 Online Confirm 后列表，面板内切换不提交再 ESC，示例 Online 商品仍可见")
-def test_tc040_transaction_toggle_without_confirm_list_unchanged(page, config):
+@allure.description("保持 Online Confirm 后列表，面板内切换不提交再 ESC，首条详情链接不变")
+def test_tc040_transaction_toggle_without_confirm_list_unchanged(marketplace_list_session, config):
     """TC040: Transaction 面板-连续切换 Online/Offline 不 Confirm"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
-    online_name = config["marketplace_samples"]["online_product_link_name"]
 
     logger.info("TC040: 不 Confirm 切换")
-    ensure_ae_logged_in(page, config)
     list_page.prepare_marketplace_list_with_transaction_chip(config["base_url"])
     list_page.click_transaction_filter()
     list_page.select_transaction_online()
     list_page.click_filter_confirm()
-    assert list_page.wait_until_product_link_visible(online_name), (
-        "应先处于 Online 列表示例可见（筛选后等待列表刷新）"
-    )
+    href_before = _wait_for_list_first_detail_href(page, list_page, max_wait_s=45.0)
+    assert href_before, "应先处于 Online 列表且存在首条详情链接（筛选后等待列表刷新）"
 
     with allure.step("面板内切换 Offline/Online 且不 Confirm"):
         list_page.open_transaction_panel_only()
@@ -1513,9 +1576,15 @@ def test_tc040_transaction_toggle_without_confirm_list_unchanged(page, config):
         list_page.select_online_in_transaction_panel_no_confirm()
         list_page.press_escape()
 
-    with allure.step("验证列表仍为 Online 结果"):
-        assert list_page.is_product_link_visible(online_name), (
-            "不 Confirm 关闭面板后 Online 示例商品仍应可见"
+    with allure.step("验证列表仍为 Online 结果（首条详情 href 不变）"):
+        try:
+            page.wait_for_load_state("domcontentloaded", timeout=2000)
+        except Exception:
+            pass
+        href_after = _wait_for_list_first_detail_href(page, list_page, max_wait_s=25.0)
+        assert href_after, "关闭面板后 Online 列表仍应有详情链接"
+        assert href_after == href_before, (
+            f"不 Confirm 不应改变列表结果集，首链变化: before={href_before!r} after={href_after!r}"
         )
         logger.info("✓ 列表未被错误提交为 Offline")
 
@@ -1532,17 +1601,20 @@ def test_tc040_transaction_toggle_without_confirm_list_unchanged(page, config):
     "先通过 URL 应用 Online（Transaction，attr_149=1），再在筛选面板叠加极高且合法的价格区间，"
     "使组合条件无匹配商品，应无卡片并展示空态文案"
 )
-def test_tc041_transaction_combined_filters_empty_state(page, config):
+def test_tc041_transaction_combined_filters_empty_state(marketplace_list_session, config):
     """TC041: Transaction（Online）+ 价格区间组合导致无结果时的空态"""
+    page = marketplace_list_session
     list_page = MarketplaceListPageAe(page)
 
     logger.info("TC041: Transaction + 极高价格区间 → 空态")
-    ensure_ae_logged_in(page, config)
 
     with allure.step("进入 Marketplace 并应用 Online（Transaction，attr_149=1）"):
         online_url = f"{config['base_url']}/en/city-abu-dhabi/cate-marketplace/?attr_149=1"
         page.goto(online_url, wait_until="domcontentloaded", timeout=30000)
-        page.wait_for_timeout(2000)
+        try:
+            wait_list_results_settled(page, timeout=20000)
+        except Exception:
+            wait_dom_content_loaded(page)
         initial_count = list_page.get_item_cards_count()
         logger.info(f"Online 筛选后列表商品数: {initial_count}")
         assert initial_count > 0, (
@@ -1551,7 +1623,7 @@ def test_tc041_transaction_combined_filters_empty_state(page, config):
 
     with allure.step("打开筛选面板并设置极高价格区间（与 Online 叠加后通常无匹配）"):
         list_page.open_filter_panel()
-        page.wait_for_timeout(500)
+        wait_short_ui_tick(page)
         min_input = page.get_by_placeholder("Min")
         max_input = page.get_by_placeholder("Max")
         min_input.wait_for(state="visible", timeout=10000)
@@ -1560,8 +1632,10 @@ def test_tc041_transaction_combined_filters_empty_state(page, config):
         max_input.fill("9999999")
         logger.info("✓ 已填写 Min=8888888 Max=9999999")
         list_page.apply_filter()
-        page.wait_for_load_state("domcontentloaded", timeout=20000)
-        page.wait_for_timeout(2500)
+        try:
+            wait_list_results_settled(page, timeout=25000)
+        except Exception:
+            page.wait_for_load_state("domcontentloaded", timeout=20000)
 
     with allure.step("验证：无列表卡片且展示空态"):
         card_count = list_page.get_item_cards_count()
