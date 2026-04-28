@@ -44,7 +44,7 @@ def config():
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("详情页 - 面包屑导航")
-@allure.title("点击面包屑首页链接应该跳转到首页")
+@allure.title("TC-BREADCRUMB-B-001：点击首页链接")
 @allure.severity(allure.severity_level.BLOCKER)
 @allure.description("验证点击面包屑「Home」节点跳转到首页")
 def test_breadcrumb_click_home(page, config):
@@ -93,7 +93,7 @@ def test_breadcrumb_click_home(page, config):
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("详情页 - 面包屑导航")
-@allure.title("点击面包屑Property节点应该跳转到Property列表页")
+@allure.title("TC-BREADCRUMB-B-002：点击中间节点链接（Property）")
 @allure.severity(allure.severity_level.BLOCKER)
 @allure.description("验证点击面包屑「Property」节点跳转到类目列表页")
 def test_breadcrumb_click_property(page, config):
@@ -146,7 +146,7 @@ def test_breadcrumb_click_property(page, config):
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("详情页 - 面包屑导航")
-@allure.title("点击面包屑For Sale节点应该跳转到For Sale列表页")
+@allure.title("TC-BREADCRUMB-B-003：点击「For Sale」节点")
 @allure.severity(allure.severity_level.BLOCKER)
 @allure.description("验证点击面包屑「For Sale」节点跳转到类目列表页")
 def test_breadcrumb_click_for_sale(page, config):
@@ -198,7 +198,7 @@ def test_breadcrumb_click_for_sale(page, config):
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("详情页 - 面包屑导航")
-@allure.title("点击面包屑Apartment节点应该跳转到Apartment列表页")
+@allure.title("TC-BREADCRUMB-B-004：点击「Apartment」节点")
 @allure.severity(allure.severity_level.BLOCKER)
 @allure.description("验证点击面包屑「Apartment」节点跳转到类目列表页")
 def test_breadcrumb_click_apartment(page, config):
@@ -250,7 +250,7 @@ def test_breadcrumb_click_apartment(page, config):
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("详情页 - 面包屑导航")
-@allure.title("最后一个节点不应该可点击")
+@allure.title("TC-BREADCRUMB-B-005：最后一个节点不可点击")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证最后一个节点（当前页标题）不可点击，点击无反应")
 def test_breadcrumb_last_item_not_clickable(page, config):

@@ -44,7 +44,7 @@ def config():
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("详情页 - 面包屑导航")
-@allure.title("面包屑导航应该在详情页顶部正确显示")
+@allure.title("TC-BREADCRUMB-A-001：面包屑基本展示")
 @allure.severity(allure.severity_level.BLOCKER)
 @allure.description("验证面包屑导航的基本展示，包括位置、路径、节点数量等")
 def test_breadcrumb_basic_display(page, config):
@@ -107,7 +107,7 @@ def test_breadcrumb_basic_display(page, config):
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("详情页 - 面包屑导航")
-@allure.title("面包屑节点数量和层级结构应该正确")
+@allure.title("TC-BREADCRUMB-A-002：节点数量和层级结构")
 @allure.severity(allure.severity_level.BLOCKER)
 @allure.description("验证面包屑的节点数量、文本内容和层级结构")
 def test_breadcrumb_hierarchy_structure(page, config):
@@ -183,7 +183,7 @@ def test_breadcrumb_hierarchy_structure(page, config):
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("详情页 - 面包屑导航")
-@allure.title("最后一个节点应该展示为 Span 不可点击")
+@allure.title("TC-BREADCRUMB-A-003：当前页节点展示为 Span")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证当前页节点使用 span 元素展示，不包含链接，不可点击")
 def test_breadcrumb_last_item_span(page, config):
@@ -237,7 +237,7 @@ def test_breadcrumb_last_item_span(page, config):
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("详情页 - 面包屑导航")
-@allure.title("箭头分隔符应该正确显示")
+@allure.title("TC-BREADCRUMB-A-004：分隔符箭头展示")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证面包屑节点之间的箭头分隔符数量和位置")
 def test_breadcrumb_arrow_separators(page, config):
