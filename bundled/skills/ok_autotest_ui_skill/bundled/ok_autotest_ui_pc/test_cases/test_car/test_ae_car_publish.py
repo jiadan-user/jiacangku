@@ -260,6 +260,89 @@ def navigate_to_car_publish_page(page, config):
         logger.info(f"✓ 已进入车发布页: {page.url}")
 
 
+def ensure_contact_phone_filled(page, default_phone="501234567"):
+    """
+    确保联系电话字段已填写
+    
+    如果电话号码未填写，则填写提供的默认号码
+    如果已填写，则直接使用现有值
+    
+    Args:
+        page: Playwright page对象
+        default_phone: 默认电话号码（阿联酋格式）
+    
+    Returns:
+        str: 最终使用的电话号码
+    """
+    # 定位联系电话输入框（使用更精确的 ID 定位）
+    phone_input = page.locator('#contact')
+    
+    # 等待元素出现
+    phone_input.wait_for(state="visible", timeout=5000)
+    
+    # 检查电话号码是否已填写
+    phone_value = phone_input.input_value()
+    
+    if not phone_value or len(phone_value.strip()) == 0:
+        # 电话号码未填写，使用多种策略填写
+        logger.info(f"检测到电话号码未填写，准备填写默认号码: {default_phone}")
+        
+        # 策略1: 使用 JavaScript 模拟用户输入（最可靠的方式）
+        success = page.evaluate(f"""
+            (phone) => {{
+                const input = document.querySelector('#contact');
+                if (!input) return false;
+                
+                // 聚焦元素
+                input.focus();
+                
+                // 使用 React 的方式设置值
+                const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+                    window.HTMLInputElement.prototype, 'value'
+                ).set;
+                nativeInputValueSetter.call(input, phone);
+                
+                // 创建并触发所有必要的事件
+                const events = ['input', 'change', 'blur'];
+                events.forEach(eventType => {{
+                    const event = new Event(eventType, {{
+                        bubbles: true,
+                        cancelable: true,
+                        composed: true
+                    }});
+                    // 设置必要的属性以模拟真实用户输入
+                    Object.defineProperty(event, 'target', {{
+                        writable: false,
+                        value: input
+                    }});
+                    input.dispatchEvent(event);
+                }});
+                
+                // 失焦
+                input.blur();
+                
+                return input.value === phone;
+            }}
+        """, default_phone)
+        
+        page.wait_for_timeout(1000)  # 等待 React 更新
+        
+        # 验证填写是否成功
+        final_value = phone_input.input_value()
+        logger.info(f"JavaScript 填写{'成功' if success else '可能失败'}，当前值: '{final_value}'")
+        
+        if final_value and len(final_value) > 0:
+            logger.info(f"✓ 电话号码已成功填写: {final_value}")
+            return final_value
+        else:
+            logger.warning(f"⚠️ 电话号码填写失败，字段仍为空")
+            return ""
+    else:
+        # 电话号码已填写，直接使用
+        logger.info(f"✓ 电话号码已预填充，使用现有值: {phone_value}")
+        return phone_value
+
+
 # ============================================
 # P0 核心功能测试用例
 # ============================================
@@ -1386,7 +1469,11 @@ def test_p0_26_submit_all_required_fields(page, config):
             page.wait_for_timeout(2000)
             logger.info(f"✓ 上传外观照片: {image_path}")
     
-    with allure.step("步骤7: 点击Post按钮提交"):
+    with allure.step("步骤7: 检查并填写联系电话"):
+        # 使用辅助函数确保电话号码已填写
+        final_phone = ensure_contact_phone_filled(page)
+    
+    with allure.step("步骤8: 点击Post按钮提交"):
         post_button = page.get_by_role("button", name="Post")
         post_button.scroll_into_view_if_needed()
         page.wait_for_timeout(500)
