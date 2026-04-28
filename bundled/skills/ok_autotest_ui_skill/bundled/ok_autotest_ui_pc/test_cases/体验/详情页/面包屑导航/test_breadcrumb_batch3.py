@@ -44,7 +44,7 @@ def config():
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("详情页 - 面包屑导航")
-@allure.title("面包屑链接文本样式应该正确")
+@allure.title("TC-BREADCRUMB-C-001：面包屑文本样式")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证面包屑链接的文本样式，包括颜色、字体大小、下划线等")
 def test_breadcrumb_text_style(page, config):
@@ -105,7 +105,7 @@ def test_breadcrumb_text_style(page, config):
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("详情页 - 面包屑导航")
-@allure.title("面包屑链接悬停效果应该正确")
+@allure.title("TC-BREADCRUMB-C-002：链接悬停效果")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证鼠标悬停在面包屑链接上时的视觉反馈")
 def test_breadcrumb_hover_effect(page, config):
@@ -157,7 +157,7 @@ def test_breadcrumb_hover_effect(page, config):
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("详情页 - 面包屑导航")
-@allure.title("面包屑容器布局应该正确")
+@allure.title("TC-BREADCRUMB-C-003：面包屑容器布局")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证面包屑导航的位置、尺寸和布局")
 def test_breadcrumb_container_layout(page, config):
@@ -210,7 +210,7 @@ def test_breadcrumb_container_layout(page, config):
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("详情页 - 面包屑导航")
-@allure.title("超长文本应该正确截断")
+@allure.title("TC-BREADCRUMB-C-004：超长文本截断")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证最后一个节点的超长文本是否应用省略号截断")
 def test_breadcrumb_text_ellipsis(page, config):
