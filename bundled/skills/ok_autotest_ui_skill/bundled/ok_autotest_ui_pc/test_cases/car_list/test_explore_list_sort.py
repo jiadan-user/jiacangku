@@ -48,7 +48,7 @@ _CONFIG = {
 @allure.title("点击 Sort 展开排序下拉面板，显示 4 个排序选项")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证点击 Sort 按钮后展开含 4 个排序选项的面板及 Clear/Confirm 按钮")
-def test_tc011_sort_panel_opens(page, config):
+def test_tc010_sort_panel_opens(page, config):
     """TC011: 点击 Sort 展开排序下拉面板"""
 
     # ========== Arrange ==========
@@ -100,7 +100,7 @@ def test_tc011_sort_panel_opens(page, config):
 @allure.title("选择 'Price: Low to High' 并点击 Confirm，URL 含排序参数")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证选择价格升序并 Confirm 后，URL 包含 sortId=3，面板关闭")
-def test_tc012_sort_price_low_to_high(page, config):
+def test_tc011_sort_price_low_to_high(page, config):
     """TC012: 选择 'Price: Low to High' 并点击 Confirm"""
 
     # ========== Arrange ==========
@@ -147,7 +147,7 @@ def test_tc012_sort_price_low_to_high(page, config):
 @allure.title("选择 'Price: High to Low' 排序，URL 含 sortId=4")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证选择价格降序并 Confirm 后，URL 包含 sortId=4")
-def test_tc013_sort_price_high_to_low(page, config):
+def test_tc012_sort_price_high_to_low(page, config):
     """TC013: 选择 'Price: High to Low' 排序"""
 
     # ========== Arrange ==========
@@ -182,7 +182,7 @@ def test_tc013_sort_price_high_to_low(page, config):
 @allure.title("选择 'Most recent' 排序，URL 含 sortId=1")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证选择最新发布排序并 Confirm 后，URL 包含 sortId=1")
-def test_tc014_sort_most_recent(page, config):
+def test_tc013_sort_most_recent(page, config):
     """TC014: 选择 'Most recent' 排序"""
 
     # ========== Arrange ==========
@@ -217,7 +217,7 @@ def test_tc014_sort_most_recent(page, config):
 @allure.title("选择 'Lowest Mileage' 排序，URL 含 sortId=5")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证选择最低里程排序并 Confirm 后，URL 包含 sortId=5")
-def test_tc015_sort_lowest_mileage(page, config):
+def test_tc014_sort_lowest_mileage(page, config):
     """TC015: 选择 'Lowest Mileage' 排序"""
 
     # ========== Arrange ==========
@@ -252,7 +252,7 @@ def test_tc015_sort_lowest_mileage(page, config):
 @allure.title("Sort 面板选择选项后点击 Clear，取消勾选，面板不关闭")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证 Sort 面板点击 Clear 后已选选项取消勾选，面板保持展开")
-def test_tc016_sort_clear_button(page, config):
+def test_tc015_sort_clear_button(page, config):
     """TC016: 点击 Sort 面板的 Clear 按钮"""
 
     # ========== Arrange ==========
@@ -295,7 +295,7 @@ def test_tc016_sort_clear_button(page, config):
 @allure.title("Sort 面板不选任何选项直接 Confirm，URL 不含排序参数")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证 Sort 面板不选任何排序选项直接 Confirm，列表保持默认排序")
-def test_tc017_sort_confirm_without_selection(page, config):
+def test_tc016_sort_confirm_without_selection(page, config):
     """TC017: Sort 面板不选任何选项直接 Confirm"""
 
     # ========== Arrange ==========
@@ -329,7 +329,7 @@ def test_tc017_sort_confirm_without_selection(page, config):
 @allure.title("Sort 面板展开后按 Escape 关闭")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证 Sort 面板展开后按 Escape 键可关闭面板")
-def test_tc018_sort_close_by_escape(page, config):
+def test_tc017_sort_close_by_escape(page, config):
     """TC018: 排序后按 ESC 键关闭下拉"""
 
     # ========== Arrange ==========
@@ -366,7 +366,7 @@ def test_tc018_sort_close_by_escape(page, config):
 @allure.title("排序后刷新页面，URL 参数保留排序状态")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证选择排序 Confirm 后刷新页面，URL 仍包含 sortId 参数")
-def test_tc019_sort_preserved_after_reload(page, config):
+def test_tc018_sort_preserved_after_reload(page, config):
     """TC019: 排序后刷新页面，URL 参数保留排序状态"""
 
     # ========== Arrange ==========
@@ -403,7 +403,7 @@ def test_tc019_sort_preserved_after_reload(page, config):
 @allure.title("Sort 单选验证：切换选项后前一选项自动取消")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证选择 Price: Low to High 后切换 Most recent，前者自动取消，为单选行为")
-def test_tc020_sort_single_selection(page, config):
+def test_tc019_sort_single_selection(page, config):
     """TC020: Sort 只能单选，切换时前一选项自动取消"""
 
     # ========== Arrange ==========

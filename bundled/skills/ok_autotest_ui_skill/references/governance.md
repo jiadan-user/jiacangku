@@ -53,5 +53,5 @@ AI 分析规则：
 
 维护说明：
 
-- `coverage-dashboard.md` 和 `dashboard-modules/` 由 skill 版本维护，不属于运行时产物
-- 若覆盖汇报需要更新，应在新一版 skill 中一起更新这些静态 reference 文件
+- `coverage-dashboard.md` 和 `dashboard-modules/` 是历史静态参考，不属于运行时产物，也不作为最新覆盖度数据源
+- 最新覆盖汇报以 QA Agent publish 到 `ui_test_management` 的 OK 项目 `用例覆盖度` 页签为准

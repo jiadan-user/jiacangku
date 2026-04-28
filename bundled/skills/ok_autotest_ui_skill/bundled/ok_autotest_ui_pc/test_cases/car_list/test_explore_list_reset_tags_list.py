@@ -52,7 +52,7 @@ _CONFIG = {
 @allure.title("有筛选条件时点击 Reset，所有条件清空")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证激活价格筛选后点击 Reset，URL 清空筛选参数，Tags 消失")
-def test_tc042_reset_clears_all_filters(page, config):
+def test_tc041_reset_clears_all_filters(page, config):
     """TC042: 有筛选条件时点击 Reset，所有条件清空"""
 
     # ========== Arrange ==========
@@ -101,7 +101,7 @@ def test_tc042_reset_clears_all_filters(page, config):
 @allure.title("初始页面 Reset 按钮可见性验证")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证初始加载时 Reset 按钮可见，点击后页面无不必要变化")
-def test_tc043_reset_button_initial_state(page, config):
+def test_tc042_reset_button_initial_state(page, config):
     """TC043: 无筛选条件时 Reset 按钮状态验证"""
 
     # ========== Arrange ==========
@@ -137,7 +137,7 @@ def test_tc043_reset_button_initial_state(page, config):
 @allure.title("多个筛选 Tag 同时显示在 Tag 区域")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证激活 Location 和 Price 两个筛选后，Tag 区域同时显示两个 Tag")
-def test_tc044_multiple_tags_displayed(page, config):
+def test_tc043_multiple_tags_displayed(page, config):
     """TC044: 多个筛选 Tag 同时显示"""
 
     # ========== Arrange ==========
@@ -176,7 +176,7 @@ def test_tc044_multiple_tags_displayed(page, config):
 @allure.title("点击单个 Tag 的 × 只移除该筛选条件")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证存在 Location 和 Price 两个 Tag 时，点击 Location Tag 的 × 仅移除 Location")
-def test_tc045_single_tag_removal(page, config):
+def test_tc044_single_tag_removal(page, config):
     """TC045: 点击单个 Tag 的 × 只移除该筛选条件"""
 
     # ========== Arrange ==========
@@ -222,7 +222,7 @@ def test_tc045_single_tag_removal(page, config):
 @allure.title("移除所有 Tag 后列表回到默认状态")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证逐一移除所有 Tag 后，筛选条件清空，Tag 区域为空")
-def test_tc046_remove_all_tags(page, config):
+def test_tc045_remove_all_tags(page, config):
     """TC046: 移除所有 Tag 后列表回到默认状态"""
 
     # ========== Arrange ==========
@@ -263,7 +263,7 @@ def test_tc046_remove_all_tags(page, config):
 @allure.title("有数据时车辆卡片信息完整展示")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证列表中车辆卡片数量 > 0，且第一个卡片有标题和链接")
-def test_tc047_car_cards_displayed(page, config):
+def test_tc046_car_cards_displayed(page, config):
     """TC047: 有数据时车辆卡片信息完整展示"""
 
     # ========== Arrange ==========
@@ -300,7 +300,7 @@ def test_tc047_car_cards_displayed(page, config):
 @allure.title("点击车辆卡片跳转详情页，URL 包含车辆 ID")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证点击第一个车辆卡片后跳转到详情页，URL 包含车辆信息")
-def test_tc048_car_card_click_to_detail(page, config):
+def test_tc047_car_card_click_to_detail(page, config):
     """TC048: 点击车辆卡片跳转详情页"""
 
     # ========== Arrange ==========
@@ -337,7 +337,7 @@ def test_tc048_car_card_click_to_detail(page, config):
 @allure.title("访问无结果的筛选组合，页面不崩溃")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证访问极限价格区间 URL 时，页面不崩溃，能正常渲染")
-def test_tc049_empty_state_page(page, config):
+def test_tc048_empty_state_page(page, config):
     """TC049: 空状态页面 UI 元素验证"""
 
     # ========== Arrange ==========
@@ -369,7 +369,7 @@ def test_tc049_empty_state_page(page, config):
 @allure.title("列表有多页时 Next 分页按钮可见且可点击")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证列表结果超过 1 页时，Next 按钮可见，点击后 URL 更新为第 2 页")
-def test_tc050_pagination_next_button(page, config):
+def test_tc049_pagination_next_button(page, config):
     """TC050: 列表分页功能（有多页数据时）"""
 
     # ========== Arrange ==========

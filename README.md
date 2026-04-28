@@ -228,6 +228,35 @@ python -m qa_agent.cli memory export --target qa-agent --query "QA Agent 旧脚�
 - `final_report.md`
 - `knowledge_base_update_context.md`
 
+## ui_test_management Dashboard 同步
+
+QA Agent 在完成态 run 结束后会自动把执行记录、Allure 报告入口、最终报告和覆盖快照发布到 `ui_test_management`。默认发布地址是 `http://10.192.35.53:8001`；如果你在本地调试，也可以用环境变量覆盖成自己的后端地址。
+
+常用环境变量：
+
+- `QA_AGENT_DASHBOARD_URL=http://127.0.0.1:8001`：覆盖目标 `ui_test_management` 后端地址；不配置时默认使用 `http://10.192.35.53:8001`。
+- `QA_AGENT_DASHBOARD_PROJECT_KEY=OK`：目标业务项目，默认就是 `OK`。
+- `QA_AGENT_DASHBOARD_API_KEY=...`：如果平台开启发布密钥校验，就配置这个值。
+- `QA_AGENT_DASHBOARD_ENABLED=false`：需要临时关闭自动发布时使用。
+
+手动补发某次 run：
+
+```bash
+python -m qa_agent.cli dashboard publish --run-id <run_id>
+```
+
+只刷新覆盖快照，不新增执行记录：
+
+```bash
+python -m qa_agent.cli dashboard publish-coverage --project-key OK
+```
+
+覆盖度口径来自 `bundled/knowledge_base/文本用例` 的 Markdown 文本用例扫描：所有 `### TC` 标题都会计入文本用例总数。缺少 `优先级` 或 `UI自动化` 字段的旧格式 TC 不会被丢弃，会标记为“字段待补齐”；这些 TC 已计入总数，但会影响优先级归因和自动化率判断。
+
+`bundled/skills/ok_autotest_ui_skill/references/coverage-dashboard.md` 只保留为历史静态快照参考，不再作为页面最新覆盖数据源。平台上的 `用例覆盖度` 页签以 QA Agent publish 生成的结构化覆盖快照为准。
+
+页面归属统一放在 `OK` 项目内的 `QA-Agent执行记录` 和 `用例覆盖度` 页签。历史上本地 DB 里可能存在名为 `QA Agent` 的项目，它只是早期 publish 映射留下的系统/脏数据项目，不是业务项目，新记录不应再写入那里。
+
 ## 卡住时怎么继续
 
 - 如果 AI 提示“等待确认”，说明这是正常门禁，确认后继续即可

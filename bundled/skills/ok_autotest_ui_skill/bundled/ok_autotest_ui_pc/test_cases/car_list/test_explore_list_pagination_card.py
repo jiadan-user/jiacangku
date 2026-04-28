@@ -47,7 +47,7 @@ _CONFIG = {
 @allure.title("点击 Next 后卡片列表数据与第1页不同")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证翻到第2页后，首条卡片标题与第1页不同，证明数据确实翻页了")
-def test_tc131_pagination_data_changes(page, config):
+def test_tc095_pagination_data_changes(page, config):
     """TC131: 翻页后数据变化"""
 
     list_page = ExploreListPage(page)
@@ -86,7 +86,7 @@ def test_tc131_pagination_data_changes(page, config):
 @allure.title("翻页后 URL 包含 page 参数")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证翻页后 URL 中出现 page 或 p 参数")
-def test_tc132_pagination_url_page_param(page, config):
+def test_tc096_pagination_url_page_param(page, config):
     """TC132: 翻页 URL 参数"""
 
     list_page = ExploreListPage(page)
@@ -120,7 +120,7 @@ def test_tc132_pagination_url_page_param(page, config):
 @allure.title("从第2页点浏览器后退回到第1页")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证从第2页点击浏览器后退按钮，能返回第1页数据")
-def test_tc133_pagination_back_to_first(page, config):
+def test_tc097_pagination_back_to_first(page, config):
     """TC133: 分页后退"""
 
     list_page = ExploreListPage(page)
@@ -163,7 +163,7 @@ def test_tc133_pagination_back_to_first(page, config):
 @allure.title("结果仅1页时 Next 按钮不可见")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("通过极限筛选使结果仅1页，验证 Next 按钮不可见")
-def test_tc134_pagination_last_page_next_state(page, config):
+def test_tc098_pagination_last_page_next_state(page, config):
     """TC134: 结果仅1页时 Next 不可见"""
 
     list_page = ExploreListPage(page)
@@ -199,7 +199,7 @@ def test_tc134_pagination_last_page_next_state(page, config):
 @allure.title("卡片链接 target 属性为 _blank（新窗口打开）")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证卡片 <a> 标签包含 target=_blank 或类似新窗口属性")
-def test_tc135_card_target_blank(page, config):
+def test_tc099_card_target_blank(page, config):
     """TC135: 卡片链接 target 属性"""
 
     list_page = ExploreListPage(page)
@@ -233,7 +233,7 @@ def test_tc135_card_target_blank(page, config):
 @allure.title("滚动到页面底部后所有卡片图片 src 不为空")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证滚动到底部后，所有可见卡片的图片 src 属性不为空（懒加载已触发）")
-def test_tc136_card_lazy_load_scroll(page, config):
+def test_tc100_card_lazy_load_scroll(page, config):
     """TC136: 卡片图片懒加载"""
 
     list_page = ExploreListPage(page)
@@ -277,7 +277,7 @@ def test_tc136_card_lazy_load_scroll(page, config):
 @allure.title("搜索中文关键词，URL 正确编码且不崩溃")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证搜索中文关键词后 URL 包含编码后的关键词，页面不崩溃")
-def test_tc137_search_chinese_encoding(page, config):
+def test_tc101_search_chinese_encoding(page, config):
     """TC137: 中文搜索编码"""
 
     list_page = ExploreListPage(page)
@@ -310,7 +310,7 @@ def test_tc137_search_chinese_encoding(page, config):
 @allure.title("搜索不存在的关键词，空态可见且列表数量为 0")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证搜索不存在的随机关键词后，列表为空或显示空态提示")
-def test_tc138_search_no_result_empty_state(page, config):
+def test_tc102_search_no_result_empty_state(page, config):
     """TC138: 搜索无结果空态"""
 
     list_page = ExploreListPage(page)

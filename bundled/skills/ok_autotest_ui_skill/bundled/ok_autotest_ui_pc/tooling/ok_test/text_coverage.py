@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import re
 from collections import Counter, defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -33,9 +33,10 @@ SUMMARY_TOTAL_RE = re.compile(r"总用例数[^0-9]*(\d+)\s*条")
 SUMMARY_AUTOMATED_RE = re.compile(r"可自动化[^0-9]*(\d+)\s*条")
 TITLE_RE = re.compile(r"^#\s+(.+)$", re.MULTILINE)
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+)$", re.MULTILINE)
-SCENARIO_HEADING_RE = re.compile(r"^###\s*(TC[0-9A-Za-z_-]+)\s*[:：]\s*(.+)$")
+SCENARIO_HEADING_RE = re.compile(r"^###\s*(TC[0-9A-Za-z_-]+)(?:\s*[:：]\s*|\s+)?(.+)$", re.MULTILINE)
 PRIORITY_RE = re.compile(r"优先级\*?\*?\s*[:：]\s*(P[0-3])", re.IGNORECASE)
-UI_AUTOMATION_RE = re.compile(r"UI自动化\*?\*?\s*[:：]\s*(✅\s*可自动化|❌\s*不可自动化)")
+UI_AUTOMATION_RE = re.compile(r"UI自动化\*?\*?\s*[:：]\s*([^\n\r]+)")
+UNSPECIFIED_PRIORITY = "未标注"
 PRIORITY_ORDER = ("P0", "P1", "P2", "P3")
 PRIORITY_DESCRIPTIONS = {
     "P0": "主链路、必须优先保障",
@@ -69,6 +70,8 @@ class TextCaseScenario:
     priority: str
     automated: bool
     group_name: str
+    needs_normalization: bool = False
+    missing_fields: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -96,13 +99,15 @@ class TextCaseDocument:
     def automation_rate(self) -> float:
         return self.automated_cases / self.total_cases if self.total_cases else 0.0
 
+    @property
+    def needs_normalization_cases(self) -> int:
+        return sum(1 for item in self.scenarios if item.needs_normalization)
+
 
 def _is_candidate_doc(path: Path, text: str) -> bool:
     if path.suffix.lower() != ".md":
         return False
-    if "总用例数" not in text or "可自动化" not in text:
-        return False
-    return "UI自动化" in text and "优先级" in text and "### TC" in text
+    return bool(SCENARIO_HEADING_RE.search(text))
 
 
 def _display_module(relative_path: Path) -> str:
@@ -144,7 +149,23 @@ def _document_module_id(relative_path: Path, display_module: str) -> str:
         return "car_list"
     if top == "Tiyan" and "Search/" in relative_path.as_posix():
         return "search_input"
+    if top == "Property" and "Basic/List/" in relative_path.as_posix():
+        return "property_list"
+    if top == "Property" and "Basic/Map/" in relative_path.as_posix():
+        return "property_map"
     return TEXT_CASE_MODULE_MAP.get(top, slugify(display_module) or display_module.lower())
+
+
+def _parse_automation(block: str) -> bool | None:
+    automation_match = UI_AUTOMATION_RE.search(block)
+    if not automation_match:
+        return None
+    value = automation_match.group(1).strip()
+    if "不可自动化" in value or value.startswith("❌"):
+        return False
+    if "可自动化" in value or value.startswith("✅") or value.startswith("⚠"):
+        return True
+    return None
 
 
 def _parse_scenarios(text: str) -> list[TextCaseScenario]:
@@ -173,16 +194,21 @@ def _parse_scenarios(text: str) -> list[TextCaseScenario]:
                 break
         block = text[start:end]
         priority_match = PRIORITY_RE.search(block)
-        automation_match = UI_AUTOMATION_RE.search(block)
-        if not priority_match or not automation_match:
-            continue
+        automation = _parse_automation(block)
+        missing_fields: list[str] = []
+        if not priority_match:
+            missing_fields.append("优先级")
+        if automation is None:
+            missing_fields.append("UI自动化")
         scenarios.append(
             TextCaseScenario(
                 tc_id=scenario_heading.group(1).strip(),
                 title=scenario_heading.group(2).strip(),
-                priority=priority_match.group(1).upper(),
-                automated=automation_match.group(1).startswith("✅"),
+                priority=priority_match.group(1).upper() if priority_match else UNSPECIFIED_PRIORITY,
+                automated=bool(automation),
                 group_name=current_group or "未分组",
+                needs_normalization=bool(missing_fields),
+                missing_fields=missing_fields,
             )
         )
     return scenarios
@@ -212,14 +238,71 @@ def _parse_document(root: Path, path: Path) -> TextCaseDocument | None:
 
 
 def load_text_case_documents(root: Path = DEFAULT_KNOWLEDGE_BASE) -> list[TextCaseDocument]:
+    documents, _diagnostics = _scan_text_case_documents(root)
+    return documents
+
+
+def _scan_text_case_documents(root: Path = DEFAULT_KNOWLEDGE_BASE) -> tuple[list[TextCaseDocument], dict[str, Any]]:
     documents: list[TextCaseDocument] = []
+    markdown_files = 0
+    files_with_tc_headings = 0
+    tc_headings_total = 0
+    needs_normalization_files: list[dict[str, Any]] = []
+    excluded_files: list[dict[str, Any]] = []
     if not root.exists():
-        return documents
+        return documents, {
+            "markdown_files": 0,
+            "files_with_tc_headings": 0,
+            "tc_headings_total": 0,
+            "parsed_scenarios": 0,
+            "fully_structured_cases": 0,
+            "needs_normalization_cases": 0,
+            "needs_normalization_files": [],
+            "excluded_files": [],
+            "excluded_files_count": 0,
+        }
     for path in sorted(root.rglob("*.md")):
+        markdown_files += 1
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        relative_path = path.relative_to(root).as_posix()
+        heading_count = len(SCENARIO_HEADING_RE.findall(text))
+        if not heading_count:
+            excluded_files.append({"path": relative_path, "reason": "no_tc_heading"})
+            continue
+        files_with_tc_headings += 1
+        tc_headings_total += heading_count
         document = _parse_document(root, path)
         if document is not None:
             documents.append(document)
-    return documents
+            if document.needs_normalization_cases:
+                documents_missing_fields = sorted(
+                    {
+                        missing
+                        for scenario in document.scenarios
+                        for missing in scenario.missing_fields
+                    }
+                )
+                needs_normalization_files.append(
+                    {
+                        "path": document.relative_path,
+                        "cases": document.needs_normalization_cases,
+                        "missing_fields": documents_missing_fields,
+                    }
+                )
+    parsed_scenarios = sum(document.total_cases for document in documents)
+    needs_normalization_cases = sum(document.needs_normalization_cases for document in documents)
+    diagnostics = {
+        "markdown_files": markdown_files,
+        "files_with_tc_headings": files_with_tc_headings,
+        "tc_headings_total": tc_headings_total,
+        "parsed_scenarios": parsed_scenarios,
+        "fully_structured_cases": max(parsed_scenarios - needs_normalization_cases, 0),
+        "needs_normalization_cases": needs_normalization_cases,
+        "needs_normalization_files": needs_normalization_files,
+        "excluded_files": excluded_files,
+        "excluded_files_count": len(excluded_files),
+    }
+    return documents, diagnostics
 
 
 def _priority_missing(scenarios: list[TextCaseScenario], priority: str) -> int:
@@ -274,6 +357,8 @@ def _group_function_rows(document: TextCaseDocument) -> list[dict[str, Any]]:
                     "title": item.title,
                     "priority": item.priority,
                     "status": "已自动化",
+                    "needs_normalization": item.needs_normalization,
+                    "missing_fields": item.missing_fields,
                 }
                 for item in scenarios
                 if item.automated
@@ -287,6 +372,8 @@ def _group_function_rows(document: TextCaseDocument) -> list[dict[str, Any]]:
                     "title": item.title,
                     "priority": item.priority,
                     "status": "未自动化",
+                    "needs_normalization": item.needs_normalization,
+                    "missing_fields": item.missing_fields,
                 }
                 for item in scenarios
                 if not item.automated
@@ -307,6 +394,7 @@ def _group_function_rows(document: TextCaseDocument) -> list[dict[str, Any]]:
                 "automation_rate": automated / total if total else 0.0,
                 "p0_missing": p0_missing,
                 "p1_missing": p1_missing,
+                "needs_normalization_cases": sum(1 for item in scenarios if item.needs_normalization),
                 "remark": _remark(row_status, p0_missing, p1_missing),
                 "covered_scenarios": covered,
                 "uncovered_scenarios": uncovered,
@@ -335,7 +423,7 @@ def _scenario_priority_counts(documents: list[TextCaseDocument]) -> tuple[Counte
 
 
 def build_text_case_dashboard(root: Path = DEFAULT_KNOWLEDGE_BASE) -> dict[str, Any]:
-    documents = load_text_case_documents(root)
+    documents, diagnostics = _scan_text_case_documents(root)
     priority_total, priority_automated = _scenario_priority_counts(documents)
 
     module_rollup: dict[str, dict[str, Any]] = defaultdict(
@@ -350,6 +438,7 @@ def build_text_case_dashboard(root: Path = DEFAULT_KNOWLEDGE_BASE) -> dict[str, 
             "non_automated_cases": 0,
             "p0_missing": 0,
             "p1_missing": 0,
+            "needs_normalization_cases": 0,
         }
     )
     function_rows: list[dict[str, Any]] = []
@@ -367,6 +456,7 @@ def build_text_case_dashboard(root: Path = DEFAULT_KNOWLEDGE_BASE) -> dict[str, 
                 "automated_cases": document.automated_cases,
                 "non_automated_cases": document.non_automated_cases,
                 "automation_rate": document.automation_rate,
+                "needs_normalization_cases": document.needs_normalization_cases,
                 "groups": group_rows,
             }
         )
@@ -382,6 +472,7 @@ def build_text_case_dashboard(root: Path = DEFAULT_KNOWLEDGE_BASE) -> dict[str, 
             module_rollup[row["module"]]["non_automated_cases"] += row["non_automated_cases"]
             module_rollup[row["module"]]["p0_missing"] += row["p0_missing"]
             module_rollup[row["module"]]["p1_missing"] += row["p1_missing"]
+            module_rollup[row["module"]]["needs_normalization_cases"] += row["needs_normalization_cases"]
 
     modules: list[dict[str, Any]] = []
     for module_name, stats in module_rollup.items():
@@ -399,6 +490,7 @@ def build_text_case_dashboard(root: Path = DEFAULT_KNOWLEDGE_BASE) -> dict[str, 
                 "automation_rate": stats["automated_cases"] / stats["total_cases"] if stats["total_cases"] else 0.0,
                 "p0_missing": stats["p0_missing"],
                 "p1_missing": stats["p1_missing"],
+                "needs_normalization_cases": stats["needs_normalization_cases"],
             }
         )
     modules.sort(key=lambda item: (-item["p0_missing"], -item["p1_missing"], -item["non_automated_cases"], item["module"]))
@@ -458,6 +550,7 @@ def build_text_case_dashboard(root: Path = DEFAULT_KNOWLEDGE_BASE) -> dict[str, 
         "focus_rows": focus_rows,
         "priorities": priorities,
         "module_details": module_details,
+        "parse_diagnostics": diagnostics,
     }
 
 

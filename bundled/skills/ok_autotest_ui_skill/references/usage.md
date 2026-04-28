@@ -71,14 +71,14 @@ AI 选用例时固定做两步：
 
 ## 覆盖汇报怎么看
 
-汇报优先看 skill 自带的静态参考资料：
+最新覆盖汇报优先看 `ui_test_management` 的 OK 项目 `用例覆盖度` 页签。下面这些文件只作为历史静态参考，用于对照旧口径：
 
 1. `references/coverage-dashboard.md`
 2. `references/dashboard-modules/car.md`
 3. `references/dashboard-modules/wallet.md`
 4. `references/dashboard-modules/zhaopin.md`
 
-这些文件不在日常执行中自动刷新；如果 dashboard 内容更新，按新版本 skill 发布。
+这些文件不在日常执行中自动刷新，也不作为页面最新数据源；页面数据来自 QA Agent publish 的结构化覆盖快照。
 
 ## 维护模式
 

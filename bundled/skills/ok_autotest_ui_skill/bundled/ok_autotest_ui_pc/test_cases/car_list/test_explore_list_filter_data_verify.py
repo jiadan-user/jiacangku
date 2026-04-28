@@ -63,7 +63,7 @@ def _parse_price(text: str):
 @allure.title("切换城市 Dubai 后，卡片详情参数中城市匹配")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证切换城市到 Dubai 后，URL 包含 dubai，卡片详情参数中城市属于 Dubai 区域")
-def test_tc111_filter_city_cards_match(page, config):
+def test_tc085_filter_city_cards_match(page, config):
     """TC111: 切换城市 Dubai 后卡片城市匹配"""
 
     list_page = ExploreListPage(page)
@@ -105,7 +105,7 @@ def test_tc111_filter_city_cards_match(page, config):
 @allure.title("设 Price 1000-50000 后，卡片价格均在区间内")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证设置价格区间后，卡片价格数值均在 1000-50000 范围内（Free 跳过）")
-def test_tc112_filter_price_range_cards_match(page, config):
+def test_tc086_filter_price_range_cards_match(page, config):
     """TC112: 价格区间筛选后卡片价格在区间内"""
 
     list_page = ExploreListPage(page)
@@ -146,7 +146,7 @@ def test_tc112_filter_price_range_cards_match(page, config):
 @allure.title("Mileage 仅填 Max=30000，页面正常")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证 Mileage 仅设置最大值时页面不崩溃")
-def test_tc113_filter_mileage_only_max(page, config):
+def test_tc087_filter_mileage_only_max(page, config):
     """TC113: Mileage 仅填 Max"""
 
     list_page = ExploreListPage(page)
@@ -181,7 +181,7 @@ def test_tc113_filter_mileage_only_max(page, config):
 @allure.title("Mileage 输入非数字 'abc'，页面不崩溃")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证 Mileage 输入非数字字符时页面不崩溃")
-def test_tc114_filter_mileage_non_numeric(page, config):
+def test_tc088_filter_mileage_non_numeric(page, config):
     """TC114: Mileage 非数字输入"""
 
     list_page = ExploreListPage(page)
@@ -218,7 +218,7 @@ def test_tc114_filter_mileage_non_numeric(page, config):
 @allure.title("Brand + Body Style + Year 三条件同时筛选")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证多个 Filter 条件同时应用后，Tag 区域显示多个标签，列表正常")
-def test_tc115_filter_multi_conditions_combined(page, config):
+def test_tc089_filter_multi_conditions_combined(page, config):
     """TC115: Brand + Body Style + Year 三条件组合筛选"""
 
     list_page = ExploreListPage(page)
@@ -268,7 +268,7 @@ def test_tc115_filter_multi_conditions_combined(page, config):
 @allure.title("选择 Brand 后再次点击取消选择，列表恢复")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证选择品牌后取消选择（反选），列表恢复到原始数量")
-def test_tc116_filter_brand_deselect(page, config):
+def test_tc090_filter_brand_deselect(page, config):
     """TC116: Brand 反选取消"""
 
     list_page = ExploreListPage(page)
@@ -314,7 +314,7 @@ def test_tc116_filter_brand_deselect(page, config):
 @allure.title("筛选后页面标题中的数量数字随结果变化")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证设置筛选条件后，浏览器标题中的车辆数量发生变化")
-def test_tc117_filter_result_title_count_update(page, config):
+def test_tc091_filter_result_title_count_update(page, config):
     """TC117: 筛选后标题中数量变化"""
 
     list_page = ExploreListPage(page)
@@ -359,7 +359,7 @@ def test_tc117_filter_result_title_count_update(page, config):
 @allure.title("Price 面板设置区间后 Reset 清除区间")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证 Price 面板输入区间并确认后，点击 Reset 清除所有筛选参数")
-def test_tc118_filter_price_clear_button(page, config):
+def test_tc092_filter_price_clear_button(page, config):
     """TC118: Price 区间 Reset 清除"""
 
     list_page = ExploreListPage(page)
@@ -396,7 +396,7 @@ def test_tc118_filter_price_clear_button(page, config):
 @allure.title("搜索关键词后再设 Filter 条件，两者共存")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证搜索关键词后打开 Filter 设置条件，URL 中搜索和筛选参数共存")
-def test_tc119_filter_search_and_filter_coexist(page, config):
+def test_tc093_filter_search_and_filter_coexist(page, config):
     """TC119: 搜索与筛选条件共存"""
 
     list_page = ExploreListPage(page)
@@ -429,7 +429,7 @@ def test_tc119_filter_search_and_filter_coexist(page, config):
 @allure.title("搜索后清空搜索框重新搜索，列表恢复原始数据")
 @allure.severity(allure.severity_level.MINOR)
 @allure.description("验证搜索后清空关键词并重新搜索，列表恢复为初始结果")
-def test_tc120_filter_search_clear_restore(page, config):
+def test_tc094_filter_search_clear_restore(page, config):
     """TC120: 清空搜索恢复列表"""
 
     list_page = ExploreListPage(page)
