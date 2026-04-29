@@ -64,7 +64,7 @@ def _ensure_logged_in_and_on_list(page, config):
 @allure.description("每条列表卡片均展示面积信息（面积文案可见）")
 def test_tc001_list_cards_show_area(page, config):
     plp = _ensure_logged_in_and_on_list(page, config)
-    card_count = plp.get_list_card_links_count(path_part="cate-property-for-sale-")
+    card_count = plp.get_list_card_links_count(path_part="/cate-property-for-sale-")
     assert card_count > 0, "列表页应至少有一条卡片"
     area_text = plp.get_first_card_area_text()
     assert area_text and len(area_text.strip()) > 0, "第一张卡片应有非空面积"
@@ -126,7 +126,10 @@ def test_tc004_area_matches_detail_page(page, config):
     list_area = plp.get_first_card_area_text()
     assert list_area, "应获取到列表页面积"
     logger.info(f"列表页面积: {list_area}")
-    first_card = page.locator('a[href*="cate-property-for-sale-"], a[href*="residential-"]').first
+    first_card = page.locator(
+        'a[href*="cate-rent-"], a[href*="cate-property-for-sale-"], a[href*="residential-"], '
+        'a[href*="cate-buy-"], a[href*="cate-commercial-"]'
+    ).first
     first_card.wait_for(state="visible", timeout=5000)
     try:
         with page.context.expect_page(timeout=10000) as new_page_info:

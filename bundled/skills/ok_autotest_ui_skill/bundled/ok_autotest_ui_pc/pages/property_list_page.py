@@ -8,8 +8,30 @@ from pages.base_page import BasePage
 class PropertyListPage(BasePage):
     """房产列表页（支持 AE/AU 等站点列表卡片）"""
 
+    # 买房列表 href 含 cate-buy-，与 for-sale / rent 不同；须与价格等取卡逻辑一致
+    _LIST_CARD_ANCHOR_SELECTOR = (
+        'a[href*="cate-rent-"], '
+        'a[href*="cate-property-for-sale-"], '
+        'a[href*="residential-"], '
+        'a[href*="cate-buy-"], '
+        'a[href*="cate-commercial-"]'
+    )
+
+    _AREA_IN_CARD_RE = re.compile(
+        r'[\d,]+\.?\d*\s*(?:sqm|m²|㎡|m2|sq\.?\s*m|sq\s*ft|sqft|square\s*metres?)'
+        r'|[\d,]+\.?\d*(?:m²|㎡|m2)\b'
+        r'|[\d,]+\.?\d*sqm\b',
+        re.IGNORECASE,
+    )
+
     def __init__(self, page: Page):
         super().__init__(page)
+
+    def _extract_area_from_card_text(self, card_text: str) -> str:
+        if not card_text:
+            return ""
+        m = self._AREA_IN_CARD_RE.search(card_text)
+        return m.group().strip() if m else ""
 
     def navigate_to_list(self, list_url: str, timeout: int = 30000):
         """打开列表页"""
@@ -771,48 +793,44 @@ class PropertyListPage(BasePage):
     # ========== 面积相关方法 ==========
 
     def get_first_card_area_text(self):
-        """获取第一张卡片的面积文本（如 XX sqm、XX m²、XX sq ft）"""
+        """获取第一张卡片的面积文本（如 XX sqm、XX m²、XX sq ft）
+
+        买房列表 URL 为 cate-buy，但卡片 href 常为 cate-property-for-sale-；且页眉/侧栏
+        可能先出现 cate-rent 等链接。不能对 OR 选择器仅用 .first，需跳过无面积文案的节点。
+        """
         try:
-            first_card = self.page.locator('a[href*="cate-rent-"], a[href*="cate-property-for-sale-"], a[href*="residential-"]').first
-            first_card.wait_for(state="visible", timeout=5000)
-            card_text = first_card.inner_text()
-            area_match = re.search(
-                r'[\d,]+\.?\d*\s*(?:sqm|m²|sq\.?\s*m|sq\s*ft|sqft|square\s*metres?)',
-                card_text, re.IGNORECASE
-            )
-            if area_match:
-                return area_match.group()
+            cards = self.page.locator(self._LIST_CARD_ANCHOR_SELECTOR)
+            cards.first.wait_for(state="visible", timeout=5000)
+            n = min(30, cards.count())
+            for i in range(n):
+                try:
+                    card_text = cards.nth(i).inner_text()
+                    area = self._extract_area_from_card_text(card_text)
+                    if area:
+                        return area
+                except Exception:
+                    continue
             return ""
         except Exception:
             return ""
 
     def get_card_areas(self, max_cards: int = 5):
         """获取前 N 张卡片的面积列表"""
-        cards = self.page.locator('a[href*="cate-rent-"], a[href*="cate-property-for-sale-"], a[href*="residential-"]')
+        cards = self.page.locator(self._LIST_CARD_ANCHOR_SELECTOR)
         count = min(max_cards, cards.count())
         areas = []
         for i in range(count):
             try:
                 card = cards.nth(i)
                 card_text = card.inner_text()
-                area_match = re.search(
-                    r'[\d,]+\.?\d*\s*(?:sqm|m²|sq\.?\s*m|sq\s*ft|sqft|square\s*metres?)',
-                    card_text, re.IGNORECASE
-                )
-                if area_match:
-                    areas.append(area_match.group())
-                else:
-                    areas.append("")
+                areas.append(self._extract_area_from_card_text(card_text))
             except Exception:
                 areas.append("")
         return areas
 
     def is_area_format_valid(self, area_text: str):
         """验证面积格式是否正确（包含数字和单位）"""
-        return bool(re.search(
-            r'[\d,]+\.?\d*\s*(?:sqm|m²|sq\.?\s*m|sq\s*ft|sqft|square\s*metres?)',
-            area_text, re.IGNORECASE
-        ))
+        return bool(self._AREA_IN_CARD_RE.search(area_text or ""))
 
     # ========== 位置/邮编相关方法 ==========
 

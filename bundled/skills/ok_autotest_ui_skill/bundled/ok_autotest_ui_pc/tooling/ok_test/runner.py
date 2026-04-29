@@ -19,6 +19,7 @@ import pytest
 
 from .common import (
     ALLURE_SERVER_INFO_PATH,
+    GENERATED_CATALOG_PATH,
     PREREQUISITES_PATH,
     REPORTS_DIR,
     ROOT_DIR,
@@ -31,7 +32,7 @@ from .common import (
     save_json,
     shell_join,
 )
-from .catalog import collect_catalog
+from .catalog import collect_catalog, load_catalog
 from .coverage import compute_coverage
 from .decision import evaluate_decision
 from .governance import matches_case, recommend_cases
@@ -809,7 +810,11 @@ def _lean_cleanup(run_dir: Path, summary: dict[str, Any]) -> dict[str, Any]:
 
 def handle_run(args: argparse.Namespace) -> int:
     criteria = build_criteria(args)
-    catalog = collect_catalog()
+    # 全量 collect 在部分 Python/用例组合下会失败；仓库已带 catalog.generated.json 时优先走磁盘目录，避免 run 入口不可用。
+    if GENERATED_CATALOG_PATH.exists():
+        catalog = load_catalog()
+    else:
+        catalog = collect_catalog()
     selected_cases = select_cases_from_catalog(catalog, criteria)
     if not selected_cases:
         print("matched_cases=0")
