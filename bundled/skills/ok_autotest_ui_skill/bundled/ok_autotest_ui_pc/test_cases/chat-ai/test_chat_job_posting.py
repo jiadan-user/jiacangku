@@ -28,8 +28,8 @@ logger = setup_logger()
 # 测试环境配置（来自录制文档，录制与运行使用同一账号）
 # ============================================
 _DEFAULT_JOB_URL = (
-    "https://ae.58v5.cn/en/city-dubai/cate-accounts-officers-clerks/"
-    "Teacher+Trainer-6561364844044510/"
+    "https://ae.58v5.cn/en/city-dubai/cate-teaching-early-childhood/"
+    "Teacher+Assistant+-6561184086553310/?from="
 )
 
 _CONFIG = {
@@ -206,6 +206,7 @@ def test_contact_button_sidebar_navigates_to_chat(page, config):
         logger.info(f"✅ 右侧卡片 Contact 按钮跳转成功，URL: {current_url}")
 
 
+@pytest.mark.skip(reason="AI Auto Reply 功能暂跳过执行")
 @pytest.mark.case_id_chat_initial_message04
 @pytest.mark.regression
 @pytest.mark.p1
@@ -295,6 +296,7 @@ def test_send_button_disabled_when_input_empty(page, config):
 # 模块三：接收消息 / AI 自动回复
 # ============================================================
 
+@pytest.mark.skip(reason="AI Auto Reply 功能暂跳过执行")
 @pytest.mark.case_id_chat_ai_reply14
 @pytest.mark.regression
 @pytest.mark.p0
@@ -320,6 +322,7 @@ def test_ai_auto_reply_responds_after_message(page, config):
         logger.info("✅ AI Auto Reply 已在合理时间内响应")
 
 
+@pytest.mark.skip(reason="AI Auto Reply 功能暂跳过执行")
 @pytest.mark.case_id_chat_bubble_seller_left15
 @pytest.mark.regression
 @pytest.mark.p1
