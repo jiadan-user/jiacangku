@@ -2,7 +2,7 @@
 
 > **目录来源**：`test_cases/property_basics/list/`  
 > **生成时间**：2026-03-18  
-> **用例总数**：162 条（14 个测试文件）  
+> **用例总数**：156 条（14 个测试文件）  
 > **测试站点**：AU 站（au.58v5.cn）  
 > **用途说明**：PC 端 UI 自动化用例汇总，可作为探索 **M 端（H5）** 用例的参考基线
 
@@ -643,3 +643,1081 @@
 ---
 
 *文档生成：2026-03-18 | 来源：`test_cases/property_basics/list/` 共 14 个测试文件 162 条用例*
+
+---
+
+## 📌 新增用例（2026-04-28补充）
+
+> 以下用例为自动化用例补充的文本用例，已通过Review  
+> 新增用例编号：TC-LIST-1001 ~ TC-LIST-1123
+
+### TC-LIST-1001: sug one char behavior
+
+**步骤**：执行测试：sug one char behavior  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_buy_sug_011` | `test_cases/property_basics/list/test_buy_search_sug.py::TestBuySearchSug::test_sug_one_char_behavior`
+
+---
+
+### TC-LIST-1002: sug select adds suglevel param
+
+**步骤**：执行测试：sug select adds suglevel param  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P0 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_buy_sug_014` | `test_cases/property_basics/list/test_buy_search_sug.py::TestBuySearchSug::test_sug_select_adds_suglevel_param`
+
+---
+
+### TC-LIST-1003: sug select saved to history
+
+**步骤**：执行测试：sug select saved to history  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_buy_sug_015` | `test_cases/property_basics/list/test_buy_search_sug.py::TestBuySearchSug::test_sug_select_saved_to_history`
+
+---
+
+### TC-LIST-1004: sug two chars shows panel
+
+**步骤**：执行测试：sug two chars shows panel  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P0 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_buy_sug_012` | `test_cases/property_basics/list/test_buy_search_sug.py::TestBuySearchSug::test_sug_two_chars_shows_panel`
+
+---
+
+### TC-LIST-1005: breadcrumb current page not clickable
+
+**步骤**：执行测试：breadcrumb current page not clickable  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_buy_nav_028` | `test_cases/property_basics/list/test_buy_view_navigation.py::TestBuyViewNavigation::test_breadcrumb_current_page_not_clickable`
+
+---
+
+### TC-LIST-1006: breadcrumb home navigates to homepage
+
+**步骤**：执行测试：breadcrumb home navigates to homepage  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P0 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_buy_nav_026` | `test_cases/property_basics/list/test_buy_view_navigation.py::TestBuyViewNavigation::test_breadcrumb_home_navigates_to_homepage`
+
+---
+
+### TC-LIST-1007: breadcrumb property navigates to category
+
+**步骤**：执行测试：breadcrumb property navigates to category  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_buy_nav_027` | `test_cases/property_basics/list/test_buy_view_navigation.py::TestBuyViewNavigation::test_breadcrumb_property_navigates_to_category`
+
+---
+
+### TC-LIST-1008: click page 1 returns to first page
+
+**步骤**：执行测试：click page 1 returns to first page  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P0 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_buy_page_032` | `test_cases/property_basics/list/test_buy_view_navigation.py::TestBuyViewNavigation::test_click_page_1_returns_to_first_page`
+
+---
+
+### TC-LIST-1009: click page 2 navigates to second page
+
+**步骤**：执行测试：click page 2 navigates to second page  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P0 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_buy_page_031` | `test_cases/property_basics/list/test_buy_view_navigation.py::TestBuyViewNavigation::test_click_page_2_navigates_to_second_page`
+
+---
+
+### TC-LIST-1010: last page no overflow
+
+**步骤**：执行测试：last page no overflow  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_buy_page_035` | `test_cases/property_basics/list/test_buy_view_navigation.py::TestBuyViewNavigation::test_last_page_no_overflow`
+
+---
+
+### TC-LIST-1011: logo click navigates to homepage
+
+**步骤**：执行测试：logo click navigates to homepage  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P0 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_buy_nav_029` | `test_cases/property_basics/list/test_buy_view_navigation.py::TestBuyViewNavigation::test_logo_click_navigates_to_homepage`
+
+---
+
+### TC-LIST-1012: map filter change then switch to list
+
+**步骤**：执行测试：map filter change then switch to list  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_buy_view_052` | `test_cases/property_basics/list/test_buy_view_navigation.py::TestBuyViewNavigation::test_map_filter_change_then_switch_to_list`
+
+---
+
+### TC-LIST-1013: non existent page shows empty or redirect
+
+**步骤**：执行测试：non existent page shows empty or redirect  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_buy_page_036` | `test_cases/property_basics/list/test_buy_view_navigation.py::TestBuyViewNavigation::test_non_existent_page_shows_empty_or_redirect`
+
+---
+
+### TC-LIST-1014: pagination browser back returns previous
+
+**步骤**：执行测试：pagination browser back returns previous  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_buy_page_037` | `test_cases/property_basics/list/test_buy_view_navigation.py::TestBuyViewNavigation::test_pagination_browser_back_returns_previous`
+
+---
+
+### TC-LIST-1015: rapid view switch no error
+
+**步骤**：执行测试：rapid view switch no error  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_buy_view_054` | `test_cases/property_basics/list/test_buy_view_navigation.py::TestBuyViewNavigation::test_rapid_view_switch_no_error`
+
+---
+
+### TC-LIST-1016: view switch keeps search and filters
+
+**步骤**：执行测试：view switch keeps search and filters  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P0 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_buy_view_049` | `test_cases/property_basics/list/test_buy_view_navigation.py::TestBuyViewNavigation::test_view_switch_keeps_search_and_filters`
+
+---
+
+### TC-LIST-1017: view switch keeps search keyword
+
+**步骤**：执行测试：view switch keeps search keyword  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P0 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_buy_nav_046` | `test_cases/property_basics/list/test_buy_view_navigation.py::TestBuyViewNavigation::test_view_switch_keeps_search_keyword`
+
+---
+
+### TC-LIST-1018: view switch keeps single filter
+
+**步骤**：执行测试：view switch keeps single filter  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_buy_view_047` | `test_cases/property_basics/list/test_buy_view_navigation.py::TestBuyViewNavigation::test_view_switch_keeps_single_filter`
+
+---
+
+### TC-LIST-1019: view switch keeps sug params
+
+**步骤**：执行测试：view switch keeps sug params  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_buy_view_050` | `test_cases/property_basics/list/test_buy_view_navigation.py::TestBuyViewNavigation::test_view_switch_keeps_sug_params`
+
+---
+
+### TC-LIST-1020: view switch search filters pagination combined
+
+**步骤**：执行测试：view switch search filters pagination combined  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_buy_view_053` | `test_cases/property_basics/list/test_buy_view_navigation.py::TestBuyViewNavigation::test_view_switch_search_filters_pagination_combined`
+
+---
+
+### TC-LIST-1021: view switch then pagination keeps all
+
+**步骤**：执行测试：view switch then pagination keeps all  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_buy_view_051` | `test_cases/property_basics/list/test_buy_view_navigation.py::TestBuyViewNavigation::test_view_switch_then_pagination_keeps_all`
+
+---
+
+### TC-LIST-1022: tc001 category icon property navigates to for sale
+
+**步骤**：执行测试：tc001 category icon property navigates to for sale  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P0 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_entry_001` | `test_cases/property_basics/list/test_property_entry_points.py::TestPropertyEntryPoints::test_tc001_category_icon_property_navigates_to_for_sale`
+
+---
+
+### TC-LIST-1023: tc002 category icon property url params
+
+**步骤**：执行测试：tc002 category icon property url params  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_entry_002` | `test_cases/property_basics/list/test_property_entry_points.py::TestPropertyEntryPoints::test_tc002_category_icon_property_url_params`
+
+---
+
+### TC-LIST-1024: tc003 all icon opens listpage with property section
+
+**步骤**：执行测试：tc003 all icon opens listpage with property section  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P0 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_entry_003` | `test_cases/property_basics/list/test_property_entry_points.py::TestPropertyEntryPoints::test_tc003_all_icon_opens_listpage_with_property_section`
+
+---
+
+### TC-LIST-1025: tc004 all to property for sale
+
+**步骤**：执行测试：tc004 all to property for sale  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P0 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_entry_004` | `test_cases/property_basics/list/test_property_entry_points.py::TestPropertyEntryPoints::test_tc004_all_to_property_for_sale`
+
+---
+
+### TC-LIST-1026: tc005 all to property for rent
+
+**步骤**：执行测试：tc005 all to property for rent  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P0 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_entry_005` | `test_cases/property_basics/list/test_property_entry_points.py::TestPropertyEntryPoints::test_tc005_all_to_property_for_rent`
+
+---
+
+### TC-LIST-1027: tc006 all to student accommodation
+
+**步骤**：执行测试：tc006 all to student accommodation  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_entry_006` | `test_cases/property_basics/list/test_property_entry_points.py::TestPropertyEntryPoints::test_tc006_all_to_student_accommodation`
+
+---
+
+### TC-LIST-1028: tc007 all to commercial for sale
+
+**步骤**：执行测试：tc007 all to commercial for sale  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_entry_007` | `test_cases/property_basics/list/test_property_entry_points.py::TestPropertyEntryPoints::test_tc007_all_to_commercial_for_sale`
+
+---
+
+### TC-LIST-1029: tc008 browse opens dropdown with property
+
+**步骤**：执行测试：tc008 browse opens dropdown with property  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P0 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_entry_008` | `test_cases/property_basics/list/test_property_entry_points.py::TestPropertyEntryPoints::test_tc008_browse_opens_dropdown_with_property`
+
+---
+
+### TC-LIST-1030: tc009 browse hover property shows submenu
+
+**步骤**：执行测试：tc009 browse hover property shows submenu  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P0 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_entry_009` | `test_cases/property_basics/list/test_property_entry_points.py::TestPropertyEntryPoints::test_tc009_browse_hover_property_shows_submenu`
+
+---
+
+### TC-LIST-1031: tc010 browse to property for rent
+
+**步骤**：执行测试：tc010 browse to property for rent  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P0 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_entry_010` | `test_cases/property_basics/list/test_property_entry_points.py::TestPropertyEntryPoints::test_tc010_browse_to_property_for_rent`
+
+---
+
+### TC-LIST-1032: tc011 browse to property for sale
+
+**步骤**：执行测试：tc011 browse to property for sale  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P0 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_entry_011` | `test_cases/property_basics/list/test_property_entry_points.py::TestPropertyEntryPoints::test_tc011_browse_to_property_for_sale`
+
+---
+
+### TC-LIST-1033: tc012 browse to student accommodation
+
+**步骤**：执行测试：tc012 browse to student accommodation  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_entry_012` | `test_cases/property_basics/list/test_property_entry_points.py::TestPropertyEntryPoints::test_tc012_browse_to_student_accommodation`
+
+---
+
+### TC-LIST-1034: tc013 browse to commercial for sale
+
+**步骤**：执行测试：tc013 browse to commercial for sale  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_entry_013` | `test_cases/property_basics/list/test_property_entry_points.py::TestPropertyEntryPoints::test_tc013_browse_to_commercial_for_sale`
+
+---
+
+### TC-LIST-1035: tc014 browse direct click property
+
+**步骤**：执行测试：tc014 browse direct click property  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_entry_014` | `test_cases/property_basics/list/test_property_entry_points.py::TestPropertyEntryPoints::test_tc014_browse_direct_click_property`
+
+---
+
+### TC-LIST-1036: bathrooms clear removes attr 166 from url
+
+**步骤**：执行测试：bathrooms clear removes attr 166 from url  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_bath_032` | `test_cases/property_basics/list/test_rent_bathrooms_filter.py::TestRentBathroomsFilter::test_bathrooms_clear_removes_attr_166_from_url`
+
+---
+
+### TC-LIST-1037: bathrooms enum mapping url contains attr 166
+
+**步骤**：执行测试：bathrooms_enum_mapping_url_contains_attr_166（参数：1.5）  
+**预期**：测试通过，功能符合预期  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_bath_031` | `test_cases/property_basics/list/test_rent_bathrooms_filter.py::TestRentBathroomsFilter::test_bathrooms_enum_mapping_url_contains_attr_166[1.5]`
+
+---
+
+### TC-LIST-1038: bathrooms enum mapping url contains attr 166
+
+**步骤**：执行测试：bathrooms_enum_mapping_url_contains_attr_166（参数：1）  
+**预期**：测试通过，功能符合预期  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_bath_031` | `test_cases/property_basics/list/test_rent_bathrooms_filter.py::TestRentBathroomsFilter::test_bathrooms_enum_mapping_url_contains_attr_166[1]`
+
+---
+
+### TC-LIST-1039: bathrooms enum mapping url contains attr 166
+
+**步骤**：执行测试：bathrooms_enum_mapping_url_contains_attr_166（参数：2.5）  
+**预期**：测试通过，功能符合预期  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_bath_031` | `test_cases/property_basics/list/test_rent_bathrooms_filter.py::TestRentBathroomsFilter::test_bathrooms_enum_mapping_url_contains_attr_166[2.5]`
+
+---
+
+### TC-LIST-1040: bathrooms enum mapping url contains attr 166
+
+**步骤**：执行测试：bathrooms_enum_mapping_url_contains_attr_166（参数：2）  
+**预期**：测试通过，功能符合预期  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_bath_031` | `test_cases/property_basics/list/test_rent_bathrooms_filter.py::TestRentBathroomsFilter::test_bathrooms_enum_mapping_url_contains_attr_166[2]`
+
+---
+
+### TC-LIST-1041: bathrooms enum mapping url contains attr 166
+
+**步骤**：执行测试：bathrooms_enum_mapping_url_contains_attr_166（参数：3.5）  
+**预期**：测试通过，功能符合预期  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_bath_031` | `test_cases/property_basics/list/test_rent_bathrooms_filter.py::TestRentBathroomsFilter::test_bathrooms_enum_mapping_url_contains_attr_166[3.5]`
+
+---
+
+### TC-LIST-1042: bathrooms enum mapping url contains attr 166
+
+**步骤**：执行测试：bathrooms_enum_mapping_url_contains_attr_166（参数：3）  
+**预期**：测试通过，功能符合预期  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_bath_031` | `test_cases/property_basics/list/test_rent_bathrooms_filter.py::TestRentBathroomsFilter::test_bathrooms_enum_mapping_url_contains_attr_166[3]`
+
+---
+
+### TC-LIST-1043: bathrooms enum mapping url contains attr 166
+
+**步骤**：执行测试：bathrooms_enum_mapping_url_contains_attr_166（参数：4.5）  
+**预期**：测试通过，功能符合预期  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_bath_031` | `test_cases/property_basics/list/test_rent_bathrooms_filter.py::TestRentBathroomsFilter::test_bathrooms_enum_mapping_url_contains_attr_166[4.5]`
+
+---
+
+### TC-LIST-1044: bathrooms enum mapping url contains attr 166
+
+**步骤**：执行测试：bathrooms_enum_mapping_url_contains_attr_166（参数：4）  
+**预期**：测试通过，功能符合预期  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_bath_031` | `test_cases/property_basics/list/test_rent_bathrooms_filter.py::TestRentBathroomsFilter::test_bathrooms_enum_mapping_url_contains_attr_166[4]`
+
+---
+
+### TC-LIST-1045: bathrooms enum mapping url contains attr 166
+
+**步骤**：执行测试：bathrooms_enum_mapping_url_contains_attr_166（参数：5+）  
+**预期**：测试通过，功能符合预期  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_bath_031` | `test_cases/property_basics/list/test_rent_bathrooms_filter.py::TestRentBathroomsFilter::test_bathrooms_enum_mapping_url_contains_attr_166[5+]`
+
+---
+
+### TC-LIST-1046: bathrooms enum mapping url contains attr 166
+
+**步骤**：执行测试：bathrooms_enum_mapping_url_contains_attr_166（参数：5）  
+**预期**：测试通过，功能符合预期  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_bath_031` | `test_cases/property_basics/list/test_rent_bathrooms_filter.py::TestRentBathroomsFilter::test_bathrooms_enum_mapping_url_contains_attr_166[5]`
+
+---
+
+### TC-LIST-1047: bathrooms enum mapping url contains attr 166
+
+**步骤**：执行测试：bathrooms_enum_mapping_url_contains_attr_166（参数：Shared）  
+**预期**：测试通过，功能符合预期  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_bath_031` | `test_cases/property_basics/list/test_rent_bathrooms_filter.py::TestRentBathroomsFilter::test_bathrooms_enum_mapping_url_contains_attr_166[Shared]`
+
+---
+
+### TC-LIST-1048: bathrooms select 1 5 half value url contains attr 166
+
+**步骤**：执行测试：bathrooms select 1 5 half value url contains attr 166  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_bath_028` | `test_cases/property_basics/list/test_rent_bathrooms_filter.py::TestRentBathroomsFilter::test_bathrooms_select_1_5_half_value_url_contains_attr_166`
+
+---
+
+### TC-LIST-1049: bathrooms select 1 minimum url contains attr 166
+
+**步骤**：执行测试：bathrooms select 1 minimum url contains attr 166  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_bath_027` | `test_cases/property_basics/list/test_rent_bathrooms_filter.py::TestRentBathroomsFilter::test_bathrooms_select_1_minimum_url_contains_attr_166`
+
+---
+
+### TC-LIST-1050: bathrooms select 2 url contains attr 166
+
+**步骤**：执行测试：bathrooms select 2 url contains attr 166  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_bath_026` | `test_cases/property_basics/list/test_rent_bathrooms_filter.py::TestRentBathroomsFilter::test_bathrooms_select_2_url_contains_attr_166`
+
+---
+
+### TC-LIST-1051: bathrooms select 5plus maximum url contains attr 166
+
+**步骤**：执行测试：bathrooms select 5plus maximum url contains attr 166  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_bath_029` | `test_cases/property_basics/list/test_rent_bathrooms_filter.py::TestRentBathroomsFilter::test_bathrooms_select_5plus_maximum_url_contains_attr_166`
+
+---
+
+### TC-LIST-1052: bathrooms select shared url contains attr 166
+
+**步骤**：执行测试：bathrooms select shared url contains attr 166  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_bath_030` | `test_cases/property_basics/list/test_rent_bathrooms_filter.py::TestRentBathroomsFilter::test_bathrooms_select_shared_url_contains_attr_166`
+
+---
+
+### TC-LIST-1053: beds clear removes attr 168 from url
+
+**步骤**：执行测试：beds clear removes attr 168 from url  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_beds_024` | `test_cases/property_basics/list/test_rent_beds_filter.py::TestRentBedsFilter::test_beds_clear_removes_attr_168_from_url`
+
+---
+
+### TC-LIST-1054: beds multi click last selection takes effect
+
+**步骤**：执行测试：beds multi click last selection takes effect  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_beds_023` | `test_cases/property_basics/list/test_rent_beds_filter.py::TestRentBedsFilter::test_beds_multi_click_last_selection_takes_effect`
+
+---
+
+### TC-LIST-1055: beds no results shows empty state text
+
+**步骤**：执行测试：beds no results shows empty state text  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_beds_025` | `test_cases/property_basics/list/test_rent_beds_filter.py::TestRentBedsFilter::test_beds_no_results_shows_empty_state_text`
+
+---
+
+### TC-LIST-1056: beds select 1 minimum value url contains attr 168
+
+**步骤**：执行测试：beds select 1 minimum value url contains attr 168  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_beds_020` | `test_cases/property_basics/list/test_rent_beds_filter.py::TestRentBedsFilter::test_beds_select_1_minimum_value_url_contains_attr_168`
+
+---
+
+### TC-LIST-1057: beds select 3 url contains attr 168
+
+**步骤**：执行测试：beds select 3 url contains attr 168  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_beds_019` | `test_cases/property_basics/list/test_rent_beds_filter.py::TestRentBedsFilter::test_beds_select_3_url_contains_attr_168`
+
+---
+
+### TC-LIST-1058: beds select 8plus maximum value url contains attr 168
+
+**步骤**：执行测试：beds select 8plus maximum value url contains attr 168  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_beds_021` | `test_cases/property_basics/list/test_rent_beds_filter.py::TestRentBedsFilter::test_beds_select_8plus_maximum_value_url_contains_attr_168`
+
+---
+
+### TC-LIST-1059: beds select studio url contains attr 168
+
+**步骤**：执行测试：beds select studio url contains attr 168  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_beds_022` | `test_cases/property_basics/list/test_rent_beds_filter.py::TestRentBedsFilter::test_beds_select_studio_url_contains_attr_168`
+
+---
+
+### TC-LIST-1060: combo all five filters url contains all params
+
+**步骤**：执行测试：combo all five filters url contains all params  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P0 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_combo_072` | `test_cases/property_basics/list/test_rent_filter_combo.py::TestRentFilterCombo::test_combo_all_five_filters_url_contains_all_params`
+
+---
+
+### TC-LIST-1061: combo beds and property type url contains both
+
+**步骤**：执行测试：combo beds and property type url contains both  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_combo_067` | `test_cases/property_basics/list/test_rent_filter_combo.py::TestRentFilterCombo::test_combo_beds_and_property_type_url_contains_both`
+
+---
+
+### TC-LIST-1062: combo beds bathrooms property type triple url contains all
+
+**步骤**：执行测试：combo beds bathrooms property type triple url contains all  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_combo_071` | `test_cases/property_basics/list/test_rent_filter_combo.py::TestRentFilterCombo::test_combo_beds_bathrooms_property_type_triple_url_contains_all`
+
+---
+
+### TC-LIST-1063: combo clear one filter others remain unchanged
+
+**步骤**：执行测试：combo clear one filter others remain unchanged  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_combo_074` | `test_cases/property_basics/list/test_rent_filter_combo.py::TestRentFilterCombo::test_combo_clear_one_filter_others_remain_unchanged`
+
+---
+
+### TC-LIST-1064: combo filter order independent beds first then price
+
+**步骤**：执行测试：combo filter order independent beds first then price  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_combo_075` | `test_cases/property_basics/list/test_rent_filter_combo.py::TestRentFilterCombo::test_combo_filter_order_independent_beds_first_then_price`
+
+---
+
+### TC-LIST-1065: combo price and bathrooms url contains both
+
+**步骤**：执行测试：combo price and bathrooms url contains both  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_combo_065` | `test_cases/property_basics/list/test_rent_filter_combo.py::TestRentFilterCombo::test_combo_price_and_bathrooms_url_contains_both`
+
+---
+
+### TC-LIST-1066: combo price and property type url contains both
+
+**步骤**：执行测试：combo price and property type url contains both  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_combo_066` | `test_cases/property_basics/list/test_rent_filter_combo.py::TestRentFilterCombo::test_combo_price_and_property_type_url_contains_both`
+
+---
+
+### TC-LIST-1067: combo price beds bathrooms triple url contains all
+
+**步骤**：执行测试：combo price beds bathrooms triple url contains all  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P0 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_combo_069` | `test_cases/property_basics/list/test_rent_filter_combo.py::TestRentFilterCombo::test_combo_price_beds_bathrooms_triple_url_contains_all`
+
+---
+
+### TC-LIST-1068: combo price beds no results empty state visible
+
+**步骤**：执行测试：combo price beds no results empty state visible  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_combo_077` | `test_cases/property_basics/list/test_rent_filter_combo.py::TestRentFilterCombo::test_combo_price_beds_no_results_empty_state_visible`
+
+---
+
+### TC-LIST-1069: combo quick switch beds last selection takes effect
+
+**步骤**：执行测试：combo quick switch beds last selection takes effect  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_combo_076` | `test_cases/property_basics/list/test_rent_filter_combo.py::TestRentFilterCombo::test_combo_quick_switch_beds_last_selection_takes_effect`
+
+---
+
+### TC-LIST-1070: combo sort and bathrooms url contains both
+
+**步骤**：执行测试：combo sort and bathrooms url contains both  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_combo_068` | `test_cases/property_basics/list/test_rent_filter_combo.py::TestRentFilterCombo::test_combo_sort_and_bathrooms_url_contains_both`
+
+---
+
+### TC-LIST-1071: combo sort price property type triple url contains all
+
+**步骤**：执行测试：combo sort price property type triple url contains all  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_combo_070` | `test_cases/property_basics/list/test_rent_filter_combo.py::TestRentFilterCombo::test_combo_sort_price_property_type_triple_url_contains_all`
+
+---
+
+### TC-LIST-1072: combo three filters then reset url back to default
+
+**步骤**：执行测试：combo three filters then reset url back to default  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_combo_078` | `test_cases/property_basics/list/test_rent_filter_combo.py::TestRentFilterCombo::test_combo_three_filters_then_reset_url_back_to_default`
+
+---
+
+### TC-LIST-1073: filter badge count updates after price filter
+
+**步骤**：执行测试：filter badge count updates after price filter  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_filter_043` | `test_cases/property_basics/list/test_rent_filter_combo.py::TestRentFilterCombo::test_filter_badge_count_updates_after_price_filter`
+
+---
+
+### TC-LIST-1074: filter badge initial count includes icon source
+
+**步骤**：执行测试：filter badge initial count includes icon source  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_combo_042` | `test_cases/property_basics/list/test_rent_filter_combo.py::TestRentFilterCombo::test_filter_badge_initial_count_includes_icon_source`
+
+---
+
+### TC-LIST-1075: filter bathrooms and property type combination
+
+**步骤**：执行测试：filter bathrooms and property type combination  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_filter_048` | `test_cases/property_basics/list/test_rent_filter_combo.py::TestRentFilterCombo::test_filter_bathrooms_and_property_type_combination`
+
+---
+
+### TC-LIST-1076: filter beds and bathrooms combination url contains both
+
+**步骤**：执行测试：filter beds and bathrooms combination url contains both  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_filter_049` | `test_cases/property_basics/list/test_rent_filter_combo.py::TestRentFilterCombo::test_filter_beds_and_bathrooms_combination_url_contains_both`
+
+---
+
+### TC-LIST-1077: filter beds then price url contains both
+
+**步骤**：执行测试：filter beds then price url contains both  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_filter_047` | `test_cases/property_basics/list/test_rent_filter_combo.py::TestRentFilterCombo::test_filter_beds_then_price_url_contains_both`
+
+---
+
+### TC-LIST-1078: filter price and beds combination url contains both params
+
+**步骤**：执行测试：filter price and beds combination url contains both params  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P0 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_filter_044` | `test_cases/property_basics/list/test_rent_filter_combo.py::TestRentFilterCombo::test_filter_price_and_beds_combination_url_contains_both_params`
+
+---
+
+### TC-LIST-1079: filter sort and price combination url contains both
+
+**步骤**：执行测试：filter sort and price combination url contains both  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P0 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_filter_045` | `test_cases/property_basics/list/test_rent_filter_combo.py::TestRentFilterCombo::test_filter_sort_and_price_combination_url_contains_both`
+
+---
+
+### TC-LIST-1080: filter sort and property type combination url contains both
+
+**步骤**：执行测试：filter sort and property type combination url contains both  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P0 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_filter_046` | `test_cases/property_basics/list/test_rent_filter_combo.py::TestRentFilterCombo::test_filter_sort_and_property_type_combination_url_contains_both`
+
+---
+
+### TC-LIST-1081: filter sort beds price triple combination url contains all
+
+**步骤**：执行测试：filter sort beds price triple combination url contains all  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_filter_050` | `test_cases/property_basics/list/test_rent_filter_combo.py::TestRentFilterCombo::test_filter_sort_beds_price_triple_combination_url_contains_all`
+
+---
+
+### TC-LIST-1082: price clear removes price params from url
+
+**步骤**：执行测试：price clear removes price params from url  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_price_018` | `test_cases/property_basics/list/test_rent_price_filter.py::TestRentPriceFilter::test_price_clear_removes_price_params_from_url`
+
+---
+
+### TC-LIST-1083: price decimal values system handles normally
+
+**步骤**：执行测试：price decimal values system handles normally  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_price_016` | `test_cases/property_basics/list/test_rent_price_filter.py::TestRentPriceFilter::test_price_decimal_values_system_handles_normally`
+
+---
+
+### TC-LIST-1084: price extremely large value page no crash
+
+**步骤**：执行测试：price extremely large value page no crash  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_price_015` | `test_cases/property_basics/list/test_rent_price_filter.py::TestRentPriceFilter::test_price_extremely_large_value_page_no_crash`
+
+---
+
+### TC-LIST-1085: price min greater than max system intercepts
+
+**步骤**：执行测试：price min greater than max system intercepts  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_price_012` | `test_cases/property_basics/list/test_rent_price_filter.py::TestRentPriceFilter::test_price_min_greater_than_max_system_intercepts`
+
+---
+
+### TC-LIST-1086: price negative min value system rejects
+
+**步骤**：执行测试：price negative min value system rejects  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_price_013` | `test_cases/property_basics/list/test_rent_price_filter.py::TestRentPriceFilter::test_price_negative_min_value_system_rejects`
+
+---
+
+### TC-LIST-1087: price non numeric min value system rejects
+
+**步骤**：执行测试：price non numeric min value system rejects  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_price_014` | `test_cases/property_basics/list/test_rent_price_filter.py::TestRentPriceFilter::test_price_non_numeric_min_value_system_rejects`
+
+---
+
+### TC-LIST-1088: price only max price url contains highest price
+
+**步骤**：执行测试：price only max price url contains highest price  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_price_011` | `test_cases/property_basics/list/test_rent_price_filter.py::TestRentPriceFilter::test_price_only_max_price_url_contains_highest_price`
+
+---
+
+### TC-LIST-1089: price only min price url contains lowest price
+
+**步骤**：执行测试：price only min price url contains lowest price  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_price_010` | `test_cases/property_basics/list/test_rent_price_filter.py::TestRentPriceFilter::test_price_only_min_price_url_contains_lowest_price`
+
+---
+
+### TC-LIST-1090: price valid min max url contains price params
+
+**步骤**：执行测试：price valid min max url contains price params  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_price_009` | `test_cases/property_basics/list/test_rent_price_filter.py::TestRentPriceFilter::test_price_valid_min_max_url_contains_price_params`
+
+---
+
+### TC-LIST-1091: price zero as min value system handles
+
+**步骤**：执行测试：price zero as min value system handles  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_price_017` | `test_cases/property_basics/list/test_rent_price_filter.py::TestRentPriceFilter::test_price_zero_as_min_value_system_handles`
+
+---
+
+### TC-LIST-1092: property type clear restores default url
+
+**步骤**：执行测试：property type clear restores default url  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_type_040` | `test_cases/property_basics/list/test_rent_property_type_filter.py::TestRentPropertyTypeFilter::test_property_type_clear_restores_default_url`
+
+---
+
+### TC-LIST-1093: property type close modal by x url unchanged
+
+**步骤**：执行测试：property type close modal by x url unchanged  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_type_039` | `test_cases/property_basics/list/test_rent_property_type_filter.py::TestRentPropertyTypeFilter::test_property_type_close_modal_by_x_url_unchanged`
+
+---
+
+### TC-LIST-1094: property type select apartment unit url path changes
+
+**步骤**：执行测试：property type select apartment unit url path changes  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_type_035` | `test_cases/property_basics/list/test_rent_property_type_filter.py::TestRentPropertyTypeFilter::test_property_type_select_apartment_unit_url_path_changes`
+
+---
+
+### TC-LIST-1095: property type select house url path changes
+
+**步骤**：执行测试：property type select house url path changes  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_type_033` | `test_cases/property_basics/list/test_rent_property_type_filter.py::TestRentPropertyTypeFilter::test_property_type_select_house_url_path_changes`
+
+---
+
+### TC-LIST-1096: property type select other url path changes
+
+**步骤**：执行测试：property type select other url path changes  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_type_038` | `test_cases/property_basics/list/test_rent_property_type_filter.py::TestRentPropertyTypeFilter::test_property_type_select_other_url_path_changes`
+
+---
+
+### TC-LIST-1097: property type select retirement url path changes
+
+**步骤**：执行测试：property type select retirement url path changes  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_type_037` | `test_cases/property_basics/list/test_rent_property_type_filter.py::TestRentPropertyTypeFilter::test_property_type_select_retirement_url_path_changes`
+
+---
+
+### TC-LIST-1098: property type select townhomes url path changes
+
+**步骤**：执行测试：property type select townhomes url path changes  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_type_034` | `test_cases/property_basics/list/test_rent_property_type_filter.py::TestRentPropertyTypeFilter::test_property_type_select_townhomes_url_path_changes`
+
+---
+
+### TC-LIST-1099: property type select villa url path changes
+
+**步骤**：执行测试：property type select villa url path changes  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_type_036` | `test_cases/property_basics/list/test_rent_property_type_filter.py::TestRentPropertyTypeFilter::test_property_type_select_villa_url_path_changes`
+
+---
+
+### TC-LIST-1100: property type state persists after page reload
+
+**步骤**：执行测试：property type state persists after page reload  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_type_041` | `test_cases/property_basics/list/test_rent_property_type_filter.py::TestRentPropertyTypeFilter::test_property_type_state_persists_after_page_reload`
+
+---
+
+### TC-LIST-1101: robust api timeout page shows loading or timeout
+
+**步骤**：执行测试：robust api timeout page shows loading or timeout  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_robust_062` | `test_cases/property_basics/list/test_rent_robust.py::TestRentRobust::test_robust_api_timeout_page_shows_loading_or_timeout`
+
+---
+
+### TC-LIST-1102: robust direct url with params restores filter state
+
+**步骤**：执行测试：robust direct url with params restores filter state  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_robust_057` | `test_cases/property_basics/list/test_rent_robust.py::TestRentRobust::test_robust_direct_url_with_params_restores_filter_state`
+
+---
+
+### TC-LIST-1103: robust filter panel text spelling correct
+
+**步骤**：执行测试：robust filter panel text spelling correct  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_robust_054` | `test_cases/property_basics/list/test_rent_robust.py::TestRentRobust::test_robust_filter_panel_text_spelling_correct`
+
+---
+
+### TC-LIST-1104: robust filter params persist after pagination
+
+**步骤**：执行测试：robust filter params persist after pagination  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_robust_051` | `test_cases/property_basics/list/test_rent_robust.py::TestRentRobust::test_robust_filter_params_persist_after_pagination`
+
+---
+
+### TC-LIST-1105: robust filter params persist after view switch
+
+**步骤**：执行测试：robust filter params persist after view switch  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_robust_052` | `test_cases/property_basics/list/test_rent_robust.py::TestRentRobust::test_robust_filter_params_persist_after_view_switch`
+
+---
+
+### TC-LIST-1106: robust invalid sort id in url page degrades gracefully
+
+**步骤**：执行测试：robust invalid sort id in url page degrades gracefully  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_robust_058` | `test_cases/property_basics/list/test_rent_robust.py::TestRentRobust::test_robust_invalid_sort_id_in_url_page_degrades_gracefully`
+
+---
+
+### TC-LIST-1107: robust offline filter submit shows error no crash
+
+**步骤**：执行测试：robust offline filter submit shows error no crash  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_robust_061` | `test_cases/property_basics/list/test_rent_robust.py::TestRentRobust::test_robust_offline_filter_submit_shows_error_no_crash`
+
+---
+
+### TC-LIST-1108: robust property type breadcrumb title consistent
+
+**步骤**：执行测试：robust property type breadcrumb title consistent  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_robust_056` | `test_cases/property_basics/list/test_rent_robust.py::TestRentRobust::test_robust_property_type_breadcrumb_title_consistent`
+
+---
+
+### TC-LIST-1109: robust rapid done clicks no duplicate submission
+
+**步骤**：执行测试：robust rapid done clicks no duplicate submission  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_robust_064` | `test_cases/property_basics/list/test_rent_robust.py::TestRentRobust::test_robust_rapid_done_clicks_no_duplicate_submission`
+
+---
+
+### TC-LIST-1110: robust server 500 error shows friendly message
+
+**步骤**：执行测试：robust server 500 error shows friendly message  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_robust_063` | `test_cases/property_basics/list/test_rent_robust.py::TestRentRobust::test_robust_server_500_error_shows_friendly_message`
+
+---
+
+### TC-LIST-1111: robust xss script in url not executed
+
+**步骤**：执行测试：robust xss script in url not executed  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_robust_060` | `test_cases/property_basics/list/test_rent_robust.py::TestRentRobust::test_robust_xss_script_in_url_not_executed`
+
+---
+
+### TC-LIST-1112: sort clear resets to default no sort id
+
+**步骤**：执行测试：sort clear resets to default no sort id  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_sort_005` | `test_cases/property_basics/list/test_rent_sort.py::TestRentSort::test_sort_clear_resets_to_default_no_sort_id`
+
+---
+
+### TC-LIST-1113: sort click outside closes panel
+
+**步骤**：执行测试：sort click outside closes panel  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_sort_007` | `test_cases/property_basics/list/test_rent_sort.py::TestRentSort::test_sort_click_outside_closes_panel`
+
+---
+
+### TC-LIST-1114: sort default best match no sort id in url
+
+**步骤**：执行测试：sort default best match no sort id in url  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_sort_001` | `test_cases/property_basics/list/test_rent_sort.py::TestRentSort::test_sort_default_best_match_no_sort_id_in_url`
+
+---
+
+### TC-LIST-1115: sort open panel without selection click done no change
+
+**步骤**：执行测试：sort open panel without selection click done no change  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_sort_006` | `test_cases/property_basics/list/test_rent_sort.py::TestRentSort::test_sort_open_panel_without_selection_click_done_no_change`
+
+---
+
+### TC-LIST-1116: sort persists after pagination
+
+**步骤**：执行测试：sort persists after pagination  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P2 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_sort_008` | `test_cases/property_basics/list/test_rent_sort.py::TestRentSort::test_sort_persists_after_pagination`
+
+---
+
+### TC-LIST-1117: sort select highest price url contains sort id
+
+**步骤**：执行测试：sort select highest price url contains sort id  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_sort_004` | `test_cases/property_basics/list/test_rent_sort.py::TestRentSort::test_sort_select_highest_price_url_contains_sort_id`
+
+---
+
+### TC-LIST-1118: sort select lowest price url contains sort id
+
+**步骤**：执行测试：sort select lowest price url contains sort id  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P1 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_sort_003` | `test_cases/property_basics/list/test_rent_sort.py::TestRentSort::test_sort_select_lowest_price_url_contains_sort_id`
+
+---
+
+### TC-LIST-1119: sort select newest first url contains sort id
+
+**步骤**：执行测试：sort select newest first url contains sort id  
+**预期**：功能正常执行，符合预期行为  
+**优先级**：P0 | **类型**：功能 | **自动化**：✅
+**对应自动化**：`case_id_property_rent_sort_002` | `test_cases/property_basics/list/test_rent_sort.py::TestRentSort::test_sort_select_newest_first_url_contains_sort_id`
+
+---
