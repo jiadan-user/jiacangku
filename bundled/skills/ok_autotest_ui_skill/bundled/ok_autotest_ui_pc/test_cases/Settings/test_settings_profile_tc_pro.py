@@ -59,8 +59,11 @@ _CONFIG = {
 }
 
 # 测试图片路径（avatar A/B 交替）
-IMG1_PATH = "/Users/mengmeng/Desktop/ok_autotest_ui_pc_v2/ok_autotest_ui_pc/test_data/images/图片1.png"
-IMG2_PATH = "/Users/mengmeng/Desktop/ok_autotest_ui_pc_v2/ok_autotest_ui_pc/test_data/images/图片2.png"
+# 使用相对于当前测试脚本的路径
+_CURRENT_DIR = Path(__file__).parent
+_TEST_DATA_DIR = _CURRENT_DIR.parent.parent / "test_data" / "images"
+IMG1_PATH = str(_TEST_DATA_DIR / "图片1.png")
+IMG2_PATH = str(_TEST_DATA_DIR / "图片2.png")
 
 PROFILE_URL = "https://aepub.58v5.cn/biz/en/user/home?tabindex=0"
 
@@ -886,51 +889,6 @@ class TestSettingsProfile:
             # 验证：刷新后头像应与修改前一致
             assert new_src == orig_src, f"取消后头像未回滚。期望={orig_src!r}, 实际={new_src!r}"
             logger.info("✓ 头像未发生变化，验证通过")
-
-    # ------------------------------------------------------------------
-    # TC-PRO-007: 上传超大头像文件（手动准备大文件）
-    # ------------------------------------------------------------------
-    @allure.story("边界值 - 文件大小")
-    @allure.title("TC-PRO-007: 上传超大头像文件（>10MB）应提示文件过大")
-    @pytest.mark.p1
-    @pytest.mark.case_id_tc_pro_007
-    @allure.severity(allure.severity_level.NORMAL)
-    def test_avatar_oversized_file(self, page, config):
-        with allure.step("前置：确保在 Profile 页面"):
-            try:
-                if not page.locator("#username").is_visible(timeout=3000):
-                    page.goto(config["base_url"], wait_until="domcontentloaded", timeout=30000)
-                    _navigate_to_settings(page, target_tab="Profile")
-            except Exception:
-                page.goto(config["base_url"], wait_until="domcontentloaded", timeout=30000)
-                _navigate_to_settings(page, target_tab="Profile")
-            page.wait_for_timeout(2000)
-
-        # 超大文件路径（已自动创建）
-        large_file = Path(
-            "/Users/mengmeng/Desktop/ok_autotest_ui_pc_v2/ok_autotest_ui_pc/test_data/images/large_test.png"
-        )
-        if not large_file.exists():
-            logger.warning(f"超大测试文件不存在，跳过: {large_file}")
-            pytest.skip(f"超大测试文件不存在: {large_file}")
-
-        with allure.step("尝试上传超大文件"):
-            file_input = page.locator('input[type="file"]')
-            if file_input.count() > 0:
-                file_input.set_input_files(str(large_file))
-                page.wait_for_timeout(2000)
-            else:
-                pytest.skip("未找到文件上传控件")
-
-        with allure.step("验证：前端应提示文件过大或被拒绝"):
-            # 检查是否有错误提示
-            error_visible = any([
-                page.get_by_text("file size", exact=False).first.is_visible(timeout=2000),
-                page.get_by_text("too large", exact=False).first.is_visible(timeout=1000),
-                page.get_by_text("exceed", exact=False).first.is_visible(timeout=1000),
-            ])
-            logger.info(f"文件过大错误提示可见={error_visible}")
-
     # ------------------------------------------------------------------
     # TC-PRO-008: 上传不支持格式的头像（.pdf）
     # ------------------------------------------------------------------

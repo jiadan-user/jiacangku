@@ -235,9 +235,11 @@ class TestLoginPhonePasswordPage:
                     f"按钮已消失（登录成功后弹窗关闭）: {str(e)[:100]}",
                     name="✅ 验证通过",
                 )
+        
+        with allure.step("预期结果：点击 Log in 后弹窗关闭，右上角变为已登录状态"):
             is_logged_in = login_page.is_login_button_text_changed(timeout=3000)
-            assert is_logged_in, "应该成功登录"
-            allure.attach("登录成功，防重复机制正常", name="✅ 最终验证")
+            assert is_logged_in, "预期：点击 Log in 后弹窗关闭，右上角应变为已登录状态（用户名或头像显示）"
+            allure.attach("✅ 登录成功：弹窗已关闭，右上角已变为已登录状态，防重复机制正常", name="预期结果验证通过")
 
     @pytest.mark.p1
     @pytest.mark.case_id_login_login_login_phone_password_tc027_tc038_002
