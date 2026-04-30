@@ -11,29 +11,6 @@ from utils.logger import setup_logger
 
 logger = setup_logger()
 
-# ========== 测试配置 ==========
-_CONFIG = {
-    "site": "us",
-    "site_name": "美国站 (US 58v5.cn)",
-    "base_url": "https://us.58v5.cn",
-    "role": "visitor",
-    "user_name": "us_visitor_breadcrumb",
-    "test_account": None,
-    "detail_url": "https://us.58v5.cn/en/city-washington/cate-graphic-design1/motorbike-askdjghaslkdjhsaldjkhsalkdjhsalkjdhlkjashdasjkdhhaskjdh-2045093888535838721/",
-    "browser": {
-        "type": "chromium",
-        "headless": True,
-        "slow_mo": 0,
-        "viewport": {"width": 1920, "height": 1080}
-    }
-}
-
-
-@pytest.fixture(scope="module")
-def config():
-    """测试配置"""
-    return _CONFIG
-
 
 # ========== 测试用例 ==========
 
@@ -44,14 +21,13 @@ def config():
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("详情页 - 面包屑导航")
-@allure.title("面包屑导航应该在详情页顶部正确显示")
+@allure.title("TC-BREADCRUMB-A-001：面包屑基本展示")
 @allure.severity(allure.severity_level.BLOCKER)
 @allure.description("验证面包屑导航的基本展示，包括位置、路径、节点数量等")
-def test_breadcrumb_basic_display(page, config):
+def test_breadcrumb_basic_display(page, config, detail_url):
     """TC-BREADCRUMB-A-001: 面包屑基本展示"""
     
     breadcrumb = BreadcrumbPage(page)
-    detail_url = config['detail_url']
     
     logger.info("="*80)
     logger.info("TC-BREADCRUMB-A-001: 面包屑基本展示")
@@ -73,12 +49,14 @@ def test_breadcrumb_basic_display(page, config):
     with allure.step("验证2：面包屑路径正确"):
         breadcrumb_path = breadcrumb.get_breadcrumb_path()
         assert "Home" in breadcrumb_path, "面包屑路径缺少 Home"
-        # 验证面包屑至少包含多个层级（用 > 分隔）
+        # 验证面包屑至少包含3个层级（用 > 分隔）
+        # 详情页至少应有3层: Home > Category > Subcategory > Post (至少3个 >)
         assert breadcrumb_path.count(" > ") >= 3, f"面包屑层级不足，实际: {breadcrumb_path}"
         logger.info(f"✓ 面包屑路径正确: {breadcrumb_path}")
     
-    with allure.step("验证3：节点数量为5或更多"):
+    with allure.step("验证3：节点数量为4或更多"):
         items_count = breadcrumb.get_breadcrumb_items_count()
+        # 至少应该有4个节点(Home + 分类 + 子分类 + 当前页)
         assert items_count >= 4, f"面包屑节点数量太少。预期: >=4，实际: {items_count}"
         logger.info(f"✓ 节点数量正确: {items_count}")
     
@@ -107,14 +85,13 @@ def test_breadcrumb_basic_display(page, config):
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("详情页 - 面包屑导航")
-@allure.title("面包屑节点数量和层级结构应该正确")
+@allure.title("TC-BREADCRUMB-A-002：节点数量和层级结构")
 @allure.severity(allure.severity_level.BLOCKER)
 @allure.description("验证面包屑的节点数量、文本内容和层级结构")
-def test_breadcrumb_hierarchy_structure(page, config):
+def test_breadcrumb_hierarchy_structure(page, config, detail_url):
     """TC-BREADCRUMB-A-002: 节点数量和层级结构"""
     
     breadcrumb = BreadcrumbPage(page)
-    detail_url = config['detail_url']
     
     logger.info("="*80)
     logger.info("TC-BREADCRUMB-A-002: 节点数量和层级结构")
@@ -183,14 +160,13 @@ def test_breadcrumb_hierarchy_structure(page, config):
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("详情页 - 面包屑导航")
-@allure.title("最后一个节点应该展示为 Span 不可点击")
+@allure.title("TC-BREADCRUMB-A-003：当前页节点展示为 Span")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("验证当前页节点使用 span 元素展示，不包含链接，不可点击")
-def test_breadcrumb_last_item_span(page, config):
+def test_breadcrumb_last_item_span(page, config, detail_url):
     """TC-BREADCRUMB-A-003: 当前页节点展示为 Span"""
     
     breadcrumb = BreadcrumbPage(page)
-    detail_url = config['detail_url']
     
     logger.info("="*80)
     logger.info("TC-BREADCRUMB-A-003: 当前页节点展示为 Span")
@@ -237,14 +213,13 @@ def test_breadcrumb_last_item_span(page, config):
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("详情页 - 面包屑导航")
-@allure.title("箭头分隔符应该正确显示")
+@allure.title("TC-BREADCRUMB-A-004：分隔符箭头展示")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证面包屑节点之间的箭头分隔符数量和位置")
-def test_breadcrumb_arrow_separators(page, config):
+def test_breadcrumb_arrow_separators(page, config, detail_url):
     """TC-BREADCRUMB-A-004: 分隔符箭头展示"""
     
     breadcrumb = BreadcrumbPage(page)
-    detail_url = config['detail_url']
     
     logger.info("="*80)
     logger.info("TC-BREADCRUMB-A-004: 分隔符箭头展示")

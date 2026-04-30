@@ -34,6 +34,60 @@ class OkTestRunnerTests(unittest.TestCase):
         self.assertFalse(result["parallel_enabled"])
         self.assertIn("prerequisite", result["parallel_reason"])
 
+    def test_parallel_pytest_args_use_file_granularity(self) -> None:
+        args = runner._build_pytest_args(
+            ["test_cases/zhaopin/test_demo.py"],
+            Path("junit.xml"),
+            Path("allure-results"),
+            workers=4,
+        )
+
+        self.assertIn("-n", args)
+        self.assertIn("4", args)
+        self.assertIn("--dist", args)
+        self.assertIn("loadfile", args)
+        self.assertNotIn("loadscope", args)
+
+    def test_path_only_selection_prefers_file_targets(self) -> None:
+        case = runner.CatalogCase(
+            nodeid="test_cases/zhaopin/test_demo.py::test_a",
+            file_path="test_cases/zhaopin/test_demo.py",
+            test_name="test_a",
+            case_id=None,
+            priority=None,
+            site=None,
+            markers=[],
+            allure_feature=None,
+            allure_story=None,
+            allure_title=None,
+        )
+        criteria = runner.SelectionCriteria(path="test_cases/zhaopin/")
+
+        targets, mode = runner._execution_targets([case], [case], criteria)
+
+        self.assertEqual(targets, ["test_cases/zhaopin/test_demo.py"])
+        self.assertEqual(mode, "file")
+
+    def test_filtered_selection_keeps_nodeid_targets(self) -> None:
+        case = runner.CatalogCase(
+            nodeid="test_cases/zhaopin/test_demo.py::test_a",
+            file_path="test_cases/zhaopin/test_demo.py",
+            test_name="test_a",
+            case_id=None,
+            priority="p0",
+            site=None,
+            markers=["p0"],
+            allure_feature=None,
+            allure_story=None,
+            allure_title=None,
+        )
+        criteria = runner.SelectionCriteria(path="test_cases/zhaopin/", priority="p0")
+
+        targets, mode = runner._execution_targets([case], [case], criteria)
+
+        self.assertEqual(targets, [case.nodeid])
+        self.assertEqual(mode, "nodeid")
+
     def test_junit_parser_maps_class_parametrized_unicode_nodeid(self) -> None:
         selected = ["test_cases/wallet/test_wallet_balance.py::TestBalance::test_total[中文]"]
         with tempfile.TemporaryDirectory() as tmp:

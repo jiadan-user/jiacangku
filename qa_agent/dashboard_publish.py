@@ -7,6 +7,7 @@ import sys
 import base64
 import urllib.error
 import urllib.request
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -14,6 +15,21 @@ from qa_agent.io import read_json, read_text, write_json
 
 COMPLETED_STATUSES = {"completed", "COMPLETED", "已完成"}
 DEFAULT_DASHBOARD_URL = "http://10.192.35.53:8001"
+
+
+def _ok_ui_project_root(project_root: Path) -> Path:
+    return (
+        project_root
+        / "bundled"
+        / "skills"
+        / "ok_autotest_ui_skill"
+        / "bundled"
+        / "ok_autotest_ui_pc"
+    )
+
+
+def _ok_ui_reports_root(project_root: Path) -> Path:
+    return _ok_ui_project_root(project_root) / "reports" / "ok_test_runs"
 
 
 def _dashboard_url(value: str | None = None) -> str:
@@ -60,16 +76,7 @@ def _find_ok_ui_artifacts(state: dict[str, Any]) -> tuple[dict[str, Any], dict[s
         decision = _read_json_path(directory / "decision_report.json")
         if summary or coverage or decision:
             return summary, coverage, decision
-    reports_root = (
-        Path(__file__).resolve().parents[1]
-        / "bundled"
-        / "skills"
-        / "ok_autotest_ui_skill"
-        / "bundled"
-        / "ok_autotest_ui_pc"
-        / "reports"
-        / "ok_test_runs"
-    )
+    reports_root = _ok_ui_reports_root(Path(__file__).resolve().parents[1])
     if reports_root.exists():
         summaries = sorted(reports_root.glob("*/summary.json"), key=lambda item: item.stat().st_mtime, reverse=True)
         for summary_path in summaries[:3]:
@@ -129,6 +136,174 @@ def _package_allure_report(report_dir: Path | None) -> dict[str, Any]:
         data = path.read_bytes()
         files.append({"path": rel, "encoding": "base64", "content": base64.b64encode(data).decode("ascii")})
     return {"index_path": "index.html", "files": files}
+
+
+def _latest_ok_ui_run_id(project_root: Path) -> str:
+    latest_path = _ok_ui_project_root(project_root) / "reports" / "ok_test_latest_run.txt"
+    if not latest_path.exists():
+        raise FileNotFoundError(f"OK UI latest run marker not found: {latest_path}")
+    run_id = latest_path.read_text(encoding="utf-8").strip()
+    if not run_id:
+        raise FileNotFoundError(f"OK UI latest run marker is empty: {latest_path}")
+    return run_id
+
+
+def _ok_ui_run_dir(project_root: Path, ok_ui_run_id: str) -> Path:
+    run_dir = _ok_ui_reports_root(project_root) / ok_ui_run_id
+    if not run_dir.exists():
+        raise FileNotFoundError(f"OK UI run not found: {run_dir}")
+    return run_dir
+
+
+def _ok_ui_timestamp(path: Path) -> str:
+    return datetime.fromtimestamp(path.stat().st_mtime, timezone.utc).isoformat()
+
+
+def _ok_ui_status(summary: dict[str, Any]) -> str:
+    if summary.get("dry_run"):
+        return "DRY_RUN"
+    return "COMPLETED"
+
+
+def _ok_ui_modules(summary: dict[str, Any], module: str | None = None) -> list[str]:
+    if module:
+        return _normalize_list_for_publish(module)
+    modules = summary.get("selected_modules")
+    if isinstance(modules, list) and modules:
+        return [str(item) for item in modules if str(item)]
+    selection = summary.get("selection") or {}
+    if isinstance(selection, dict):
+        return _normalize_list_for_publish(selection.get("module"))
+    return []
+
+
+def _ok_ui_sites(summary: dict[str, Any], site: str | None = None) -> list[str]:
+    if site:
+        return _normalize_list_for_publish(site)
+    selection = summary.get("selection") or {}
+    if isinstance(selection, dict):
+        return _normalize_list_for_publish(selection.get("site"))
+    return []
+
+
+def _normalize_list_for_publish(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return [str(item) for item in value if str(item)]
+    if isinstance(value, str):
+        return [item.strip() for item in value.replace("，", ",").replace("；", ";").replace("\n", ",").replace(";", ",").split(",") if item.strip()]
+    return [str(value)]
+
+
+def _standalone_ok_ui_report(ok_ui_run_id: str, summary: dict[str, Any], coverage: dict[str, Any], decision: dict[str, Any]) -> str:
+    run_status = summary.get("run_status") or ("dry_run" if summary.get("dry_run") else "unknown")
+    lines = [
+        f"# OK UI 独立回归报告",
+        "",
+        f"- OK UI run_id：`{ok_ui_run_id}`",
+        f"- 执行结果：{run_status}",
+        f"- 选中用例：{summary.get('selected_count', 0)}",
+        f"- 实际执行：{summary.get('executed_cases', 0)}",
+        f"- 通过：{summary.get('passed_cases', 0)}",
+        f"- 失败：{summary.get('failed_cases', 0)}",
+        f"- 跳过：{summary.get('skipped_cases', 0)}",
+        f"- 线程数：{summary.get('resolved_workers') or 1}",
+    ]
+    if coverage:
+        lines.extend(
+            [
+                "",
+                "## 覆盖摘要",
+                f"- 推荐范围执行率：{coverage.get('requirement_execution_coverage', '')}",
+                f"- 本次通过率：{coverage.get('requirement_pass_rate', '')}",
+            ]
+        )
+    if decision:
+        lines.extend(
+            [
+                "",
+                "## 发布建议",
+                f"- 风险等级：{decision.get('risk_level', '')}",
+                f"- 建议：{decision.get('suggestion', '')}",
+                f"- 原因：{decision.get('reason', '')}",
+            ]
+        )
+    return "\n".join(lines) + "\n"
+
+
+def _ok_ui_allure_report_dir(project_root: Path, ok_ui_run_id: str, summary: dict[str, Any]) -> Path | None:
+    try:
+        if _latest_ok_ui_run_id(project_root) != ok_ui_run_id:
+            return None
+    except FileNotFoundError:
+        return None
+    return _allure_report_dir(summary)
+
+
+def build_ok_ui_publish_payload(
+    project_root: Path,
+    ok_ui_run_id: str,
+    *,
+    project_key: str | None = None,
+    module: str | None = None,
+    site: str | None = None,
+    change_mode: str | None = None,
+) -> dict[str, Any]:
+    run_dir = _ok_ui_run_dir(project_root, ok_ui_run_id)
+    summary_path = run_dir / "summary.json"
+    summary = _read_json_path(summary_path)
+    if not summary:
+        raise FileNotFoundError(f"OK UI summary not found: {summary_path}")
+    coverage = _read_json_path(run_dir / "coverage_report.json")
+    decision = _read_json_path(run_dir / "decision_report.json")
+    coverage_dashboard = _build_coverage_dashboard(project_root)
+    timestamp = _ok_ui_timestamp(summary_path)
+    run_state = {
+        "run_id": ok_ui_run_id,
+        "status": _ok_ui_status(summary),
+        "change_mode": change_mode or "OK UI 独立回归",
+        "current_phase": "ok_autotest_ui_skill",
+        "created_at": timestamp,
+        "updated_at": timestamp,
+        "artifacts": {
+            "ok_ui_execution_report": str(summary_path),
+            "release_recommendation": str(run_dir / "decision_report.json"),
+        },
+        "phase_statuses": {"ok_autotest_ui_skill": "COMPLETED"},
+        "phase_timings": {},
+    }
+    modules = _ok_ui_modules(summary, module)
+    sites = _ok_ui_sites(summary, site)
+    return {
+        "run_id": ok_ui_run_id,
+        "status": run_state["status"],
+        "operator": os.getenv("QA_AGENT_OPERATOR") or os.getenv("USER") or "匿名用户",
+        "host": socket.gethostname(),
+        "project_root": str(project_root),
+        "project_key": project_key or os.getenv("QA_AGENT_DASHBOARD_PROJECT_KEY", "OK"),
+        "product": os.getenv("QA_AGENT_PRODUCT", ""),
+        "change_mode": run_state["change_mode"],
+        "module": modules,
+        "site": sites,
+        "trigger_source": "ok_ui_skill_cli",
+        "branch": os.getenv("GIT_BRANCH", ""),
+        "commit_sha": os.getenv("GIT_COMMIT", ""),
+        "pipeline_id": os.getenv("CI_PIPELINE_ID", ""),
+        "build_url": os.getenv("CI_BUILD_URL", ""),
+        "started_at": timestamp,
+        "finished_at": timestamp,
+        "artifacts": {
+            "run_state": run_state,
+            "final_report": _standalone_ok_ui_report(ok_ui_run_id, summary, coverage, decision),
+            "summary": summary,
+            "coverage": coverage,
+            "coverage_dashboard": coverage_dashboard,
+            "decision": decision,
+            "phase3_gate": {},
+            "allure_report": _package_allure_report(_ok_ui_allure_report_dir(project_root, ok_ui_run_id, summary)),
+        },
+    }
 
 
 def build_publish_payload(project_root: Path, run_id: str) -> dict[str, Any]:
@@ -249,6 +424,38 @@ def publish_run(
         }
         write_json(result_path, result)
         return result
+    result = publish_payload(base_url, payload, api_key or os.getenv("QA_AGENT_DASHBOARD_API_KEY", ""))
+    write_json(result_path, result)
+    return result
+
+
+def publish_ok_ui_run(
+    project_root: Path,
+    ok_ui_run_id: str | None = None,
+    *,
+    base_url: str | None = None,
+    api_key: str | None = None,
+    project_key: str | None = None,
+    module: str | None = None,
+    site: str | None = None,
+    change_mode: str | None = None,
+) -> dict[str, Any]:
+    base_url = _dashboard_url(base_url)
+    run_id = ok_ui_run_id or _latest_ok_ui_run_id(project_root)
+    run_dir = _ok_ui_run_dir(project_root, run_id)
+    result_path = run_dir / "dashboard_publish_result.json"
+    if not base_url:
+        result = {"success": False, "skipped": True, "reason": "dashboard url unavailable"}
+        write_json(result_path, result)
+        return result
+    payload = build_ok_ui_publish_payload(
+        project_root,
+        run_id,
+        project_key=project_key,
+        module=module,
+        site=site,
+        change_mode=change_mode,
+    )
     result = publish_payload(base_url, payload, api_key or os.getenv("QA_AGENT_DASHBOARD_API_KEY", ""))
     write_json(result_path, result)
     return result

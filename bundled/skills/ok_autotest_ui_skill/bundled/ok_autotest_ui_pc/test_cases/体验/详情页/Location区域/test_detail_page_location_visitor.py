@@ -56,7 +56,7 @@ class TestDetailPageLocationVisitor:
     @pytest.mark.p0
     @pytest.mark.detail_page
     @pytest.mark.ae
-    @allure.title("TC-LOCATION-A-001: Location 模块整体可见且结构完整")
+    @allure.title("TC-LOCATION-A-001：Location 模块整体可见且结构完整")
     @allure.severity(allure.severity_level.BLOCKER)
     def test_tc_location_a001_card_structure(self, page, config):
         login_page = LoginPage(page)
@@ -80,7 +80,7 @@ class TestDetailPageLocationVisitor:
     @pytest.mark.p0
     @pytest.mark.detail_page
     @pytest.mark.ae
-    @allure.title("TC-LOCATION-A-002: Location 标题文案")
+    @allure.title("TC-LOCATION-A-002：Location 标题文案")
     @allure.severity(allure.severity_level.BLOCKER)
     def test_tc_location_a002_title_text(self, page, config):
         login_page = LoginPage(page)
@@ -92,7 +92,7 @@ class TestDetailPageLocationVisitor:
     @pytest.mark.p0
     @pytest.mark.detail_page
     @pytest.mark.ae
-    @allure.title("TC-LOCATION-A-003: 地址文案展示（非空）")
+    @allure.title("TC-LOCATION-A-003：地址文案展示")
     @allure.severity(allure.severity_level.BLOCKER)
     def test_tc_location_a003_address_display(self, page, config):
         login_page = LoginPage(page)
@@ -107,7 +107,7 @@ class TestDetailPageLocationVisitor:
     @pytest.mark.p0
     @pytest.mark.detail_page
     @pytest.mark.ae
-    @allure.title("TC-LOCATION-A-004: Show map 预览区与按钮")
+    @allure.title("TC-LOCATION-A-004：Show map 预览区与按钮")
     @allure.severity(allure.severity_level.BLOCKER)
     def test_tc_location_a004_show_map_area(self, page, config):
         login_page = LoginPage(page)
@@ -128,7 +128,7 @@ class TestDetailPageLocationVisitor:
     @pytest.mark.p0
     @pytest.mark.detail_page
     @pytest.mark.ae
-    @allure.title("TC-LOCATION-B-001/B-002: 打开地图模态并存在关闭入口")
+    @allure.title("TC-LOCATION-B-001：点击 Show map 打开全屏地图模态")
     @allure.severity(allure.severity_level.BLOCKER)
     def test_tc_location_b001_b002_open_map_modal(self, page, config):
         login_page = LoginPage(page)
@@ -155,7 +155,7 @@ class TestDetailPageLocationVisitor:
     @pytest.mark.p0
     @pytest.mark.detail_page
     @pytest.mark.ae
-    @allure.title("TC-LOCATION-B-003: 点击关闭图标关闭地图模态")
+    @allure.title("TC-LOCATION-B-003：点击关闭图标关闭地图模态")
     @allure.severity(allure.severity_level.BLOCKER)
     def test_tc_location_b003_close_map_modal(self, page, config):
         login_page = LoginPage(page)
@@ -172,7 +172,7 @@ class TestDetailPageLocationVisitor:
     @pytest.mark.p1
     @pytest.mark.detail_page
     @pytest.mark.ae
-    @allure.title("TC-LOCATION-B-004: 关闭后可再次打开地图")
+    @allure.title("TC-LOCATION-B-004：关闭后可再次打开地图")
     @allure.severity(allure.severity_level.NORMAL)
     def test_tc_location_b004_reopen_map(self, page, config):
         login_page = LoginPage(page)
@@ -195,7 +195,7 @@ class TestDetailPageLocationVisitor:
     @pytest.mark.p1
     @pytest.mark.detail_page
     @pytest.mark.ae
-    @allure.title("TC-LOCATION-C-001: 主信息区地址与 Location 地址一致")
+    @allure.title("TC-LOCATION-C-001：主信息区地址与 Location 地址一致")
     @allure.severity(allure.severity_level.NORMAL)
     def test_tc_location_c001_address_consistency(self, page, config):
         login_page = LoginPage(page)
@@ -209,7 +209,7 @@ class TestDetailPageLocationVisitor:
     @pytest.mark.p2
     @pytest.mark.detail_page
     @pytest.mark.ae
-    @allure.title("TC-LOCATION-D-001: Escape 不关闭地图模态")
+    @allure.title("TC-LOCATION-D-001：地图模态打开后按 Escape 的行为")
     @allure.severity(allure.severity_level.MINOR)
     def test_tc_location_d001_escape_keeps_modal_open(self, page, config):
         login_page = LoginPage(page)

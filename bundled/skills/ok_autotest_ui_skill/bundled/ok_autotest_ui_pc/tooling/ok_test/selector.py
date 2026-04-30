@@ -23,7 +23,10 @@ def _matches_aliases(case: CatalogCase, value: str | None) -> bool:
 
 
 def select_cases(criteria: SelectionCriteria) -> list[CatalogCase]:
-    catalog = load_catalog()
+    return select_cases_from_catalog(load_catalog(), criteria)
+
+
+def select_cases_from_catalog(catalog: list[CatalogCase], criteria: SelectionCriteria) -> list[CatalogCase]:
     selected: list[CatalogCase] = []
     for case in catalog:
         if case.skill_excluded:

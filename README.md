@@ -251,6 +251,21 @@ python -m qa_agent.cli dashboard publish --run-id <run_id>
 python -m qa_agent.cli dashboard publish-coverage --project-key OK
 ```
 
+如果只是想按 OK UI 目录或 nodeid 精确跑一批现有自动化用例，不需要走完整 QA Agent 影响分析，可以使用独立 OK UI 回归入口。它不会发散找候选，只把传入的筛选条件直接交给 `ok_autotest_ui_skill`，执行后自动发布到 `ui_test_management`：
+
+```bash
+python -m qa_agent.cli dashboard run-ok-ui \
+  --path test_cases/zhaopin/ \
+  --workers 1 \
+  --project-key OK
+```
+
+如果已经单独跑过 `ok_autotest_ui_skill`，也可以用 OK UI 自己输出的 `run_id` 补发到平台：
+
+```bash
+python -m qa_agent.cli dashboard publish-ok-ui-run --ok-ui-run-id <ok_ui_run_id>
+```
+
 覆盖度口径来自 `bundled/knowledge_base/文本用例` 的 Markdown 文本用例扫描：所有 `### TC` 标题都会计入文本用例总数。缺少 `优先级` 或 `UI自动化` 字段的旧格式 TC 不会被丢弃，会标记为“字段待补齐”；这些 TC 已计入总数，但会影响优先级归因和自动化率判断。
 
 `bundled/skills/ok_autotest_ui_skill/references/coverage-dashboard.md` 只保留为历史静态快照参考，不再作为页面最新覆盖数据源。平台上的 `用例覆盖度` 页签以 QA Agent publish 生成的结构化覆盖快照为准。
