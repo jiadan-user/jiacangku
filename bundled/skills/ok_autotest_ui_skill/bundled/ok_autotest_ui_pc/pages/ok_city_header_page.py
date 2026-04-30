@@ -244,43 +244,121 @@ class OkCityHeaderPage(BasePage):
     def click_language_español(self):
         """
         点击语言浮层中的 Español 选项
-        需要确保浮层保持打开状态
+        使用增强的JavaScript点击方式,支持重试
         """
-        try:
-            # 在点击前确保浮层依然打开（可能需要重新悬停）
+        max_attempts = 3
+        
+        for attempt in range(max_attempts):
             try:
-                # 先检查浮层是否可见
-                tooltip_visible = self.page.get_by_role("tooltip").is_visible(timeout=2000)
-                if not tooltip_visible:
-                    self.logger.warning("浮层已消失，重新悬停...")
-                    # 重新悬停以打开浮层
+                if attempt > 0:
+                    self.logger.info(f"重试第 {attempt + 1} 次...")
+                    # 重试前等待一下
+                    self.page.wait_for_timeout(1000)
+                
+                # 方法1: 增强的JavaScript直接点击(最稳定)
+                try:
+                    self.logger.info("尝试使用JavaScript直接点击 Español...")
+                    result = self.page.evaluate("""
+                        () => {
+                            // 等待一下确保元素已渲染
+                            const findAndClick = () => {
+                                // 查找所有可能包含 Español 的元素
+                                const allElements = document.querySelectorAll('*');
+                                const candidates = [];
+                                
+                                for (let el of allElements) {
+                                    // 检查元素自身的文本(不包括子元素)
+                                    const text = el.childNodes[0]?.nodeValue?.trim();
+                                    if (text === 'Español') {
+                                        candidates.push(el);
+                                    }
+                                    // 也检查完整文本
+                                    if (el.textContent.trim() === 'Español' && el.children.length === 0) {
+                                        candidates.push(el);
+                                    }
+                                }
+                                
+                                // 优先选择可见且可点击的元素
+                                for (let el of candidates) {
+                                    if (el.offsetParent !== null) {
+                                        el.click();
+                                        return true;
+                                    }
+                                }
+                                
+                                return false;
+                            };
+                            
+                            return findAndClick();
+                        }
+                    """)
+                    
+                    if result:
+                        self.logger.info("✓ JavaScript点击 Español 成功")
+                        self.page.wait_for_load_state("domcontentloaded", timeout=30000)
+                        # 验证URL是否切换到西班牙语
+                        self.page.wait_for_timeout(1000)
+                        if "/es/" in self.page.url:
+                            return
+                        else:
+                            self.logger.warning("URL未切换到西班牙语,继续尝试其他方法")
+                    else:
+                        self.logger.warning("JavaScript未找到 Español 元素")
+                except Exception as e:
+                    self.logger.warning(f"JavaScript点击失败: {e}")
+                
+                # 方法2: 保持悬停状态并点击
+                try:
+                    self.logger.info("尝试保持悬停状态并点击...")
+                    # 重新悬停语言图标
+                    lang_icon = self.page.locator("div[class*='TopBarRightContent'] div[class*='iconList'] img").first
+                    lang_icon.hover()
+                    self.page.wait_for_timeout(800)
+                    
+                    # 使用force点击,不管是否可见
+                    self.page.get_by_text("Español", exact=True).first.click(timeout=5000, force=True)
+                    self.logger.info("✓ 强制点击 Español 成功")
+                    self.page.wait_for_load_state("domcontentloaded", timeout=30000)
+                    self.page.wait_for_timeout(1000)
+                    if "/es/" in self.page.url:
+                        return
+                except Exception as e:
+                    self.logger.warning(f"强制点击失败: {e}")
+                
+                # 方法3: 传统方式(兜底)
+                try:
+                    self.logger.info("尝试传统方式...")
+                    # 重新悬停
                     lang_icon = self.page.locator("div[class*='TopBarRightContent'] div[class*='iconList'] img").first
                     lang_icon.hover()
                     self.page.wait_for_timeout(1000)
-            except Exception:
-                pass
-            
-            # 直接尝试点击全局可见的 Español（最简单有效）
-            try:
-                self.page.get_by_text("Español", exact=True).first.click(timeout=10000)
-                self.page.wait_for_load_state("domcontentloaded", timeout=45000)
-                self.logger.info("✓ 成功点击 Español")
-                return
-            except Exception as e:
-                self.logger.warning(f"全局点击 Español 失败: {e}")
+                    
+                    # 等待浮层出现
+                    self.page.wait_for_selector('[role="tooltip"]', state="visible", timeout=5000)
+                    
+                    # 点击Español
+                    self.page.get_by_text("Español", exact=True).first.click(timeout=5000)
+                    self.logger.info("✓ 传统方式点击 Español 成功")
+                    self.page.wait_for_load_state("domcontentloaded", timeout=30000)
+                    self.page.wait_for_timeout(1000)
+                    if "/es/" in self.page.url:
+                        return
+                except Exception as e:
+                    self.logger.warning(f"传统方式点击失败: {e}")
                 
-                # 兜底：在tooltip中查找
-                try:
-                    self.page.get_by_role("tooltip").get_by_text("Español").first.click(timeout=8000)
-                    self.page.wait_for_load_state("domcontentloaded", timeout=45000)
-                    self.logger.info("✓ 在tooltip中点击 Español 成功")
-                    return
-                except Exception as e2:
-                    self.logger.error(f"在tooltip中点击 Español 也失败: {e2}")
+                # 如果到这里还没返回,说明这次尝试失败,继续下一次
+                if attempt < max_attempts - 1:
+                    self.logger.warning(f"第 {attempt + 1} 次尝试失败,准备重试...")
+                else:
+                    self.logger.error(f"所有 {max_attempts} 次尝试均失败")
+                    raise Exception(f"点击 Español 失败,已重试 {max_attempts} 次")
+                    
+            except Exception as e:
+                if attempt < max_attempts - 1:
+                    continue
+                else:
+                    self.logger.error(f"所有方式点击 Español 均失败: {e}")
                     raise
-        except Exception as e:
-            self.logger.error(f"点击 Español 失败: {e}")
-            raise
 
     def press_f5_refresh(self):
         """MCP: await page.keyboard.press('F5')"""
