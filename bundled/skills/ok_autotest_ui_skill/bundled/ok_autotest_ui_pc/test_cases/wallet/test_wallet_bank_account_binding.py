@@ -180,6 +180,9 @@ def test_bank_account_binding_complete_flow(page, config):
         page.wait_for_load_state("domcontentloaded")
     page.wait_for_timeout(2000)
     
+    # 关闭可能遗留的对话框
+    _close_blocking_dialogs(page)
+    
     # ========== 前置条件：确保银行账户未绑定 ==========
     with allure.step("前置条件：确保银行账户未绑定"):
         _ensure_bank_account_unbound(page)
@@ -191,10 +194,16 @@ def test_bank_account_binding_complete_flow(page, config):
         logger.info("TC016: 点击Add Bank Account应打开绑定表单对话框")
         logger.info("="*80)
         
+        # 检测并恢复白屏
+        _check_and_recover_from_blank_page(page, base_url)
+        
         # 点击Add Bank Account按钮（基于MCP录制）
         page.get_by_text('Add Bank Account').click()
         page.wait_for_timeout(2000)
         logger.info("✓ 已点击Add Bank Account按钮")
+        
+        # 检测白屏
+        _check_and_recover_from_blank_page(page, base_url)
         
         # 检测Load Fail错误（增加重试逻辑）
         max_retries = 3
@@ -480,19 +489,166 @@ def test_bank_account_binding_complete_flow(page, config):
 # 辅助函数
 # ============================================
 
-def _click_bank_account_more_menu(page):
-    """点击银行账户的三点菜单（更多选项）
+def _check_and_recover_from_blank_page(page, target_url):
+    """检测并恢复白屏问题
     
-    使用多种定位策略提高稳定性
+    Args:
+        page: Playwright page 对象
+        target_url: 目标URL，用于恢复
+    
+    Returns:
+        bool: 如果检测到白屏并成功恢复返回 True，否则返回 False
     """
+    try:
+        current_url = page.url
+        if "about:blank" in current_url or current_url == "about:blank":
+            logger.error(f"检测到白屏 URL: {current_url}")
+            logger.info("尝试恢复到目标页面...")
+            
+            # 尝试返回上一页
+            try:
+                page.go_back(timeout=5000)
+                page.wait_for_timeout(1000)
+                if "about:blank" not in page.url:
+                    logger.info("✓ 通过返回上一页恢复成功")
+                    return True
+            except Exception as e:
+                logger.warning(f"返回上一页失败: {e}")
+            
+            # 如果返回失败，直接导航到目标URL
+            try:
+                page.goto(target_url, timeout=10000)
+                page.wait_for_load_state("load", timeout=10000)
+                page.wait_for_timeout(2000)
+                logger.info("✓ 通过重新导航恢复成功")
+                return True
+            except Exception as e:
+                logger.error(f"重新导航失败: {e}")
+                raise Exception(f"无法从白屏恢复: {e}")
+        
+        return False
+    except Exception as e:
+        logger.error(f"白屏检测异常: {e}")
+        return False
+
+
+def _close_blocking_dialogs(page):
+    """关闭可能阻塞操作的对话框
+    
+    Args:
+        page: Playwright page 对象
+    
+    Returns:
+        bool: 如果关闭了对话框返回 True，否则返回 False
+    """
+    try:
+        # 检测是否有modal对话框
+        modal_dialogs = page.locator('[role="dialog"][aria-modal="true"]')
+        dialog_count = modal_dialogs.count()
+        
+        if dialog_count > 0:
+            logger.info(f"检测到 {dialog_count} 个modal对话框，尝试关闭...")
+            
+            for i in range(dialog_count):
+                try:
+                    dialog = modal_dialogs.nth(i)
+                    
+                    # 尝试多种关闭方式
+                    # 方式1: 点击关闭按钮
+                    try:
+                        close_btn = dialog.locator('button[aria-label="Close"], button.close, .modal-close, .close-icon').first
+                        if close_btn.is_visible(timeout=1000):
+                            close_btn.click(timeout=2000)
+                            page.wait_for_timeout(500)
+                            logger.info(f"✓ 通过关闭按钮关闭对话框 {i+1}")
+                            continue
+                    except Exception:
+                        pass
+                    
+                    # 方式2: 按ESC键
+                    try:
+                        page.keyboard.press('Escape')
+                        page.wait_for_timeout(500)
+                        logger.info(f"✓ 通过ESC键关闭对话框 {i+1}")
+                        continue
+                    except Exception:
+                        pass
+                    
+                    # 方式3: 点击对话框外的遮罩层
+                    try:
+                        page.mouse.click(50, 50)  # 点击左上角区域
+                        page.wait_for_timeout(500)
+                        logger.info(f"✓ 通过点击遮罩层关闭对话框 {i+1}")
+                    except Exception:
+                        pass
+                        
+                except Exception as e:
+                    logger.warning(f"关闭对话框 {i+1} 失败: {e}")
+            
+            # 再次检查是否还有对话框
+            remaining = page.locator('[role="dialog"][aria-modal="true"]').count()
+            if remaining == 0:
+                logger.info("✓ 所有阻塞对话框已关闭")
+                return True
+            else:
+                logger.warning(f"⚠️ 仍有 {remaining} 个对话框未关闭")
+                return False
+        
+        return False
+    except Exception as e:
+        logger.warning(f"关闭对话框异常: {e}")
+        return False
+
+
+def _safe_click_with_blank_check(page, element, element_name="元素"):
+    """安全点击元素并检测白屏
+    
+    Args:
+        page: Playwright page 对象
+        element: 要点击的元素
+        element_name: 元素名称（用于日志）
+    """
+    try:
+        # 先关闭可能阻塞的对话框
+        _close_blocking_dialogs(page)
+        
+        element.click(timeout=3000, force=True, no_wait_after=True)
+        page.wait_for_timeout(500)
+        
+        # 检测白屏
+        if "about:blank" in page.url:
+            logger.warning(f"点击{element_name}后检测到白屏，尝试恢复")
+            _check_and_recover_from_blank_page(page, _CONFIG['base_url'])
+            return False
+        return True
+    except Exception as e:
+        logger.warning(f"点击{element_name}失败: {e}")
+        # 检测白屏
+        if "about:blank" in page.url:
+            _check_and_recover_from_blank_page(page, _CONFIG['base_url'])
+        raise
+
+
+def _click_bank_account_more_menu(page):
+    """点击银行账户的三点菜单(更多选项)
+    
+    使用多种定位策略提高稳定性，自动检测和恢复白屏问题
+    """
+    # 先检测是否已经在白屏
+    _check_and_recover_from_blank_page(page, _CONFIG['base_url'])
+    
     try:
         # 策略1: 尝试通过Bank Account区域中的图片定位
         bank_section = page.locator('text="Bank Account"').locator('..').locator('..')
         more_button = bank_section.get_by_role('img').last
-        more_button.click(timeout=3000)
-        page.wait_for_timeout(800)
-        logger.info("✓ 已点击三点菜单（策略1：Bank Account区域定位）")
-        return True
+        
+        if _safe_click_with_blank_check(page, more_button, "三点菜单（策略1）"):
+            logger.info("✓ 已点击三点菜单（策略1：Bank Account区域定位）")
+            page.wait_for_timeout(300)
+            return True
+        else:
+            raise Exception("策略1点击后页面跳转")
+            
     except Exception as e1:
         logger.warning(f"策略1失败: {e1}")
         
@@ -500,20 +656,28 @@ def _click_bank_account_more_menu(page):
             # 策略2: 尝试通过账号文本附近的图片定位
             account_text = page.locator('text=/\\*{12}\\d{4}/')  # 匹配 ************7854
             more_button = account_text.locator('..').get_by_role('img').last
-            more_button.click(timeout=3000)
-            page.wait_for_timeout(800)
-            logger.info("✓ 已点击三点菜单（策略2：账号文本附近定位）")
-            return True
+            
+            if _safe_click_with_blank_check(page, more_button, "三点菜单（策略2）"):
+                logger.info("✓ 已点击三点菜单（策略2：账号文本附近定位）")
+                page.wait_for_timeout(300)
+                return True
+            else:
+                raise Exception("策略2点击后页面跳转")
+                
         except Exception as e2:
             logger.warning(f"策略2失败: {e2}")
             
             try:
                 # 策略3: 使用原有的nth(4)方式作为后备
                 more_button = page.get_by_role('img').nth(4)
-                more_button.click(timeout=3000)
-                page.wait_for_timeout(800)
-                logger.info("✓ 已点击三点菜单（策略3：nth(4)定位）")
-                return True
+                
+                if _safe_click_with_blank_check(page, more_button, "三点菜单（策略3）"):
+                    logger.info("✓ 已点击三点菜单（策略3：nth(4)定位）")
+                    page.wait_for_timeout(300)
+                    return True
+                else:
+                    raise Exception("策略3点击后页面跳转")
+                    
             except Exception as e3:
                 logger.error(f"所有定位策略均失败: 策略1={e1}, 策略2={e2}, 策略3={e3}")
                 raise Exception(f"无法定位三点菜单按钮")
@@ -521,7 +685,12 @@ def _click_bank_account_more_menu(page):
 
 def _ensure_bank_account_unbound(page):
     """确保银行账户处于未绑定状态"""
+    target_url = _CONFIG['base_url']
+    
     try:
+        # 检测并恢复白屏
+        _check_and_recover_from_blank_page(page, target_url)
+        
         # 检查是否有Add Bank Account按钮
         add_button = page.get_by_text('Add Bank Account')
         if add_button.is_visible(timeout=2000):
@@ -534,6 +703,9 @@ def _ensure_bank_account_unbound(page):
         # 点击"..."菜单（使用增强的定位策略）
         _click_bank_account_more_menu(page)
         
+        # 检测白屏
+        _check_and_recover_from_blank_page(page, target_url)
+        
         # 点击Unbind Bank Account
         page.get_by_role('tooltip').locator('div').filter(
             has_text='Unbind Bank Account'
@@ -541,10 +713,16 @@ def _ensure_bank_account_unbound(page):
         page.wait_for_timeout(1000)
         logger.info("✓ 已点击'Unbind Bank Account'")
         
+        # 检测白屏
+        _check_and_recover_from_blank_page(page, target_url)
+        
         # 确认解绑
         page.get_by_role('button', name='Confirm').click(timeout=5000)
         page.wait_for_timeout(3000)
         logger.info("✓ 已确认解绑")
+        
+        # 检测白屏
+        _check_and_recover_from_blank_page(page, target_url)
         
         # 验证解绑成功
         if page.get_by_text('Add Bank Account').is_visible(timeout=5000):
@@ -554,6 +732,10 @@ def _ensure_bank_account_unbound(page):
             
     except Exception as e:
         logger.warning(f"解绑操作异常: {e}")
+        
+        # 检测并恢复白屏
+        _check_and_recover_from_blank_page(page, target_url)
+        
         # 尝试刷新页面
         page.reload()
         page.wait_for_timeout(3000)
@@ -631,6 +813,9 @@ class TestBankAccountUnbinding:
                 shared_page.goto(_CONFIG['base_url'])
                 shared_page.wait_for_load_state("load", timeout=10000)
                 shared_page.wait_for_timeout(2000)
+                
+                # 关闭可能遗留的对话框
+                _close_blocking_dialogs(shared_page)
             else:
                 logger.info("⚠️ 未找到 Session，跳过解绑测试（需先运行绑定测试）")
                 pytest.skip("需要先运行TC016-TC023绑定银行账户")
@@ -657,6 +842,9 @@ class TestBankAccountUnbinding:
     @allure.description("验证已绑定银行账户时，Bank Account区域显示账号后四位和三点菜单图标")
     def test_01_bound_bank_account_should_display_last_four_digits_and_unbind_entry(self, shared_page):
         """TC007: 已绑定银行账户时应显示账号后四位和解绑入口"""
+        
+        # 测试开始前清理对话框
+        _close_blocking_dialogs(shared_page)
         
         logger.info("="*80)
         logger.info("TC007: 已绑定银行账户时应显示账号后四位和解绑入口")
@@ -696,9 +884,15 @@ class TestBankAccountUnbinding:
         logger.info("TC008: 点击银行账户三点菜单应显示解绑选项")
         logger.info("="*80)
         
+        # 检测并恢复白屏
+        _check_and_recover_from_blank_page(shared_page, _CONFIG['base_url'])
+        
         with allure.step("点击三点菜单图标"):
             _click_bank_account_more_menu(shared_page)
             logger.info("✓ 已点击三点菜单")
+            
+            # 检测白屏
+            _check_and_recover_from_blank_page(shared_page, _CONFIG['base_url'])
         
         with allure.step("验证显示Unbind Bank Account选项"):
             unbind_option = shared_page.get_by_role('tooltip').locator('div').filter(
@@ -729,10 +923,16 @@ class TestBankAccountUnbinding:
         logger.info("TC009: 点击解绑应弹出二次确认对话框")
         logger.info("="*80)
         
+        # 检测并恢复白屏
+        _check_and_recover_from_blank_page(shared_page, _CONFIG['base_url'])
+        
         with allure.step("点击三点菜单"):
             _click_bank_account_more_menu(shared_page)
             shared_page.wait_for_timeout(800)
             logger.info("✓ 已点击三点菜单")
+            
+            # 检测白屏
+            _check_and_recover_from_blank_page(shared_page, _CONFIG['base_url'])
         
         with allure.step("点击Unbind Bank Account"):
             shared_page.get_by_role('tooltip').locator('div').filter(
@@ -881,10 +1081,21 @@ class TestBankAccountUnbinding:
         logger.info("="*80)
 
         with allure.step("检测是否存在待处理提现"):
+            # 先关闭可能阻塞的对话框
+            _close_blocking_dialogs(shared_page)
+            
             withdraw_btn = shared_page.get_by_role('button', name='Withdraw')
             if not withdraw_btn.is_visible(timeout=2000):
                 pytest.skip("Withdraw按钮未显示，无法检测待处理提现")
-            withdraw_btn.click()
+            
+            # 使用force点击避免被对话框拦截
+            try:
+                withdraw_btn.click(force=True, timeout=5000)
+            except Exception as e:
+                logger.warning(f"点击Withdraw按钮失败: {e}")
+                # 再次尝试关闭对话框
+                _close_blocking_dialogs(shared_page)
+                withdraw_btn.click(force=True, timeout=5000)
             shared_page.wait_for_timeout(2000)
             in_progress_msg = shared_page.locator('text="Withdrawal in progress"')
             if not in_progress_msg.is_visible(timeout=3000):
@@ -931,20 +1142,56 @@ class TestBankAccountUnbinding:
     @allure.description("验证点击Confirm按钮后成功解绑，显示Add Bank Account按钮")
     def test_99_confirm_unbind_should_successfully_unbind_and_show_add_button(self, shared_page):
         """TC013: 确认解绑应成功解绑银行账户并显示添加按钮（最后执行）"""
-        
+
         logger.info("="*80)
         logger.info("TC013: 确认解绑应成功解绑银行账户并显示添加按钮")
         logger.info("="*80)
-        
+
         with allure.step("打开解绑确认对话框"):
             _click_bank_account_more_menu(shared_page)
-            shared_page.wait_for_timeout(800)
+            shared_page.wait_for_timeout(1000)
             logger.info("✓ 已点击三点菜单")
+
+            # 使用多种策略点击"Unbind Bank Account"
+            unbind_clicked = False
+            try:
+                # 策略1: 使用tooltip和filter
+                unbind_option = shared_page.get_by_role('tooltip').locator('div').filter(
+                    has_text='Unbind Bank Account'
+                )
+                if unbind_option.count() > 0 and unbind_option.first.is_visible(timeout=3000):
+                    unbind_option.first.click(timeout=5000, force=True)
+                    unbind_clicked = True
+                    logger.info("✓ 已点击Unbind Bank Account（策略1：tooltip+filter）")
+            except Exception as e1:
+                logger.warning(f"策略1失败: {e1}")
             
-            shared_page.get_by_role('tooltip').locator('div').filter(
-                has_text='Unbind Bank Account'
-            ).click()
-            shared_page.wait_for_timeout(800)
+            if not unbind_clicked:
+                try:
+                    # 策略2: 直接查找文本
+                    unbind_option = shared_page.locator('text="Unbind Bank Account"').first
+                    if unbind_option.is_visible(timeout=3000):
+                        unbind_option.click(timeout=5000, force=True)
+                        unbind_clicked = True
+                        logger.info("✓ 已点击Unbind Bank Account（策略2：直接文本查找）")
+                except Exception as e2:
+                    logger.warning(f"策略2失败: {e2}")
+            
+            if not unbind_clicked:
+                try:
+                    # 策略3: 使用get_by_text
+                    unbind_option = shared_page.get_by_text('Unbind Bank Account', exact=True).first
+                    if unbind_option.is_visible(timeout=3000):
+                        unbind_option.click(timeout=5000, force=True)
+                        unbind_clicked = True
+                        logger.info("✓ 已点击Unbind Bank Account（策略3：get_by_text）")
+                except Exception as e3:
+                    logger.warning(f"策略3失败: {e3}")
+            
+            if not unbind_clicked:
+                pytest.fail("无法点击Unbind Bank Account选项（所有策略均失败）")
+            
+            shared_page.wait_for_timeout(1000)
             logger.info("✓ 解绑确认对话框已打开")
         
         with allure.step("点击Confirm按钮确认解绑"):
@@ -1230,10 +1477,21 @@ def test_05_unbind_with_pending_withdrawal_should_show_error(page, config):
         logger.info("✓ 银行账户已绑定")
 
     with allure.step("检测是否存在待处理提现(Withdrawal in progress)"):
+        # 先关闭可能阻塞的对话框
+        _close_blocking_dialogs(page)
+        
         withdraw_btn = page.get_by_role('button', name='Withdraw')
         if not withdraw_btn.is_visible(timeout=2000):
             pytest.skip("Withdraw按钮未显示，无法检测待处理提现")
-        withdraw_btn.click()
+        
+        # 使用force点击避免被对话框拦截
+        try:
+            withdraw_btn.click(force=True, timeout=5000)
+        except Exception as e:
+            logger.warning(f"点击Withdraw按钮失败: {e}")
+            # 再次尝试关闭对话框
+            _close_blocking_dialogs(page)
+            withdraw_btn.click(force=True, timeout=5000)
         page.wait_for_timeout(2000)
         in_progress_msg = page.locator('text="Withdrawal in progress"')
         if not in_progress_msg.is_visible(timeout=3000):
