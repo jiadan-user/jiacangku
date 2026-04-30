@@ -406,34 +406,41 @@ class TestOkCityHeaderFunctionArea:
     @allure.description("验证 /en/ 切至 /es/ 且类目与功能区文案西语化")
     def test_switch_to_spanish_updates_url_and_header(self):
         """TC007 切换西语"""
-        # 增加重试机制和更长的等待时间，确保浮层稳定
-        max_retries = 3
-        for attempt in range(max_retries):
+        # 策略1: 完全刷新页面,清除所有浮层状态
+        self.page.reload(wait_until="domcontentloaded", timeout=30000)
+        self.page.wait_for_timeout(2000)
+        assert "/en/city-provo" in self.page.url, f"应先在英文首页,实际: {self.page.url}"
+        logger.info(f"✓ 已刷新页面,确认在英文首页: {self.page.url}")
+        
+        # 策略2: 多次ESC确保关闭所有浮层
+        for _ in range(3):
             try:
-                self.header_page.click_header_english()
-                self.page.wait_for_timeout(2000)  # 增加等待时间，确保浮层出现并稳定
-                self.header_page.click_language_español()
-                break
-            except Exception as e:
-                if attempt < max_retries - 1:
-                    logger.warning(f"语言切换失败（尝试 {attempt + 1}/{max_retries}），重试中...")
-                    self.page.wait_for_timeout(3000)
-                    self.header_page.dismiss_ok_cookie_banner()
-                    # 刷新页面重新开始
-                    self.page.reload()
-                    self.page.wait_for_load_state("domcontentloaded")
-                    self.page.wait_for_timeout(2000)
-                else:
-                    logger.error(f"语言切换失败，已重试{max_retries}次")
-                    raise
+                self.page.keyboard.press("Escape")
+                self.page.wait_for_timeout(300)
+            except:
+                pass
         
-        # 增加等待时间，确保页面完全加载并切换到西语
+        # 策略3: 先移动鼠标到页面安全区域,避免意外hover
+        try:
+            self.page.mouse.move(100, 100)
+            self.page.wait_for_timeout(500)
+        except:
+            pass
+        
+        # 触发语言选择器
+        self.header_page.click_header_english()
+        self.page.wait_for_timeout(1500)
+        
+        # 点击Español(页面对象方法已优化,包含多种稳定的点击方式)
+        self.header_page.click_language_español()
+        
+        # 等待页面完全加载并切换到西语
         self.page.wait_for_load_state("load", timeout=30000)
-        self.page.wait_for_timeout(3000)
-        
-        assert "/es/city-provo" in self.page.url, "URL 应包含 /es/city-provo"
+        self.page.wait_for_timeout(2000)
+
+        assert "/es/city-provo" in self.page.url, f"URL 应包含 /es/city-provo, 实际: {self.page.url}"
         assert "Sitio web de información clasificada en Provo" in self.page.title(), (
-            "标题应为西语"
+            f"标题应为西语, 实际: {self.page.title()}"
         )
         # 增加超时时间，使用重试机制
         timeout = 30000
@@ -532,19 +539,31 @@ class TestOkCityHeaderFunctionArea:
     def test_buyer_favourites_navigates_to_uspub_list(self):
         """TC011 买家收藏页"""
         uspub = OkUspubBizPage(self.page)
+        
+        # 收藏测试使用空收藏列表账号
+        favorites_config = {
+            **self.config,
+            "test_account": {
+                "username": "shencccccc@gmail.com",
+                "password": "123456Tt",
+            },
+            "user_name": "favorites_test_user",
+        }
+        
         session_manager = SessionManager(
             self.page,
-            self.config["base_url"],
-            session_name=_session_name(self.config),
+            favorites_config["base_url"],
+            session_name=f"{favorites_config['site']}_buyer_favorites",
         )
+        
         _ensure_buyer_on_city_provo(
             self.page,
-            self.config,
+            favorites_config,
             self.login_page,
             self.header_page,
             session_manager,
         )
-        
+
         # 确认登录状态
         dn = self.header_page.get_logged_in_display_name(timeout=10000)
         assert dn and dn.startswith("OKer"), f"点击收藏前必须是登录状态，实际: {dn}"

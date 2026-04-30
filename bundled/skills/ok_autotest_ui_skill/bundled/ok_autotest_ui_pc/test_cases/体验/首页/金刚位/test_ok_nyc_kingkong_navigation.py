@@ -367,9 +367,17 @@ class TestOkKingkongNavNyc:
             # 兼容58v5.cn和ok.com域名
             assert "city-new-york1" in home_href, f"Home链接不正确: {home_href}"
             
-            # 58v5.cn H1可能是"Company"而不是"Jobs"
+            # Jobs列表页H1显示逻辑:
+            # - 新业务逻辑: H1显示列表首个职位标题
+            # - 旧业务逻辑: H1显示 "Jobs" 或 "Company"
             h1_text = kk.get_primary_h1_text().strip()
-            assert h1_text in ["Jobs", "Company"], f"H1文本不匹配: {h1_text}"
+            if h1_text not in ["Jobs", "Company"]:
+                # 新业务逻辑: H1显示首个职位标题
+                logger.info(f"✓ H1显示首个职位标题(新业务逻辑): {h1_text}")
+                assert "jobs" in page.url.lower(), f"URL不包含jobs: {page.url}"
+            else:
+                # 旧业务逻辑: H1显示分类名称
+                logger.info(f"✓ H1显示分类名称: {h1_text}")
             
             assert kk.is_top_search_visible(), "应可见顶栏搜索框"
             logger.info(f"✓ 访客 Jobs 落地为纽约列表 (标题: {title}, H1: {h1_text})")
@@ -429,8 +437,17 @@ class TestOkKingkongNavNyc:
                 logger.info(f"⚠️ 买家 Jobs 落地为纽约列表（58v5.cn行为，标题: {title}）")
             
             # H1检查
+            # Jobs列表页H1显示逻辑:
+            # - 新业务逻辑: H1显示列表首个职位标题
+            # - 旧业务逻辑: H1显示 "Jobs" 或 "Company"
             h1_text = kk.get_primary_h1_text().strip()
-            assert h1_text in ["Jobs", "Company"], f"H1文本不匹配: {h1_text}"
+            if h1_text not in ["Jobs", "Company"]:
+                # 新业务逻辑: H1显示首个职位标题
+                logger.info(f"✓ H1显示首个职位标题(新业务逻辑): {h1_text}")
+                assert "jobs" in page.url.lower(), f"URL不包含jobs: {page.url}"
+            else:
+                # 旧业务逻辑: H1显示分类名称
+                logger.info(f"✓ H1显示分类名称: {h1_text}")
 
     @pytest.mark.case_id_kingkong_nyc_tc008
     @pytest.mark.smoke
