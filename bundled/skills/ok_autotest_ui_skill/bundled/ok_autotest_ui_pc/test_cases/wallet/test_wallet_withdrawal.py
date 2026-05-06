@@ -24,6 +24,278 @@ from utils.logger import setup_logger
 logger = setup_logger()
 
 # ============================================
+# 强制关闭登录对话框工具函数
+# ============================================
+def _force_close_login_dialog(page, max_attempts=5):
+    """强制关闭登录对话框 - 使用多种策略确保关闭
+    
+    Args:
+        page: Playwright page对象
+        max_attempts: 最大尝试次数
+        
+    Returns:
+        bool: True=成功关闭或不存在，False=无法关闭
+    """
+    for attempt in range(max_attempts):
+        # 检查对话框是否存在
+        try:
+            login_dialog = page.locator('[class*="LoginPC_loginModalPC"]')
+            if login_dialog.count() == 0:
+                if attempt > 0:
+                    logger.info("✓ 登录对话框已不存在")
+                return True
+        except Exception:
+            return True
+        
+        logger.warning(f"⚠️ 检测到登录对话框 (尝试 {attempt+1}/{max_attempts})")
+        
+        # 策略1: 查找并点击关闭按钮
+        try:
+            close_btns = login_dialog.locator('button[class*="close"], button[aria-label="Close"], button[class*="btn-close"]')
+            if close_btns.count() > 0:
+                close_btns.first.click(force=True, timeout=2000)
+                page.wait_for_timeout(1000)
+                logger.info("✓ 点击关闭按钮")
+                continue
+        except Exception as e:
+            logger.debug(f"策略1失败: {e}")
+        
+        # 策略2: 按ESC键（多次）
+        try:
+            for _ in range(5):
+                page.keyboard.press('Escape')
+                page.wait_for_timeout(300)
+            logger.info("✓ 按ESC键5次")
+            page.wait_for_timeout(1000)
+            continue
+        except Exception as e:
+            logger.debug(f"策略2失败: {e}")
+        
+        # 策略3: 使用JavaScript直接移除对话框
+        try:
+            page.evaluate("""
+                () => {
+                    // 移除登录对话框
+                    const dialogs = document.querySelectorAll('[class*="LoginPC_loginModalPC"]');
+                    dialogs.forEach(d => {
+                        d.remove();
+                        console.log('移除登录对话框');
+                    });
+                    
+                    // 移除所有modal backdrop
+                    const backdrops = document.querySelectorAll('.modal-backdrop, [class*="modal-backdrop"]');
+                    backdrops.forEach(b => {
+                        b.remove();
+                        console.log('移除modal backdrop');
+                    });
+                    
+                    // 恢复body滚动
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                    document.body.style.removeProperty('overflow');
+                    document.body.style.removeProperty('padding-right');
+                    
+                    console.log('已执行登录对话框清理');
+                }
+            """)
+            page.wait_for_timeout(1000)
+            logger.info("✓ 使用JavaScript强制移除对话框")
+            continue
+        except Exception as e:
+            logger.warning(f"策略3失败: {e}")
+        
+        # 策略4: 点击对话框外的区域（backdrop）
+        try:
+            backdrop = page.locator('.modal-backdrop').first
+            if backdrop.is_visible(timeout=1000):
+                # 点击backdrop左上角
+                backdrop.click(position={'x': 10, 'y': 10}, force=True, timeout=2000)
+                page.wait_for_timeout(1000)
+                logger.info("✓ 点击backdrop尝试关闭")
+                continue
+        except Exception as e:
+            logger.debug(f"策略4失败: {e}")
+    
+    # 最后检查
+    try:
+        if login_dialog.count() > 0:
+            logger.error("❌ 无法关闭登录对话框（所有策略失败）")
+            return False
+    except Exception:
+        pass
+    
+    return True
+
+
+def _wallet_session_manager(page):
+    """与模块初始化一致的 SessionManager（钱包卖家）。"""
+    session_name = f"{_CONFIG['site']}_{_CONFIG['role']}_{_CONFIG['user_name']}_wallet"
+    return SessionManager(page, _CONFIG["base_url"], session_name)
+
+
+def _recover_session_full_login(page, session_manager=None):
+    """登录弹层脚本不可靠时：整页导航后按录制步骤完整登录（与 shared_page 手写分支一致）。"""
+    logger.warning("🔧 尝试整页重新登录恢复 Session...")
+    user = _CONFIG["test_account"]["username"]
+    pwd = _CONFIG["test_account"]["password"]
+    try:
+        login_page = LoginPage(page, base_url=_CONFIG["base_url"])
+        login_page.handle_cookie_popup()
+        page.goto(_CONFIG["base_url"], timeout=25000, wait_until="load")
+        page.wait_for_timeout(2000)
+
+        page.get_by_role("textbox", name="Email or phone number").fill(user, timeout=15000)
+        page.wait_for_timeout(400)
+        page.get_by_role("button", name="Continue").click(timeout=15000)
+        page.wait_for_timeout(1500)
+        page.get_by_role("textbox", name="Enter password").fill(pwd, timeout=15000)
+        page.wait_for_timeout(400)
+        page.get_by_role("button", name="Log in").click(timeout=15000)
+        page.wait_for_timeout(4000)
+
+        page.wait_for_load_state("domcontentloaded", timeout=15000)
+        if session_manager:
+            try:
+                session_manager.save_session()
+                logger.info("✓ 整页登录后 Session 已保存")
+            except Exception as se:
+                logger.warning(f"保存 Session 失败: {se}")
+        logger.info("✓ 整页重新登录完成")
+        return True
+    except Exception as e:
+        logger.error(f"❌ 整页重新登录失败: {e}")
+        return False
+
+
+def _handle_login_modal_with_auto_login(page, session_manager=None):
+    """PC 钱包场景：若 LoginPC 登录弹层可见，则完成邮箱+密码登录并保存 Session。
+
+    说明：弹层内控件与页面同属 document，优先使用与模块初始化一致的 **page 级** role 定位，
+    避免 scope 到 dlg 后因无障碍名/iframe 差异找不到密码框（全量日志中的典型失败）。
+    """
+    dlg = page.locator('[class*="LoginPC_loginModalPC"]').first
+    try:
+        if not dlg.is_visible(timeout=2000):
+            return True
+    except Exception:
+        return True
+
+    logger.warning("⚠️ 检测到登录弹窗（Session 可能已失效），执行自动登录...")
+    login_page = LoginPage(page, base_url=_CONFIG["base_url"])
+    user = _CONFIG["test_account"]["username"]
+    pwd = _CONFIG["test_account"]["password"]
+
+    try:
+        login_page.handle_cookie_popup()
+
+        # 第一步：邮箱 + Continue（page 级，与 shared_page 模块登录一致）
+        try:
+            email_box = page.get_by_role(
+                "textbox", name=re.compile(r"Email or phone number", re.I)
+            )
+            if email_box.is_visible(timeout=5000):
+                email_box.fill(user, timeout=15000)
+                page.wait_for_timeout(400)
+                cont = page.get_by_role("button", name=re.compile(r"Continue", re.I))
+                if cont.is_visible(timeout=3000):
+                    cont.click(timeout=15000)
+                    page.wait_for_timeout(2000)
+        except Exception as ex:
+            logger.debug(f"邮箱步骤（可选）: {ex}")
+
+        # 第二步：等待密码框（多种定位，避免无障碍文案变更）
+        pwd_filled = False
+        pwd_candidates = [
+            page.get_by_role("textbox", name=re.compile(r"Enter password", re.I)),
+            page.get_by_placeholder(re.compile(r"password|密码", re.I)),
+            dlg.locator('input[type="password"]').first,
+            page.locator('[class*="LoginPC_loginModalPC"] input[type="password"]').first,
+        ]
+        for cand in pwd_candidates:
+            try:
+                cand.wait_for(state="visible", timeout=12000)
+                cand.fill(pwd, timeout=15000)
+                pwd_filled = True
+                break
+            except Exception:
+                continue
+
+        if not pwd_filled:
+            raise TimeoutError("未找到可用的密码输入框（Enter password / input[type=password]）")
+
+        page.wait_for_timeout(400)
+
+        clicked = False
+        for lb in (
+            page.get_by_role("button", name=re.compile(r"Log\s*in", re.I)),
+            page.get_by_role("button", name=re.compile(r"^Login$", re.I)),
+            page.get_by_role("button", name=re.compile(r"Sign\s*in", re.I)),
+        ):
+            try:
+                if lb.count() > 0 and lb.first.is_visible(timeout=2500):
+                    lb.first.click(timeout=15000)
+                    clicked = True
+                    break
+            except Exception:
+                continue
+        if not clicked:
+            raise TimeoutError("未找到可点的登录按钮（Log in / Login）")
+
+        page.wait_for_timeout(3000)
+
+        try:
+            dlg.wait_for(state="hidden", timeout=25000)
+        except Exception:
+            page.wait_for_timeout(2000)
+            try:
+                if dlg.is_visible(timeout=800):
+                    logger.warning("⚠️ 登录后弹窗仍可见，尝试 ESC")
+                    for _ in range(5):
+                        page.keyboard.press("Escape")
+                        page.wait_for_timeout(300)
+            except Exception:
+                pass
+
+        logger.info("✓ 自动登录完成")
+        if session_manager:
+            try:
+                session_manager.save_session()
+                logger.info("✓ Session 已保存")
+            except Exception as se:
+                logger.warning(f"保存 Session 失败: {se}")
+        return True
+    except Exception as e:
+        logger.error(f"❌ 自动登录失败: {e}")
+        return False
+
+
+def _dismiss_or_login_pc_modal(page, session_manager=None):
+    """组合策略：若 LoginPC 弹层可见则先自动登录；失败则整页重新登录；最后再强制关闭。"""
+    dlg = page.locator('[class*="LoginPC_loginModalPC"]').first
+    visible = False
+    try:
+        visible = dlg.is_visible(timeout=1500)
+    except Exception:
+        visible = False
+
+    if visible:
+        ok = _handle_login_modal_with_auto_login(page, session_manager)
+        if not ok:
+            ok = _recover_session_full_login(page, session_manager)
+        if not ok:
+            logger.warning("自动登录与整页登录均未成功，尝试强制移除登录层...")
+            _force_close_login_dialog(page, max_attempts=5)
+        else:
+            try:
+                if dlg.is_visible(timeout=800):
+                    _force_close_login_dialog(page, max_attempts=3)
+            except Exception:
+                pass
+    else:
+        _force_close_login_dialog(page, max_attempts=2)
+
+# ============================================
 # 测试环境配置（来自录制文档）
 # ============================================
 _CONFIG = {
@@ -99,15 +371,16 @@ def shared_page():
                 logger.info("🔧 自动执行SQL清除提现限制...")
                 
                 # 执行SQL清除限制
-                script_path = "test_cases/airwallex_recharge/update_payment_status.py"
+                import os
+                script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                script_path = os.path.join(script_dir, "airwallex_recharge", "update_payment_status.py")
                 try:
                     result = subprocess.run(
                         ['python', script_path, '--clear-withdrawal-restriction'],
                         capture_output=True,
                         encoding='utf-8',
-                        errors='ignore',
-                        timeout=30,
-                        cwd='.'
+                        errors='replace',
+                        timeout=30
                     )
                     
                     if result.returncode == 0:
@@ -135,19 +408,23 @@ def shared_page():
             page.goto(_CONFIG['base_url'])
             page.wait_for_load_state("load", timeout=10000)
             page.wait_for_timeout(2000)
-            
-            # 强制关闭可能存在的登录对话框
+
+            # 【优先】Session 失效时会弹出 LoginPC，必须先自动登录再关遮罩
+            logger.info("检查登录弹窗：必要时自动登录...")
+            _dismiss_or_login_pc_modal(page, session_manager)
+
+            # 遗留 ESC（双重保险）
             try:
                 login_dialogs = page.locator('div[role="dialog"][aria-modal="true"].LoginPC_loginModalPC___6EYR')
                 if login_dialogs.count() > 0:
-                    logger.warning("⚠️ 检测到登录对话框，尝试关闭...")
+                    logger.warning("⚠️ 仍检测到登录对话框，再次尝试 ESC...")
                     for _ in range(login_dialogs.count()):
                         try:
                             page.keyboard.press('Escape')
                             page.wait_for_timeout(500)
                         except Exception:
                             pass
-                    logger.info("✓ 已关闭登录对话框")
+                    logger.info("✓ 已尝试 ESC 关闭")
             except Exception:
                 pass
             
@@ -171,11 +448,16 @@ def shared_page():
             
             session_manager.save_session()
             logger.info("✓ 登录完成，Session 已保存")
+
+            page.wait_for_timeout(1500)
+            _dismiss_or_login_pc_modal(page, session_manager)
         
         # 确保银行账户已绑定（自动绑定）
         if not _ensure_bank_account_bound(page, auto_bind=True):
             logger.warning("⚠️ 银行账户绑定失败，部分测试可能会跳过")
-        
+
+        _dismiss_or_login_pc_modal(page, session_manager)
+
         # 【新增】检查并清除"Withdrawal in progress"阻塞
         if not _clear_withdrawal_in_progress(page):
             logger.warning("⚠️ 存在提现阻塞且无法自动清除，部分测试可能会失败")
@@ -252,26 +534,11 @@ def navigate_to_home(shared_page, request):
                 logger.error(f"❌ 页面恢复失败: {recover_error}")
                 raise
         
-        # 强制关闭可能存在的登录对话框（在每个测试前检查）
-        try:
-            login_dialogs = shared_page.locator('div[role="dialog"][aria-modal="true"].LoginPC_loginModalPC___6EYR')
-            dialog_count = login_dialogs.count()
-            if dialog_count > 0:
-                logger.warning(f"⚠️ 检测到 {dialog_count} 个登录对话框，尝试关闭...")
-                for _ in range(min(dialog_count, 3)):  # 最多尝试3次
-                    try:
-                        shared_page.keyboard.press('Escape')
-                        shared_page.wait_for_timeout(300)
-                    except Exception:
-                        pass
-                # 再次检查
-                remaining = shared_page.locator('div[role="dialog"][aria-modal="true"].LoginPC_loginModalPC___6EYR').count()
-                if remaining == 0:
-                    logger.info("✓ 已成功关闭所有登录对话框")
-                else:
-                    logger.warning(f"⚠️ 仍有 {remaining} 个登录对话框未关闭")
-        except Exception as e:
-            logger.debug(f"关闭登录对话框时出错: {e}")
+        _repair_blank_page_or_fail(shared_page, "navigate_to_home 初始 URL")
+
+        # 登录弹窗：优先自动登录（保存 Session），再清理遗留遮罩
+        _dismiss_or_login_pc_modal(shared_page, _wallet_session_manager(shared_page))
+        _repair_blank_page_or_fail(shared_page, "处理登录弹窗后")
         
         # 【关键修复】先关闭所有可能遗留的弹窗，避免遮挡主页面元素
         try:
@@ -288,17 +555,30 @@ def navigate_to_home(shared_page, request):
         
         # 【增强】处理 about:blank 的多种情况
         is_blank = current_url == "about:blank"
-        is_wrong_page = "/wallet/home" not in current_url
-        
+
         if is_blank:
-            logger.error(f"❌ 检测到 about:blank 页面！")
-            
+            logger.error("❌ 检测到 about:blank 页面！")
+            _wait_out_transient_blank(shared_page, timeout_ms=12000)
+            try:
+                current_url = shared_page.url
+            except Exception:
+                current_url = "about:blank"
+            is_blank = current_url == "about:blank"
+
+        is_wrong_page = "/wallet/home" not in current_url
+
+        if is_blank:
+            logger.error("❌ about:blank 在等待导航后仍存在，启动 Session/导航恢复…")
+
             # 使用专门的恢复函数
             if _recover_from_blank_page(shared_page):
                 logger.info("✅ 成功从 about:blank 恢复")
+                _dismiss_or_login_pc_modal(shared_page, _wallet_session_manager(shared_page))
             else:
-                logger.error("❌ 无法从 about:blank 恢复，测试可能会失败")
-                
+                logger.error("❌ 首次恢复未能离开 about:blank")
+            
+            _repair_blank_page_or_fail(shared_page, "about:blank 分支处理后")
+
         elif is_wrong_page:
             # 如果不是about:blank但也不在home页，正常导航
             logger.info(f"⚠️ 当前不在home页({current_url})，导航到home页")
@@ -317,11 +597,17 @@ def navigate_to_home(shared_page, request):
                 shared_page.wait_for_timeout(3000)
             else:
                 logger.info(f"✓ 成功导航到: {new_url}")
-        
+
+            _dismiss_or_login_pc_modal(shared_page, _wallet_session_manager(shared_page))
+            _repair_blank_page_or_fail(shared_page, "错误页导航后")
+
         # 【新增】额外等待页面稳定，确保所有元素已加载
         shared_page.wait_for_load_state("domcontentloaded", timeout=5000)
         shared_page.wait_for_timeout(1000)
-        
+        # 导航 / 恢复后可能再次弹出登录层
+        _dismiss_or_login_pc_modal(shared_page, _wallet_session_manager(shared_page))
+        _repair_blank_page_or_fail(shared_page, "navigate_to_home 前置收尾")
+
     except Exception as e:
         logger.warning(f"导航到home页时异常: {e}")
         # 尝试强制导航
@@ -329,6 +615,8 @@ def navigate_to_home(shared_page, request):
             shared_page.goto(_CONFIG['base_url'], timeout=15000)
             shared_page.wait_for_load_state("domcontentloaded", timeout=10000)
             shared_page.wait_for_timeout(2000)
+            _dismiss_or_login_pc_modal(shared_page, _wallet_session_manager(shared_page))
+            _repair_blank_page_or_fail(shared_page, "navigate_to_home 异常分支强制导航后")
         except Exception as retry_error:
             logger.error(f"❌ 强制导航也失败: {retry_error}")
     
@@ -343,34 +631,143 @@ def navigate_to_home(shared_page, request):
 # 辅助函数
 # ============================================
 
-def _recover_from_blank_page(page, max_retries=3):
-    """从 about:blank 页面恢复
-    
-    当浏览器意外跳转到 about:blank 时，尝试多种策略恢复到正常状态
+def _safe_action_with_blank_check(page, action_func, action_name="操作", recovery_url=None, wait_after_action=2000):
+    """
+    安全执行操作，并检查和恢复白屏
     
     Args:
         page: Playwright page对象
-        max_retries: 最大重试次数
+        action_func: 要执行的操作函数（无参数）
+        action_name: 操作名称（用于日志）
+        recovery_url: 恢复URL（如果为None则使用go_back）
+        wait_after_action: 操作后等待时间（毫秒）
         
+    Returns:
+        bool: True=操作成功且无白屏，False=出现白屏但恢复成功，抛异常=恢复失败
+    """
+    # 记录操作前URL
+    before_url = page.url
+    logger.info(f"📋 执行{action_name}，当前URL: {before_url}")
+    
+    # 执行操作
+    try:
+        action_func()
+        page.wait_for_timeout(wait_after_action)
+    except Exception as e:
+        logger.error(f"❌ {action_name}失败: {e}")
+        raise
+    
+    # 检查操作后URL
+    after_url = page.url
+    logger.info(f"📋 {action_name}完成，当前URL: {after_url}")
+    
+    # 检查是否是白屏
+    if after_url == "about:blank":
+        logger.warning(f"⚠️ {action_name}后出现白屏，尝试恢复...")
+        
+        # 恢复策略1: 后退
+        try:
+            logger.info("恢复策略1: go_back()")
+            page.go_back(wait_until="load", timeout=5000)
+            page.wait_for_timeout(2000)
+            if page.url != "about:blank":
+                logger.info(f"✓ 通过go_back恢复成功，当前URL: {page.url}")
+                return False  # 有白屏但已恢复
+        except Exception as e:
+            logger.warning(f"go_back失败: {e}")
+        
+        # 恢复策略2: 使用指定URL或默认Home URL
+        if not recovery_url:
+            recovery_url = _CONFIG['base_url']
+        
+        try:
+            logger.info(f"恢复策略2: 导航到 {recovery_url}")
+            page.goto(recovery_url, wait_until="load", timeout=10000)
+            page.wait_for_timeout(2000)
+            if page.url != "about:blank":
+                logger.info(f"✓ 导航恢复成功，当前URL: {page.url}")
+                return False  # 有白屏但已恢复
+        except Exception as e:
+            logger.error(f"导航到恢复URL失败: {e}")
+        
+        # 恢复策略3: 重新加载session
+        try:
+            logger.info("恢复策略3: 重新加载session")
+            session_name = f"{_CONFIG['site']}_{_CONFIG['role']}_{_CONFIG['user_name']}_wallet"
+            session_manager = SessionManager(page, _CONFIG['base_url'], session_name)
+            if session_manager.load_session():
+                page.goto(_CONFIG['base_url'], timeout=15000, wait_until='load')
+                page.wait_for_timeout(2000)
+                if page.url != "about:blank":
+                    logger.info(f"✓ Session恢复成功，当前URL: {page.url}")
+                    return False  # 有白屏但已恢复
+        except Exception as e:
+            logger.error(f"Session恢复失败: {e}")
+        
+        # 所有恢复策略失败
+        raise Exception(f"{action_name}后出现白屏且无法恢复")
+    
+    return True  # 无白屏
+
+
+def _wait_out_transient_blank(page, timeout_ms=12000):
+    """等待 SPA / 提交回流导致的短暂 about:blank 自行变为真实 URL。
+
+    许多白屏并非会话损坏，而是导航未完成；若立即执行 reload/cookie 清除反而会放大问题。
+    """
+    import time
+
+    deadline = time.monotonic() + timeout_ms / 1000.0
+    while time.monotonic() < deadline:
+        try:
+            if page.url != "about:blank":
+                return True
+        except Exception:
+            pass
+        page.wait_for_timeout(250)
+    return False
+
+
+def _recover_from_blank_page(page, max_retries=3):
+    """从 about:blank 页面恢复
+
+    当浏览器意外跳转到 about:blank 时，尝试多种策略恢复到正常状态
+
+    Args:
+        page: Playwright page对象
+        max_retries: 最大重试次数
+
     Returns:
         bool: True=恢复成功，False=恢复失败
     """
     logger.error("🔧 检测到 about:blank 页面，启动恢复流程...")
-    
+
+    if _wait_out_transient_blank(page, timeout_ms=10000):
+        try:
+            cur = page.url
+            if cur != "about:blank" and "/wallet/home" in cur:
+                logger.info(f"✅ 空白页在等待后已落在首页，跳过重型恢复: {cur}")
+                return True
+        except Exception:
+            pass
+
     for attempt in range(max_retries):
         try:
             logger.info(f"恢复尝试 {attempt + 1}/{max_retries}")
-            
+
             if attempt == 0:
                 # 策略1: 重新加载session + 导航
                 logger.info("策略1: 重新加载session并导航")
                 session_name = f"{_CONFIG['site']}_{_CONFIG['role']}_{_CONFIG['user_name']}_wallet"
                 session_manager = SessionManager(page, _CONFIG['base_url'], session_name)
-                
+
                 if session_manager.load_session():
                     logger.info("✓ Session加载成功")
                     page.goto(_CONFIG['base_url'], timeout=15000, wait_until='load')
-                    page.wait_for_load_state("networkidle", timeout=10000)
+                    try:
+                        page.wait_for_load_state("domcontentloaded", timeout=15000)
+                    except Exception:
+                        pass
                     page.wait_for_timeout(2000)
                 else:
                     logger.warning("Session加载失败，直接导航")
@@ -429,6 +826,94 @@ def _recover_from_blank_page(page, max_retries=3):
     
     logger.error(f"❌ 经过 {max_retries} 次尝试仍无法从 about:blank 恢复")
     return False
+
+
+def _repair_blank_page_or_fail(page, phase: str = ""):
+    """about:blank 时执行 Session 重载、导航与登录弹层修复；仍失败则 **当前用例失败**（pytest.fail）。
+
+    不使用 pytest.exit：白屏是待修复的环境/流程问题，应通过完整恢复链处理并以失败单例暴露根因，
+    而不是整会话静默中止。
+    """
+    try:
+        url = page.url
+    except Exception as e:
+        logger.error(f"❌ 无法读取页面 URL（页面可能已崩溃）: {e}")
+        try:
+            page.goto(_CONFIG["base_url"], timeout=20000, wait_until="domcontentloaded")
+            page.wait_for_timeout(2000)
+            sm0 = _wallet_session_manager(page)
+            _dismiss_or_login_pc_modal(page, sm0)
+            url = page.url
+        except Exception as e2:
+            pytest.fail(
+                f"白屏修复：无法读取浏览器 URL 且强制导航失败。"
+                f"阶段={phase}。原因1={e}；原因2={e2}"
+            )
+        if url == "about:blank":
+            pytest.fail(f"白屏修复：强制导航后仍为 about:blank。阶段={phase}")
+        return
+
+    if url != "about:blank":
+        return
+
+    logger.warning(f"[{phase}] 检测到 about:blank，先等待瞬时导航完成…")
+    if _wait_out_transient_blank(page, timeout_ms=15000):
+        try:
+            u = page.url
+            if u != "about:blank" and "/wallet/home" in u:
+                logger.info(f"✓ [{phase}] 白屏已自行恢复（无需 Session 重置）: {u}")
+                return
+        except Exception:
+            pass
+
+    logger.error(f"❌ [{phase}] 仍为白屏，执行完整修复链（Session → 导航 → 弹层登录 → 整页登录）...")
+    sm = _wallet_session_manager(page)
+
+    try:
+        _recover_from_blank_page(page, max_retries=4)
+    except Exception as ex:
+        logger.warning(f"recover_from_blank_page 异常: {ex}")
+    _dismiss_or_login_pc_modal(page, sm)
+    try:
+        if page.url != "about:blank" and "/wallet/home" in page.url:
+            logger.info(f"✓ [{phase}] 白屏已恢复: {page.url}")
+            return
+    except Exception:
+        pass
+
+    _recover_session_full_login(page, sm)
+    _dismiss_or_login_pc_modal(page, sm)
+    try:
+        page.goto(_CONFIG["base_url"], timeout=25000, wait_until="load")
+        page.wait_for_timeout(2000)
+    except Exception as ge:
+        logger.warning(f"整页登录后 goto home 异常: {ge}")
+    _dismiss_or_login_pc_modal(page, sm)
+
+    try:
+        final_url = page.url
+    except Exception:
+        final_url = "about:blank"
+
+    if final_url == "about:blank" or "/wallet/home" not in final_url:
+        try:
+            _recover_from_blank_page(page, max_retries=3)
+            _dismiss_or_login_pc_modal(page, sm)
+            final_url = page.url
+        except Exception:
+            pass
+
+    if final_url == "about:blank":
+        pytest.fail(
+            f"白屏 about:blank 经 Session 重载、弹层自动登录与整页登录后仍未恢复。"
+            f"阶段={phase}。请检查网络、站点与账号 Session。"
+        )
+    if "/wallet/home" not in final_url:
+        pytest.fail(
+            f"白屏修复后未落在钱包首页，当前 URL={final_url}。阶段={phase}。"
+        )
+
+    logger.info(f"✓ [{phase}] 白屏修复完成: {final_url}")
 
 
 def _handle_load_fail_error(page, max_retries=2):
@@ -547,7 +1032,7 @@ def _ensure_on_home_page(page):
                 except:
                     pass
                 
-                page.goto(_CONFIG['base_url'], timeout=15000, wait_until='networkidle')
+                page.goto(_CONFIG['base_url'], timeout=15000, wait_until='domcontentloaded')
                 page.wait_for_timeout(3000)
             
             # 处理可能的Load Fail错误
@@ -559,9 +1044,15 @@ def _ensure_on_home_page(page):
             
             if new_url != "about:blank" and "/wallet/home" in new_url:
                 logger.info(f"✅ 成功返回Home页面: {new_url}")
+                smx = _wallet_session_manager(page)
+                _dismiss_or_login_pc_modal(page, smx)
                 return True
             else:
                 logger.warning(f"⚠️ 导航后仍未到达Home页面，当前URL: {new_url}")
+                smx = _wallet_session_manager(page)
+                _dismiss_or_login_pc_modal(page, smx)
+                _wait_out_transient_blank(page, 6000)
+                
                 if retry < max_retries - 1:
                     logger.info(f"等待2秒后重试...")
                     page.wait_for_timeout(2000)
@@ -760,15 +1251,17 @@ def _clear_withdrawal_in_progress(page):
         # 步骤5: 执行更新脚本
         logger.info(f"📋 步骤3: 调用脚本更新状态为成功")
         logger.info(f"🔧 执行命令: python test_cases/airwallex_recharge/update_payment_status.py --payment-no {reference_id} --status 1")
-        
-        script_path = "test_cases/airwallex_recharge/update_payment_status.py"
-        
+
+        import os
+        script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        script_path = os.path.join(script_dir, "airwallex_recharge", "update_payment_status.py")
+
         try:
             result = subprocess.run(
                 ['python', script_path, '--payment-no', reference_id, '--status', '1'],
                 capture_output=True,
                 encoding='utf-8',
-                errors='ignore',
+                errors='replace',
                 timeout=30,
                 cwd='.'
             )
@@ -1558,7 +2051,9 @@ def _old_test_helper_implementation():
     
     # ========== 执行脚本更新状态 ==========
     with allure.step(f"执行脚本更新状态为成功 (Reference ID: {reference_id})"):
-        script_path = "test_cases/airwallex_recharge/update_payment_status.py"
+        import os
+        script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        script_path = os.path.join(script_dir, "airwallex_recharge", "update_payment_status.py")
         cmd = [
             "python",
             script_path,
@@ -1571,7 +2066,14 @@ def _old_test_helper_implementation():
         logger.info(f"执行命令: {' '.join(cmd)}")
         
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=30,
+            )
             
             logger.info(f"脚本返回码: {result.returncode}")
             logger.info(f"脚本输出:\n{result.stdout}")
@@ -2438,8 +2940,10 @@ class TestWithdrawCompleteFlow:
         # ========== Act：执行脚本修改状态 ==========
         with allure.step("执行update_payment_status.py脚本"):
             import subprocess
-            
-            script_path = "test_cases/airwallex_recharge/update_payment_status.py"
+            import os
+
+            script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            script_path = os.path.join(script_dir, "airwallex_recharge", "update_payment_status.py")
             cmd = [
                 "python",
                 script_path,
@@ -2451,7 +2955,14 @@ class TestWithdrawCompleteFlow:
             
             logger.info(f"执行命令: {' '.join(cmd)}")
             
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=30,
+            )
             
             logger.info(f"脚本返回码: {result.returncode}")
             logger.info(f"脚本输出:\n{result.stdout}")
@@ -3077,7 +3588,7 @@ class TestWithdrawHistoryDetails:
         # 测试开始前检测白屏
         if shared_page.url == "about:blank":
             logger.error("测试开始前检测到白屏 URL: about:blank")
-            _recover_from_blank_page(shared_page)
+            _repair_blank_page_or_fail(shared_page, "TC043 测试开始前")
         
         # 确保在Home页面才能点击Details按钮
         _ensure_on_home_page(shared_page)
@@ -3120,7 +3631,7 @@ class TestWithdrawHistoryDetails:
             # 检测白屏
             if shared_page.url == "about:blank":
                 logger.error("点击前检测到白屏 URL: about:blank")
-                _recover_from_blank_page(shared_page)
+                _repair_blank_page_or_fail(shared_page, "TC043 点击 Details 单元格前")
             
             # 使用MCP录制的成功选择器
             details_cell = shared_page.get_by_role('cell', name='Details').first
@@ -3131,7 +3642,7 @@ class TestWithdrawHistoryDetails:
             # 点击后检测白屏
             if shared_page.url == "about:blank":
                 logger.error("点击后检测到白屏 URL: about:blank")
-                _recover_from_blank_page(shared_page)
+                _repair_blank_page_or_fail(shared_page, "TC043 点击 Details 单元格后")
         
         # ========== Assert：验证提现详情对话框 ==========
         with allure.step("验证详情对话框打开"):
@@ -3198,7 +3709,7 @@ class TestWithdrawHistoryDetails:
             # 检测并恢复白屏
             if shared_page.url == "about:blank":
                 logger.error("检测到白屏 URL: about:blank")
-                _recover_from_blank_page(shared_page)
+                _repair_blank_page_or_fail(shared_page, "TC043 Reference ID 步骤")
             
             # 查找Reference ID（19位数字）
             # 限制在对话框内查找，使用.first避免strict mode violation
@@ -3217,14 +3728,14 @@ class TestWithdrawHistoryDetails:
                 # 检测白屏
                 if shared_page.url == "about:blank":
                     logger.error("检测到白屏 URL: about:blank")
-                    _recover_from_blank_page(shared_page)
+                    _repair_blank_page_or_fail(shared_page, "TC043 Reference ID 异常分支")
                 raise
         
         with allure.step("验证显示Help链接"):
             # 检测并恢复白屏（Help链接可能触发导航）
             if shared_page.url == "about:blank":
                 logger.error("检测到白屏 URL: about:blank")
-                _recover_from_blank_page(shared_page)
+                _repair_blank_page_or_fail(shared_page, "TC043 Help 链接前")
             
             # 查找Help链接（可能有多个，取第一个）
             # 限制在对话框内查找，避免匹配到页面其他位置的Help
@@ -3240,7 +3751,7 @@ class TestWithdrawHistoryDetails:
         # 再次检测白屏
         if shared_page.url == "about:blank":
             logger.error("检测到白屏 URL: about:blank")
-            _recover_from_blank_page(shared_page)
+            _repair_blank_page_or_fail(shared_page, "TC043 收尾")
         
         with allure.step("验证显示Close按钮"):
             # 查找Close按钮
@@ -3543,11 +4054,83 @@ class TestRechargeAndWithdrawAll:
             shared_page.wait_for_timeout(500)
             logger.info(f"✓ 已输入验证码：{code}")
             
+            # 点击Confirm按钮（使用增强的白屏防护）
+            logger.info("准备点击Confirm按钮...")
+            
+            # 记录点击前的URL
+            url_before_click = shared_page.url
+            logger.info(f"点击前URL: {url_before_click}")
+            
             # 点击Confirm按钮
             confirm_button = shared_page.get_by_role('button', name='Confirm')
             confirm_button.click()
-            shared_page.wait_for_timeout(5000)
             logger.info("✓ 已点击Confirm按钮")
+            _wait_out_transient_blank(shared_page, 12000)
+
+            # 策略1: 先等待一段时间让后端处理
+            shared_page.wait_for_timeout(3000)
+            
+            # 策略2: 循环检查页面状态，直到稳定或超时
+            max_wait_cycles = 15  # 最多等待15秒
+            stable_url = None
+            
+            for cycle in range(max_wait_cycles):
+                current_url = shared_page.url
+                logger.info(f"检查URL (轮次{cycle+1}/{max_wait_cycles}): {current_url}")
+                
+                # 如果是about:blank，等待并重试
+                if current_url == "about:blank":
+                    logger.warning(f"⚠️ 检测到白屏 (轮次{cycle+1})，等待页面稳定...")
+                    _wait_out_transient_blank(shared_page, 2000)
+                    continue
+                
+                # 如果URL正常，检查是否稳定
+                if current_url != "about:blank":
+                    # 再等待1秒，看URL是否会变化
+                    shared_page.wait_for_timeout(1000)
+                    url_after_wait = shared_page.url
+                    
+                    if url_after_wait == current_url and url_after_wait != "about:blank":
+                        # URL稳定且不是白屏
+                        stable_url = current_url
+                        logger.info(f"✓ URL已稳定: {stable_url}")
+                        break
+                    elif url_after_wait == "about:blank":
+                        logger.warning(f"⚠️ URL变为白屏，继续等待...")
+                        continue
+                    else:
+                        logger.info(f"URL仍在变化: {current_url} → {url_after_wait}，继续等待...")
+                        continue
+            
+            # 策略3: 如果循环结束仍是白屏，执行完整修复链（避免仅靠 goto 仍卡在 LoginPC / blank）
+            final_url = shared_page.url
+            if final_url == "about:blank":
+                logger.error(f"❌ 等待{max_wait_cycles}秒后仍是白屏，执行 Session/登录修复链...")
+                try:
+                    shared_page.go_back(wait_until="domcontentloaded", timeout=8000)
+                    shared_page.wait_for_timeout(1500)
+                except Exception as gb_err:
+                    logger.debug(f"go_back 可选步骤失败: {gb_err}")
+                if shared_page.url == "about:blank":
+                    _repair_blank_page_or_fail(shared_page, "TC051 Confirm 验证码提交后")
+            
+            logger.info(f"✓ 最终URL: {shared_page.url}")
+            
+            # 检查对话框状态（验证提交是否完成）
+            dialog = shared_page.get_by_role("dialog")
+            logger.info("检查验证码对话框状态...")
+            for check_attempt in range(5):  # 最多检查5次
+                try:
+                    if not dialog.is_visible(timeout=1000):
+                        logger.info("✓ 验证码对话框已关闭")
+                        break
+                except Exception:
+                    logger.info("✓ 对话框已不可见")
+                    break
+                shared_page.wait_for_timeout(1000)
+            
+            # 确保在正确的页面上
+            _ensure_on_home_page(shared_page)
 
             # 获取Reference ID
             # 使用.first避免strict mode violation
@@ -3556,13 +4139,34 @@ class TestRechargeAndWithdrawAll:
                 TestRechargeAndWithdrawAll.reference_id = ref_locator.inner_text().strip()
                 logger.info(f"✓ Reference ID: {TestRechargeAndWithdrawAll.reference_id}")
             else:
-                pytest.skip("未获取到Reference ID")
+                # 尝试从其他位置获取（可能在交易历史页面）
+                logger.warning("主页面未找到Reference ID，尝试从Details获取...")
+                try:
+                    details_btn = shared_page.get_by_text("Details").first
+                    if details_btn.is_visible(timeout=3000):
+                        details_btn.click()
+                        shared_page.wait_for_timeout(2000)
+                        ref_locator = shared_page.locator('text=/\\d{19}/').first
+                        if ref_locator.is_visible(timeout=3000):
+                            TestRechargeAndWithdrawAll.reference_id = ref_locator.inner_text().strip()
+                            logger.info(f"✓ Reference ID (从Details获取): {TestRechargeAndWithdrawAll.reference_id}")
+                        else:
+                            pytest.skip("Details页面也未找到Reference ID")
+                    else:
+                        pytest.skip("未找到Details按钮")
+                except Exception as e:
+                    logger.error(f"从Details获取Reference ID失败: {e}")
+                    pytest.skip("未获取到Reference ID")
         
         with allure.step("更新提现状态为成功"):
             result = subprocess.run(
                 ["python", "test_cases/airwallex_recharge/update_payment_status.py",
                  "--payment-no", TestRechargeAndWithdrawAll.reference_id, "--status", "1"],
-                capture_output=True, text=True, timeout=30
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=30,
             )
             assert result.returncode == 0, f"状态更新失败: {result.stderr}"
             logger.info("✓ 状态已更新为成功")
@@ -3592,13 +4196,16 @@ class TestRechargeAndWithdrawAll:
                 except ValueError:
                     pass
         with allure.step("执行充值脚本"):
+            import os
+            script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            recharge_script = os.path.join(script_dir, "airwallex_recharge", "airwallex_recharge_cli.py")
             result = subprocess.run(
-                [sys.executable, "test_cases/airwallex_recharge/airwallex_recharge_cli.py",
+                [sys.executable, recharge_script,
                  "--amount", "50.00", "--reason", "living_expenses"],
-                capture_output=True, 
-                text=True, 
-                encoding='utf-8',  # 指定编码避免GBK错误
-                errors='ignore',   # 忽略无法解码的字符
+                capture_output=True,
+                text=True,
+                encoding='utf-8',
+                errors='replace',
                 timeout=60, 
                 cwd="."
             )

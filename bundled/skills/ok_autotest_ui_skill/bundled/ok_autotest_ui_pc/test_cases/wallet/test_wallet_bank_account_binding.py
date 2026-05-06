@@ -490,46 +490,56 @@ def test_bank_account_binding_complete_flow(page, config):
 # ============================================
 
 def _check_and_recover_from_blank_page(page, target_url):
-    """检测并恢复白屏问题
-    
-    Args:
-        page: Playwright page 对象
-        target_url: 目标URL，用于恢复
-    
-    Returns:
-        bool: 如果检测到白屏并成功恢复返回 True，否则返回 False
+    """检测并修复白屏（about:blank）；不把白屏当作可忽略状态。
+
+    先用后退与直达导航恢复；仍空白则与提现用例共用完整修复链（Session / 弹层登录 / 整页登录）。
+    修复仍失败时由修复链 pytest.fail，**不再**静默返回 False。
     """
     try:
         current_url = page.url
-        if "about:blank" in current_url or current_url == "about:blank":
-            logger.error(f"检测到白屏 URL: {current_url}")
-            logger.info("尝试恢复到目标页面...")
-            
-            # 尝试返回上一页
-            try:
-                page.go_back(timeout=5000)
-                page.wait_for_timeout(1000)
-                if "about:blank" not in page.url:
-                    logger.info("✓ 通过返回上一页恢复成功")
-                    return True
-            except Exception as e:
-                logger.warning(f"返回上一页失败: {e}")
-            
-            # 如果返回失败，直接导航到目标URL
-            try:
-                page.goto(target_url, timeout=10000)
-                page.wait_for_load_state("load", timeout=10000)
-                page.wait_for_timeout(2000)
-                logger.info("✓ 通过重新导航恢复成功")
-                return True
-            except Exception as e:
-                logger.error(f"重新导航失败: {e}")
-                raise Exception(f"无法从白屏恢复: {e}")
-        
-        return False
     except Exception as e:
-        logger.error(f"白屏检测异常: {e}")
+        logger.error(f"读取页面 URL 失败: {e}")
+        raise
+
+    if "about:blank" not in current_url and current_url != "about:blank":
         return False
+
+    logger.error(f"检测到白屏 URL: {current_url}")
+    logger.info("尝试恢复到目标页面...")
+
+    try:
+        page.go_back(timeout=5000)
+        page.wait_for_timeout(1000)
+        if "about:blank" not in page.url:
+            logger.info("✓ 通过返回上一页恢复成功")
+            return True
+    except Exception as e:
+        logger.warning(f"返回上一页失败: {e}")
+
+    try:
+        page.goto(target_url, timeout=20000, wait_until="domcontentloaded")
+        try:
+            page.wait_for_load_state("domcontentloaded", timeout=15000)
+        except Exception:
+            pass
+        page.wait_for_timeout(2000)
+    except Exception as e:
+        logger.error(f"重新导航失败: {e}")
+
+    try:
+        after = page.url
+    except Exception:
+        after = "about:blank"
+
+    if "about:blank" not in after:
+        logger.info(f"✓ 通过重新导航恢复成功: {after}")
+        return True
+
+    logger.warning("简单导航未能离开 about:blank，启动完整修复链（与 test_wallet_withdrawal 一致）...")
+    from test_cases.wallet.test_wallet_withdrawal import _repair_blank_page_or_fail
+
+    _repair_blank_page_or_fail(page, phase=f"bank_binding._check_and_recover target={target_url}")
+    return True
 
 
 def _close_blocking_dialogs(page):
@@ -608,18 +618,21 @@ def _safe_click_with_blank_check(page, element, element_name="元素"):
         element: 要点击的元素
         element_name: 元素名称（用于日志）
     """
+    from test_cases.wallet.test_wallet_withdrawal import _wait_out_transient_blank
+
     try:
         # 先关闭可能阻塞的对话框
         _close_blocking_dialogs(page)
         
-        element.click(timeout=3000, force=True, no_wait_after=True)
-        page.wait_for_timeout(500)
-        
+        # 不使用 no_wait_after：否则导航未完成时易读到短暂 about:blank
+        element.click(timeout=8000, force=True)
+        page.wait_for_timeout(400)
+        _wait_out_transient_blank(page, timeout_ms=12000)
+
         # 检测白屏
         if "about:blank" in page.url:
             logger.warning(f"点击{element_name}后检测到白屏，尝试恢复")
             _check_and_recover_from_blank_page(page, _CONFIG['base_url'])
-            return False
         return True
     except Exception as e:
         logger.warning(f"点击{element_name}失败: {e}")
@@ -816,6 +829,16 @@ class TestBankAccountUnbinding:
                 
                 # 关闭可能遗留的对话框
                 _close_blocking_dialogs(shared_page)
+                # Session 失效时常驻 LoginPC 遮罩，需自动登录而非仅关弹窗（与提现用例一致）
+                from test_cases.wallet.test_wallet_withdrawal import (
+                    _dismiss_or_login_pc_modal,
+                    _repair_blank_page_or_fail,
+                )
+
+                _dismiss_or_login_pc_modal(shared_page, session_manager)
+                _repair_blank_page_or_fail(
+                    shared_page, phase="bank_unbind.setup_class after session"
+                )
             else:
                 logger.info("⚠️ 未找到 Session，跳过解绑测试（需先运行绑定测试）")
                 pytest.skip("需要先运行TC016-TC023绑定银行账户")

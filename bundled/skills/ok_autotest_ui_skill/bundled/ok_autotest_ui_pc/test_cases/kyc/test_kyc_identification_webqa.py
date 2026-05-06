@@ -284,36 +284,78 @@ class TestKycIdentificationWebqa:
         page.goto(config["base_url"], timeout=30000)
         page.wait_for_load_state("domcontentloaded", timeout=10000)
         page.wait_for_timeout(2000)
-        if page.get_by_role("button", name="Retry").is_visible(timeout=2000):
-            kyc_page.click_retry_button()
-            page.wait_for_timeout(2000)
-        if page.get_by_role("button", name="Begin").is_visible(timeout=2000):
-            kyc_page.click_begin_button()
-            page.wait_for_timeout(3000)
-            page.wait_for_load_state("domcontentloaded", timeout=10000)
         
-        page.wait_for_timeout(2000)
-        try:
-            page.get_by_text("Upload Document").wait_for(state="visible", timeout=10000)
-        except Exception:
-            logger.warning("未找到 Upload Document 标题，可能已在上传页")
-        
-        # 按钮文案可能是 "Upload" 或 "Choose File"
-        btn_found = False
-        try:
-            page.get_by_role("button", name="Upload").wait_for(state="visible", timeout=5000)
-            btn_found = True
-        except Exception:
+        # 多次尝试机制，处理页面状态不确定的情况
+        max_retries = 3
+        for attempt in range(max_retries):
             try:
-                page.get_by_role("button", name="Choose File").wait_for(state="visible", timeout=5000)
-                btn_found = True
+                # 检查并处理 Retry 按钮
+                if page.get_by_role("button", name="Retry").is_visible(timeout=2000):
+                    kyc_page.click_retry_button()
+                    page.wait_for_timeout(3000)
+                    page.wait_for_load_state("domcontentloaded", timeout=10000)
+                
+                # 检查并处理 Begin 按钮
+                if page.get_by_role("button", name="Begin").is_visible(timeout=2000):
+                    kyc_page.click_begin_button()
+                    page.wait_for_timeout(3000)
+                    page.wait_for_load_state("domcontentloaded", timeout=10000)
+                
+                # 等待并确认到达上传页
+                page.wait_for_timeout(2000)
+                
+                # 尝试找到 Upload Document 标题
+                try:
+                    page.get_by_text("Upload Document").wait_for(state="visible", timeout=10000)
+                    logger.info("✓ 找到 Upload Document 标题")
+                except Exception:
+                    logger.warning(f"未找到 Upload Document 标题（尝试 {attempt + 1}/{max_retries}）")
+                
+                # 按钮文案可能是 "Upload" 或 "Choose File"
+                btn_found = False
+                try:
+                    page.get_by_role("button", name="Upload").wait_for(state="visible", timeout=5000)
+                    btn_found = True
+                    logger.info("✓ 找到 Upload 按钮")
+                except Exception:
+                    try:
+                        page.get_by_role("button", name="Choose File").wait_for(state="visible", timeout=5000)
+                        btn_found = True
+                        logger.info("✓ 找到 Choose File 按钮")
+                    except Exception as e:
+                        if attempt == max_retries - 1:
+                            logger.error(f"等待上传按钮失败（尝试 {attempt + 1}/{max_retries}）: {e}")
+                            page.screenshot(path="reports/screenshots/debug_go_to_upload_page.png", full_page=True, timeout=60000)
+                            logger.error(f"当前 URL: {page.url}")
+                            
+                            # 记录页面上所有按钮
+                            try:
+                                all_buttons = page.get_by_role("button").all()
+                                button_texts = [btn.inner_text() if btn.is_visible() else f"[隐藏]{btn.get_attribute('name') or ''}" for btn in all_buttons[:10]]
+                                logger.error(f"页面上的按钮: {button_texts}")
+                            except Exception:
+                                pass
+                            
+                            raise AssertionError(f"未找到 Upload 或 Choose File 按钮（已重试 {max_retries} 次）")
+                        else:
+                            # 不是最后一次尝试，重新导航页面
+                            logger.warning(f"未找到上传按钮，第 {attempt + 1} 次尝试失败，重新导航页面...")
+                            page.goto(config["base_url"], timeout=30000)
+                            page.wait_for_load_state("domcontentloaded", timeout=10000)
+                            page.wait_for_timeout(2000)
+                            continue
+                
+                if btn_found:
+                    logger.info(f"✓ 成功到达上传页（尝试 {attempt + 1}/{max_retries}）")
+                    return
+                    
             except Exception as e:
-                logger.error(f"等待上传按钮失败: {e}")
-                page.screenshot(path="reports/screenshots/debug_go_to_upload_page.png", full_page=True, timeout=60000)
-                raise
-        
-        if not btn_found:
-            raise AssertionError("未找到 Upload 或 Choose File 按钮")
+                if attempt == max_retries - 1:
+                    logger.error(f"_go_to_upload_page 失败（尝试 {attempt + 1}/{max_retries}）: {e}")
+                    raise
+                else:
+                    logger.warning(f"_go_to_upload_page 第 {attempt + 1} 次尝试异常，重试中: {e}")
+                    page.wait_for_timeout(2000)
 
     # ==================== 用例 4：ESC 关闭弹窗 ====================
 
