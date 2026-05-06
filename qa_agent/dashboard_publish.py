@@ -196,6 +196,90 @@ def _normalize_list_for_publish(value: Any) -> list[str]:
     return [str(value)]
 
 
+def _sample_list_for_publish(value: Any, limit: int = 50) -> dict[str, Any]:
+    if not isinstance(value, list):
+        return {"total": 0, "items": []}
+    return {"total": len(value), "items": value[:limit]}
+
+
+def _compact_phase_report_for_publish(value: Any) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        return {}
+    keep_keys = {
+        "phase",
+        "name",
+        "pytest_exit_code",
+        "junit_path",
+        "output_path",
+        "empty_marker_path",
+        "pytest_target_count",
+        "result_source",
+        "result_warnings",
+    }
+    compact = {key: value[key] for key in keep_keys if key in value}
+    case_results = value.get("case_results")
+    if isinstance(case_results, list):
+        compact["case_results_total"] = len(case_results)
+    return compact
+
+
+def _compact_ok_ui_summary_for_publish(summary: dict[str, Any]) -> dict[str, Any]:
+    keep_keys = {
+        "run_id",
+        "dry_run",
+        "selection",
+        "selected_count",
+        "selected_modules",
+        "selected_features",
+        "requested_workers",
+        "resolved_workers",
+        "parallel_enabled",
+        "parallel_reason",
+        "parallel_granularity",
+        "pytest_command",
+        "artifact_retention",
+        "run_status",
+        "block_reason",
+        "pytest_exit_code",
+        "execution_target_mode",
+        "pytest_target_count",
+        "prerequisite_attempted",
+        "prerequisite_selected_count",
+        "prerequisite_passed_count",
+        "executed_cases",
+        "passed_cases",
+        "failed_cases",
+        "skipped_cases",
+        "allure_report",
+        "allure_url",
+        "lean_cleanup",
+    }
+    compact = {key: summary[key] for key in keep_keys if key in summary}
+    for key in (
+        "selected_nodeids",
+        "selected_case_ids",
+        "scope_case_nodeids",
+        "recommended_case_nodeids",
+        "baseline_case_nodeids",
+        "prerequisite_selector_texts",
+    ):
+        if key in summary:
+            compact[f"{key}_sample"] = _sample_list_for_publish(summary.get(key))
+    case_results = summary.get("case_results")
+    if isinstance(case_results, list):
+        compact["case_results_total"] = len(case_results)
+        compact["failed_case_results_sample"] = [
+            item for item in case_results if isinstance(item, dict) and item.get("outcome") == "failed"
+        ][:50]
+        compact["skipped_case_results_sample"] = [
+            item for item in case_results if isinstance(item, dict) and item.get("outcome") == "skipped"
+        ][:20]
+    phase_reports = summary.get("phase_reports")
+    if isinstance(phase_reports, list):
+        compact["phase_reports"] = [_compact_phase_report_for_publish(item) for item in phase_reports]
+    return compact
+
+
 def _standalone_ok_ui_report(ok_ui_run_id: str, summary: dict[str, Any], coverage: dict[str, Any], decision: dict[str, Any]) -> str:
     run_status = summary.get("run_status") or ("dry_run" if summary.get("dry_run") else "unknown")
     lines = [
@@ -296,7 +380,7 @@ def build_ok_ui_publish_payload(
         "artifacts": {
             "run_state": run_state,
             "final_report": _standalone_ok_ui_report(ok_ui_run_id, summary, coverage, decision),
-            "summary": summary,
+            "summary": _compact_ok_ui_summary_for_publish(summary),
             "coverage": coverage,
             "coverage_dashboard": coverage_dashboard,
             "decision": decision,
