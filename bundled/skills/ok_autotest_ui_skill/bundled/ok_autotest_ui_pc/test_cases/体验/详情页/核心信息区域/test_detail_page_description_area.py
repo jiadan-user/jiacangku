@@ -68,15 +68,40 @@ def detail_page_core_info(page):
 
 @pytest.fixture(scope="module")
 def test_post_url(page, config):
-    """从列表页动态获取一个测试帖子URL"""
-    logger.info("从列表页动态获取测试帖子URL...")
-    page.goto(config["base_url"], wait_until="domcontentloaded", timeout=30000)
+    """从列表页动态获取一个包含完整信息的测试帖子URL(优先Community分类)"""
+    logger.info("从列表页动态获取包含完整信息的测试帖子URL...")
+    
+    # 优先从Community分类找帖子(通常有完整的地点和描述信息)
+    community_list_url = "https://us.58v5.cn/en/city-washington1/cate-community/"
+    page.goto(community_list_url, wait_until="domcontentloaded", timeout=30000)
     page.wait_for_timeout(3000)
     page.wait_for_load_state("load", timeout=30000)
     page.wait_for_timeout(2000)
     
     all_links = page.get_by_role("link").all()
     
+    # 查找包含详情页ID的链接(排除jobs/property)
+    for link in all_links:
+        href = link.get_attribute('href')
+        if href and '/cate-' in href and '-' in href.split('/')[-2]:
+            # 排除jobs和property
+            if '/cate-jobs/' in href or '/cate-property/' in href:
+                continue
+            # 确保是详情页链接(包含帖子ID)
+            if '/city-' in href and href.count('/') > 5:
+                try:
+                    if link.is_visible():
+                        logger.info(f"✓ 找到Community测试帖子: {href}")
+                        return href
+                except:
+                    continue
+    
+    # 如果Community分类没找到,fallback到首页查找
+    logger.warning("Community分类未找到合适帖子,尝试从首页查找...")
+    page.goto(config["base_url"], wait_until="domcontentloaded", timeout=30000)
+    page.wait_for_timeout(3000)
+    
+    all_links = page.get_by_role("link").all()
     for link in all_links:
         href = link.get_attribute('href')
         if href and '/cate-jobs/' not in href and '/cate-property/' not in href and \

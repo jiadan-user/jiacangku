@@ -7,6 +7,7 @@ import tempfile
 import types
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 OK_UI_ROOT = Path(__file__).resolve().parents[1] / "bundled" / "skills" / "ok_autotest_ui_skill" / "bundled" / "ok_autotest_ui_pc"
@@ -150,6 +151,31 @@ class OkTestRunnerTests(unittest.TestCase):
 
             self.assertFalse(cleanup["enabled"])
             self.assertTrue(debug_path.exists())
+
+    def test_generate_allure_report_uses_run_scoped_report_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            results_dir = root / "allure-results"
+            report_dir = root / "ok_test_runs" / "run-1" / "allure-report"
+            results_dir.mkdir()
+
+            def fake_run(command, capture_output=True, text=True):
+                self.assertEqual(command[2], str(results_dir))
+                self.assertEqual(command[4], str(report_dir))
+                report_dir.mkdir(parents=True)
+                (report_dir / "index.html").write_text("<html></html>", encoding="utf-8")
+                return types.SimpleNamespace(returncode=0, stdout="", stderr="")
+
+            with (
+                patch.object(runner, "_ensure_allure_cli", return_value=("allure", "Allure CLI 已就绪。")),
+                patch.object(runner.subprocess, "run", side_effect=fake_run),
+                patch.object(runner, "_sync_latest_static_report"),
+                patch.object(runner, "_start_allure_server", return_value={"url": "http://127.0.0.1:1/index.html", "message": "ok"}),
+            ):
+                result = runner._generate_allure_report(results_dir, report_dir)
+
+            self.assertTrue(result["generated"])
+            self.assertEqual(result["report_dir"], str(report_dir))
 
 
 if __name__ == "__main__":

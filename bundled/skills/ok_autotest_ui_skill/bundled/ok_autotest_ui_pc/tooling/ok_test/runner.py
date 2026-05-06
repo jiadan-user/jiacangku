@@ -271,18 +271,29 @@ def _start_allure_server(report_dir: Path) -> dict[str, Any]:
     }
 
 
-def _generate_allure_report() -> dict[str, Any]:
+def _sync_latest_static_report(report_dir: Path) -> None:
+    if report_dir == ALLURE_REPORT_DIR or not report_dir.exists():
+        return
+    ensure_dir(ROOT_REPORTS_DIR)
+    if ALLURE_REPORT_DIR.exists():
+        shutil.rmtree(ALLURE_REPORT_DIR)
+    shutil.copytree(report_dir, ALLURE_REPORT_DIR)
+
+
+def _generate_allure_report(results_dir: Path | None = None, report_dir: Path | None = None) -> dict[str, Any]:
+    results_dir = results_dir or ALLURE_RESULTS_DIR
+    report_dir = report_dir or ALLURE_REPORT_DIR
     allure_bin, ensure_message = _ensure_allure_cli()
     if not allure_bin:
         return {
             "available": False,
             "generated": False,
             "message": ensure_message,
-            "report_dir": str(ALLURE_REPORT_DIR),
+            "report_dir": str(report_dir),
             "url": None,
         }
 
-    command = [allure_bin, "generate", str(ALLURE_RESULTS_DIR), "-o", str(ALLURE_REPORT_DIR), "--clean"]
+    command = [allure_bin, "generate", str(results_dir), "-o", str(report_dir), "--clean"]
     result = subprocess.run(command, capture_output=True, text=True)
     if result.returncode != 0:
         tail = (result.stderr or result.stdout).strip().splitlines()
@@ -291,16 +302,17 @@ def _generate_allure_report() -> dict[str, Any]:
             "available": True,
             "generated": False,
             "message": f"{ensure_message} Allure CLI 已找到，但静态报告生成失败：{reason}",
-            "report_dir": str(ALLURE_REPORT_DIR),
+            "report_dir": str(report_dir),
             "url": None,
         }
 
-    server_result = _start_allure_server(ALLURE_REPORT_DIR)
+    _sync_latest_static_report(report_dir)
+    server_result = _start_allure_server(report_dir)
     return {
         "available": True,
         "generated": True,
         "message": f"{ensure_message} {server_result['message']}".strip(),
-        "report_dir": str(ALLURE_REPORT_DIR),
+        "report_dir": str(report_dir),
         "url": server_result.get("url"),
     }
 
@@ -962,7 +974,7 @@ def handle_run(args: argparse.Namespace) -> int:
     decision_result = evaluate_decision(summary)
     save_json(run_dir / "coverage_report.json", coverage_result)
     save_json(run_dir / "decision_report.json", decision_result)
-    allure_result = _generate_allure_report()
+    allure_result = _generate_allure_report(allure_dir, run_dir / "allure-report")
     summary["allure_report"] = allure_result["report_dir"]
     summary["allure_url"] = allure_result.get("url")
     summary["lean_cleanup"] = _lean_cleanup(run_dir, summary)

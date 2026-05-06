@@ -12,27 +12,8 @@ from utils.logger import setup_logger
 logger = setup_logger()
 
 # ========== 测试配置 ==========
-_CONFIG = {
-    "site": "us",
-    "site_name": "美国站 (US 58v5.cn)",
-    "base_url": "https://us.58v5.cn",
-    "role": "visitor",
-    "user_name": "us_visitor_breadcrumb",
-    "test_account": None,
-    "detail_url": "https://us.58v5.cn/en/city-washington/cate-graphic-design1/motorbike-askdjghaslkdjhsaldjkhsalkdjhsalkjdhlkjashdasjkdhhaskjdh-2045093888535838721/",
-    "browser": {
-        "type": "chromium",
-        "headless": True,
-        "slow_mo": 0,
-        "viewport": {"width": 1920, "height": 1080}
-    }
-}
 
 
-@pytest.fixture(scope="module")
-def config():
-    """测试配置"""
-    return _CONFIG
 
 
 # ========== 测试用例 ==========
@@ -47,11 +28,11 @@ def config():
 @allure.title("TC-BREADCRUMB-C-001：面包屑文本样式")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证面包屑链接的文本样式，包括颜色、字体大小、下划线等")
-def test_breadcrumb_text_style(page, config):
+def test_breadcrumb_text_style(page, config, detail_url):
     """TC-BREADCRUMB-C-001: 面包屑文本样式"""
     
     breadcrumb = BreadcrumbPage(page)
-    detail_url = config['detail_url']
+    
     
     logger.info("="*80)
     logger.info("TC-BREADCRUMB-C-001: 面包屑文本样式")
@@ -108,11 +89,11 @@ def test_breadcrumb_text_style(page, config):
 @allure.title("TC-BREADCRUMB-C-002：链接悬停效果")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证鼠标悬停在面包屑链接上时的视觉反馈")
-def test_breadcrumb_hover_effect(page, config):
+def test_breadcrumb_hover_effect(page, config, detail_url):
     """TC-BREADCRUMB-C-002: 链接悬停效果"""
     
     breadcrumb = BreadcrumbPage(page)
-    detail_url = config['detail_url']
+    
     
     logger.info("="*80)
     logger.info("TC-BREADCRUMB-C-002: 链接悬停效果")
@@ -160,11 +141,11 @@ def test_breadcrumb_hover_effect(page, config):
 @allure.title("TC-BREADCRUMB-C-003：面包屑容器布局")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证面包屑导航的位置、尺寸和布局")
-def test_breadcrumb_container_layout(page, config):
+def test_breadcrumb_container_layout(page, config, detail_url):
     """TC-BREADCRUMB-C-003: 面包屑容器布局"""
     
     breadcrumb = BreadcrumbPage(page)
-    detail_url = config['detail_url']
+    
     
     logger.info("="*80)
     logger.info("TC-BREADCRUMB-C-003: 面包屑容器布局")
@@ -213,11 +194,11 @@ def test_breadcrumb_container_layout(page, config):
 @allure.title("TC-BREADCRUMB-C-004：超长文本截断")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证最后一个节点的超长文本是否应用省略号截断")
-def test_breadcrumb_text_ellipsis(page, config):
+def test_breadcrumb_text_ellipsis(page, config, detail_url):
     """TC-BREADCRUMB-C-004: 超长文本截断"""
     
     breadcrumb = BreadcrumbPage(page)
-    detail_url = config['detail_url']
+    
     
     logger.info("="*80)
     logger.info("TC-BREADCRUMB-C-004: 超长文本截断")
