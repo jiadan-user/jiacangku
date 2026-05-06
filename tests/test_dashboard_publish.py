@@ -136,6 +136,41 @@ class DashboardPublishConfigTest(unittest.TestCase):
         self.assertEqual(compact["phase_reports"][0]["case_results_total"], 653)
         self.assertLess(len(json.dumps(compact)), 20000)
 
+    def test_ok_ui_publish_payload_drops_loopback_allure_url_when_report_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            run_dir = (
+                root
+                / "bundled"
+                / "skills"
+                / "ok_autotest_ui_skill"
+                / "bundled"
+                / "ok_autotest_ui_pc"
+                / "reports"
+                / "ok_test_runs"
+                / "ok-run-loopback"
+            )
+            run_dir.mkdir(parents=True)
+            summary = {
+                "run_id": "ok-run-loopback",
+                "run_status": "failed",
+                "selected_count": 1,
+                "executed_cases": 1,
+                "passed_cases": 0,
+                "failed_cases": 1,
+                "skipped_cases": 0,
+                "allure_url": "http://127.0.0.1:57788/index.html",
+                "allure_report": str(Path(tmp) / "missing-allure-report"),
+            }
+            (run_dir / "summary.json").write_text(json.dumps(summary), encoding="utf-8")
+            (run_dir / "coverage_report.json").write_text(json.dumps({}), encoding="utf-8")
+            (run_dir / "decision_report.json").write_text(json.dumps({}), encoding="utf-8")
+
+            payload = build_ok_ui_publish_payload(root, "ok-run-loopback", project_key="OK")
+
+        self.assertNotIn("allure_url", payload["artifacts"]["summary"])
+        self.assertEqual(payload["artifacts"]["allure_report"], {})
+
     def test_ok_ui_publish_payload_defers_large_allure_package(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

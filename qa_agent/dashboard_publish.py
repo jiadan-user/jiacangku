@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import socket
 import sys
 import base64
@@ -49,6 +50,20 @@ def _read_text_path(path: str | Path | None) -> str:
     if not path:
         return ""
     return read_text(str(path))
+
+
+def _is_loopback_url(value: Any) -> bool:
+    if not isinstance(value, str) or not value:
+        return False
+    return bool(re.match(r"^https?://(?:localhost|127(?:\.\d{1,3}){3}|0\.0\.0\.0|\[::1\])(?::\d+)?(?:/|$)", value, re.I))
+
+
+def _strip_loopback_report_urls(payload: dict[str, Any]) -> dict[str, Any]:
+    result = dict(payload)
+    for key in ("allure_url", "allure_report_url", "report_url"):
+        if _is_loopback_url(result.get(key)):
+            result.pop(key, None)
+    return result
 
 
 def _artifact_path(state: dict[str, Any], *names: str) -> str:
@@ -226,6 +241,7 @@ def _compact_phase_report_for_publish(value: Any) -> dict[str, Any]:
 
 
 def _compact_ok_ui_summary_for_publish(summary: dict[str, Any]) -> dict[str, Any]:
+    summary = _strip_loopback_report_urls(summary)
     keep_keys = {
         "run_id",
         "dry_run",
@@ -347,7 +363,7 @@ def build_ok_ui_publish_payload(
 ) -> dict[str, Any]:
     run_dir = _ok_ui_run_dir(project_root, ok_ui_run_id)
     summary_path = run_dir / "summary.json"
-    summary = _read_json_path(summary_path)
+    summary = _strip_loopback_report_urls(_read_json_path(summary_path))
     if not summary:
         raise FileNotFoundError(f"OK UI summary not found: {summary_path}")
     coverage = _read_json_path(run_dir / "coverage_report.json")
@@ -410,6 +426,7 @@ def build_publish_payload(project_root: Path, run_id: str) -> dict[str, Any]:
     requirement = _read_json_path(_artifact_path(state, "requirement_packet"))
     final_report = _read_text_path(_artifact_path(state, "final_report"))
     summary, coverage, decision = _find_ok_ui_artifacts(state)
+    summary = _strip_loopback_report_urls(summary)
     coverage_dashboard = _build_coverage_dashboard(project_root)
     allure_report = _package_allure_report(_allure_report_dir(summary), run_id=run_id)
 
