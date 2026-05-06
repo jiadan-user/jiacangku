@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from qa_agent.dashboard_publish import DEFAULT_DASHBOARD_URL, _dashboard_url, build_ok_ui_publish_payload
+from qa_agent.dashboard_publish import DEFAULT_DASHBOARD_URL, _dashboard_url, _find_ok_ui_artifacts, build_ok_ui_publish_payload
 
 
 class DashboardPublishConfigTest(unittest.TestCase):
@@ -20,6 +20,20 @@ class DashboardPublishConfigTest(unittest.TestCase):
     def test_explicit_url_overrides_env(self) -> None:
         with patch.dict(os.environ, {"QA_AGENT_DASHBOARD_URL": "http://127.0.0.1:8001"}, clear=True):
             self.assertEqual(_dashboard_url("http://example.test:8001"), "http://example.test:8001")
+
+    def test_full_run_publish_does_not_fallback_to_unrelated_latest_ok_ui_run(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            unrelated = Path(tmp) / "reports" / "ok_test_runs" / "latest"
+            unrelated.mkdir(parents=True)
+            (unrelated / "summary.json").write_text(json.dumps({"run_id": "latest"}), encoding="utf-8")
+
+            summary, coverage, decision = _find_ok_ui_artifacts(
+                {"artifacts": {"ok_ui_execution_report": str(Path(tmp) / "phase3_report.md")}}
+            )
+
+        self.assertEqual(summary, {})
+        self.assertEqual(coverage, {})
+        self.assertEqual(decision, {})
 
     def test_build_ok_ui_publish_payload_uses_standalone_summary(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -121,6 +135,86 @@ class DashboardPublishConfigTest(unittest.TestCase):
         self.assertEqual(compact["case_results_total"], 653)
         self.assertEqual(compact["phase_reports"][0]["case_results_total"], 653)
         self.assertLess(len(json.dumps(compact)), 20000)
+
+    def test_ok_ui_publish_payload_defers_large_allure_package(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            tooling_root = (
+                root
+                / "bundled"
+                / "skills"
+                / "ok_autotest_ui_skill"
+                / "bundled"
+                / "ok_autotest_ui_pc"
+            )
+            run_dir = tooling_root / "reports" / "ok_test_runs" / "ok-run-allure"
+            allure_dir = tooling_root / "reports" / "allure-report"
+            run_dir.mkdir(parents=True)
+            allure_dir.mkdir(parents=True)
+            (tooling_root / "reports" / "ok_test_latest_run.txt").write_text("ok-run-allure\n", encoding="utf-8")
+            (allure_dir / "index.html").write_text("<html></html>", encoding="utf-8")
+            (allure_dir / "large.js").write_text("x" * 100, encoding="utf-8")
+            summary = {
+                "run_id": "ok-run-allure",
+                "run_status": "passed",
+                "selected_count": 1,
+                "executed_cases": 1,
+                "passed_cases": 1,
+                "failed_cases": 0,
+                "skipped_cases": 0,
+                "allure_report": str(allure_dir),
+            }
+            (run_dir / "summary.json").write_text(json.dumps(summary), encoding="utf-8")
+            (run_dir / "coverage_report.json").write_text(json.dumps({}), encoding="utf-8")
+            (run_dir / "decision_report.json").write_text(json.dumps({}), encoding="utf-8")
+
+            with patch.dict(os.environ, {"QA_AGENT_MAX_ALLURE_PACKAGE_BYTES": "10"}):
+                payload = build_ok_ui_publish_payload(root, "ok-run-allure", project_key="OK")
+
+        allure_report = payload["artifacts"]["allure_report"]
+        self.assertTrue(allure_report["deferred_upload"])
+        self.assertEqual(allure_report["reason"], "allure report package too large for inline publish")
+        self.assertEqual(allure_report["report_dir"], str(allure_dir))
+        self.assertNotIn("files", allure_report)
+
+    def test_ok_ui_publish_payload_uses_run_scoped_allure_for_non_latest_run(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            tooling_root = (
+                root
+                / "bundled"
+                / "skills"
+                / "ok_autotest_ui_skill"
+                / "bundled"
+                / "ok_autotest_ui_pc"
+            )
+            run_dir = tooling_root / "reports" / "ok_test_runs" / "old-run"
+            run_allure_dir = run_dir / "allure-report"
+            shared_allure_dir = tooling_root / "reports" / "allure-report"
+            run_allure_dir.mkdir(parents=True)
+            shared_allure_dir.mkdir(parents=True)
+            (tooling_root / "reports" / "ok_test_latest_run.txt").write_text("newer-run\n", encoding="utf-8")
+            (run_allure_dir / "index.html").write_text("<html>old</html>", encoding="utf-8")
+            (shared_allure_dir / "index.html").write_text("<html>new</html>", encoding="utf-8")
+            summary = {
+                "run_id": "old-run",
+                "run_status": "passed",
+                "selected_count": 1,
+                "executed_cases": 1,
+                "passed_cases": 1,
+                "failed_cases": 0,
+                "skipped_cases": 0,
+                "allure_report": str(shared_allure_dir),
+            }
+            (run_dir / "summary.json").write_text(json.dumps(summary), encoding="utf-8")
+            (run_dir / "coverage_report.json").write_text(json.dumps({}), encoding="utf-8")
+            (run_dir / "decision_report.json").write_text(json.dumps({}), encoding="utf-8")
+
+            payload = build_ok_ui_publish_payload(root, "old-run", project_key="OK")
+
+        files = payload["artifacts"]["allure_report"]["files"]
+        self.assertEqual(files[0]["path"], "index.html")
+        self.assertEqual(payload["artifacts"]["allure_report"].get("deferred_upload"), None)
 
 
 if __name__ == "__main__":
