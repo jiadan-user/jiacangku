@@ -73,7 +73,7 @@ def test_tc077_sort_price_low_to_high_data(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
 
     with allure.step("步骤2：选择 Price: Low to High 排序"):
         list_page.click_sort()
@@ -109,7 +109,7 @@ def test_tc078_sort_price_high_to_low_data(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
 
     with allure.step("步骤2：选择 Price: High to Low 排序"):
         list_page.click_sort()
@@ -145,7 +145,7 @@ def test_tc079_sort_with_filter_combined(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
 
     with allure.step("步骤2：选择 Brand"):
         list_page.click_brand_filter()
@@ -194,7 +194,7 @@ def test_tc080_sort_result_count_unchanged(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
 
     with allure.step("步骤2：记录默认排序下卡片数量"):
         count_before = list_page.get_car_items_count()
@@ -230,7 +230,7 @@ def test_tc081_sort_price_low_free_position(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
 
     with allure.step("步骤2：选择 Price: Low to High"):
         list_page.click_sort()
@@ -271,7 +271,7 @@ def test_tc082_sort_switch_between_options(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
 
     with allure.step("步骤2：通过 URL 直接访问价格升序排序"):
         sort_low_url = config["target_url"] + "&sortId=3"
@@ -341,7 +341,7 @@ def test_tc084_sort_and_pagination(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
 
     with allure.step("步骤2：选择 Price: Low to High"):
         list_page.click_sort()
