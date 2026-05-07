@@ -3,7 +3,7 @@
 OK.com AE 站 - 车详情页完整测试套件
 
 本脚本整合了所有 30 个测试用例，按优先级排序：
-- P0 (最高优先级): 10 个测试用例（含 TC007 搜索建议，2026-05-06 取消skip）
+- P0 (最高优先级): 10 个测试用例（TC006 PC 免登录态已 skip；含 TC007 搜索建议，2026-05-06 取消skip）
 - P1 (高优先级): 15 个测试用例
 - P2 (中优先级): 5 个测试用例（TC023 因测试数据依赖仍 skip）
 
@@ -12,6 +12,7 @@ OK.com AE 站 - 车详情页完整测试套件
 测试文档：bundled/knowledge_base/文本用例/test_car/OK-AE-车详情页-测试用例-20260304.md
 
 优先级与知识库对齐说明（2026-05-06）：
+- TC006 未登录 Contact 弹登录框：PC 端为免登录态，点击 Contact 不弹登录对话框，与原文档预期不一致 → **skip**（见知识库备注）
 - TC007 搜索建议列表：KB P0 / ✅ → 取消 skip，断言改为健壮的容器检测
 - TC023 无 Seller's Note：KB P2 / ✅ → 保留 skip（测试数据依赖，见 _CONFIG['no_sellers_note_url']）
 """
@@ -584,17 +585,23 @@ _CONFIG = {
 
 
 
+@pytest.mark.skip(
+    reason="TC006：PC 端车详情页 Contact 为免登录态，未登录点击不弹出登录对话框，与本用例原预期不一致；跳过自动化，保留脚本供 H5/策略变更后启用。"
+)
 @pytest.mark.case_id_car_detail_batch2_01
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("车详情页 - Contact 功能（未登录）")
-@allure.title("TC006: 未登录点击 Contact，弹出登录对话框")
+@allure.title("TC006: 未登录点击 Contact（跳过：PC 免登录态，不弹登录框）")
 @allure.severity(allure.severity_level.CRITICAL)
-@allure.description("验证未登录状态下点击 Contact 按钮后，弹出登录对话框，包含 Welcome to OK.com 标题、邮箱输入框、Continue 按钮和第三方登录选项")
+@allure.description(
+    "【已跳过】原预期：未登录点击 Contact 弹出登录框。"
+    "当前 PC 端为免登录态，行为与预期不符，故不执行；详见知识库 TC006 备注。"
+)
 def test_car_detail_contact_login_required(page, config):
-    """TC006: 未登录点击 Contact"""
+    """TC006: 未登录点击 Contact（PC 免登录态，pytest 层已 skip）"""
     # ========== Arrange：准备 ==========
     detail_url = _CONFIG["detail_url"]
     
