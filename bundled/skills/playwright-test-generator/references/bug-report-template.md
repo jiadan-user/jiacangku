@@ -332,4 +332,4 @@ with open(bug_report_path, mode, encoding="utf-8") as f:
 ---
 
 **Last updated**: 2026-03-30  
-**Purpose**: Template for bug report generation in Phase 4
+**Purpose**: Template for bug report generation in stage2A recording validation

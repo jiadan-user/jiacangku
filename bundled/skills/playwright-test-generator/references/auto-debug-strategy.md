@@ -1,13 +1,16 @@
-# 每批自动调试策略（阶段6）
+# 每批自动调试策略（阶段2B）
 
-> 批次间必做：运行验证 + 错误修复 + 跨批经验传递
+> 批次间必做：replay-first 验证 + 运行验证 + 错误修复 + 跨批经验传递
 
 ---
 
 ## 一、运行命令
 
 ```bash
-# 1. 强制依赖检查（生成代码后必须先执行）
+# 0. replay-first：先验证 recording_trace/proof 的 JS→Python 直译脚本
+pytest {replay脚本路径} -v --tb=short 2>&1
+
+# 1. 强制依赖检查（OK UI 规范脚本生成后必须先执行）
 pytest --collect-only {生成的文件路径} 2>&1
 
 # 2. 基础运行（依赖检查通过后执行）
@@ -25,7 +28,14 @@ pytest {文件路径}::{函数名} -v --tb=long -s 2>&1
 ## 二、调试循环（最多3轮）
 
 ```
-代码生成完毕
+recording_trace/proof 已准备
+  ↓
+生成最小 replay 脚本
+  ↓
+执行 pytest replay
+  ├─ 失败 → 修复 JS→Python 直译问题（最多3轮）
+  └─ 成功 ↓
+生成 OK UI 规范脚本
   ↓
 执行 pytest --collect-only
   ├─ 失败 (ModuleNotFoundError) → 修复导包或创建缺失目录/文件 → 重新 collect
@@ -42,8 +52,18 @@ pytest {文件路径}::{函数名} -v --tb=long -s 2>&1
             ↓
           重新运行
             ↓
-          3轮后仍失败 → 暂停，告知用户
+          3轮后仍失败 → 输出 script_blocker_report.md，playwright_case_outcomes 标记 script_blocked，停止当前脚本批次
 ```
+
+`script_blocker_report.md` 必须包含：
+- `tc_id`
+- 候选脚本路径（如已生成）
+- replay/collect-only/pytest 的最后一次命令
+- stdout/stderr 摘要
+- 已尝试的 3 轮修复
+- 需要人工处理的最小问题描述
+
+一旦出现 `script_blocked`，不要进入下一批脚本生成，也不要进入影响分析；QA Agent 会停在阶段2B。
 
 ---
 
