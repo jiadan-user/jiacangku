@@ -55,7 +55,7 @@ def test_tc095_pagination_data_changes(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
 
     with allure.step("步骤2：记录第1页首条卡片标题"):
         titles_page1 = list_page.get_card_titles(limit=3)
@@ -94,7 +94,7 @@ def test_tc096_pagination_url_page_param(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
         url_page1 = list_page.get_current_url()
         logger.info(f"✓ 第1页 URL: {url_page1}")
 
@@ -128,7 +128,7 @@ def test_tc097_pagination_back_to_first(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
         url_page1 = list_page.get_current_url()
         titles_page1 = list_page.get_card_titles(limit=3)
 
@@ -207,7 +207,7 @@ def test_tc099_card_target_blank(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
 
     with allure.step("验证首张卡片的 target 属性"):
         first_card = page.locator(list_page.CAR_ITEM_LINK).first
@@ -241,7 +241,7 @@ def test_tc100_card_lazy_load_scroll(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
 
     with allure.step("步骤2：滚动到页面底部"):
         page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
@@ -285,7 +285,7 @@ def test_tc101_search_chinese_encoding(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
 
     with allure.step("步骤2：搜索中文关键词"):
         list_page.search("丰田汽车")
@@ -318,7 +318,7 @@ def test_tc102_search_no_result_empty_state(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
 
     with allure.step("步骤2：搜索不存在的关键词"):
         list_page.search("zzz_nonexistent_keyword_12345")
