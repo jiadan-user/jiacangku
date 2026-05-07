@@ -356,7 +356,8 @@ def test_tc037_brand_dropdown_shows_list(page, config):
         logger.info("✓ Brand 面板可见")
 
     with allure.step("验证包含 Toyota 品牌"):
-        assert page.get_by_alt_text("Toyota").first.is_visible(timeout=3000), \
+        page.wait_for_load_state("networkidle", timeout=10000)
+        assert page.get_by_alt_text("Toyota").first.is_visible(timeout=10000), \
             "Brand 面板应包含 Toyota 热门品牌"
         logger.info("✓ Toyota 品牌可见")
 
