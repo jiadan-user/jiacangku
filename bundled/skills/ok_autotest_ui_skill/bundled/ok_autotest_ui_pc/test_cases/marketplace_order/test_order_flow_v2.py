@@ -813,6 +813,62 @@ def _order_list_has_items(page) -> bool:
         return False
 
 
+def _find_valid_pending_order_index(page, of_page, max_check: int = 5) -> int:
+    """
+    在 Pending Tab 的订单列表中查找有效订单（有 Pay 按钮的订单）。
+    
+    Args:
+        page: Playwright Page 对象
+        of_page: OrderFlowPage 对象
+        max_check: 最多检查前几条订单
+    
+    Returns:
+        有效订单的索引（0-based），如果没找到返回 -1
+    """
+    try:
+        order_items = page.locator('[class*="order_list_item"]')
+        total_count = order_items.count()
+        check_count = min(total_count, max_check)
+        
+        logger.info(f"开始检查 Pending 订单有效性（共 {total_count} 条，检查前 {check_count} 条）")
+        
+        for i in range(check_count):
+            try:
+                # 点击第 i 条订单
+                order_items.nth(i).click()
+                page.wait_for_timeout(2000)
+                
+                # 检查是否成功导航到订单详情页
+                if "/pay/order" not in page.url:
+                    logger.warning(f"第 {i+1} 条订单点击后未进入详情页，跳过")
+                    continue
+                
+                # 检查是否有 Pay 按钮（订单有效标志）
+                has_pay_button = False
+                try:
+                    has_pay_button = page.locator("button:has-text('Pay')").first.is_visible(timeout=3000)
+                except Exception:
+                    pass
+                
+                if has_pay_button:
+                    logger.info(f"✅ 找到有效 Pending 订单（第 {i+1} 条，索引 {i}）")
+                    return i
+                else:
+                    logger.warning(f"第 {i+1} 条订单已过期（无 Pay 按钮），继续检查下一条")
+                    # 返回订单列表继续检查
+                    page.go_back()
+                    page.wait_for_timeout(1500)
+            except Exception as e:
+                logger.warning(f"检查第 {i+1} 条订单时出错：{e}，跳过")
+                continue
+        
+        logger.warning(f"未找到有效的 Pending 订单（已检查 {check_count} 条）")
+        return -1
+    except Exception as e:
+        logger.error(f"查找有效订单时出错：{e}")
+        return -1
+
+
 def _wait_for_order_detail(page, timeout: int = 5000):
     """智能等待订单详情页加载（替代 wait_for_timeout(2000)）"""
     try:
@@ -1053,10 +1109,13 @@ def _nav_to_order_detail(page, config, of_page, role: str, tab: str, create_fn=N
 
     # ── 买家 Pending：显式判断右侧是否有数据，无则构造后再点第一条 ──
     if role == "buyer" and tab == "pending":
+        # 检查是否有订单
         if not _order_list_has_items(page):
+            # Tab为空，创建新订单
             assert create_fn is not None, (
                 "Pending Tab 无订单，且未提供 create_fn，无法构造测试数据"
             )
+            logger.info("Pending Tab 为空，开始创建新订单...")
             create_fn(page, config)
             _ensure_buyer_login(page, config)
             _nav_to_order_management_via_ui(page, config, role)
@@ -1065,8 +1124,35 @@ def _nav_to_order_detail(page, config, of_page, role: str, tab: str, create_fn=N
             _wait_for_tab_content(page)
             if not _order_list_has_items(page):
                 raise AssertionError("构造 Pending 订单后，Pending Tab 右侧列表仍为空")
-        of_page.click_first_order_in_list()
-        _wait_for_order_detail(page)
+            # 创建后直接点击第一条（新创建的订单）
+            of_page.click_first_order_in_list()
+            _wait_for_order_detail(page)
+        else:
+            # Tab有订单，查找有效订单（有 Pay 按钮的订单）
+            logger.info("Pending Tab 有订单，开始查找有效订单...")
+            valid_order_index = _find_valid_pending_order_index(page, of_page, max_check=5)
+            
+            if valid_order_index >= 0:
+                # 找到有效订单，已经在详情页，直接返回
+                logger.info(f"✅ 使用有效 Pending 订单（索引 {valid_order_index}）")
+                _wait_for_order_detail(page)
+            else:
+                # 没有找到有效订单，创建新订单
+                logger.warning("未找到有效 Pending 订单，开始创建新订单...")
+                assert create_fn is not None, (
+                    "Pending Tab 无有效订单，且未提供 create_fn，无法构造测试数据"
+                )
+                create_fn(page, config)
+                _ensure_buyer_login(page, config)
+                _nav_to_order_management_via_ui(page, config, role)
+                _close_any_modal(page)
+                tab_map[tab]()
+                _wait_for_tab_content(page)
+                if not _order_list_has_items(page):
+                    raise AssertionError("构造 Pending 订单后，Pending Tab 右侧列表仍为空")
+                # 创建后直接点击第一条（新创建的订单）
+                of_page.click_first_order_in_list()
+                _wait_for_order_detail(page)
         return
 
     # ── Step 4/5：其他 Tab / 卖家 —─
