@@ -16,6 +16,7 @@
 测试角色：Seller (卖家)
 测试目标：验证银行账户绑定完整流程（TC016-TC023）+ 解绑测试（TC007-TC014）
 """
+import re
 import pytest
 import allure
 from pages.login_page import LoginPage
@@ -47,6 +48,189 @@ _CONFIG = {
         "default": 30000
     }
 }
+
+
+def _beneficiary_bind_iframe(page):
+    """Airwallex 绑定表单 iframe：优先标题匹配，否则回退到首个 iframe。"""
+    titled = page.frame_locator('iframe[title="beneficiaryForm element iframe"]')
+    try:
+        titled.locator("body").wait_for(timeout=5000)
+        titled.get_by_text("Account country", exact=False).wait_for(state="visible", timeout=8000)
+        return titled
+    except Exception:
+        logger.warning("beneficiaryForm 标题 iframe 未就绪，回退到首个 iframe")
+    fl = page.frame_locator("iframe").first
+    fl.locator("body").wait_for(timeout=15000)
+    return fl
+
+
+def _open_country_dropdown_and_select_united_states(page, iframe):
+    """国家下拉：兼容 react-select 文案变体与选项列表挂在 iframe 内或父页面的情况。"""
+    opened = False
+    for sel in (".css-evdas6-control", "[class*='-control']"):
+        ctrl = iframe.locator(sel).first
+        try:
+            ctrl.wait_for(state="visible", timeout=8000)
+            ctrl.click(timeout=10000)
+            opened = True
+            break
+        except Exception:
+            continue
+    if not opened:
+        raise TimeoutError("未找到国家下拉控件")
+
+    page.wait_for_timeout(800)
+    name_pat = re.compile(r"United\s+States(?:\s+of\s+America)?", re.I)
+
+    try_lists = (
+        iframe.get_by_role("option", name=name_pat),
+        iframe.locator('[role="option"]').filter(has_text=name_pat),
+        iframe.get_by_text(name_pat),
+        page.get_by_role("option", name=name_pat),
+        page.locator('[role="option"]').filter(has_text=name_pat),
+        page.get_by_text(name_pat),
+    )
+    last_err = None
+    for loc in try_lists:
+        try:
+            if loc.count() == 0:
+                continue
+            opt = loc.first
+            opt.wait_for(state="visible", timeout=12000)
+            opt.click(timeout=20000)
+            logger.info("✓ 已选择 United States 国家项")
+            return
+        except Exception as e:
+            last_err = e
+            continue
+
+    raise TimeoutError(f"未找到可点击的 United States 选项，最后一次错误: {last_err}")
+
+
+def _select_transfer_method_ach(page, iframe):
+    """选择 Transfer method = ACH：兼容平铺选项、react-select 下拉与 menuitem 角色。"""
+    tm_label = iframe.get_by_text(re.compile(r"Transfer\s+method", re.I)).first
+    tm_label.wait_for(state="visible", timeout=10000)
+    tm_label.scroll_into_view_if_needed(timeout=8000)
+    page.wait_for_timeout(250)
+
+    def _try_click_ach_pick() -> bool:
+        """已在菜单/列表中时尝试点击 ACH。"""
+        candidates = (
+            iframe.locator('[role="option"]').filter(has_text=re.compile(r"(?<![A-Za-z])ACH(?![A-Za-z])", re.I)),
+            iframe.locator('[role="menuitem"]').filter(has_text=re.compile(r"ACH", re.I)),
+            iframe.get_by_role("option", name=re.compile(r"ACH", re.I)),
+            iframe.get_by_text(re.compile(r"^\s*ACH\s*$", re.I)),
+        )
+        for loc in candidates:
+            try:
+                if loc.count() == 0:
+                    continue
+                opt = loc.first
+                opt.wait_for(state="visible", timeout=4000)
+                opt.click(timeout=10000)
+                return True
+            except Exception:
+                continue
+        return False
+
+    # 部分 UI 下 ACH 已展示为可点击区块，无需先点 Select
+    try:
+        row = tm_label.locator("xpath=ancestor::*[contains(@class,'Field') or contains(@class,'field')][1]")
+        ach_in_row = row.get_by_text(re.compile(r"^\s*ACH\s*$", re.I)).first
+        ach_in_row.wait_for(state="visible", timeout=2500)
+        ach_in_row.click(timeout=10000)
+        logger.info("✓ Transfer method：在字段区域内直接点击 ACH")
+        return
+    except Exception:
+        pass
+
+    opened = False
+    try:
+        btn = tm_label.locator(
+            "xpath=following::button[contains(normalize-space(.),'Select')][1]"
+        )
+        btn.wait_for(state="visible", timeout=8000)
+        btn.click(timeout=10000)
+        opened = True
+    except Exception as e:
+        logger.warning(f"following::button Select 未命中: {e}")
+    if not opened:
+        iframe.get_by_role("button", name=re.compile(r"Select", re.I)).first.click(timeout=10000)
+    page.wait_for_timeout(900)
+
+    if _try_click_ach_pick():
+        logger.info("✓ Transfer method：下拉/菜单中选择 ACH")
+        return
+
+    logger.warning("首次展开后未点到 ACH，再次点击 Select 并重试")
+    try:
+        iframe.get_by_role("button", name=re.compile(r"Select", re.I)).first.click(timeout=8000)
+        page.wait_for_timeout(600)
+    except Exception:
+        pass
+    if _try_click_ach_pick():
+        logger.info("✓ Transfer method：第二次展开后选择 ACH")
+        return
+
+    raise TimeoutError("无法在 Transfer method 中选择 ACH（下拉未展开或文案/角色变更）")
+
+
+def _routing_react_select_input(iframe, page):
+    """Routing number 的 react-select：排除 Address(streetAddress) 等同样式控件，优先 aria-labelledby 含 routing/bank。"""
+    try:
+        iframe.get_by_text(re.compile(r"Routing|ABA", re.I)).first.scroll_into_view_if_needed(timeout=5000)
+    except Exception:
+        pass
+    page.wait_for_timeout(250)
+
+    def _is_address_autocomplete(loc) -> bool:
+        try:
+            lid = (loc.get_attribute("aria-labelledby") or "").lower()
+            return "streetaddress" in lid or "beneficiary.address" in lid
+        except Exception:
+            return False
+
+    sel_list = iframe.locator('input[id*="react-select"][id$="-input"]')
+    sel_list.first.wait_for(state="attached", timeout=15000)
+    n = sel_list.count()
+    ranked = []
+    for i in range(n):
+        loc = sel_list.nth(i)
+        try:
+            if not loc.is_visible(timeout=800):
+                continue
+            if _is_address_autocomplete(loc):
+                continue
+            lid = (loc.get_attribute("aria-labelledby") or "").lower()
+            nid = (loc.get_attribute("id") or "").lower()
+            score = 10
+            if "routing" in lid or "aba" in lid:
+                score += 100
+            if "bank" in lid or "bankdetails" in lid:
+                score += 40
+            if nid == "react-select-2-input":
+                score += 25
+            ranked.append((score, i, loc))
+        except Exception:
+            continue
+    ranked.sort(key=lambda x: (-x[0], x[1]))
+    for _, __, loc in ranked:
+        loc.scroll_into_view_if_needed(timeout=5000)
+        return loc
+
+    for hid in ("#react-select-2-input", "#react-select-4-input"):
+        loc = iframe.locator(hid).first
+        try:
+            if loc.count() == 0:
+                continue
+            if _is_address_autocomplete(loc):
+                continue
+            loc.wait_for(state="visible", timeout=5000)
+            return loc
+        except Exception:
+            continue
+    raise AssertionError("未找到 Routing number 对应的可见 react-select 输入框（可能被 Address 等控件误判，检查表单结构）")
 
 
 @pytest.mark.case_id_wallet_wallet_016
@@ -223,33 +407,22 @@ def test_bank_account_binding_complete_flow(page, config):
         assert dialog_title.is_visible(timeout=5000), "绑定对话框未打开"
         logger.info("✓ 对话框标题显示正常")
         
-        # 等待iframe出现（增加等待时间）
-        page.wait_for_timeout(5000)
-        logger.info("✓ 已等待iframe加载")
-        
-        # 验证iframe加载（使用简化选择器，增加超时时间）
-        iframe = page.frame_locator('iframe')
-        
-        # 分步骤验证iframe内容
+        # 等待 iframe（Airwallex 表单）
+        page.wait_for_timeout(3000)
+        logger.info("✓ 已等待 iframe 容器")
+
         try:
-            # 先等待iframe出现
-            page.wait_for_selector('iframe', timeout=10000)
-            logger.info("✓ iframe元素已出现")
-            
-            # 再验证iframe内容加载
-            country_label = iframe.get_by_text('Account country / region')
-            country_label.wait_for(state='visible', timeout=15000)
+            iframe = _beneficiary_bind_iframe(page)
+            iframe.get_by_text("Account country", exact=False).wait_for(state="visible", timeout=15000)
             logger.info("✓ iframe表单加载成功")
         except Exception as e:
             logger.error(f"❌ iframe加载失败: {e}")
             page.screenshot(path="reports/screenshots/iframe_load_failed.png", timeout=60000)
-            
-            # 最后一次尝试：检查是否是Load Fail
+
             if page.get_by_text('Load Fail').is_visible(timeout=2000):
                 logger.error("❌ 仍然是Load Fail错误")
-                raise AssertionError("iframe加载失败：Load Fail错误")
-            else:
-                raise AssertionError(f"iframe表单未加载: {e}")
+                raise AssertionError("iframe加载失败：Load Fail错误") from e
+            raise AssertionError(f"iframe表单未加载: {e}") from e
         
         # 验证Submit按钮
         submit_btn = page.get_by_role('button', name='Submit')
@@ -264,17 +437,10 @@ def test_bank_account_binding_complete_flow(page, config):
         logger.info("TC017: 选择United States of America应自动填充USD")
         logger.info("="*80)
         
-        iframe = page.frame_locator('iframe[title="beneficiaryForm element iframe"]')
-        
-        # 点击国家下拉框（基于MCP录制的选择器）
-        iframe.locator('.css-evdas6-control').first.click()
+        iframe = _beneficiary_bind_iframe(page)
+
+        _open_country_dropdown_and_select_united_states(page, iframe)
         page.wait_for_timeout(1000)
-        logger.info("✓ 已点击国家下拉框")
-        
-        # 选择United States of America
-        iframe.get_by_text('United States of America').click()
-        page.wait_for_timeout(1000)
-        logger.info("✓ 已选择United States of America")
         
         # 验证USD自动填充
         usd_text = iframe.locator('[data-testid="beneficiary.bankDetails.accountCurrency"]').get_by_text('USD')
@@ -289,8 +455,8 @@ def test_bank_account_binding_complete_flow(page, config):
         logger.info("TC018: 选择USD后应显示Transfer method选项")
         logger.info("="*80)
         
-        iframe = page.frame_locator('iframe[title="beneficiaryForm element iframe"]')
-        
+        iframe = _beneficiary_bind_iframe(page)
+
         # 等待Transfer method加载（可能需要额外时间）
         page.wait_for_timeout(1500)
         
@@ -320,25 +486,87 @@ def test_bank_account_binding_complete_flow(page, config):
         logger.info("TC019: ACH routing number输入后应显示银行列表")
         logger.info("="*80)
         
-        iframe = page.frame_locator('iframe[title="beneficiaryForm element iframe"]')
-        
-        # 选择ACH（基于MCP录制）
-        iframe.get_by_role('button', name='Select').first.click()
+        iframe = _beneficiary_bind_iframe(page)
+        _select_transfer_method_ach(page, iframe)
         page.wait_for_timeout(1000)
         logger.info("✓ 已选择ACH")
-        
-        # 输入routing number（基于MCP录制的选择器）
-        iframe.locator('#react-select-2-input').fill('1210')
-        page.wait_for_timeout(2000)
-        logger.info("✓ 已输入routing number: 1210")
-        
-        # 验证银行选项显示
-        bank_option = iframe.get_by_text('Bank of America', exact=False).first
-        assert bank_option.is_visible(timeout=3000), "银行选项未显示"
+
+        routing_in = _routing_react_select_input(iframe, page)
+        routing_in.click(timeout=10000, force=True)
+        routing_in.fill("")
+        try:
+            routing_in.press_sequentially("121000358", delay=35)
+        except Exception:
+            routing_in.fill("121000358")
+        page.wait_for_timeout(4500)
+        logger.info("✓ 已输入 routing number（完整 Routing Number 触发银行联想）")
+
+        bank_pat = re.compile(r"Bank\s+of\s+America", re.I)
+
+        def _pick_bank_option():
+            """react-select 菜单可能在 iframe 内或父页面；优先真实 option，其次按 routing 控件 id 推导 option-0/1。"""
+            for ctx in (iframe, page):
+                opts = ctx.locator('[role="option"]').filter(has_text=bank_pat)
+                try:
+                    if opts.count() > 0:
+                        cand = opts.first
+                        cand.wait_for(state="visible", timeout=12000)
+                        return cand
+                except Exception:
+                    pass
+                try:
+                    role_opts = ctx.get_by_role("option", name=bank_pat)
+                    if role_opts.count() > 0:
+                        cand = role_opts.first
+                        cand.wait_for(state="visible", timeout=12000)
+                        return cand
+                except Exception:
+                    pass
+            try:
+                rid = routing_in.evaluate("el => el.id || ''")
+                m = re.match(r"^(react-select-\d+)-input$", rid)
+                if m:
+                    prefix = m.group(1)
+                    for idx in (0, 1):
+                        oid = f"#{prefix}-option-{idx}"
+                        for ctx in (iframe, page):
+                            cand = ctx.locator(oid).filter(has_text=bank_pat)
+                            try:
+                                if cand.count() > 0:
+                                    cand.first.wait_for(state="visible", timeout=8000)
+                                    return cand.first
+                            except Exception:
+                                continue
+            except Exception:
+                pass
+            return None
+
+        bank_option = _pick_bank_option()
+        if bank_option is None:
+            logger.warning("未命中 option，尝试键盘 ArrowDown+Enter 选择首条联想")
+            try:
+                routing_in.press("ArrowDown")
+                page.wait_for_timeout(500)
+                routing_in.press("Enter")
+                page.wait_for_timeout(1500)
+            except Exception as e:
+                logger.warning(f"键盘选择异常: {e}")
+            bank_option = _pick_bank_option()
+
+        if bank_option is None:
+            logger.warning("完整 routing 未触发联想，尝试前缀 1210")
+            routing_in.fill("")
+            try:
+                routing_in.press_sequentially("1210", delay=40)
+            except Exception:
+                routing_in.fill("1210")
+            page.wait_for_timeout(4500)
+            bank_option = _pick_bank_option()
+
+        assert bank_option is not None, "银行选项未显示（routing 联想超时或文案变更）"
         logger.info("✓ Bank of America选项已显示")
-        
-        # 选择银行
-        bank_option.click()
+
+        bank_option.click(timeout=10000, force=True)
         page.wait_for_timeout(1000)
         logger.info("✓ 已选择Bank of America")
         
@@ -350,8 +578,8 @@ def test_bank_account_binding_complete_flow(page, config):
         logger.info("TC020-TC023: Address自动补全→City自动填充→Name/Nickname/Email→完整提交")
         logger.info("="*80)
         
-        iframe = page.frame_locator('iframe[title="beneficiaryForm element iframe"]')
-        
+        iframe = _beneficiary_bind_iframe(page)
+
         # 填写account number
         iframe.locator('[name="beneficiary.bankDetails.accountNumber"]').fill('5354563134257854')
         page.wait_for_timeout(1000)
@@ -976,9 +1204,17 @@ class TestBankAccountUnbinding:
             confirm_button = shared_page.get_by_role('button', name='Confirm')
             assert confirm_button.is_visible(timeout=5000), "Confirm按钮未显示"
             logger.info("✓ Confirm按钮显示正常")
-            
-            shared_page.screenshot(path="reports/screenshots/tc009_unbind_dialog.png", timeout=60000)
-            logger.info("✓ 已截图保存对话框状态")
+
+            # 截图仅作佐证：长时间 screenshot 可能卡在字体/合成（PW_TEST_SCREENSHOT_NO_FONTS_READY 亦未必够用）
+            try:
+                shared_page.screenshot(
+                    path="reports/screenshots/tc009_unbind_dialog.png",
+                    timeout=15000,
+                    animations="disabled",
+                )
+                logger.info("✓ 已截图保存对话框状态")
+            except Exception as sc_err:
+                logger.warning(f"TC009 截图跳过（断言已通过）: {sc_err}")
         
         with allure.step("关闭对话框"):
             shared_page.keyboard.press('Escape')
