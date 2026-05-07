@@ -2,11 +2,15 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import socket
 import sys
 import base64
+import tarfile
+import tempfile
 import urllib.error
 import urllib.request
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -14,6 +18,22 @@ from qa_agent.io import read_json, read_text, write_json
 
 COMPLETED_STATUSES = {"completed", "COMPLETED", "已完成"}
 DEFAULT_DASHBOARD_URL = "http://10.192.35.53:8001"
+DEFAULT_MAX_ALLURE_PACKAGE_BYTES = 4 * 1024 * 1024
+
+
+def _ok_ui_project_root(project_root: Path) -> Path:
+    return (
+        project_root
+        / "bundled"
+        / "skills"
+        / "ok_autotest_ui_skill"
+        / "bundled"
+        / "ok_autotest_ui_pc"
+    )
+
+
+def _ok_ui_reports_root(project_root: Path) -> Path:
+    return _ok_ui_project_root(project_root) / "reports" / "ok_test_runs"
 
 
 def _dashboard_url(value: str | None = None) -> str:
@@ -30,6 +50,20 @@ def _read_text_path(path: str | Path | None) -> str:
     if not path:
         return ""
     return read_text(str(path))
+
+
+def _is_loopback_url(value: Any) -> bool:
+    if not isinstance(value, str) or not value:
+        return False
+    return bool(re.match(r"^https?://(?:localhost|127(?:\.\d{1,3}){3}|0\.0\.0\.0|\[::1\])(?::\d+)?(?:/|$)", value, re.I))
+
+
+def _strip_loopback_report_urls(payload: dict[str, Any]) -> dict[str, Any]:
+    result = dict(payload)
+    for key in ("allure_url", "allure_report_url", "report_url"):
+        if _is_loopback_url(result.get(key)):
+            result.pop(key, None)
+    return result
 
 
 def _artifact_path(state: dict[str, Any], *names: str) -> str:
@@ -60,25 +94,6 @@ def _find_ok_ui_artifacts(state: dict[str, Any]) -> tuple[dict[str, Any], dict[s
         decision = _read_json_path(directory / "decision_report.json")
         if summary or coverage or decision:
             return summary, coverage, decision
-    reports_root = (
-        Path(__file__).resolve().parents[1]
-        / "bundled"
-        / "skills"
-        / "ok_autotest_ui_skill"
-        / "bundled"
-        / "ok_autotest_ui_pc"
-        / "reports"
-        / "ok_test_runs"
-    )
-    if reports_root.exists():
-        summaries = sorted(reports_root.glob("*/summary.json"), key=lambda item: item.stat().st_mtime, reverse=True)
-        for summary_path in summaries[:3]:
-            directory = summary_path.parent
-            summary = _read_json_path(summary_path)
-            coverage = _read_json_path(directory / "coverage_report.json")
-            decision = _read_json_path(directory / "decision_report.json")
-            if summary or coverage or decision:
-                return summary, coverage, decision
     return {}, {}, {}
 
 
@@ -116,19 +131,290 @@ def _allure_report_dir(summary: dict[str, Any]) -> Path | None:
     return None
 
 
-def _package_allure_report(report_dir: Path | None) -> dict[str, Any]:
+def _package_allure_report(report_dir: Path | None, *, run_id: str | None = None) -> dict[str, Any]:
     if not report_dir:
         return {}
+    max_bytes = int(os.getenv("QA_AGENT_MAX_ALLURE_PACKAGE_BYTES", str(DEFAULT_MAX_ALLURE_PACKAGE_BYTES)))
+    paths = [path for path in sorted(report_dir.rglob("*")) if path.is_file()]
+    included_paths = [path for path in paths if not path.relative_to(report_dir).as_posix().startswith("history/")]
+    total_bytes = sum(path.stat().st_size for path in included_paths)
+    if total_bytes > max_bytes:
+        return {
+            "deferred_upload": True,
+            "reason": "allure report package too large for inline publish",
+            "report_dir": str(report_dir),
+            "file_count": len(included_paths),
+            "total_bytes": total_bytes,
+            "max_bytes": max_bytes,
+        }
     files: list[dict[str, str]] = []
-    for path in sorted(report_dir.rglob("*")):
-        if not path.is_file():
-            continue
+    for path in included_paths:
         rel = path.relative_to(report_dir).as_posix()
-        if rel.startswith("history/"):
-            continue
         data = path.read_bytes()
         files.append({"path": rel, "encoding": "base64", "content": base64.b64encode(data).decode("ascii")})
     return {"index_path": "index.html", "files": files}
+
+
+def _latest_ok_ui_run_id(project_root: Path) -> str:
+    latest_path = _ok_ui_project_root(project_root) / "reports" / "ok_test_latest_run.txt"
+    if not latest_path.exists():
+        raise FileNotFoundError(f"OK UI latest run marker not found: {latest_path}")
+    run_id = latest_path.read_text(encoding="utf-8").strip()
+    if not run_id:
+        raise FileNotFoundError(f"OK UI latest run marker is empty: {latest_path}")
+    return run_id
+
+
+def _ok_ui_run_dir(project_root: Path, ok_ui_run_id: str) -> Path:
+    run_dir = _ok_ui_reports_root(project_root) / ok_ui_run_id
+    if not run_dir.exists():
+        raise FileNotFoundError(f"OK UI run not found: {run_dir}")
+    return run_dir
+
+
+def _ok_ui_timestamp(path: Path) -> str:
+    return datetime.fromtimestamp(path.stat().st_mtime, timezone.utc).isoformat()
+
+
+def _ok_ui_status(summary: dict[str, Any]) -> str:
+    if summary.get("dry_run"):
+        return "DRY_RUN"
+    return "COMPLETED"
+
+
+def _ok_ui_modules(summary: dict[str, Any], module: str | None = None) -> list[str]:
+    if module:
+        return _normalize_list_for_publish(module)
+    modules = summary.get("selected_modules")
+    if isinstance(modules, list) and modules:
+        return [str(item) for item in modules if str(item)]
+    selection = summary.get("selection") or {}
+    if isinstance(selection, dict):
+        return _normalize_list_for_publish(selection.get("module"))
+    return []
+
+
+def _ok_ui_sites(summary: dict[str, Any], site: str | None = None) -> list[str]:
+    if site:
+        return _normalize_list_for_publish(site)
+    selection = summary.get("selection") or {}
+    if isinstance(selection, dict):
+        return _normalize_list_for_publish(selection.get("site"))
+    return []
+
+
+def _normalize_list_for_publish(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return [str(item) for item in value if str(item)]
+    if isinstance(value, str):
+        return [item.strip() for item in value.replace("，", ",").replace("；", ";").replace("\n", ",").replace(";", ",").split(",") if item.strip()]
+    return [str(value)]
+
+
+def _sample_list_for_publish(value: Any, limit: int = 50) -> dict[str, Any]:
+    if not isinstance(value, list):
+        return {"total": 0, "items": []}
+    return {"total": len(value), "items": value[:limit]}
+
+
+def _compact_phase_report_for_publish(value: Any) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        return {}
+    keep_keys = {
+        "phase",
+        "name",
+        "pytest_exit_code",
+        "junit_path",
+        "output_path",
+        "empty_marker_path",
+        "pytest_target_count",
+        "result_source",
+        "result_warnings",
+    }
+    compact = {key: value[key] for key in keep_keys if key in value}
+    case_results = value.get("case_results")
+    if isinstance(case_results, list):
+        compact["case_results_total"] = len(case_results)
+    return compact
+
+
+def _compact_ok_ui_summary_for_publish(summary: dict[str, Any]) -> dict[str, Any]:
+    summary = _strip_loopback_report_urls(summary)
+    keep_keys = {
+        "run_id",
+        "dry_run",
+        "selection",
+        "selected_count",
+        "selected_modules",
+        "selected_features",
+        "requested_workers",
+        "resolved_workers",
+        "parallel_enabled",
+        "parallel_reason",
+        "parallel_granularity",
+        "pytest_command",
+        "artifact_retention",
+        "run_status",
+        "block_reason",
+        "pytest_exit_code",
+        "execution_target_mode",
+        "pytest_target_count",
+        "prerequisite_attempted",
+        "prerequisite_selected_count",
+        "prerequisite_passed_count",
+        "executed_cases",
+        "passed_cases",
+        "failed_cases",
+        "skipped_cases",
+        "allure_report",
+        "allure_url",
+        "lean_cleanup",
+    }
+    compact = {key: summary[key] for key in keep_keys if key in summary}
+    for key in (
+        "selected_nodeids",
+        "selected_case_ids",
+        "scope_case_nodeids",
+        "recommended_case_nodeids",
+        "baseline_case_nodeids",
+        "prerequisite_selector_texts",
+    ):
+        if key in summary:
+            compact[f"{key}_sample"] = _sample_list_for_publish(summary.get(key))
+    case_results = summary.get("case_results")
+    if isinstance(case_results, list):
+        compact["case_results_total"] = len(case_results)
+        compact["failed_case_results_sample"] = [
+            item for item in case_results if isinstance(item, dict) and item.get("outcome") == "failed"
+        ][:50]
+        compact["skipped_case_results_sample"] = [
+            item for item in case_results if isinstance(item, dict) and item.get("outcome") == "skipped"
+        ][:20]
+    phase_reports = summary.get("phase_reports")
+    if isinstance(phase_reports, list):
+        compact["phase_reports"] = [_compact_phase_report_for_publish(item) for item in phase_reports]
+    return compact
+
+
+def _standalone_ok_ui_report(ok_ui_run_id: str, summary: dict[str, Any], coverage: dict[str, Any], decision: dict[str, Any]) -> str:
+    run_status = summary.get("run_status") or ("dry_run" if summary.get("dry_run") else "unknown")
+    lines = [
+        f"# OK UI 独立回归报告",
+        "",
+        f"- OK UI run_id：`{ok_ui_run_id}`",
+        f"- 执行结果：{run_status}",
+        f"- 选中用例：{summary.get('selected_count', 0)}",
+        f"- 实际执行：{summary.get('executed_cases', 0)}",
+        f"- 通过：{summary.get('passed_cases', 0)}",
+        f"- 失败：{summary.get('failed_cases', 0)}",
+        f"- 跳过：{summary.get('skipped_cases', 0)}",
+        f"- 线程数：{summary.get('resolved_workers') or 1}",
+    ]
+    if coverage:
+        lines.extend(
+            [
+                "",
+                "## 覆盖摘要",
+                f"- 推荐范围执行率：{coverage.get('requirement_execution_coverage', '')}",
+                f"- 本次通过率：{coverage.get('requirement_pass_rate', '')}",
+            ]
+        )
+    if decision:
+        lines.extend(
+            [
+                "",
+                "## 发布建议",
+                f"- 风险等级：{decision.get('risk_level', '')}",
+                f"- 建议：{decision.get('suggestion', '')}",
+                f"- 原因：{decision.get('reason', '')}",
+            ]
+        )
+    return "\n".join(lines) + "\n"
+
+
+def _ok_ui_allure_report_dir(project_root: Path, ok_ui_run_id: str, summary: dict[str, Any]) -> Path | None:
+    run_scoped_report = _ok_ui_run_dir(project_root, ok_ui_run_id) / "allure-report"
+    if run_scoped_report.exists() and run_scoped_report.is_dir():
+        return run_scoped_report
+    report_dir = _allure_report_dir(summary)
+    if not report_dir:
+        return None
+    shared_latest_report = _ok_ui_project_root(project_root) / "reports" / "allure-report"
+    try:
+        if report_dir.resolve() == shared_latest_report.resolve() and _latest_ok_ui_run_id(project_root) != ok_ui_run_id:
+            return None
+    except FileNotFoundError:
+        return None
+    except OSError:
+        return None
+    return report_dir
+
+
+def build_ok_ui_publish_payload(
+    project_root: Path,
+    ok_ui_run_id: str,
+    *,
+    project_key: str | None = None,
+    module: str | None = None,
+    site: str | None = None,
+    change_mode: str | None = None,
+) -> dict[str, Any]:
+    run_dir = _ok_ui_run_dir(project_root, ok_ui_run_id)
+    summary_path = run_dir / "summary.json"
+    summary = _strip_loopback_report_urls(_read_json_path(summary_path))
+    if not summary:
+        raise FileNotFoundError(f"OK UI summary not found: {summary_path}")
+    coverage = _read_json_path(run_dir / "coverage_report.json")
+    decision = _read_json_path(run_dir / "decision_report.json")
+    coverage_dashboard = _build_coverage_dashboard(project_root)
+    timestamp = _ok_ui_timestamp(summary_path)
+    run_state = {
+        "run_id": ok_ui_run_id,
+        "status": _ok_ui_status(summary),
+        "change_mode": change_mode or "OK UI 独立回归",
+        "current_phase": "ok_autotest_ui_skill",
+        "created_at": timestamp,
+        "updated_at": timestamp,
+        "artifacts": {
+            "ok_ui_execution_report": str(summary_path),
+            "release_recommendation": str(run_dir / "decision_report.json"),
+        },
+        "phase_statuses": {"ok_autotest_ui_skill": "COMPLETED"},
+        "phase_timings": {},
+    }
+    modules = _ok_ui_modules(summary, module)
+    sites = _ok_ui_sites(summary, site)
+    return {
+        "run_id": ok_ui_run_id,
+        "status": run_state["status"],
+        "operator": os.getenv("QA_AGENT_OPERATOR") or os.getenv("USER") or "匿名用户",
+        "host": socket.gethostname(),
+        "project_root": str(project_root),
+        "project_key": project_key or os.getenv("QA_AGENT_DASHBOARD_PROJECT_KEY", "OK"),
+        "product": os.getenv("QA_AGENT_PRODUCT", ""),
+        "change_mode": run_state["change_mode"],
+        "module": modules,
+        "site": sites,
+        "trigger_source": "ok_ui_skill_cli",
+        "branch": os.getenv("GIT_BRANCH", ""),
+        "commit_sha": os.getenv("GIT_COMMIT", ""),
+        "pipeline_id": os.getenv("CI_PIPELINE_ID", ""),
+        "build_url": os.getenv("CI_BUILD_URL", ""),
+        "started_at": timestamp,
+        "finished_at": timestamp,
+        "artifacts": {
+            "run_state": run_state,
+            "final_report": _standalone_ok_ui_report(ok_ui_run_id, summary, coverage, decision),
+            "summary": _compact_ok_ui_summary_for_publish(summary),
+            "coverage": coverage,
+            "coverage_dashboard": coverage_dashboard,
+            "decision": decision,
+            "phase3_gate": {},
+            "allure_report": _package_allure_report(_ok_ui_allure_report_dir(project_root, ok_ui_run_id, summary), run_id=ok_ui_run_id),
+        },
+    }
 
 
 def build_publish_payload(project_root: Path, run_id: str) -> dict[str, Any]:
@@ -140,8 +426,9 @@ def build_publish_payload(project_root: Path, run_id: str) -> dict[str, Any]:
     requirement = _read_json_path(_artifact_path(state, "requirement_packet"))
     final_report = _read_text_path(_artifact_path(state, "final_report"))
     summary, coverage, decision = _find_ok_ui_artifacts(state)
+    summary = _strip_loopback_report_urls(summary)
     coverage_dashboard = _build_coverage_dashboard(project_root)
-    allure_report = _package_allure_report(_allure_report_dir(summary))
+    allure_report = _package_allure_report(_allure_report_dir(summary), run_id=run_id)
 
     modules = requirement.get("requested_modules") or requirement.get("candidate_modules") or requirement.get("module") or []
     sites = requirement.get("requested_sites") or requirement.get("site") or []
@@ -192,6 +479,67 @@ def publish_payload(base_url: str, payload: dict[str, Any], api_key: str = "", t
         return {"success": False, "status_code": exc.code, "error": detail}
     except Exception as exc:
         return {"success": False, "error": str(exc)}
+
+
+def _create_allure_archive(report_dir: Path) -> Path:
+    tmp = tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False)
+    archive_path = Path(tmp.name)
+    tmp.close()
+    with tarfile.open(archive_path, "w:gz") as tar:
+        for path in sorted(report_dir.rglob("*")):
+            if path.is_file():
+                tar.add(path, arcname=path.relative_to(report_dir).as_posix())
+    return archive_path
+
+
+def _multipart_file_body(field_name: str, file_path: Path, filename: str) -> tuple[bytes, str]:
+    boundary = "----qa-agent-allure-upload-boundary"
+    header = (
+        f"--{boundary}\r\n"
+        f'Content-Disposition: form-data; name="{field_name}"; filename="{filename}"\r\n'
+        "Content-Type: application/gzip\r\n\r\n"
+    ).encode("utf-8")
+    footer = f"\r\n--{boundary}--\r\n".encode("utf-8")
+    return header + file_path.read_bytes() + footer, f"multipart/form-data; boundary={boundary}"
+
+
+def upload_deferred_allure_report(
+    base_url: str,
+    run_uid: str,
+    allure_report: dict[str, Any],
+    api_key: str = "",
+    timeout: int = 300,
+) -> dict[str, Any]:
+    if not allure_report.get("deferred_upload"):
+        return {"success": True, "skipped": True, "reason": "allure report was inlined"}
+    report_dir_value = allure_report.get("report_dir")
+    if not report_dir_value:
+        return {"success": False, "error": "deferred allure report_dir missing"}
+    report_dir = Path(str(report_dir_value))
+    if not report_dir.exists() or not report_dir.is_dir():
+        return {"success": False, "error": f"deferred allure report_dir not found: {report_dir}"}
+
+    archive_path = _create_allure_archive(report_dir)
+    try:
+        body, content_type = _multipart_file_body("file", archive_path, "allure-report.tar.gz")
+        url = base_url.rstrip("/") + f"/api/qa-agent/runs/{run_uid}/allure-report"
+        headers = {"Content-Type": content_type}
+        if api_key:
+            headers["X-API-Key"] = api_key
+        request = urllib.request.Request(url, data=body, headers=headers, method="POST")
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            response_body = response.read().decode("utf-8")
+            return json.loads(response_body) if response_body else {"success": True}
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")
+        return {"success": False, "status_code": exc.code, "error": detail}
+    except Exception as exc:
+        return {"success": False, "error": str(exc)}
+    finally:
+        try:
+            archive_path.unlink()
+        except FileNotFoundError:
+            pass
 
 
 def publish_coverage(project_root: Path, *, base_url: str | None = None, api_key: str | None = None, project_key: str | None = None) -> dict[str, Any]:
@@ -249,6 +597,70 @@ def publish_run(
         }
         write_json(result_path, result)
         return result
-    result = publish_payload(base_url, payload, api_key or os.getenv("QA_AGENT_DASHBOARD_API_KEY", ""))
+    key = api_key or os.getenv("QA_AGENT_DASHBOARD_API_KEY", "")
+    result = publish_payload(base_url, payload, key)
+    if result.get("success") and result.get("run_uid"):
+        upload_result = upload_deferred_allure_report(
+            base_url,
+            str(result["run_uid"]),
+            payload.get("artifacts", {}).get("allure_report", {}) or {},
+            key,
+        )
+        if not upload_result.get("skipped"):
+            result["allure_upload_result"] = upload_result
+            if upload_result.get("success"):
+                result["allure_report_url"] = upload_result.get("allure_report_url") or result.get("allure_report_url")
+                result["report_url"] = upload_result.get("report_url") or result.get("report_url")
+            else:
+                result["success"] = False
+                result["error"] = upload_result.get("error") or upload_result.get("reason") or "Allure report upload failed"
+    write_json(result_path, result)
+    return result
+
+
+def publish_ok_ui_run(
+    project_root: Path,
+    ok_ui_run_id: str | None = None,
+    *,
+    base_url: str | None = None,
+    api_key: str | None = None,
+    project_key: str | None = None,
+    module: str | None = None,
+    site: str | None = None,
+    change_mode: str | None = None,
+) -> dict[str, Any]:
+    base_url = _dashboard_url(base_url)
+    run_id = ok_ui_run_id or _latest_ok_ui_run_id(project_root)
+    run_dir = _ok_ui_run_dir(project_root, run_id)
+    result_path = run_dir / "dashboard_publish_result.json"
+    if not base_url:
+        result = {"success": False, "skipped": True, "reason": "dashboard url unavailable"}
+        write_json(result_path, result)
+        return result
+    payload = build_ok_ui_publish_payload(
+        project_root,
+        run_id,
+        project_key=project_key,
+        module=module,
+        site=site,
+        change_mode=change_mode,
+    )
+    key = api_key or os.getenv("QA_AGENT_DASHBOARD_API_KEY", "")
+    result = publish_payload(base_url, payload, key)
+    if result.get("success") and result.get("run_uid"):
+        upload_result = upload_deferred_allure_report(
+            base_url,
+            str(result["run_uid"]),
+            payload.get("artifacts", {}).get("allure_report", {}) or {},
+            key,
+        )
+        if not upload_result.get("skipped"):
+            result["allure_upload_result"] = upload_result
+            if upload_result.get("success"):
+                result["allure_report_url"] = upload_result.get("allure_report_url") or result.get("allure_report_url")
+                result["report_url"] = upload_result.get("report_url") or result.get("report_url")
+            else:
+                result["success"] = False
+                result["error"] = upload_result.get("error") or upload_result.get("reason") or "Allure report upload failed"
     write_json(result_path, result)
     return result

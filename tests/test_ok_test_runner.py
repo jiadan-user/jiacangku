@@ -7,6 +7,7 @@ import tempfile
 import types
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 OK_UI_ROOT = Path(__file__).resolve().parents[1] / "bundled" / "skills" / "ok_autotest_ui_skill" / "bundled" / "ok_autotest_ui_pc"
@@ -33,6 +34,60 @@ class OkTestRunnerTests(unittest.TestCase):
         self.assertEqual(result["resolved_workers"], 1)
         self.assertFalse(result["parallel_enabled"])
         self.assertIn("prerequisite", result["parallel_reason"])
+
+    def test_parallel_pytest_args_use_file_granularity(self) -> None:
+        args = runner._build_pytest_args(
+            ["test_cases/zhaopin/test_demo.py"],
+            Path("junit.xml"),
+            Path("allure-results"),
+            workers=4,
+        )
+
+        self.assertIn("-n", args)
+        self.assertIn("4", args)
+        self.assertIn("--dist", args)
+        self.assertIn("loadfile", args)
+        self.assertNotIn("loadscope", args)
+
+    def test_path_only_selection_prefers_file_targets(self) -> None:
+        case = runner.CatalogCase(
+            nodeid="test_cases/zhaopin/test_demo.py::test_a",
+            file_path="test_cases/zhaopin/test_demo.py",
+            test_name="test_a",
+            case_id=None,
+            priority=None,
+            site=None,
+            markers=[],
+            allure_feature=None,
+            allure_story=None,
+            allure_title=None,
+        )
+        criteria = runner.SelectionCriteria(path="test_cases/zhaopin/")
+
+        targets, mode = runner._execution_targets([case], [case], criteria)
+
+        self.assertEqual(targets, ["test_cases/zhaopin/test_demo.py"])
+        self.assertEqual(mode, "file")
+
+    def test_filtered_selection_keeps_nodeid_targets(self) -> None:
+        case = runner.CatalogCase(
+            nodeid="test_cases/zhaopin/test_demo.py::test_a",
+            file_path="test_cases/zhaopin/test_demo.py",
+            test_name="test_a",
+            case_id=None,
+            priority="p0",
+            site=None,
+            markers=["p0"],
+            allure_feature=None,
+            allure_story=None,
+            allure_title=None,
+        )
+        criteria = runner.SelectionCriteria(path="test_cases/zhaopin/", priority="p0")
+
+        targets, mode = runner._execution_targets([case], [case], criteria)
+
+        self.assertEqual(targets, [case.nodeid])
+        self.assertEqual(mode, "nodeid")
 
     def test_junit_parser_maps_class_parametrized_unicode_nodeid(self) -> None:
         selected = ["test_cases/wallet/test_wallet_balance.py::TestBalance::test_total[中文]"]
@@ -96,6 +151,31 @@ class OkTestRunnerTests(unittest.TestCase):
 
             self.assertFalse(cleanup["enabled"])
             self.assertTrue(debug_path.exists())
+
+    def test_generate_allure_report_uses_run_scoped_report_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            results_dir = root / "allure-results"
+            report_dir = root / "ok_test_runs" / "run-1" / "allure-report"
+            results_dir.mkdir()
+
+            def fake_run(command, capture_output=True, text=True):
+                self.assertEqual(command[2], str(results_dir))
+                self.assertEqual(command[4], str(report_dir))
+                report_dir.mkdir(parents=True)
+                (report_dir / "index.html").write_text("<html></html>", encoding="utf-8")
+                return types.SimpleNamespace(returncode=0, stdout="", stderr="")
+
+            with (
+                patch.object(runner, "_ensure_allure_cli", return_value=("allure", "Allure CLI 已就绪。")),
+                patch.object(runner.subprocess, "run", side_effect=fake_run),
+                patch.object(runner, "_sync_latest_static_report"),
+                patch.object(runner, "_start_allure_server", return_value={"url": "http://127.0.0.1:1/index.html", "message": "ok"}),
+            ):
+                result = runner._generate_allure_report(results_dir, report_dir)
+
+            self.assertTrue(result["generated"])
+            self.assertEqual(result["report_dir"], str(report_dir))
 
 
 if __name__ == "__main__":

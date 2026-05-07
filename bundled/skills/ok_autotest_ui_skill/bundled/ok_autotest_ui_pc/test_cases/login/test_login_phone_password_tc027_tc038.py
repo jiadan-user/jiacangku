@@ -111,6 +111,7 @@ class TestLoginPhonePasswordPage:
 
     @pytest.mark.p1
     @pytest.mark.case_id_login_login_login_phone_password_tc027_tc038_027
+    @allure.title("TC029: 手机号自动识别国家码（+971）")
     @pytest.mark.P0
     def test_auto_detect_country_code(self, preloaded_page):
         with allure.step("前置条件：打开欢迎弹窗"):
@@ -123,6 +124,7 @@ class TestLoginPhonePasswordPage:
 
     @pytest.mark.p1
     @pytest.mark.case_id_login_login_login_phone_password_tc027_tc038_005
+    @allure.title("TC031: 手机号输入非数字字符")
     @pytest.mark.P1
     def test_non_numeric_phone_input(self, preloaded_page):
         with allure.step("前置条件：打开欢迎弹窗"):
@@ -136,6 +138,7 @@ class TestLoginPhonePasswordPage:
 
     @pytest.mark.p1
     @pytest.mark.case_id_login_login_login_phone_password_tc027_tc038_003
+    @allure.title("TC032: 手机号位数不足（少于 9 位）")
     @pytest.mark.P1
     def test_insufficient_phone_digits(self, preloaded_page):
         with allure.step("前置条件：打开欢迎弹窗"):
@@ -201,6 +204,7 @@ class TestLoginPhonePasswordPage:
 
     @pytest.mark.p1
     @pytest.mark.case_id_login_login_login_phone_password_tc027_tc038_004
+    @allure.title("TC036: 手机号密码登录快速重复点击 Log in 防重")
     @pytest.mark.P1
     @pytest.mark.needs_logout  # 用例内会登录成功，结束后须退登，避免后续用例找不到「Log in / Register」
     def test_multiple_clicks_prevention(self, preloaded_page):
@@ -231,9 +235,11 @@ class TestLoginPhonePasswordPage:
                     f"按钮已消失（登录成功后弹窗关闭）: {str(e)[:100]}",
                     name="✅ 验证通过",
                 )
+        
+        with allure.step("预期结果：点击 Log in 后弹窗关闭，右上角变为已登录状态"):
             is_logged_in = login_page.is_login_button_text_changed(timeout=3000)
-            assert is_logged_in, "应该成功登录"
-            allure.attach("登录成功，防重复机制正常", name="✅ 最终验证")
+            assert is_logged_in, "预期：点击 Log in 后弹窗关闭，右上角应变为已登录状态（用户名或头像显示）"
+            allure.attach("✅ 登录成功：弹窗已关闭，右上角已变为已登录状态，防重复机制正常", name="预期结果验证通过")
 
     @pytest.mark.p1
     @pytest.mark.case_id_login_login_login_phone_password_tc027_tc038_002

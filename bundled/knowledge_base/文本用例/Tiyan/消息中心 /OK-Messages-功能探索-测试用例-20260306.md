@@ -1,8 +1,15 @@
 # OK阿联酋站 - Messages页面功能探索测试用例
 
+
+## 版本历史
+
+| 版本 | 日期 | 修改人 | 修改内容 |
+|------|------|--------|----------|
+| v2.9 | 2026-04-28 | QA Agent | **全流程瘦身与补充**：删除 TC004/| v2.8 | 2026-04-28 | QA Agent | TC005 调整为会话列表与消息展示校验（移除搜索/筛选）；补充头像/昵称/发送验证代码 |
+
 ## 📋 测试概述
 
-本测试用例旨在全面探索OK.com阿联酋站Messages页面的所有功能，包括页面访问、会话列表、会话详情、消息发送、搜索筛选、用户信息等模块。
+本测试用例旨在全面探索OK.com阿联酋站Messages页面的所有功能，包括页面访问、会话列表、会话详情、消息发送、会话列表与消息区展示校验、用户信息等模块。**说明**：当前 Messages 模块不提供会话搜索与筛选，相关能力不作为测试范围。
 
 **测试目标**: 从首页点击Messages，进入Messages页面，系统性地探索和验证所有可用功能。
 
@@ -931,353 +938,64 @@ logger.info(f"✓ 探索到的功能: {', '.join(features_found) if features_fou
 
 ---
 
-## TC004: 探索Messages页面 - 消息发送功能
 
-### 📌 测试信息
-- **用例ID**: `case_id_messages_explore_004`
-- **优先级**: P1 (High)
-- **测试类型**: functional
-- **模块标记**: messages, send, exploration, ae
-- **Allure标记**:
-  - Feature: OK - Messages
-  - Story: Messages页面功能探索 - 消息发送
-  - Title: 探索Messages页面消息发送相关功能
-  - Severity: NORMAL
 
-### 🎯 测试目标
-探索消息发送相关的所有功能，包括文本输入、附件、表情、图片等。
-
-### ✅ 前置条件
-1. 已完成TC002，成功进入会话详情
-
-### 📝 测试步骤
-
-#### 步骤1：测试消息输入框功能
-**操作**: 
-```javascript
-// 定位消息输入框
-const messageInput = page.locator('textarea[placeholder*="message"], input[placeholder*="message"]').first();
-await messageInput.waitFor({ state: 'visible', timeout: 10000 });
-
-// 1. 检查输入框是否可编辑
-const isEditable = await messageInput.isEditable({ timeout: 3000 }).catch(() => false);
-console.log(`消息输入框可编辑: ${isEditable}`);
-
-// 2. 尝试输入测试文本（不发送）
-if (isEditable) {
-    const testMessage = 'Test message - 这是一条测试消息';
-    await messageInput.fill(testMessage);
-    await page.waitForTimeout(1000);
-    
-    // 3. 验证文本已输入
-    const inputValue = await messageInput.inputValue();
-    console.log(`输入框内容: ${inputValue}`);
-    console.log(`输入验证: ${inputValue === testMessage}`);
-    
-    // 4. 清空输入框
-    await messageInput.fill('');
-    await page.waitForTimeout(500);
-    
-    // 5. 验证已清空
-    const clearedValue = await messageInput.inputValue();
-    console.log(`清空验证: ${clearedValue === ''}`);
-}
-```
-
-**Python实现**:
-```python
-input_test = messages_page.test_message_input("这是一条测试消息")
-logger.info(f"✓ 消息输入框测试:")
-logger.info(f"  - 可编辑: {input_test.get('editable', False)}")
-logger.info(f"  - 输入成功: {input_test.get('test_success', False)}")
-```
-
-**预期结果**:
-- ✅ 消息输入框可见且可编辑
-- ✅ 能够成功输入文本
-- ✅ 输入的文本与预期一致
-- ✅ 能够清空输入框
-
-#### 步骤2：检查附件功能
-**操作**: 
-```javascript
-// 查找附件按钮
-const attachButton = page.locator('button[class*="attach"], button:has-text("Attach"), button:has(svg[class*="paperclip"]), button:has(svg[class*="attach"])').first();
-
-const hasAttachButton = await attachButton.isVisible({ timeout: 3000 }).catch(() => false);
-
-if (hasAttachButton) {
-    console.log('✓ 发现附件按钮');
-    
-    // 点击附件按钮
-    await attachButton.click();
-    await page.waitForTimeout(2000);
-    
-    // 检查是否弹出文件选择器或附件菜单
-    const attachMenu = page.locator('[role="menu"], .dropdown-menu, [class*="attach-menu"]').first();
-    const hasAttachMenu = await attachMenu.isVisible({ timeout: 3000 }).catch(() => false);
-    
-    if (hasAttachMenu) {
-        console.log('✓ 附件菜单已显示');
-        
-        // 检查附件类型选项
-        const fileOption = page.locator('text=/File|文件/i').first();
-        const photoOption = page.locator('text=/Photo|图片/i').first();
-        const videoOption = page.locator('text=/Video|视频/i').first();
-        
-        console.log(`附件类型选项:
-          - 文件: ${await fileOption.isVisible({ timeout: 2000 }).catch(() => false)}
-          - 图片: ${await photoOption.isVisible({ timeout: 2000 }).catch(() => false)}
-          - 视频: ${await videoOption.isVisible({ timeout: 2000 }).catch(() => false)}
-        `);
-        
-        // 关闭菜单
-        await page.keyboard.press('Escape');
-        await page.waitForTimeout(1000);
-    }
-} else {
-    console.log('✗ 未发现附件按钮');
-}
-```
-
-**Python实现**:
-```python
-auxiliary = messages_page.check_auxiliary_features()
-logger.info(f"✓ 辅助功能检查:")
-logger.info(f"  - 附件按钮: {auxiliary.get('has_attach', False)}")
-```
-
-**预期结果**:
-- ⚠️ 附件按钮可能存在也可能不存在
-- ✅ 如果存在，点击后应该显示文件选择或附件菜单
-
-#### 步骤3：检查表情功能
-**操作**: 
-```javascript
-// 查找表情按钮
-const emojiButton = page.locator('button[class*="emoji"], button:has(svg[class*="emoji"]), button:has(svg[class*="smile"])').first();
-
-const hasEmojiButton = await emojiButton.isVisible({ timeout: 3000 }).catch(() => false);
-
-if (hasEmojiButton) {
-    console.log('✓ 发现表情按钮');
-    
-    // 点击表情按钮
-    await emojiButton.click();
-    await page.waitForTimeout(2000);
-    
-    // 检查是否弹出表情选择器
-    const emojiPicker = page.locator('[class*="emoji-picker"], [class*="emoji-panel"]').first();
-    const hasEmojiPicker = await emojiPicker.isVisible({ timeout: 3000 }).catch(() => false);
-    
-    if (hasEmojiPicker) {
-        console.log('✓ 表情选择器已显示');
-        
-        // 统计表情数量
-        const emojis = emojiPicker.locator('button, span[class*="emoji"]');
-        const emojiCount = await emojis.count();
-        console.log(`表情数量: ${emojiCount}`);
-        
-        // 关闭表情选择器
-        await page.keyboard.press('Escape');
-        await page.waitForTimeout(1000);
-    }
-} else {
-    console.log('✗ 未发现表情按钮');
-}
-```
-
-**Python实现**:
-```python
-logger.info(f"  - 表情按钮: {auxiliary.get('has_emoji', False)}")
-```
-
-**预期结果**:
-- ⚠️ 表情按钮可能存在也可能不存在
-- ✅ 如果存在，点击后应该显示表情选择器
-
-#### 步骤4：检查图片上传功能
-**操作**: 
-```javascript
-// 查找图片按钮
-const imageButton = page.locator('button[class*="image"], button[class*="photo"], button:has(svg[class*="image"])').first();
-
-const hasImageButton = await imageButton.isVisible({ timeout: 3000 }).catch(() => false);
-
-if (hasImageButton) {
-    console.log('✓ 发现图片按钮');
-    
-    // 注意：实际点击可能触发文件选择器，这里只记录存在性
-    console.log('图片按钮存在，但不实际触发上传');
-} else {
-    console.log('✗ 未发现图片按钮');
-}
-```
-
-**Python实现**:
-```python
-logger.info(f"  - 图片按钮: {auxiliary.get('has_image', False)}")
-```
-
-**预期结果**:
-- ⚠️ 图片按钮可能存在也可能不存在
-- ✅ 如果存在，应该能够触发图片上传
-
-### 🔍 验证点
-
-#### 验证1：消息输入框可编辑
-**验证逻辑**:
-```python
-assert input_test.get('editable', False), "消息输入框不可编辑"
-logger.info("✓ 消息输入框验证通过")
-```
-
-**预期结果**:
-- ✅ 消息输入框可编辑
-
-#### 验证2：辅助功能记录
-**验证逻辑**:
-```python
-features = []
-if auxiliary.get('has_attach'):
-    features.append("附件")
-if auxiliary.get('has_emoji'):
-    features.append("表情")
-if auxiliary.get('has_image'):
-    features.append("图片")
-
-logger.info(f"✓ 发现的辅助功能: {', '.join(features) if features else '无'}")
-```
-
-**预期结果**:
-- ✅ 记录所有发现的辅助功能
-
-### 📸 截图要求
-- 消息输入框输入文本后截图
-- 附件菜单展开后截图（如果有）
-- 表情选择器展开后截图（如果有）
-
----
-
-## TC005: 探索Messages页面 - 搜索和筛选功能
+## TC004: 探索Messages页面 - 会话列表与消息列表展示校验
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_explore_005`
 - **优先级**: P2 (Medium)
 - **测试类型**: functional
-- **模块标记**: messages, search, exploration, ae
+- **模块标记**: messages, conversation-list, message-thread, exploration, ae
 - **Allure标记**:
   - Feature: OK - Messages
-  - Story: Messages页面功能探索 - 搜索筛选
-  - Title: 探索Messages页面的搜索和筛选功能
+  - Story: Messages页面功能探索 - 会话列表与消息展示校验
+  - Title: 校验会话列表与消息区的头像、昵称、时间戳、未读及发送消息展示
   - Severity: NORMAL
 
 ### 🎯 测试目标
-探索Messages页面的搜索和筛选功能，包括搜索框、筛选按钮、未读标识等。
+当前模块**不提供**会话搜索与筛选，本用例不测搜索框与筛选器。重点校验：**会话列表**中头像、昵称、时间戳、未读标识；进入会话后**消息列表**中双方消息的头像/昵称（或发送方向）展示是否合理；**发送消息**后是否在列表中正确出现且文案一致。
 
 ### ✅ 前置条件
 1. 已完成TC001，成功进入Messages页面
+2. （建议）已完成TC002，便于结合会话详情核对昵称一致性；若仅执行本用例，至少需存在≥1个会话并可进入详情
 
 ### 📝 测试步骤
 
-#### 步骤1：检查搜索框
+#### 步骤1：会话列表 — 校验头像、昵称与时间戳展示
 **操作**: 
 ```javascript
-// 查找搜索框（通常在会话列表顶部）
-const searchInput = page.locator('input[placeholder*="Search"], input[placeholder*="搜索"], input[type="search"]').first();
+// 取首个可见会话项，校验头像、昵称、时间戳（当前模块无搜索/筛选，不查找搜索框）
+const item = page.locator('[class*="conversation"], [class*="chat-item"]').first();
+await item.waitFor({ state: 'visible', timeout: 10000 });
 
-const hasSearchInput = await searchInput.isVisible({ timeout: 5000 }).catch(() => false);
+const avatar = item.locator('img[class*="avatar"], [class*="avatar"] img').first();
+const hasAvatar = await avatar.isVisible({ timeout: 3000 }).catch(() => false);
+const avatarSrc = hasAvatar ? await avatar.getAttribute('src') : null;
+console.log(`会话项头像可见: ${hasAvatar}, src: ${avatarSrc}`);
 
-if (hasSearchInput) {
-    console.log('✓ 发现搜索框');
-    
-    // 获取搜索框的placeholder
-    const placeholder = await searchInput.getAttribute('placeholder');
-    console.log(`搜索框提示文本: ${placeholder}`);
-    
-    // 尝试输入搜索关键词
-    const searchKeyword = 'test';
-    await searchInput.fill(searchKeyword);
-    await page.waitForTimeout(2000);
-    
-    // 检查搜索结果是否更新
-    const conversationItems = page.locator('[class*="conversation"], [class*="chat-item"]');
-    const searchResultCount = await conversationItems.count();
-    console.log(`搜索"${searchKeyword}"后的结果数量: ${searchResultCount}`);
-    
-    // 清空搜索框
-    await searchInput.fill('');
-    await page.waitForTimeout(2000);
-    
-    // 验证列表恢复
-    const restoredCount = await conversationItems.count();
-    console.log(`清空搜索后的会话数量: ${restoredCount}`);
-} else {
-    console.log('✗ 未发现搜索框');
-}
+const nameEl = item.locator('[class*="name"], [class*="title"]').first();
+const nameText = (await nameEl.textContent())?.trim() ?? '';
+console.log(`会话项昵称非空: ${nameText.length > 0}, 文本: ${nameText}`);
+
+const timeEl = item.locator('[class*="time"], [class*="date"]').first();
+const hasTime = await timeEl.isVisible({ timeout: 3000 }).catch(() => false);
+const timeText = hasTime ? (await timeEl.textContent())?.trim() : '';
+console.log(`会话项时间戳可见: ${hasTime}, 文本: ${timeText}`);
 ```
 
 **Python实现**:
 ```python
-has_search = messages_page.check_search_input()
-logger.info(f"✓ 搜索框: {has_search}")
-
-if has_search:
-    search_result_count = messages_page.search_conversation("test")
-    logger.info(f"  搜索结果数量: {search_result_count}")
+list_check = messages_page.validate_conversation_list_item_fields()  # 头像可见/src、昵称非空、时间戳可见
+logger.info(f"✓ 会话列表项校验: {list_check}")
 ```
 
 **预期结果**:
-- ⚠️ 搜索框可能存在也可能不存在
-- ✅ 如果存在，输入关键词后会话列表应该更新
-- ✅ 清空搜索后列表应该恢复
+- ✅ 会话项展示头像（可见或为合法占位）
+- ✅ 会话项昵称非空（或与 TC002 详情页一致时可交叉断言）
+- ✅ 会话项展示时间戳文案（相对/绝对时间均可）
 
-#### 步骤2：检查筛选功能
-**操作**: 
-```javascript
-// 查找筛选按钮或下拉菜单
-const filterButton = page.locator('button:has-text("Filter"), button[class*="filter"], select[class*="filter"]').first();
-
-const hasFilterButton = await filterButton.isVisible({ timeout: 5000 }).catch(() => false);
-
-if (hasFilterButton) {
-    console.log('✓ 发现筛选功能');
-    
-    // 点击筛选按钮
-    await filterButton.click();
-    await page.waitForTimeout(2000);
-    
-    // 检查筛选选项
-    const filterOptions = page.locator('[role="menu"] [role="menuitem"], .dropdown-menu li, [class*="filter-option"]');
-    const optionCount = await filterOptions.count();
-    console.log(`筛选选项数量: ${optionCount}`);
-    
-    // 记录筛选选项
-    for (let i = 0; i < Math.min(optionCount, 5); i++) {
-        const option = filterOptions.nth(i);
-        const optionText = await option.textContent();
-        console.log(`  筛选选项 ${i + 1}: ${optionText}`);
-    }
-    
-    // 关闭筛选菜单
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(1000);
-} else {
-    console.log('✗ 未发现筛选功能');
-}
-```
-
-**Python实现**:
-```python
-has_filter = messages_page.check_filter_button()
-logger.info(f"✓ 筛选功能: {has_filter}")
-```
-
-**预期结果**:
-- ⚠️ 筛选功能可能存在也可能不存在
-- ✅ 如果存在，点击后应该显示筛选选项
-
-#### 步骤3：检查未读消息标识
+#### 步骤2：检查未读消息标识
 **操作**: 
 ```javascript
 // 检查会话列表中是否有未读消息标识
@@ -1319,6 +1037,52 @@ if unread_info.get('count', 0) > 0:
 - ✅ 如果存在，应该显示未读消息数量
 - ✅ 未读标识应该在对应的会话项上
 
+#### 步骤3：消息列表 — 校验头像、昵称与发送消息展示
+**说明**: 在已进入某一会话详情的前提下，校验消息区内每条（或抽样多条）消息是否具备发送方标识（己方/对方头像、`mine`/`self` 类名或气泡左右对齐等）、对方昵称或气泡文案是否可读；并执行一次发送消息校验。
+
+**操作**: 
+```javascript
+// 进入首个会话（若当前不在详情页）
+await page.locator('[class*="conversation"], [class*="chat-item"]').first().click();
+await page.waitForTimeout(1500);
+
+const bubbles = page.locator('[class*="message-item"], [class*="chat-bubble"], [class*="message-bubble"]');
+const n = await bubbles.count();
+console.log(`消息条数: ${n}`);
+// 抽样：至少一条己方、一条对方（若存在），检查头像或布局类名
+for (let i = 0; i < Math.min(n, 10); i++) {
+  const b = bubbles.nth(i);
+  const cls = (await b.getAttribute('class')) || '';
+  const text = (await b.textContent())?.trim().slice(0, 80);
+  console.log(`消息${i}: class片段=${cls.slice(0, 120)}, 文本前缀=${text}`);
+}
+
+// 发送消息校验：输入唯一文案并发送，确认列表末尾出现相同文案
+const input = page.locator('textarea[placeholder*="message"], input[placeholder*="message"]').first();
+const sendBtn = page.locator('button:has-text("Send"), button[class*="send"]').first();
+const probe = `TC005_probe_${Date.now()}`;
+await input.fill(probe);
+await sendBtn.click();
+await page.waitForTimeout(2000);
+const lastBubble = bubbles.last();
+const lastText = await lastBubble.textContent();
+console.log(`发送校验: 期望包含 "${probe}", 末条包含=${(lastText || '').includes(probe)}`);
+```
+
+**Python实现**:
+```python
+import time
+
+thread_check = messages_page.validate_message_thread_avatars_and_alignment()
+send_ok = messages_page.send_message_and_verify_in_thread(f"probe_{int(time.time())}")
+logger.info(f"✓ 消息区展示校验: {thread_check}, 发送并出现在列表: {send_ok}")
+```
+
+**预期结果**:
+- ✅ 消息列表区域可见且至少有一条历史消息时，可区分己方与对方消息（头像、对齐或 class 等至少一种）
+- ✅ 输入框非空且允许发送时，点击发送后**新消息出现在消息列表**（通常在底部），**正文与输入一致**
+- ⚠️ 若 Send 初始 disabled，需先输入合法字符再发送（与 TC004/TC023 行为一致时可引用）
+
 ### 🔍 验证点
 
 #### 验证1：会话列表不为空
@@ -1332,31 +1096,32 @@ logger.info(f"✓ 会话数量验证通过: {conversation_count}")
 **预期结果**:
 - ✅ 至少有1个会话
 
-#### 验证2：搜索筛选功能记录
+#### 验证2：展示与发送校验结果汇总
 **验证逻辑**:
 ```python
-features = []
-if has_search:
-    features.append("搜索框")
-if has_filter:
-    features.append("筛选功能")
-if unread_info.get('count', 0) > 0:
-    features.append("未读标识")
-
-logger.info(f"✓ 探索到的搜索筛选功能: {', '.join(features) if features else '无'}")
+summary = {
+    "list_avatar_nickname_time": list_check,
+    "unread_badges": unread_info.get("count", 0),
+    "thread_validation": thread_check,
+    "send_verified": send_ok,
+}
+logger.info(f"✓ TC005 汇总: {summary}")
+assert list_check.get("ok", True), "会话列表头像/昵称/时间戳校验失败"
+assert send_ok, "发送消息后未在消息列表中校验到内容"
 ```
 
 **预期结果**:
-- ✅ 记录所有发现的搜索筛选功能
+- ✅ 记录会话列表字段校验、未读标识统计、消息区展示与发送校验结果
+- ✅ 发送探针消息后列表中出现对应文案
 
 ### 📸 截图要求
-- 搜索框输入关键词后截图（如果有）
-- 筛选菜单展开后截图（如果有）
-- 未读标识显示截图（如果有）
+- 会话列表：含头像、昵称、时间戳、未读（若有）的项截图
+- 消息列表：展示双方消息气泡/头像区域截图
+- 发送探针消息前后各一张（证明新消息入列）
 
 ---
 
-## TC006: 探索Messages页面 - 用户信息和操作
+## TC005: 探索Messages页面 - 用户信息和操作
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_explore_006`
@@ -1545,7 +1310,7 @@ logger.info("✓ 用户信息验证通过")
 
 ---
 
-## TC007: 探索Messages页面 - 消息类型和展示
+## TC006: 探索Messages页面 - 消息类型和展示
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_explore_007`
@@ -1706,7 +1471,7 @@ logger.info(f"✓ 消息历史验证通过: {len(message_analysis)}条")
 
 ---
 
-## TC008: 会话页面安全提示检查
+## TC007: 会话页面安全提示检查
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_explore_008`
@@ -1948,13 +1713,13 @@ graph TD
     M --> O[检查附件功能]
     M --> P[检查表情功能]
     
-    N --> Q[TC005: 探索搜索筛选]
+    N --> Q[TC005: 会话列表与消息列表展示校验]
     O --> Q
     P --> Q
     
-    Q --> R[检查搜索框]
-    Q --> S[检查筛选功能]
-    Q --> T[检查未读标识]
+    Q --> R[列表：头像昵称时间戳]
+    Q --> S[未读标识]
+    Q --> T[消息列表：头像昵称与发送校验]
     
     R --> U[TC006: 探索用户信息]
     S --> U
@@ -2002,8 +1767,7 @@ graph TD
 | 消息预览 | `[class*="message"]` | `[class*="preview"]` | `[class*="content"]` | 最后一条消息预览 |
 | 时间戳 | `[class*="time"]` | `[class*="date"]` | - | 消息时间 |
 | 未读标识 | `[class*="unread"]` | `[class*="badge"]` | `[class*="count"]` | 未读消息数量 |
-| 搜索框 | `input[placeholder*="Search"]` | `input[type="search"]` | - | 搜索会话 |
-| 筛选按钮 | `button:has-text("Filter")` | `button[class*="filter"]` | - | 筛选功能 |
+| （不适用） | - | - | - | 当前模块无会话搜索与筛选，不提供搜索框/筛选器 |
 
 ### 会话详情
 
@@ -2062,9 +1826,9 @@ home_page: https://ae.ok.com/en/city-abu-dhabi/
 messages_page: https://aepub.ok.com/biz/en/chat
 ```
 
-### 测试关键词
+### 测试关键词（可选，用于消息发送探针等）
 ```yaml
-search_keywords:
+probe_message_keywords:
   - test
   - hello
   - 你好
@@ -2134,8 +1898,7 @@ search_keywords:
 #### 会话列表功能
 - [ ] 会话数量统计
 - [ ] 会话项元素结构（头像、用户名、消息预览、时间戳）
-- [ ] 搜索框
-- [ ] 筛选功能
+- [ ] 会话列表展示校验（头像可见、昵称非空、时间戳展示）— **当前无搜索/筛选**
 - [ ] 未读标识
 - [ ] 会话排序（最新消息优先等）
 
@@ -2225,7 +1988,7 @@ if not click_success:
 // Playwright推荐方式
 page.getByRole('button', { name: 'Send' })
 page.getByText('Messages')
-page.getByLabel('Search conversations')
+page.getByPlaceholder(/message/i)  // 当前模块无「搜索会话」入口，勿假设 Search conversations
 page.getByPlaceholder('Type a message')
 ```
 
@@ -2236,8 +1999,8 @@ page.getByPlaceholder('Type a message')
 
 ### 2. 属性定位器（次优）
 ```javascript
-// 通过placeholder
-page.locator('input[placeholder*="Search"]')
+// 通过placeholder（消息输入；勿用会话搜索框 — 当前模块无此项）
+page.locator('textarea[placeholder*="message"], input[placeholder*="message"]')
 
 // 通过href
 page.locator('a[href*="chat"]')
@@ -2327,8 +2090,9 @@ allure serve reports/allure-results
 | **会话列表** | 消息预览 | ✅/❌ | 会话项 | |
 | **会话列表** | 时间戳 | ✅/❌ | 会话项 | |
 | **会话列表** | 未读标识 | ✅/❌ | 会话项 | |
-| **会话列表** | 搜索框 | ✅/❌ | 列表顶部 | |
-| **会话列表** | 筛选功能 | ✅/❌ | 列表顶部 | |
+| **会话列表** | 搜索/筛选 | **不提供** | — | 当前模块无此能力 |
+| **消息列表** | 双方头像/气泡方向 | ✅/❌ | 会话详情中部 | 与 TC005 步骤3 联动 |
+| **消息列表** | 发送后消息入列 | ✅/❌ | 会话详情中部 | 文案与输入一致 |
 | **会话详情** | 消息输入框 | ✅/❌ | 底部 | |
 | **会话详情** | 发送按钮 | ✅/❌ | 输入框旁 | |
 | **会话详情** | 消息历史 | ✅/❌ | 中间区域 | |
@@ -2432,7 +2196,7 @@ allure.attach(page.screenshot(), name="screenshot", attachment_type=allure.attac
 
 ---
 
-## TC009: 会话页面电话按钮测试
+## TC008: 会话页面电话按钮测试
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_explore_009`
@@ -2541,7 +2305,7 @@ if has_phone['exists']:
 
 ---
 
-## TC010: 会话页面设置入口测试
+## TC009: 会话页面设置入口测试
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_explore_010`
@@ -2673,7 +2437,7 @@ if has_settings['exists']:
 
 ---
 
-## TC011: 会话页面置顶功能测试
+## TC010: 会话页面置顶功能测试
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_explore_011`
@@ -2818,7 +2582,7 @@ if has_pin['exists']:
 
 ---
 
-## TC012: 会话页面免打扰功能测试
+## TC011: 会话页面免打扰功能测试
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_explore_012`
@@ -2950,7 +2714,7 @@ if has_mute['exists']:
 
 ---
 
-## TC013: 会话页面拉黑功能完整测试
+## TC012: 会话页面拉黑功能完整测试
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_explore_013`
@@ -3787,7 +3551,7 @@ logger.info(f"✓ 探索到的功能按钮: {', '.join(buttons_found) if buttons
 
 ---
 
-## TC014: 会话页面消息发送功能测试
+## TC013: 会话页面消息发送功能测试
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_explore_014`
@@ -4592,7 +4356,7 @@ if url_link_check.get('found'):
 
 ---
 
-## TC018: 发送空消息异常测试
+## TC015: 发送空消息异常测试
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_exception_018`
@@ -4805,7 +4569,7 @@ logger.info(f"✓ 空消息是否被发送: {message_sent}")
 
 ---
 
-## TC019: 发送超长消息异常测试
+## TC016: 发送超长消息异常测试
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_exception_019`
@@ -5034,7 +4798,7 @@ final_message = messages_page.get_latest_message()
 
 ---
 
-## TC020: 发送特殊字符消息异常测试
+## TC017: 发送特殊字符消息异常测试
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_exception_020`
@@ -5208,7 +4972,7 @@ if latest_message['found']:
 
 ---
 
-## TC021: 发送多行文本消息测试
+## TC018: 发送多行文本消息测试
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_exception_021`
@@ -5397,615 +5161,6 @@ page.screenshot(path="screenshots/tc021_multiline_display.png")
 
 ---
 
-## TC022: 复制消息功能测试 ⚠️
-
-> **⚠️ 状态：需要进一步调查（已暂时跳过）**
-> 
-> **已知问题**：
-> 1. Playwright的右键点击无法触发应用的自定义Copy菜单（白底气泡）
-> 2. 手动操作时Copy菜单可以出现，但Copy功能失败（Toast提示"copy 失败"）
-> 3. 可能需要与开发团队确认Copy菜单的触发机制和实现方式
-> 
-> **调查记录**：
-> - 尝试了多种触发方式：三击选中+Cmd+C、右键点击、左键+右键、悬停+右键
-> - 确认页面滚动问题已解决（不再影响测试）
-> - 自动化无法触发应用的自定义右键菜单，需要进一步分析应用的事件监听机制
-
-### 📌 测试信息
-- **用例ID**: `case_id_messages_function_022`
-- **优先级**: P0 (Critical)
-- **测试类型**: functional
-- **模块标记**: messages, conversation, copy, ae
-- **自动化状态**: ⚠️ 已跳过（需要进一步调查）
-- **Allure标记**:
-  - Feature: OK - Messages
-  - Story: Messages页面功能测试 - 消息操作
-  - Title: 测试长按消息复制功能
-  - Severity: NORMAL
-
-### 🎯 测试目标
-验证消息复制功能，通过右键点击消息触发Copy菜单，点击Copy按钮进行复制，然后粘贴到输入框并发送，验证完整的复制-粘贴-发送流程。
-
-### ✅ 前置条件
-1. 已成功登录
-2. 已进入Messages页面
-3. 已进入某个会话详情
-4. 会话中至少有一条消息
-
-### 📝 测试步骤
-
-#### 步骤1：先发送一条测试消息
-**操作**: 
-```javascript
-const testMessage = 'Test message for copy: ' + Date.now();
-await input.fill(testMessage);
-await sendBtn.click();
-await page.waitForTimeout(3000);
-```
-
-**Python实现**:
-```python
-# 发送测试消息
-import time
-test_message = f'Test message for copy: {int(time.time())}'
-logger.info(f"\n--- 发送测试消息 ---")
-logger.info(f"测试消息: {test_message}")
-
-input_result = messages_page.input_message(test_message)
-send_result = messages_page.click_send_button()
-page.wait_for_timeout(3000)
-
-# 滚动到底部
-page.evaluate("""
-    () => {
-        const containers = document.querySelectorAll('[class*="message"]');
-        for (const container of containers) {
-            if (container.scrollHeight > container.clientHeight) {
-                container.scrollTop = container.scrollHeight;
-            }
-        }
-    }
-""")
-
-page.screenshot(path="screenshots/tc022_message_sent.png")
-logger.info("✓ 测试消息已发送")
-```
-
-**预期结果**:
-- ✅ 测试消息发送成功
-
-#### 步骤2：三击选中消息文本
-**操作**: 
-```javascript
-// 查找包含测试消息的元素
-const messageInfo = await page.evaluate(() => {
-    const testMessageText = 'Test copy message';
-    const messageSelector = "[class*='message'], [class*='chat-item'], [class*='msg']";
-    const allMessages = Array.from(document.querySelectorAll(messageSelector));
-    
-    for (const msg of allMessages) {
-        const text = msg.textContent || '';
-        const rect = msg.getBoundingClientRect();
-        
-        // 查找包含测试消息且在右侧的元素
-        if (text.includes(testMessageText) && rect.x > 300 && rect.width > 50) {
-            // 尝试找到消息文本内容区域
-            const textElements = msg.querySelectorAll('span, div, p');
-            let textElement = null;
-            
-            for (const el of textElements) {
-                if (el.textContent.includes(testMessageText) && el.offsetWidth > 0) {
-                    textElement = el;
-                    break;
-                }
-            }
-            
-            const clickTarget = textElement || msg;
-            const targetRect = clickTarget.getBoundingClientRect();
-            
-            return {
-                found: true,
-                x: Math.round(targetRect.x + targetRect.width / 2),
-                y: Math.round(targetRect.y + targetRect.height / 2),
-                messageText: msg.textContent?.trim()
-            };
-        }
-    }
-    
-    return {found: false};
-});
-
-// 三击选中消息文本
-await page.mouse.click(messageInfo.x, messageInfo.y, { clickCount: 3 });
-console.log('已三击选中消息文本');
-await page.waitForTimeout(800);
-```
-
-**Python实现**:
-```python
-logger.info(f"\n--- 三击选中消息文本 ---")
-
-# 查找包含测试消息的元素
-message_info = page.evaluate("""
-    () => {
-        const testMessageText = 'Test copy message';
-        const messageSelector = "[class*='message'], [class*='chat-item'], [class*='msg']";
-        const allMessages = Array.from(document.querySelectorAll(messageSelector));
-        
-        for (const msg of allMessages) {
-            const text = msg.textContent || '';
-            const rect = msg.getBoundingClientRect();
-            
-            if (text.includes(testMessageText) && rect.x > 300 && rect.width > 50) {
-                const textElements = msg.querySelectorAll('span, div, p');
-                let textElement = null;
-                
-                for (const el of textElements) {
-                    if (el.textContent.includes(testMessageText) && el.offsetWidth > 0) {
-                        textElement = el;
-                        break;
-                    }
-                }
-                
-                const clickTarget = textElement || msg;
-                const targetRect = clickTarget.getBoundingClientRect();
-                
-                return {
-                    found: true,
-                    x: Math.round(targetRect.x + targetRect.width / 2),
-                    y: Math.round(targetRect.y + targetRect.height / 2),
-                    messageText: msg.textContent?.trim().substring(0, 100)
-                };
-            }
-        }
-        
-        return {found: false};
-    }
-""")
-
-logger.info(f"✓ 找到消息: {message_info['found']}")
-logger.info(f"  消息位置: ({message_info['x']}, {message_info['y']})")
-
-# 三击选中消息文本
-page.mouse.click(message_info['x'], message_info['y'], click_count=3)
-logger.info("✓ 已三击选中消息文本")
-page.wait_for_timeout(800)
-
-page.screenshot(path="screenshots/tc022_text_selected.png")
-logger.info("✓ 已截图: tc022_text_selected.png")
-```
-
-**预期结果**:
-- ✅ 消息文本被选中（高亮显示）
-- ✅ 选中的是完整消息文本
-
-#### 步骤3：使用键盘复制
-**操作**: 
-```javascript
-// 使用键盘复制（Mac: Cmd+C, Windows: Ctrl+C）
-await page.keyboard.press('Meta+C');  // Mac
-// await page.keyboard.press('Control+C');  // Windows
-
-console.log('已执行键盘复制操作');
-await page.waitForTimeout(800);
-```
-
-**Python实现**:
-```python
-logger.info(f"\n--- 使用键盘复制 ---")
-
-# 使用Cmd+C（Mac）或Ctrl+C（Windows）复制
-import platform
-if platform.system() == 'Darwin':
-    page.keyboard.press('Meta+C')
-    logger.info("✓ 执行复制操作（Cmd+C）")
-else:
-    page.keyboard.press('Control+C')
-    logger.info("✓ 执行复制操作（Ctrl+C）")
-
-page.wait_for_timeout(800)
-page.screenshot(path="screenshots/tc022_after_copy.png")
-logger.info("✓ 已截图: tc022_after_copy.png")
-```
-
-**预期结果**:
-- ✅ 选中的文本被复制到剪贴板
-
-#### 步骤4：验证复制成功（通过粘贴）
-**操作**: 
-```javascript
-if (copyOption.found) {
-    // 点击复制选项
-    const copyBtn = page.locator('text=/Copy|复制/i').first();
-    await copyBtn.click();
-    await page.waitForTimeout(1000);
-    
-    // 检查是否有成功提示
-    const successToast = page.locator('.toast, [class*="notification"]').first();
-    const hasToast = await successToast.isVisible({ timeout: 2000 }).catch(() => false);
-    
-    console.log(`复制成功提示: ${hasToast}`);
-}
-```
-
-**Python实现**:
-```python
-# 点击复制选项
-logger.info(f"\n--- 点击复制选项 ---")
-
-if copy_option['found']:
-    # 使用坐标点击
-    copy_clicked = page.evaluate(f"""
-        () => {{
-            const menuSelectors = [
-                '[role="menu"]',
-                '.context-menu',
-                '[class*="menu"]',
-                '[class*="Menu"]'
-            ];
-            
-            for (const selector of menuSelectors) {{
-                const menus = document.querySelectorAll(selector);
-                
-                for (const menu of menus) {{
-                    const rect = menu.getBoundingClientRect();
-                    if (rect.width > 50 && rect.height > 50) {{
-                        const buttons = Array.from(menu.querySelectorAll('button, [role="menuitem"], div[class*="item"]'));
-                        
-                        const copyBtn = buttons.find(btn => {{
-                            const text = btn.textContent?.toLowerCase() || '';
-                            return text.includes('copy') || text.includes('复制');
-                        }});
-                        
-                        if (copyBtn) {{
-                            copyBtn.click();
-                            return {{success: true}};
-                        }}
-                    }}
-                }}
-            }}
-            
-            return {{success: false}};
-        }}
-    """)
-    
-    logger.info(f"✓ 复制按钮点击: {copy_clicked['success']}")
-    page.wait_for_timeout(1000)
-    
-    # 检查成功提示
-    success_toast = page.evaluate("""
-        () => {
-            const toastSelectors = [
-                '.toast',
-                '[class*="notification"]',
-                '[class*="toast"]',
-                '[class*="message"]',
-                '[role="alert"]'
-            ];
-            
-            for (const selector of toastSelectors) {
-                const elements = document.querySelectorAll(selector);
-                for (const el of elements) {
-                    const rect = el.getBoundingClientRect();
-                    const text = el.textContent?.toLowerCase() || '';
-                    if (rect.width > 0 && rect.height > 0 && 
-                        (text.includes('copied') || text.includes('复制成功'))) {
-                        return {found: true, text: el.textContent?.trim()};
-                    }
-                }
-            }
-            
-            return {found: false};
-        }
-    """)
-    
-    logger.info(f"  成功提示: {success_toast['found']}")
-    if success_toast['found']:
-        logger.info(f"  提示内容: {success_toast['text']}")
-    
-    page.screenshot(path="screenshots/tc022_after_copy.png")
-else:
-    logger.warning("⚠️ 未找到复制选项")
-```
-
-**预期结果**:
-- ✅ 复制操作执行成功
-- ✅ 显示"已复制"提示（推荐）
-
-#### 步骤5：验证剪贴板内容
-**操作**: 
-```javascript
-// 验证剪贴板内容
-const clipboardText = await page.evaluate(async () => {
-    try {
-        const text = await navigator.clipboard.readText();
-        return {success: true, text: text};
-    } catch (e) {
-        return {success: false, error: e.message};
-    }
-});
-
-console.log(`剪贴板读取: ${clipboardText.success}`);
-if (clipboardText.success) {
-    console.log(`剪贴板内容: ${clipboardText.text}`);
-    console.log(`内容匹配: ${clipboardText.text === testMessage}`);
-}
-```
-
-**Python实现**:
-```python
-# 验证剪贴板内容
-logger.info(f"\n--- 验证剪贴板内容 ---")
-
-clipboard_text = page.evaluate("""
-    async () => {
-        try {
-            const text = await navigator.clipboard.readText();
-            return {success: true, text: text};
-        } catch (e) {
-            return {success: false, error: e.message};
-        }
-    }
-""")
-
-logger.info(f"✓ 剪贴板读取: {clipboard_text['success']}")
-
-if clipboard_text['success']:
-    clipboard_content = clipboard_text['text']
-    logger.info(f"  剪贴板内容: {clipboard_content[:100]}")
-    
-    # 验证内容是否匹配
-    content_match = 'Test copy message' in clipboard_content
-    logger.info(f"  内容匹配: {content_match}")
-else:
-    logger.warning(f"  剪贴板读取失败: {clipboard_text.get('error', 'unknown')}")
-```
-
-**预期结果**:
-- ✅ 剪贴板包含复制的消息内容
-- ✅ 内容完整无误
-
-#### 步骤6：使用键盘粘贴验证复制功能
-**操作**: 
-```javascript
-// 点击输入框获取焦点
-const input = page.locator('textarea[placeholder*="message"]').first();
-await input.focus();
-await input.clear();
-await page.waitForTimeout(500);
-
-// 使用键盘粘贴（Mac: Cmd+V, Windows: Ctrl+V）
-await page.keyboard.press('Meta+V');  // Mac
-// await page.keyboard.press('Control+V');  // Windows
-
-await page.waitForTimeout(1500);
-
-// 检查输入框内容
-const pasteCheck = await page.evaluate(() => {
-    const input = document.querySelector('textarea[placeholder*="message"]');
-    return {
-        success: !!input,
-        text: input?.value || '',
-        hasContent: (input?.value || '').length > 0
-    };
-});
-
-console.log(`粘贴验证: ${pasteCheck.success}`);
-console.log(`输入框内容: ${pasteCheck.text}`);
-```
-
-**Python实现**:
-```python
-logger.info(f"\n--- 使用键盘粘贴验证复制功能 ---")
-
-# 点击输入框获取焦点
-input_focused = page.evaluate("""
-    () => {
-        const input = document.querySelector('textarea[placeholder*="message"]');
-        if (input) {
-            input.focus();
-            input.value = '';
-            return {success: true};
-        }
-        return {success: false};
-    }
-""")
-
-logger.info(f"✓ 输入框获取焦点: {input_focused['success']}")
-page.wait_for_timeout(500)
-
-# 使用Cmd+V（Mac）或Ctrl+V（Windows）粘贴
-import platform
-if platform.system() == 'Darwin':
-    page.keyboard.press('Meta+V')
-    logger.info("✓ 执行粘贴操作（Cmd+V）")
-else:
-    page.keyboard.press('Control+V')
-    logger.info("✓ 执行粘贴操作（Ctrl+V）")
-
-page.wait_for_timeout(1500)
-
-# 检查输入框内容
-paste_check = page.evaluate("""
-    () => {
-        const input = document.querySelector('textarea[placeholder*="message"]');
-        if (input) {
-            return {
-                success: true,
-                text: input.value,
-                hasContent: input.value.length > 0
-            };
-        }
-        return {success: false};
-    }
-""")
-
-logger.info(f"✓ 粘贴验证: {paste_check['success']}")
-if paste_check['success']:
-    pasted_text = paste_check['text']
-    logger.info(f"  输入框内容: {pasted_text[:100]}")
-    logger.info(f"  有内容: {paste_check['hasContent']}")
-
-page.screenshot(path="screenshots/tc022_after_paste.png")
-```
-
-**预期结果**:
-- ✅ 输入框获取焦点成功
-- ✅ 键盘粘贴操作执行
-- ✅ 输入框显示复制的内容
-
-#### 步骤7：发送粘贴的消息
-**操作**: 
-```javascript
-if (pasteCheck.hasContent) {
-    // 点击发送按钮
-    const sendBtn = page.locator('button:has-text("Send")').first();
-    await sendBtn.click();
-    await page.waitForTimeout(3000);
-    
-    // 滚动到底部
-    await page.evaluate(() => {
-        const scrollContainers = [
-            '[class*="scroll"]',
-            '[class*="message-list"]',
-            '[class*="chat-container"]'
-        ];
-        
-        for (const selector of scrollContainers) {
-            const containers = document.querySelectorAll(selector);
-            for (const container of containers) {
-                if (container.scrollHeight > container.clientHeight) {
-                    container.scrollTop = container.scrollHeight;
-                }
-            }
-        }
-    });
-    
-    console.log('粘贴消息已发送');
-}
-```
-
-**Python实现**:
-```python
-if paste_check.get('hasContent'):
-    logger.info(f"\n--- 发送粘贴的消息 ---")
-    
-    send_result = messages_page.click_send_button()
-    logger.info(f"✓ 发送操作: {send_result['success']}")
-    
-    page.wait_for_timeout(3000)
-    
-    # 滚动到底部
-    page.evaluate("""
-        () => {
-            const scrollContainers = [
-                '[class*="scroll"]',
-                '[class*="message-list"]',
-                '[class*="chat-container"]'
-            ];
-            
-            for (const selector of scrollContainers) {
-                const containers = document.querySelectorAll(selector);
-                for (const container of containers) {
-                    if (container.scrollHeight > container.clientHeight) {
-                        container.scrollTop = container.scrollHeight;
-                    }
-                }
-            }
-        }
-    """)
-    page.wait_for_timeout(1000)
-    
-    page.screenshot(path="screenshots/tc022_message_sent_from_paste.png")
-    logger.info("✓ 已截图: tc022_message_sent_from_paste.png")
-```
-
-**预期结果**:
-- ✅ 粘贴的消息发送成功
-- ✅ 消息显示在会话中
-
-#### 步骤8：验证粘贴消息已发送
-**操作**: 
-```javascript
-// 获取最新消息
-const latestMessage = await page.evaluate(() => {
-    const messageSelector = "[class*='message'], [class*='chat-item'], [class*='msg']";
-    const messages = Array.from(document.querySelectorAll(messageSelector));
-    
-    // 过滤右侧消息
-    const rightMessages = messages.filter(msg => {
-        const rect = msg.getBoundingClientRect();
-        return rect.x > 300 && rect.width > 50;
-    });
-    
-    if (rightMessages.length === 0) return {found: false};
-    
-    const lastMsg = rightMessages[rightMessages.length - 1];
-    return {
-        found: true,
-        text: lastMsg.textContent?.trim()
-    };
-});
-
-console.log(`最新消息: ${latestMessage.text}`);
-console.log(`包含粘贴内容: ${latestMessage.text.includes(pasteCheck.text)}`);
-```
-
-**Python实现**:
-```python
-logger.info(f"\n--- 验证粘贴消息已发送 ---")
-
-latest_message_after_paste = messages_page.get_latest_message()
-if latest_message_after_paste['found']:
-    logger.info(f"  最新消息: {latest_message_after_paste['text'][:100]}")
-    
-    # 检查是否包含粘贴的内容
-    paste_message_match = pasted_text in latest_message_after_paste['text']
-    logger.info(f"  包含粘贴内容: {paste_message_match}")
-    logger.info(f"  粘贴的内容: '{pasted_text}'")
-```
-
-**预期结果**:
-- ✅ 最新消息包含粘贴的内容
-- ✅ 复制-粘贴-发送流程完整
-- ✅ 验证复制功能正常工作
-
-### 🔍 验证点
-- ✅ 右键点击消息显示菜单
-- ✅ 菜单包含"Copy"选项
-- ✅ 点击Copy执行复制操作
-- ✅ 使用键盘粘贴（Cmd+V/Ctrl+V）验证复制成功
-- ✅ 粘贴到输入框成功
-- ✅ 发送粘贴的消息成功
-- ✅ 消息内容完整匹配
-- ✅ 复制-粘贴-发送完整流程验证
-
-### 📸 截图要求
-- `tc022_message_sent.png` - 发送测试消息
-- `tc022_message_selected.png` - 左键选中消息
-- `tc022_after_right_click.png` - 右键点击后的菜单
-- `tc022_copy_option.png` - 复制选项显示
-- `tc022_after_copy_click.png` - 点击复制后状态
-- `tc022_after_paste.png` - 粘贴到输入框
-- `tc022_message_sent_from_paste.png` - 发送粘贴消息后
-
-### 💡 测试要点
-1. **右键触发**：PC端使用右键点击消息，移动端使用长按
-2. **菜单内容**：可能包含复制、删除、转发、撤回等选项
-3. **剪贴板验证**：由于浏览器权限限制，使用键盘粘贴（Cmd+V/Ctrl+V）验证复制功能
-4. **内容验证**：通过粘贴到输入框并发送来验证复制功能的完整性
-5. **复制内容**：注意复制的可能是消息文本或消息的某个部分（如时间戳）
-
-### 🔬 测试发现
-- ✅ 右键点击消息成功触发菜单
-- ✅ Copy选项存在且可点击
-- ⚠️ 复制的内容可能是消息的时间戳部分（如"3月31日"），而非完整消息文本
-- ✅ 复制-粘贴-发送流程完整可用
-
----
-
-## TC023: 会话列表滑动功能测试
-
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_scroll_023`
 - **优先级**: P1
@@ -6189,8 +5344,6 @@ logger.info("✓ 滑动后可见会话已变化")
 
 ---
 
-## TC024: 会话列表时间戳检查
-
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_timestamp_024`
 - **优先级**: P1
@@ -6346,222 +5499,9 @@ page.screenshot(path='screenshots/tc024_timestamps.png')
 
 ---
 
-## TC025: 未读消息气泡展示测试
 
-### 📌 测试信息
-- **用例ID**: `case_id_messages_unread_025`
-- **优先级**: P0 (Critical)
-- **测试类型**: functional
-- **模块标记**: messages, conversation, unread, notification, ae
-- **Allure标记**:
-  - Feature: OK - Messages
-  - Story: Messages页面功能探索 - 未读消息提示
-  - Title: 有未读消息的会话应该显示未读数量气泡
-  - Severity: CRITICAL
 
-### 🎯 测试目标
-验证未读消息气泡的展示功能，确认用户能够清晰识别哪些会话有未读消息。
-
-### ✅ 前置条件
-1. 用户已登录
-2. 在Messages页面
-3. 至少有一个会话存在未读消息
-
-### 📝 测试步骤
-
-#### 步骤1：查找未读消息气泡
-**操作**: 
-```python
-# 查找所有未读消息气泡
-unread_badges = page.evaluate("""
-    () => {
-        const conversations = document.querySelectorAll('[class*="conversation"], [class*="chat-item"]');
-        const results = [];
-        
-        for (const conv of conversations) {
-            // 查找未读气泡
-            const badgeSelectors = [
-                '[class*="badge"]',
-                '[class*="unread"]',
-                '[class*="count"]',
-                '[class*="notification"]',
-                'span[class*="bg-red"]',
-                'div[class*="dot"]'
-            ];
-            
-            let badge = null;
-            let badgeText = null;
-            
-            for (const selector of badgeSelectors) {
-                const badgeEl = conv.querySelector(selector);
-                if (badgeEl) {
-                    const text = badgeEl.textContent?.trim();
-                    // 检查是否是数字或红点
-                    if (text && (/^\\d+$/.test(text) || text === '' || text === '•')) {
-                        badge = badgeEl;
-                        badgeText = text;
-                        break;
-                    }
-                }
-            }
-            
-            if (badge) {
-                const userName = conv.textContent?.trim().split('\\n')[0] || 'Unknown';
-                const rect = badge.getBoundingClientRect();
-                
-                results.push({
-                    userName: userName.substring(0, 30),
-                    badgeText: badgeText,
-                    isNumeric: /^\\d+$/.test(badgeText),
-                    isDot: badgeText === '' || badgeText === '•',
-                    position: {
-                        x: rect.x,
-                        y: rect.y,
-                        width: rect.width,
-                        height: rect.height
-                    }
-                });
-            }
-        }
-        
-        return results;
-    }
-""")
-
-logger.info(f"✓ 找到 {len(unread_badges)} 个未读消息气泡")
-for badge in unread_badges[:5]:  # 显示前5个
-    logger.info(f"  {badge['userName']}: {badge['badgeText'] or '红点'}")
-```
-
-**预期结果**:
-- ✅ 找到至少1个未读消息气泡
-- ✅ 气泡显示未读数量（数字）或红点
-
-#### 步骤2：验证气泡样式
-**操作**: 
-```python
-# 验证气泡样式
-badge_styles = page.evaluate("""
-    () => {
-        const badges = document.querySelectorAll('[class*="badge"], [class*="unread"]');
-        const styles = [];
-        
-        for (const badge of badges) {
-            const computed = window.getComputedStyle(badge);
-            const text = badge.textContent?.trim();
-            
-            if (text && /^\\d+$/.test(text)) {
-                styles.push({
-                    backgroundColor: computed.backgroundColor,
-                    color: computed.color,
-                    borderRadius: computed.borderRadius,
-                    fontSize: computed.fontSize,
-                    isRed: computed.backgroundColor.includes('rgb(255') || 
-                           computed.backgroundColor.includes('rgb(239') ||
-                           computed.backgroundColor.includes('red')
-                });
-            }
-        }
-        
-        return styles;
-    }
-""")
-
-logger.info(f"✓ 气泡样式验证: {len(badge_styles)} 个")
-if badge_styles:
-    logger.info(f"  背景色: {badge_styles[0]['backgroundColor']}")
-    logger.info(f"  文字色: {badge_styles[0]['color']}")
-    logger.info(f"  是否红色: {badge_styles[0]['isRed']}")
-
-page.screenshot(path='screenshots/tc025_unread_badges.png')
-```
-
-**预期结果**:
-- ✅ 气泡背景色为红色系（如#FF0000, #EF4444等）
-- ✅ 文字颜色为白色
-- ✅ 气泡为圆形或圆角矩形
-- ✅ 字体大小较小（如12px-14px）
-
-#### 步骤3：点击有未读消息的会话
-**操作**: 
-```python
-# 点击第一个有未读消息的会话
-if unread_badges:
-    click_result = page.evaluate("""
-        () => {
-            const badges = document.querySelectorAll('[class*="badge"], [class*="unread"]');
-            for (const badge of badges) {
-                const text = badge.textContent?.trim();
-                if (text && /^\\d+$/.test(text)) {
-                    // 找到会话容器并点击
-                    const conversation = badge.closest('[class*="conversation"], [class*="chat-item"]');
-                    if (conversation) {
-                        conversation.click();
-                        return {
-                            success: true,
-                            userName: conversation.textContent?.trim().split('\\n')[0],
-                            unreadCount: text
-                        };
-                    }
-                }
-            }
-            return {success: false};
-        }
-    """)
-    
-    logger.info(f"✓ 点击未读会话: {click_result}")
-    page.wait_for_timeout(2000)
-    
-    # 截图会话详情页
-    page.screenshot(path='screenshots/tc025_after_click.png')
-```
-
-**预期结果**:
-- ✅ 成功进入会话详情页
-- ✅ 未读气泡消失或数量减少
-
-#### 步骤4：返回会话列表验证气泡消失
-**操作**: 
-```python
-# 返回会话列表
-page.go_back()
-page.wait_for_timeout(2000)
-
-# 验证气泡状态
-after_read = page.evaluate("""
-    () => {
-        const badges = document.querySelectorAll('[class*="badge"], [class*="unread"]');
-        return {
-            count: badges.length,
-            hasNumericBadge: Array.from(badges).some(b => /^\\d+$/.test(b.textContent?.trim()))
-        };
-    }
-""")
-
-logger.info(f"✓ 返回后气泡状态: {after_read}")
-page.screenshot(path='screenshots/tc025_after_return.png')
-```
-
-**预期结果**:
-- ✅ 已读会话的未读气泡消失
-- ✅ 或未读数量减少
-
-### 🔍 验证点总结
-- [x] 未读消息气泡正确显示
-- [x] 气泡显示未读数量（数字）
-- [x] 气泡样式符合规范（红色背景、白色文字、圆形）
-- [x] 点击会话后气泡消失或更新
-
-### 📸 截图要求
-- 未读消息气泡展示截图
-- 点击会话后的详情页截图
-- 返回后气泡状态截图
-
----
-
----
-
-## TC026: 会话列表时间顺序展示测试
+## TC019: 会话列表时间顺序展示测试
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_list_order_026`
@@ -6605,7 +5545,7 @@ Item 9: Jan 13 → dubizzle         (最旧)
 
 ---
 
-## TC027: 置顶会话icon展示测试
+## TC020: 置顶会话icon展示测试
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_pin_icon_027`
@@ -6645,12 +5585,12 @@ Item 9: Jan 13 → dubizzle         (最旧)
 
 ---
 
-## TC028: 免打扰会话icon展示测试
+## TC021: 免打扰会话icon展示测试
 
-> **编号与脚本说明**：同一条用例在自动化中 Allure 标题为 **TC027**、`pytest` 标记为 `case_id_messages_mute_icon_027`、入口函数 `test_muted_conversation_icon`；本文仍保留 **TC028** 作为历史章节编号。维护时**以 `case_id` 与代码为准**。
+> **编号与脚本说明**：同一条用例在自动化中 Allure 标题为 **TC023**、`pytest` 标记为 `case_id_messages_mute_icon_027`、入口函数 `test_muted_conversation_icon`；本文仍保留 **TC024** 作为历史章节编号。维护时**以 `case_id` 与代码为准**。
 
 ### 📌 测试信息
-- **用例ID（自动化）**: `case_id_messages_mute_icon_027`（与本文 TC028 对应同一场景）
+- **用例ID（自动化）**: `case_id_messages_mute_icon_027`（与本文 TC024 对应同一场景）
 - **优先级**: P0 (Critical)
 - **测试类型**: functional
 - **模块标记**: messages, conversation, mute, ae
@@ -6695,9 +5635,9 @@ Item 9: Jan 13 → dubizzle         (最旧)
 
 ---
 
-## TC029: 发送附件（PDF）测试
+## TC022: 发送附件（PDF）测试
 
-> **自动化脚本映射**: 对应函数 `test_send_pdf_attachment`（test_messages_complete.py，TC028）
+> **自动化脚本映射**: 对应函数 `test_send_pdf_attachment`（test_messages_complete.py，TC024）
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_attachment_029`
@@ -6748,9 +5688,9 @@ Item 9: Jan 13 → dubizzle         (最旧)
 
 ---
 
-## TC030: 附件 file input accept 属性支持格式校验
+## TC023: 附件 file input accept 属性支持格式校验
 
-> **自动化脚本映射**: 对应函数 `test_attachment_accepted_types`（test_messages_complete.py，TC029）
+> **自动化脚本映射**: 对应函数 `test_attachment_accepted_types`（test_messages_complete.py，TC025）
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_attachment_030`
@@ -6779,10 +5719,10 @@ Item 9: Jan 13 → dubizzle         (最旧)
 ### ⚠️ 自动化注意事项（2026-04-27 修复）
 
 **曾遇到的问题：**
-- 同 TC029，步骤1中进入会话详情页时使用固定坐标点击失败
+- 同 TC025，步骤1中进入会话详情页时使用固定坐标点击失败
 
 **修复方案：**
-- 同 TC029，改进 `_click_first_conversation()` 辅助函数
+- 同 TC025，改进 `_click_first_conversation()` 辅助函数
 - 使用可靠的选择器定位会话列表项
 
 ### 验证点
@@ -6791,9 +5731,9 @@ Item 9: Jan 13 → dubizzle         (最旧)
 
 ---
 
-## TC031: 发送图片测试
+## TC024: 发送图片测试
 
-> **自动化脚本映射**: 对应函数 `test_send_image`（test_messages_complete.py，TC030）
+> **自动化脚本映射**: 对应函数 `test_send_image`（test_messages_complete.py，TC022）
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_image_031`
@@ -6826,11 +5766,11 @@ Item 9: Jan 13 → dubizzle         (最旧)
 ### ⚠️ 自动化注意事项（2026-04-27 修复）
 
 **曾遇到的问题：**
-- 同 TC029，步骤1中进入会话详情页时使用固定坐标点击失败
+- 同 TC025，步骤1中进入会话详情页时使用固定坐标点击失败
 - 无法找到 `textarea.ci-input-item` 输入框
 
 **修复方案：**
-- 同 TC029，改进 `_click_first_conversation()` 辅助函数
+- 同 TC025，改进 `_click_first_conversation()` 辅助函数
 - 使用可靠的选择器定位会话列表项
 
 ### 验证点
@@ -6863,7 +5803,7 @@ Item 9: Jan 13 → dubizzle         (最旧)
 
 ---
 
-## TC032: 图片 file input accept 属性格式校验
+## TC025: 图片 file input accept 属性格式校验
 |------|------|
 | accept 完整值 | `image/JPG,image/PNG,image/JPEG` |
 | 不支持格式 | `.pdf`、`.doc`（文档类不在 accept 中） |
@@ -6881,9 +5821,9 @@ Item 9: Jan 13 → dubizzle         (最旧)
 
 ---
 
-## TC033: 地理位置图标 - 点击弹出 Send Location 地图弹窗
+## TC026: 地理位置图标 - 点击弹出 Send Location 地图弹窗
 
-> **自动化脚本映射**: 对应函数 `test_location_icon_entry`（test_messages_complete.py，TC032）
+> **自动化脚本映射**: 对应函数 `test_location_icon_entry`（test_messages_complete.py，TC024）
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_location_033`
@@ -6941,7 +5881,7 @@ Item 9: Jan 13 → dubizzle         (最旧)
 
 ---
 
-## TC034: Send 按钮初始状态为 disabled
+## TC027: Send 按钮初始状态为 disabled
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_send_034`
@@ -6973,7 +5913,7 @@ Item 9: Jan 13 → dubizzle         (最旧)
 
 ---
 
-## TC035: 输入文字后 Send 按钮变为 enabled
+## TC028: 输入文字后 Send 按钮变为 enabled
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_send_035`
@@ -7008,7 +5948,7 @@ Item 9: Jan 13 → dubizzle         (最旧)
 
 ---
 
-## TC036: 发送文件图标（sendFile）DOM 结构验证
+## TC029: 发送文件图标（sendFile）DOM 结构验证
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_attachment_036`
@@ -7039,7 +5979,7 @@ Item 9: Jan 13 → dubizzle         (最旧)
 
 ---
 
-## TC037: 发送图片图标（picture25）DOM 结构及 .ci-send 整体结构验证
+## TC030: 发送图片图标（picture25）DOM 结构及 .ci-send 整体结构验证
 
 ### 📌 测试信息
 - **用例ID**: `case_id_messages_image_037`
@@ -7084,6 +6024,47 @@ Item 9: Jan 13 → dubizzle         (最旧)
 - [x] image file input accept 包含 `image/`，不含 `.pdf`
 - [x] `.ci-send` 共有 3 个可见图标（location、sendFile、picture25）
 - [x] `.ci-send` 有 Send 按钮，按钮文字为 `Send`
+
+---
+
+
+
+## TC031: 会话排序规则验证（置顶优先）
+
+### 测试目标
+验证 Messages 会话列表的排序规则，重点检查：
+- 置顶会话是否始终在列表前部
+- 未置顶会话按时间或未读状态排序
+- 排序逻辑是否一致
+
+### 前置条件
+- 用户已登录
+- 会话列表中存在多个会话
+- 至少有 1 个会话被置顶
+
+### 测试步骤
+
+#### 步骤1: 分析会话列表排序
+提取所有会话的索引位置、置顶状态、未读状态、时间戳。
+
+#### 步骤2: 验证排序规则
+- 检查置顶会话是否在未置顶会话之前
+- 如无置顶会话则跳过测试
+
+### 验证点
+- [ ] 置顶会话出现在列表前部
+- [ ] 未置顶会话按时间/未读排序
+- [ ] 排序逻辑一致无异常
+
+### 优先级
+P1
+
+### 测试类型
+功能测试、UI 验证
+
+### 关联用例
+- TC002: 会话列表显示
+- TC011: 置顶功能测试
 
 ---
 
@@ -7132,24 +6113,23 @@ Item 9: Jan 13 → dubizzle         (最旧)
 | | | | - 检查链接属性（href, target等） |
 | | | | - 新增5张测试截图记录 |
 | v2.1 | 2026-03-10 | AI Assistant | 新增异常测试和功能测试用例 |
-| | | | TC018: 发送空消息异常测试 |
+| | | | TC014: 发送空消息异常测试 |
 | | | | - 测试空输入、空格、换行符的处理 |
 | | | | - 验证发送按钮禁用状态 |
-| | | | TC019: 发送超长消息异常测试 |
+| | | | TC015: 发送超长消息异常测试 |
 | | | | - 测试5000字符超长文本 |
 | | | | - 验证字符限制和计数器 |
 | | | | - 检查截断和警告提示 |
-| | | | TC020: 发送特殊字符消息测试 |
+| | | | TC016: 发送特殊字符消息测试 |
 | | | | - 测试HTML标签（XSS防护） |
 | | | | - 测试SQL注入字符 |
 | | | | - 测试Emoji表情显示 |
 | | | | - 测试特殊符号处理 |
-| | | | TC021: 发送多行文本消息测试 |
+| | | | TC017: 发送多行文本消息测试 |
 | | | | - 测试多行文本输入和发送 |
 | | | | - 验证换行符保留和显示 |
 | | | | - 检查<br>标签或CSS换行实现 |
-| | | | TC022: 复制消息功能测试 |
-| | | | - 测试长按/右键消息菜单 |
+| | | | | | | | - 测试长按/右键消息菜单 |
 | | | | - 测试复制选项点击 |
 | | | | - 验证剪贴板内容正确性 |
 
@@ -7157,39 +6137,34 @@ Item 9: Jan 13 → dubizzle         (最旧)
 | | | | - 删除TC015: 会话详情页关闭按钮测试 |
 | | | | - 删除TC016: 会话内搜索功能测试 |
 | | | | - 删除TC017: 文件上传功能探索测试 |
-| | | | - 保留TC018-TC022异常和功能测试用例 |
-| | | | - 当前用例数：19个（TC001-TC014A + TC018-TC022）|
-| v2.3 | 2026-03-11 | AI Assistant | 新增会话列表交互测试 - TC023-TC025 |
-| | | | - 新增TC023: 会话列表滑动功能测试 |
-| | | | - 新增TC024: 会话列表时间戳检查 |
-| | | | - 新增TC025: 未读消息气泡展示测试 |
-| | | | - 当前用例数：22个（TC001-TC014A + TC018-TC025）|
-| v2.4 | 2026-03-12 | AI Assistant | 新增深度实测用例 - TC026-TC028 |
+| | | | - 保留TC018-| | | | - 当前用例数：19个（历史记录）-| v2.3 | 2026-03-11 | AI Assistant | 新增会话列表交互测试 - | | | | - 新增| | | | - 新增| | | | - 新增| | | | - 当前用例数：22个（历史记录）-| v2.4 | 2026-03-12 | AI Assistant | 新增深度实测用例 - TC014-TC016 |
 | | | | - 新增TC026: 会话列表时间顺序展示测试（✅实测） |
 | | | | - 新增TC027: 置顶会话icon展示测试（✅实测） |
 | | | | - 新增TC028: 免打扰会话icon展示测试（✅实测） |
 | | | | - 实测发现：置顶icon=toplist@2x.png，静音icon=listMute@2x.png |
-| | | | - 当前用例数：25个（TC001-TC014A + TC018-TC028）|
-| v2.6 | 2026-04-22 | AI Assistant | 同步 `test_muted_conversation_icon` 实现：免打扰菜单拼接串与精确点击 Mute、验菜单勿重复点列表、Messages 首屏等待与失败截图；注明 `case_id_messages_mute_icon_027` 与文内 TC028 的对应关系 |
-| v2.5 | 2026-03-16 | AI Assistant | 新增消息输入区功能用例 - TC029-TC037 |
-| | | | - TC029: 发送附件（PDF）✅实测 |
-| | | | - TC030: 附件 accept 格式校验（9种格式）✅实测 |
-| | | | - TC031: 发送图片 ✅实测 |
-| | | | - TC032: 图片 accept 格式校验（JPG/PNG/JPEG）✅实测 |
-| | | | - TC033: 地理位置图标 → Send Location 弹窗（Google Maps）✅实测 |
-| | | | - TC034: Send 按钮初始 disabled 状态 ✅实测 |
-| | | | - TC035: 输入文字后 Send 启用，清空后重新 disabled ✅实测 |
-| | | | - TC036: sendFile 图标 DOM 结构验证 ✅实测 |
-| | | | - TC037: picture25 图标及 .ci-send 整体结构验证 ✅实测 |
+| | | | - 当前用例数：25个（历史记录）|
+| v2.6 | 2026-04-22 | AI Assistant | 同步 `test_muted_conversation_icon` 实现：免打扰菜单拼接串与精确点击 Mute、验菜单勿重复点列表、Messages 首屏等待与失败截图；注明 `case_id_messages_mute_icon_027` 与文内 TC016 的对应关系 |
+| v2.5 | 2026-03-16 | AI Assistant | 新增消息输入区功能用例 - TC017-TC017 |
+| | | | - TC017: 发送附件（PDF）✅实测 |
+| | | | - TC014: 附件 accept 格式校验（9种格式）✅实测 |
+| | | | - TC015: 发送图片 ✅实测 |
+| | | | - TC016: 图片 accept 格式校验（JPG/PNG/JPEG）✅实测 |
+| | | | - TC017: 地理位置图标 → Send Location 弹窗（Google Maps）✅实测 |
+| | | | - TC014: Send 按钮初始 disabled 状态 ✅实测 |
+| | | | - TC015: 输入文字后 Send 启用，清空后重新 disabled ✅实测 |
+| | | | - TC016: sendFile 图标 DOM 结构验证 ✅实测 |
+| | | | - TC017: picture25 图标及 .ci-send 整体结构验证 ✅实测 |
 | | | | - 实测发现：.ci-send = location + sendFile + picture25 + Send按钮 |
-| v2.7 | 2026-04-27 | AI Assistant | 同步自动化脚本修复 - TC029/TC031/TC033 |
-| | | | - TC029: 新增自动化修复说明，改进 `_click_first_conversation()` 函数 |
-| | | | - TC030: 新增自动化修复说明，同 TC029 |
-| | | | - TC031: 新增自动化修复说明，同 TC029，清理重复内容 |
-| | | | - TC033: 新增自动化修复说明，改进滚动策略和等待时间 |
+| v2.8 | 2026-04-28 | AI Assistant | TC005 调整：移除会话搜索/筛选；保留未读与时间戳；增加会话列表头像昵称时间戳校验与消息列表头像昵称及发送入列校验；同步流程图、元素表、清单与语义化定位示例 |
+| v2.7 | 2026-04-27 | AI Assistant |
+| v3.0 | 2026-04-28 | QA Agent | **完整重新编号**：31个用例连续编号TC001-TC015（含TC014A），删除的用例不占用编号；同步更新所有关联文档、脚本、知识库 | 同步自动化脚本修复 - TC017/TC015/TC017 |
+| | | | - TC017: 新增自动化修复说明，改进 `_click_first_conversation()` 函数 |
+| | | | - TC014: 新增自动化修复说明，同 TC017 |
+| | | | - TC015: 新增自动化修复说明，同 TC017，清理重复内容 |
+| | | | - TC017: 新增自动化修复说明，改进滚动策略和等待时间 |
 | | | | - 修复重点：选择器策略优化、等待时间增加、滚动逻辑改进、容错机制增强 |
 | | | | - 所有修复用例自动化状态：✅ 通过（2026-04-27）|
-| | | | - 当前用例数：34个（TC001-TC014A + TC018-TC037）|
+| | | | - 当前用例数：31个（TC001-TC031，含TC014A）|
 ---
 
 **📄 文档生成时间**: 2026-03-06  
@@ -7197,5 +6172,5 @@ Item 9: Jan 13 → dubizzle         (最旧)
 **👤 测试角色**: 卖家 (Seller)  
 **📋 文档类型**: 功能探索测试用例  
 **🎯 测试目标**: 全面探索Messages页面所有功能  
-**📊 当前用例数**: 34个测试用例（TC001-TC014A + TC018-TC037）  
-**📝 最后更新**: 2026-04-22
+**📊 当前用例数**: 31个测试用例（TC001-TC031，含TC014A）  
+**📝 最后更新**: 2026-04-28

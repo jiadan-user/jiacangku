@@ -3,6 +3,9 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
+import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -11,7 +14,7 @@ from qa_agent.agent_memory.candidate import build_candidate_from_text
 from qa_agent.agent_memory.models import to_data as memory_to_data
 from qa_agent.config import load_config
 from qa_agent.conductor import QAConductor
-from qa_agent.dashboard_publish import publish_coverage, publish_run
+from qa_agent.dashboard_publish import publish_coverage, publish_ok_ui_run, publish_run
 from qa_agent.io import write_json
 from qa_agent.models import RunStatus, to_data
 
@@ -109,6 +112,32 @@ def build_parser() -> argparse.ArgumentParser:
     dashboard_coverage.add_argument("--api-key", help="发布 API Key，默认读取 QA_AGENT_DASHBOARD_API_KEY")
     dashboard_coverage.add_argument("--project-key", default="OK", help="目标项目名，默认 OK")
     dashboard_coverage.add_argument("--json", action="store_true")
+    dashboard_ok_ui_publish = dashboard_sub.add_parser("publish-ok-ui-run", help="发布单独 ok_autotest_ui_skill run 到 ui_test_management")
+    dashboard_ok_ui_publish.add_argument("--ok-ui-run-id", help="OK UI skill 输出的 run_id；不传则读取 ok_test_latest_run.txt")
+    dashboard_ok_ui_publish.add_argument("--url", help="ui_test_management 地址，默认 http://10.192.35.53:8001，可用 QA_AGENT_DASHBOARD_URL 覆盖")
+    dashboard_ok_ui_publish.add_argument("--api-key", help="发布 API Key，默认读取 QA_AGENT_DASHBOARD_API_KEY")
+    dashboard_ok_ui_publish.add_argument("--project-key", default="OK", help="目标项目名，默认 OK")
+    dashboard_ok_ui_publish.add_argument("--module", help="覆盖展示用模块；不传则读取 OK UI summary.selected_modules")
+    dashboard_ok_ui_publish.add_argument("--site", help="覆盖展示用站点；不传则读取 OK UI summary.selection.site")
+    dashboard_ok_ui_publish.add_argument("--change-mode", default="OK UI 独立回归", help="平台执行模式展示文案")
+    dashboard_ok_ui_publish.add_argument("--json", action="store_true")
+    dashboard_ok_ui_run = dashboard_sub.add_parser("run-ok-ui", help="按精确条件执行 OK UI 用例并发布到 ui_test_management")
+    dashboard_ok_ui_run.add_argument("--module")
+    dashboard_ok_ui_run.add_argument("--feature")
+    dashboard_ok_ui_run.add_argument("--story")
+    dashboard_ok_ui_run.add_argument("--priority")
+    dashboard_ok_ui_run.add_argument("--site")
+    dashboard_ok_ui_run.add_argument("--case-id")
+    dashboard_ok_ui_run.add_argument("--path")
+    dashboard_ok_ui_run.add_argument("--nodeid")
+    dashboard_ok_ui_run.add_argument("--workers", default="1", help="并发 worker 数，支持 1、正整数或 auto；默认 1")
+    dashboard_ok_ui_run.add_argument("--max-workers", type=int)
+    dashboard_ok_ui_run.add_argument("--artifact-retention", choices=["full", "lean"])
+    dashboard_ok_ui_run.add_argument("--url", help="ui_test_management 地址，默认 http://10.192.35.53:8001，可用 QA_AGENT_DASHBOARD_URL 覆盖")
+    dashboard_ok_ui_run.add_argument("--api-key", help="发布 API Key，默认读取 QA_AGENT_DASHBOARD_API_KEY")
+    dashboard_ok_ui_run.add_argument("--project-key", default="OK", help="目标项目名，默认 OK")
+    dashboard_ok_ui_run.add_argument("--change-mode", default="OK UI 独立回归", help="平台执行模式展示文案")
+    dashboard_ok_ui_run.add_argument("--json", action="store_true")
 
     return parser
 
@@ -168,6 +197,40 @@ def _format_next_action(state_data: dict) -> str:
     if action.get("resume_command"):
         lines.append(f"- resume: {action['resume_command']}")
     return "\n".join(lines)
+
+
+def _ok_ui_script_path(config) -> Path:
+    return config.project_root / "bundled" / "skills" / "ok_autotest_ui_skill" / "scripts" / "ok_test.py"
+
+
+def _add_optional_cli_arg(command: list[str], flag: str, value) -> None:
+    if value not in (None, "", []):
+        command.extend([flag, str(value)])
+
+
+def _build_ok_ui_run_command(config, args) -> list[str]:
+    script = _ok_ui_script_path(config)
+    command = [sys.executable, str(script), "run"]
+    for attr, flag in (
+        ("module", "--module"),
+        ("feature", "--feature"),
+        ("story", "--story"),
+        ("priority", "--priority"),
+        ("site", "--site"),
+        ("case_id", "--case-id"),
+        ("path", "--path"),
+        ("nodeid", "--nodeid"),
+        ("workers", "--workers"),
+        ("max_workers", "--max-workers"),
+        ("artifact_retention", "--artifact-retention"),
+    ):
+        _add_optional_cli_arg(command, flag, getattr(args, attr, None))
+    return command
+
+
+def _extract_ok_ui_run_id(output: str) -> str:
+    match = re.search(r"(?m)^run_id=(\S+)\s*$", output)
+    return match.group(1) if match else ""
 
 
 def _format_duration(seconds) -> str:
@@ -424,6 +487,98 @@ def main() -> int:
                 else:
                     print(f"覆盖度发布失败: {result.get('error') or result.get('reason')}")
                 return 0 if result.get("success") else 1
+            except Exception as exc:
+                print(f"错误: {exc}")
+                return 1
+        if args.dashboard_command == "publish-ok-ui-run":
+            try:
+                result = publish_ok_ui_run(
+                    config.project_root,
+                    args.ok_ui_run_id,
+                    base_url=args.url,
+                    api_key=args.api_key,
+                    project_key=args.project_key,
+                    module=args.module,
+                    site=args.site,
+                    change_mode=args.change_mode,
+                )
+                if args.json:
+                    print(json.dumps(result, ensure_ascii=False, indent=2))
+                elif result.get("success"):
+                    print(f"OK UI run 发布成功: {result.get('run_uid', args.ok_ui_run_id or 'latest')}")
+                    if result.get("report_url"):
+                        print(f"报告: {result['report_url']}")
+                else:
+                    print(f"OK UI run 发布失败: {result.get('error') or result.get('reason')}")
+                return 0 if result.get("success") else 1
+            except Exception as exc:
+                print(f"错误: {exc}")
+                return 1
+        if args.dashboard_command == "run-ok-ui":
+            try:
+                command = _build_ok_ui_run_command(config, args)
+                if args.json:
+                    completed = subprocess.run(command, cwd=config.project_root, capture_output=True, text=True)
+                    stdout = completed.stdout
+                    stderr = completed.stderr
+                    returncode = completed.returncode
+                else:
+                    process = subprocess.Popen(
+                        command,
+                        cwd=config.project_root,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.STDOUT,
+                        text=True,
+                        bufsize=1,
+                    )
+                    output_lines = []
+                    assert process.stdout is not None
+                    for line in process.stdout:
+                        output_lines.append(line)
+                        print(line, end="")
+                    returncode = process.wait()
+                    stdout = "".join(output_lines)
+                    stderr = ""
+                combined_output = "\n".join(item for item in [stdout, stderr] if item)
+                ok_ui_run_id = _extract_ok_ui_run_id(combined_output)
+                publish_result = {}
+                if ok_ui_run_id:
+                    publish_result = publish_ok_ui_run(
+                        config.project_root,
+                        ok_ui_run_id,
+                        base_url=args.url,
+                        api_key=args.api_key,
+                        project_key=args.project_key,
+                        module=args.module,
+                        site=args.site,
+                        change_mode=args.change_mode,
+                    )
+                else:
+                    publish_result = {"success": False, "error": "OK UI run_id not found in command output"}
+                if args.json:
+                    print(
+                        json.dumps(
+                            {
+                                "ok_ui_returncode": returncode,
+                                "ok_ui_run_id": ok_ui_run_id,
+                                "publish_result": publish_result,
+                                "stdout": stdout,
+                                "stderr": stderr,
+                            },
+                            ensure_ascii=False,
+                            indent=2,
+                        )
+                    )
+                else:
+                    if publish_result.get("success"):
+                        print(f"OK UI run 已发布到 Dashboard: {publish_result.get('run_uid', ok_ui_run_id)}")
+                        if publish_result.get("report_url"):
+                            print(f"报告: {publish_result['report_url']}")
+                    else:
+                        print(f"OK UI run 发布失败: {publish_result.get('error') or publish_result.get('reason')}")
+                if returncode != 0:
+                    return returncode
+                return 0 if publish_result.get("success") else 1
             except Exception as exc:
                 print(f"错误: {exc}")
                 return 1

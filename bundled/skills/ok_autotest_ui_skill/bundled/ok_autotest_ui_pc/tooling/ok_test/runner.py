@@ -19,6 +19,7 @@ import pytest
 
 from .common import (
     ALLURE_SERVER_INFO_PATH,
+    GENERATED_CATALOG_PATH,
     PREREQUISITES_PATH,
     REPORTS_DIR,
     ROOT_DIR,
@@ -31,12 +32,12 @@ from .common import (
     save_json,
     shell_join,
 )
-from .catalog import load_catalog
+from .catalog import collect_catalog, load_catalog
 from .coverage import compute_coverage
 from .decision import evaluate_decision
 from .governance import matches_case, recommend_cases
 from .models import CatalogCase, SelectionCriteria
-from .selector import build_criteria, select_cases
+from .selector import build_criteria, select_cases_from_catalog
 
 EXECUTED_OUTCOMES = {"passed", "failed", "error", "xfailed", "xpassed"}
 PASSED_OUTCOMES = {"passed", "xpassed"}
@@ -270,18 +271,29 @@ def _start_allure_server(report_dir: Path) -> dict[str, Any]:
     }
 
 
-def _generate_allure_report() -> dict[str, Any]:
+def _sync_latest_static_report(report_dir: Path) -> None:
+    if report_dir == ALLURE_REPORT_DIR or not report_dir.exists():
+        return
+    ensure_dir(ROOT_REPORTS_DIR)
+    if ALLURE_REPORT_DIR.exists():
+        shutil.rmtree(ALLURE_REPORT_DIR)
+    shutil.copytree(report_dir, ALLURE_REPORT_DIR)
+
+
+def _generate_allure_report(results_dir: Path | None = None, report_dir: Path | None = None) -> dict[str, Any]:
+    results_dir = results_dir or ALLURE_RESULTS_DIR
+    report_dir = report_dir or ALLURE_REPORT_DIR
     allure_bin, ensure_message = _ensure_allure_cli()
     if not allure_bin:
         return {
             "available": False,
             "generated": False,
             "message": ensure_message,
-            "report_dir": str(ALLURE_REPORT_DIR),
+            "report_dir": str(report_dir),
             "url": None,
         }
 
-    command = [allure_bin, "generate", str(ALLURE_RESULTS_DIR), "-o", str(ALLURE_REPORT_DIR), "--clean"]
+    command = [allure_bin, "generate", str(results_dir), "-o", str(report_dir), "--clean"]
     result = subprocess.run(command, capture_output=True, text=True)
     if result.returncode != 0:
         tail = (result.stderr or result.stdout).strip().splitlines()
@@ -290,16 +302,17 @@ def _generate_allure_report() -> dict[str, Any]:
             "available": True,
             "generated": False,
             "message": f"{ensure_message} Allure CLI 已找到，但静态报告生成失败：{reason}",
-            "report_dir": str(ALLURE_REPORT_DIR),
+            "report_dir": str(report_dir),
             "url": None,
         }
 
-    server_result = _start_allure_server(ALLURE_REPORT_DIR)
+    _sync_latest_static_report(report_dir)
+    server_result = _start_allure_server(report_dir)
     return {
         "available": True,
         "generated": True,
         "message": f"{ensure_message} {server_result['message']}".strip(),
-        "report_dir": str(ALLURE_REPORT_DIR),
+        "report_dir": str(report_dir),
         "url": server_result.get("url"),
     }
 
@@ -318,8 +331,62 @@ def _phase_output_path(run_dir: Path, phase_name: str) -> Path:
     return run_dir / f"pytest_output_{phase_name}.txt"
 
 
-def _build_pytest_args(nodeids: list[str], junit_path: Path, allure_dir: Path, workers: int = 1) -> list[str]:
-    args = nodeids + [
+def _has_fine_grained_filters(criteria: SelectionCriteria) -> bool:
+    return any(
+        getattr(criteria, name)
+        for name in ("module", "feature", "story", "priority", "site", "case_id", "nodeid")
+    )
+
+
+def _can_use_file_targets(criteria: SelectionCriteria) -> bool:
+    return not _has_fine_grained_filters(criteria)
+
+
+def _execution_targets(
+    cases: list[CatalogCase],
+    catalog: list[CatalogCase],
+    criteria: SelectionCriteria,
+) -> tuple[list[str], str]:
+    """Prefer file targets for broad/full runs, nodeids for filtered runs.
+
+    File targets keep CLI args short and let xdist schedule at file granularity.
+    If a file contains helper/excluded cases or cases outside the current
+    selection, fall back to nodeids for that file to avoid running extras.
+    """
+    if not cases:
+        return [], "empty"
+    if not _can_use_file_targets(criteria):
+        return [case.nodeid for case in cases], "nodeid"
+
+    selected_by_file: dict[str, list[CatalogCase]] = {}
+    catalog_by_file: dict[str, list[CatalogCase]] = {}
+    for case in cases:
+        selected_by_file.setdefault(case.file_path, []).append(case)
+    for case in catalog:
+        catalog_by_file.setdefault(case.file_path, []).append(case)
+
+    targets: list[str] = []
+    used_file_target = False
+    used_nodeid_target = False
+    for file_path in sorted(selected_by_file):
+        selected_nodeids = {case.nodeid for case in selected_by_file[file_path]}
+        all_file_nodeids = {case.nodeid for case in catalog_by_file.get(file_path, [])}
+        if selected_nodeids == all_file_nodeids:
+            targets.append(file_path)
+            used_file_target = True
+        else:
+            targets.extend(sorted(selected_nodeids))
+            used_nodeid_target = True
+
+    if used_file_target and used_nodeid_target:
+        return targets, "mixed_file_nodeid"
+    if used_file_target:
+        return targets, "file"
+    return targets, "nodeid"
+
+
+def _build_pytest_args(targets: list[str], junit_path: Path, allure_dir: Path, workers: int = 1) -> list[str]:
+    args = targets + [
         "-p",
         "no:rerunfailures",
         "-o",
@@ -330,7 +397,7 @@ def _build_pytest_args(nodeids: list[str], junit_path: Path, allure_dir: Path, w
         str(allure_dir),
     ]
     if workers > 1:
-        args.extend(["-n", str(workers), "--dist", "loadscope"])
+        args.extend(["-n", str(workers), "--dist", "loadfile"])
     return args
 
 
@@ -646,6 +713,8 @@ def _resolve_prerequisite_cases(selected_cases: list[CatalogCase], catalog: list
 def _run_phase(
     phase_name: str,
     cases: list[CatalogCase],
+    catalog: list[CatalogCase],
+    criteria: SelectionCriteria,
     run_dir: Path,
     allure_dir: Path,
     pytest_cmd: list[str],
@@ -653,6 +722,7 @@ def _run_phase(
 ) -> dict[str, Any]:
     junit_path = _phase_junit_path(run_dir, phase_name)
     nodeids = [case.nodeid for case in cases]
+    targets, target_mode = _execution_targets(cases, catalog, criteria)
     if not nodeids:
         empty_marker = junit_path.with_suffix(".empty.json")
         save_json(empty_marker, {"phase": phase_name, "selected": 0})
@@ -666,11 +736,13 @@ def _run_phase(
             "parallel_enabled": False,
             "result_source": "empty",
             "result_warnings": [],
+            "execution_target_mode": target_mode,
+            "pytest_target_count": 0,
             "empty_marker_path": str(empty_marker),
         }
 
     plugin = _RunPlugin()
-    pytest_args = _build_pytest_args(nodeids, junit_path, allure_dir, workers=workers)
+    pytest_args = _build_pytest_args(targets, junit_path, allure_dir, workers=workers)
     stdout_buffer = io.StringIO()
     stderr_buffer = io.StringIO()
     output_path = _phase_output_path(run_dir, phase_name)
@@ -696,6 +768,9 @@ def _run_phase(
         "selected_count": len(cases),
         "resolved_workers": workers,
         "parallel_enabled": workers > 1,
+        "parallel_granularity": "file" if workers > 1 else "serial",
+        "execution_target_mode": target_mode,
+        "pytest_target_count": len(targets),
         "result_source": result_source,
         "result_warnings": junit_warnings + merge_warnings,
     }
@@ -747,7 +822,12 @@ def _lean_cleanup(run_dir: Path, summary: dict[str, Any]) -> dict[str, Any]:
 
 def handle_run(args: argparse.Namespace) -> int:
     criteria = build_criteria(args)
-    selected_cases = select_cases(criteria)
+    # 全量 collect 在部分 Python/用例组合下会失败；仓库已带 catalog.generated.json 时优先走磁盘目录，避免 run 入口不可用。
+    if GENERATED_CATALOG_PATH.exists():
+        catalog = load_catalog()
+    else:
+        catalog = collect_catalog()
+    selected_cases = select_cases_from_catalog(catalog, criteria)
     if not selected_cases:
         print("matched_cases=0")
         return 1
@@ -758,15 +838,14 @@ def handle_run(args: argparse.Namespace) -> int:
     allure_dir = ensure_dir(run_dir / "allure-results")
 
     save_json(run_dir / "selection.json", {"cases": [case.to_dict() for case in selected_cases]})
-    nodeids = [case.nodeid for case in selected_cases]
-    catalog = load_catalog()
     scoped_cases, recommended_cases, baseline_cases = recommend_cases(catalog, criteria, selected_cases)
     prerequisite_config = _load_prerequisite_config()
     prerequisite_cases, prerequisite_selectors = _resolve_prerequisite_cases(selected_cases, catalog, prerequisite_config)
     worker_resolution = _resolve_workers(args, len(selected_cases), bool(prerequisite_cases))
     resolved_workers = int(worker_resolution["resolved_workers"])
+    target_initial_targets, target_initial_mode = _execution_targets(selected_cases, catalog, criteria)
     command_hint = pytest_cmd + _build_pytest_args(
-        nodeids,
+        target_initial_targets,
         _phase_junit_path(run_dir, "target_initial"),
         allure_dir,
         workers=resolved_workers,
@@ -778,6 +857,9 @@ def handle_run(args: argparse.Namespace) -> int:
         summary = _build_summary(run_id, args, selected_cases, case_results, dry_run=True)
         summary.update(worker_resolution)
         summary["pytest_command"] = shell_join(command_hint)
+        summary["execution_target_mode"] = target_initial_mode
+        summary["pytest_target_count"] = len(target_initial_targets)
+        summary["parallel_granularity"] = "file" if resolved_workers > 1 else "serial"
         summary["scope_case_nodeids"] = [case.nodeid for case in scoped_cases]
         summary["recommended_case_nodeids"] = [case.nodeid for case in recommended_cases]
         summary["baseline_case_nodeids"] = [case.nodeid for case in baseline_cases]
@@ -795,11 +877,23 @@ def handle_run(args: argparse.Namespace) -> int:
         print(f"resolved_workers={summary['resolved_workers']}")
         print(f"parallel_enabled={str(summary['parallel_enabled']).lower()}")
         print(f"parallel_reason={summary['parallel_reason']}")
+        print(f"parallel_granularity={summary['parallel_granularity']}")
+        print(f"execution_target_mode={summary['execution_target_mode']}")
+        print(f"pytest_target_count={summary['pytest_target_count']}")
         print(f"pytest={pytest_display}")
         _print_selected_cases(selected_cases)
         return 0
 
-    initial_phase = _run_phase("target_initial", selected_cases, run_dir, allure_dir, pytest_cmd, workers=resolved_workers)
+    initial_phase = _run_phase(
+        "target_initial",
+        selected_cases,
+        catalog,
+        criteria,
+        run_dir,
+        allure_dir,
+        pytest_cmd,
+        workers=resolved_workers,
+    )
     initial_results = initial_phase["case_results"]
     initial_counts = _result_counts(initial_results)
 
@@ -811,14 +905,32 @@ def handle_run(args: argparse.Namespace) -> int:
     block_reason: str | None = None
 
     if prerequisite_attempted:
-        prerequisite_phase = _run_phase("prerequisite", prerequisite_cases, run_dir, allure_dir, pytest_cmd, workers=1)
+        prerequisite_phase = _run_phase(
+            "prerequisite",
+            prerequisite_cases,
+            catalog,
+            criteria,
+            run_dir,
+            allure_dir,
+            pytest_cmd,
+            workers=1,
+        )
         prerequisite_counts = _result_counts(prerequisite_phase["case_results"])
         if prerequisite_counts["failed"] > 0:
             block_reason = "已自动补跑前置，但前置用例存在失败，请先处理前置问题后再重跑目标场景。"
         elif prerequisite_counts["executed"] == 0:
             block_reason = "已尝试自动补跑前置，但前置用例未真正执行，请先检查环境、账号或前置数据。"
         else:
-            final_phase = _run_phase("target_after_prerequisite", selected_cases, run_dir, allure_dir, pytest_cmd, workers=resolved_workers)
+            final_phase = _run_phase(
+                "target_after_prerequisite",
+                selected_cases,
+                catalog,
+                criteria,
+                run_dir,
+                allure_dir,
+                pytest_cmd,
+                workers=resolved_workers,
+            )
     else:
         prerequisite_counts = _result_counts([])
 
@@ -833,6 +945,9 @@ def handle_run(args: argparse.Namespace) -> int:
     summary = _build_summary(run_id, args, selected_cases, final_results, dry_run=False)
     summary.update(worker_resolution)
     summary["pytest_command"] = shell_join(command_hint)
+    summary["execution_target_mode"] = target_initial_mode
+    summary["pytest_target_count"] = len(target_initial_targets)
+    summary["parallel_granularity"] = "file" if resolved_workers > 1 else "serial"
     summary["pytest_exit_code"] = final_phase["pytest_exit_code"]
     summary["scope_case_nodeids"] = [case.nodeid for case in scoped_cases]
     summary["recommended_case_nodeids"] = [case.nodeid for case in recommended_cases]
@@ -859,7 +974,7 @@ def handle_run(args: argparse.Namespace) -> int:
     decision_result = evaluate_decision(summary)
     save_json(run_dir / "coverage_report.json", coverage_result)
     save_json(run_dir / "decision_report.json", decision_result)
-    allure_result = _generate_allure_report()
+    allure_result = _generate_allure_report(allure_dir, run_dir / "allure-report")
     summary["allure_report"] = allure_result["report_dir"]
     summary["allure_url"] = allure_result.get("url")
     summary["lean_cleanup"] = _lean_cleanup(run_dir, summary)
@@ -877,6 +992,9 @@ def handle_run(args: argparse.Namespace) -> int:
     print(f"resolved_workers={summary['resolved_workers']}")
     print(f"parallel_enabled={str(summary['parallel_enabled']).lower()}")
     print(f"parallel_reason={summary['parallel_reason']}")
+    print(f"parallel_granularity={summary['parallel_granularity']}")
+    print(f"execution_target_mode={summary['execution_target_mode']}")
+    print(f"pytest_target_count={summary['pytest_target_count']}")
     print(f"artifact_retention={summary['artifact_retention']}")
     if summary.get("lean_cleanup", {}).get("enabled"):
         print(f"lean_cleanup_deleted={len(summary['lean_cleanup'].get('deleted', []))}")

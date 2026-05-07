@@ -21,6 +21,8 @@ import pytest
 import allure
 import re
 import functools
+import os
+from datetime import datetime
 from pages.login_page import LoginPage
 from utils.session_manager import SessionManager
 from utils.logger import setup_logger
@@ -866,59 +868,107 @@ class TestSettingsAccount:
     @pytest.mark.case_id_tc_acc_005
     @_ensure_password_dialog_closed_after
     def test_password_rules_validation(self, page, config):
-        with allure.step("前置：确保在 Account Settings 页面（否则左侧导航或从首页进入），再打开密码弹窗"):
-            _ensure_account_settings_page(page, config)
-
-            # 点击 Password 的 Edit 按钮打开弹窗
-            edit_clicked = False
-            
-            # 方案1: 通过 Password 文本附近查找 Edit 按钮
-            try:
-                pwd_text = page.get_by_text("Password", exact=True).first
-                if pwd_text.is_visible(timeout=3000):
-                    pwd_container = pwd_text.locator("xpath=ancestor::div[1]")
-                    edit_btn = pwd_container.get_by_role("button", name="Edit").first
-                    if edit_btn.is_visible(timeout=2000):
-                        edit_btn.click()
-                        page.wait_for_timeout(2000)
-                        edit_clicked = True
-                        logger.info("通过 Password 容器找到并点击 Edit 按钮")
-            except Exception:
-                pass
-            
-            # 方案2: 直接查找页面上的 Edit 按钮
-            if not edit_clicked:
-                try:
-                    all_edit_btns = page.get_by_role("button", name="Edit").all()
-                    for btn in all_edit_btns:
-                        if btn.is_visible(timeout=1000):
-                            btn.click()
-                            page.wait_for_timeout(2000)
-                            # 检查是否打开了密码相关的弹窗
-                            if (page.get_by_text("password", exact=False).first.is_visible(timeout=2000) or
-                                page.get_by_text("Password", exact=False).first.is_visible(timeout=2000)):
-                                edit_clicked = True
-                                logger.info("通过遍历 Edit 按钮找到密码编辑")
-                                break
-                except Exception:
-                    pass
-            
-            if not edit_clicked:
-                logger.warning("无法打开密码修改弹窗，跳过")
-                pytest.skip("Edit 按钮不可见或无法点击")
-
-        with allure.step("验证密码修改弹窗已打开"):
-            dialog = None
+        # 先检测密码修改弹窗是否已打开
+        dialog_already_open = False
+        dialog = None
+        
+        with allure.step("检测密码修改弹窗是否已打开"):
             try:
                 dialog = page.get_by_role("dialog").first
-                if not dialog.is_visible(timeout=3000):
-                    dialog = None
+                if dialog.is_visible(timeout=1000):
+                    # 检查弹窗内是否有密码输入框（确认是密码修改弹窗）
+                    pwd_inputs = page.locator('input[type="password"]').all()
+                    if len(pwd_inputs) >= 2:
+                        dialog_already_open = True
+                        logger.info("✓ 检测到密码修改弹窗已打开，跳过前置步骤")
+                    else:
+                        dialog = None
             except Exception:
-                pass
-            
-            if not dialog:
-                logger.warning("密码修改弹窗未找到")
-                pytest.skip("修改密码弹窗未出现")
+                dialog = None
+        
+        # 如果弹窗未打开，执行前置步骤打开弹窗
+        if not dialog_already_open:
+            with allure.step("前置：确保在 Account Settings 页面，然后点击 Password 区域的 Edit 按钮打开密码修改弹窗"):
+                _ensure_account_settings_page(page, config)
+
+                # 点击 Password 区域的 Edit 按钮打开弹窗
+                edit_clicked = False
+                retry_count = 0
+                max_retries = 1  # 最多重试1次（即：第一次尝试 + 强刷后再试1次）
+                
+                while not edit_clicked and retry_count <= max_retries:
+                    try:
+                        pwd_text = page.get_by_text("Password", exact=True).first
+                        if pwd_text.is_visible(timeout=3000):
+                            # 找到 Password 文本所在的容器
+                            pwd_container = pwd_text.locator("xpath=ancestor::div[1]")
+                            # 在该容器内查找 Edit 按钮
+                            edit_btn = pwd_container.get_by_role("button", name="Edit").first
+                            if edit_btn.is_visible(timeout=2000):
+                                edit_btn.click()
+                                page.wait_for_timeout(2000)
+                                edit_clicked = True
+                                logger.info("✓ 成功点击 Password 区域的 Edit 按钮")
+                    except Exception as e:
+                        logger.error(f"点击 Password Edit 按钮失败 (尝试 {retry_count + 1}): {e}")
+                    
+                    # 如果第一次没找到按钮，尝试强刷页面
+                    if not edit_clicked and retry_count == 0:
+                        logger.warning(f"第 {retry_count + 1} 次未找到 Password Edit 按钮，尝试强刷页面")
+                        with allure.step("强刷页面后重试"):
+                            try:
+                                page.reload(wait_until="networkidle", timeout=10000)
+                                logger.info("✓ 页面已强刷")
+                                page.wait_for_timeout(2000)
+                                # 强刷后重新确保在 Account Settings 页面
+                                _ensure_account_settings_page(page, config)
+                            except Exception as e:
+                                logger.error(f"强刷页面失败: {e}")
+                    
+                    retry_count += 1
+                
+                if not edit_clicked:
+                    logger.warning("强刷后仍无法找到 Password 区域的 Edit 按钮")
+                    
+                    # 保存截图便于排查问题
+                    try:
+                        screenshot_dir = os.path.join(os.getcwd(), "screenshots", "debug")
+                        os.makedirs(screenshot_dir, exist_ok=True)
+                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        screenshot_path = os.path.join(screenshot_dir, f"TC-ACC-005_edit_button_not_found_after_reload_{timestamp}.png")
+                        page.screenshot(path=screenshot_path, full_page=True)
+                        logger.info(f"✓ 截图已保存: {screenshot_path}")
+                        allure.attach.file(screenshot_path, name="强刷后仍找不到按钮的页面截图", attachment_type=allure.attachment_type.PNG)
+                    except Exception as e:
+                        logger.error(f"保存截图失败: {e}")
+                    
+                    pytest.skip("强刷页面后仍无法找到 Password 区域的 Edit 按钮")
+
+            with allure.step("验证密码修改弹窗已打开"):
+                dialog = None
+                try:
+                    dialog = page.get_by_role("dialog").first
+                    if not dialog.is_visible(timeout=3000):
+                        dialog = None
+                except Exception:
+                    pass
+                
+                if not dialog:
+                    logger.warning("密码修改弹窗未找到")
+                    
+                    # 保存截图便于排查问题
+                    try:
+                        screenshot_dir = os.path.join(os.getcwd(), "screenshots", "debug")
+                        os.makedirs(screenshot_dir, exist_ok=True)
+                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        screenshot_path = os.path.join(screenshot_dir, f"TC-ACC-005_dialog_not_found_{timestamp}.png")
+                        page.screenshot(path=screenshot_path, full_page=True)
+                        logger.info(f"✓ 截图已保存: {screenshot_path}")
+                        allure.attach.file(screenshot_path, name="跳过前页面截图", attachment_type=allure.attachment_type.PNG)
+                    except Exception as e:
+                        logger.error(f"保存截图失败: {e}")
+                    
+                    pytest.skip("修改密码弹窗未出现")
 
         with allure.step("查找弹窗内的密码输入框"):
             # 优先查找 password 类型的输入框
@@ -1378,6 +1428,54 @@ class TestSettingsAccount:
                 toggle2.click(force=True)
                 page.wait_for_timeout(2000)
                 logger.info("开关已恢复原状态")
+        
+        with allure.step("后置：确认关闭通知弹窗（如果存在）"):
+            try:
+                # 检查是否存在 "Turn off notifications?" 确认弹窗
+                dialog = page.get_by_role("dialog").first
+                if dialog.is_visible(timeout=1000):
+                    # 检查弹窗内是否包含 "Turn off notifications?" 文本
+                    if page.get_by_text("Turn off notifications?", exact=False).is_visible(timeout=500):
+                        logger.info("检测到 'Turn off notifications?' 确认弹窗")
+                        
+                        # 查找并点击弹窗上的 Yes 按钮
+                        yes_btn = None
+                        try:
+                            # 方法1: 查找 dialog 内包含 "Yes" 文本的按钮
+                            yes_btn = dialog.get_by_role("button", name="Yes").first
+                            if not yes_btn.is_visible(timeout=500):
+                                yes_btn = None
+                        except Exception:
+                            yes_btn = None
+                        
+                        if yes_btn is None:
+                            try:
+                                # 方法2: 查找包含 "Yes" 文本的任意按钮
+                                yes_btn = dialog.locator('button').filter(has_text="Yes").first
+                                if not yes_btn.is_visible(timeout=500):
+                                    yes_btn = None
+                            except Exception:
+                                yes_btn = None
+                        
+                        if yes_btn is None:
+                            try:
+                                # 方法3: 通过文本直接查找
+                                yes_btn = page.get_by_text("Yes", exact=True).first
+                                if not yes_btn.is_visible(timeout=500):
+                                    yes_btn = None
+                            except Exception:
+                                yes_btn = None
+                        
+                        if yes_btn is not None and yes_btn.is_visible(timeout=1000):
+                            yes_btn.click()
+                            page.wait_for_timeout(1000)
+                            logger.info("✓ 已点击 Yes 按钮，确认关闭通知")
+                        else:
+                            logger.warning("未找到弹窗上的 Yes 按钮")
+                    else:
+                        logger.info("弹窗不是 'Turn off notifications?' 确认弹窗")
+            except Exception as e:
+                logger.info(f"检查确认弹窗时未发现或已关闭: {e}")
 
     # ------------------------------------------------------------------
     # TC-ACC-011: 绑定第三方账号（仅验证 Link 按钮可见）

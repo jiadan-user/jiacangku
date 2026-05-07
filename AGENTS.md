@@ -493,6 +493,8 @@ QA Agent 完成态 run 会尝试发布到 `ui_test_management`。默认发布地
 - 历史本地 DB 中如果存在 `QA Agent` 项目，只视作早期映射遗留数据；不要在未得到用户明确确认时删除。
 - 发布内容包括执行记录、Allure 报告入口、最终报告、OK UI summary 和覆盖快照。
 - Allure 报告用于页面内嵌查看，最终报告用于追溯 QA Agent 编排结论。
+- 如果用户明确要求“只跑某个 OK UI 目录 / nodeid / path，不要影响分析”，使用 `qa-agent dashboard run-ok-ui --path ...`；该入口只按传入筛选条件执行并发布，不进入完整 QA Agent 状态机。
+- 单独 `ok_autotest_ui_skill` 产生的是 OK UI 自己的 run_id，不是 `.qa_agent/runs/<run_id>`；如需补发，使用 `qa-agent dashboard publish-ok-ui-run --ok-ui-run-id <ok_ui_run_id>`。
 
 覆盖快照规则：
 
