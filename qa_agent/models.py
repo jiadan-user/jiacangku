@@ -77,6 +77,13 @@ class LegacyUpdateTaskStatus(str, Enum):
 
 class PlaywrightOutcomeType(str, Enum):
     SCRIPT_GENERATED = "script_generated"
+    SCRIPT_BLOCKED = "script_blocked"
+    BUG_RECORDED = "bug_recorded"
+    MANUAL_REVIEW = "manual_review"
+
+
+class PlaywrightRecordingOutcomeType(str, Enum):
+    RECORDING_PASSED = "recording_passed"
     BUG_RECORDED = "bug_recorded"
     MANUAL_REVIEW = "manual_review"
 
@@ -202,9 +209,20 @@ class PlaywrightCaseOutcome:
     outcome: str
     script_path: str = ""
     bug_report_path: str = ""
+    script_blocker_report_path: str = ""
     manual_review_reason: str = ""
     collect_only_passed: bool = False
     pytest_passed: bool = False
+    details: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class PlaywrightRecordingOutcome:
+    tc_id: str
+    outcome: str
+    proof_artifact_path: str = ""
+    bug_report_path: str = ""
+    manual_review_reason: str = ""
     details: dict[str, Any] = field(default_factory=dict)
 
 

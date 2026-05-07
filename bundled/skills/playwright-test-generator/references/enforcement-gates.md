@@ -13,7 +13,7 @@ The role of proof artifacts is to build a trust mechanism:
 1. **ref numbers can only be obtained through actual calls to `playwright-cli snapshot`**
 2. **JavaScript code can only be obtained from "### Ran Playwright code" returned by CLI**
 
-When you preserve this "physical evidence," you can 100% guarantee that the code generated in Phase 4 is reliable and directly usable.
+When you preserve this "physical evidence," stage2B can generate code from recorded facts instead of selector guesses.
 
 ---
 
@@ -28,7 +28,7 @@ When you preserve this "physical evidence," you can 100% guarantee that the code
 - Pre-operation snapshot ref list: e101(input) e66(trigger) e260(button) ...
   Note: Must list element refs actually interacted with in this test case, cannot be empty
 
-【CLI JavaScript Code】⚠️ Must save - The only source for Phase 4 code generation
+【CLI JavaScript Code】⚠️ Must save - The only source for stage2B code generation
 ```js
 // Copy complete code from "### Ran Playwright code" returned by CLI
 // After each playwright-cli click/fill/type operation, CLI returns corresponding JavaScript code
@@ -65,6 +65,65 @@ open:_ snapshot:_ click:_ fill:_ type:_ press:_ screenshot:_ close:_
 
 ---
 
+## Required `recording_trace.json`
+
+Every `recording_passed` case must have a machine-readable trace saved next to the proof artifact. The path should be recorded in `playwright_recording_outcomes.json` as `details.recording_trace_path`.
+
+Minimum schema:
+
+```json
+{
+  "tc_id": "TC001",
+  "title": "case title",
+  "source_doc": "/path/to/textcases.md",
+  "environment": {
+    "site": "ae",
+    "base_url": "https://..."
+  },
+  "steps": [
+    {
+      "index": 1,
+      "description": "Open target page",
+      "cli_command": "playwright-cli -s=tc001 open ...",
+      "ran_javascript": "await page.goto('https://...');",
+      "before_url": "",
+      "after_url": "https://...",
+      "snapshot_refs": ["e1", "e2"],
+      "verification": {
+        "expected": "page title visible",
+        "actual": "page title visible",
+        "snapshot_path": ".playwright-cli/page-xxx.yml",
+        "passed": true
+      }
+    }
+  ],
+  "dynamic_behaviors": [
+    {
+      "type": "overlay",
+      "timing": "after filling Job Title",
+      "handling": "click heading to dismiss before selecting Job Function"
+    }
+  ],
+  "command_statistics": {
+    "open": 1,
+    "snapshot": 4,
+    "click": 5,
+    "fill": 2,
+    "type": 0,
+    "press": 0,
+    "screenshot": 1,
+    "close": 1
+  }
+}
+```
+
+Why this exists:
+- The Markdown proof is for human review.
+- `recording_trace.json` is for stage2B replay-first script generation.
+- If a step has no `ran_javascript`, stage2B must not invent code for it; produce `script_blocker_report.md` instead.
+
+---
+
 ## Field Descriptions
 
 ### ref List (Anti-Tampering Core)
@@ -82,7 +141,7 @@ User verification method: Find corresponding numbered elements in screenshot, co
 
 ### CLI JavaScript Code (Code Generation Core)
 
-**⚠️ This is the only accurate source for Phase 4 code generation**
+**⚠️ This is the only accurate source for stage2B code generation**
 
 Each time a CLI command is called (click, fill, type, etc.), CLI returns:
 ```
@@ -99,7 +158,7 @@ await page.getByRole('radio', { name: 'Unselected Hybrid' }).click();
 4. Maintain original format and order of code
 
 **Why must save**:
-- Phase 4 generates Python code by directly converting this JavaScript code
+- Stage2B generates Python code by directly converting this JavaScript code
 - Avoid AI "guessing" selectors based on ref numbers (accuracy <50%)
 - Ensure generated Python code is completely consistent with recorded operations (accuracy 90%+)
 
@@ -108,7 +167,7 @@ await page.getByRole('radio', { name: 'Unselected Hybrid' }).click();
 【CLI JavaScript Code】
 // Not provided (AI skipped save step)
 ```
-→ This will cause Phase 4 to be unable to generate accurate code, can only guess selectors
+→ This will cause stage2B to be unable to generate accurate code, can only guess selectors
 
 ### Dynamic Behavior Discoveries (Most Important New Addition)
 
@@ -146,13 +205,13 @@ open:1 snapshot:1 click:1 close:1
 
 ---
 
-## Phase 3 Completion Summary Report Format
+## Stage2A Completion Summary Report Format
 
-After all test case recordings are completed, before preparing to enter code generation, output:
+After all test case recordings are completed, before QA Agent asks the user to confirm stage2A, output:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-【Phase 3 Completion Report - Batch X: XXX Feature】
+【Stage2A Recording Completion Report - Batch X: XXX Feature】
 
 Test Case Summary:
 TCxxx ✅  Trigger:e66  Verification:"Please fill out..."  snapshot:4  Discovery: Job Function recommendation overlay
@@ -165,7 +224,7 @@ Cross-case Common Issues (Note for next batch):
 
 Total CLI calls: open:N snapshot:N click:N (total N times)
 
-Please review the above recording results, proceed to Phase 4 code generation if no issues.
+Please review the above recording results and bug list. QA Agent will ask for confirmation before stage2B code generation.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -183,4 +242,4 @@ Treat this artifact as the cornerstone of our high-quality delivery!
 ---
 
 **Last updated**: 2026-03-30  
-**Purpose**: Proof artifact format definition for Phase 2 recording using playwright-cli
+**Purpose**: Proof artifact and recording trace format definition for stage2A recording using playwright-cli
