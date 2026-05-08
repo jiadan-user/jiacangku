@@ -242,9 +242,22 @@ class ConductorSmokeTests(unittest.TestCase):
         missing_proof: bool = False,
         bug_recorded: bool = False,
         missing_bug_report: bool = False,
+        manual_review: bool = False,
+        missing_global_bug_report: bool = False,
     ):
+        bug_path = ""
         if with_outcomes:
-            if bug_recorded:
+            if manual_review:
+                outcome_payload = (
+                    "[\n"
+                    "  {\n"
+                    '    "tc_id": "TC001",\n'
+                    '    "outcome": "manual_review",\n'
+                    '    "manual_review_reason": "needs product decision"\n'
+                    "  }\n"
+                    "]\n"
+                )
+            elif bug_recorded:
                 bug_path = (
                     str(self.temp_path / "missing_bug_report.md")
                     if missing_bug_report
@@ -280,12 +293,19 @@ class ConductorSmokeTests(unittest.TestCase):
             outcome_payload = "[]\n"
         outcomes_path = self._write_temp_file("artifacts/playwright_recording_outcomes.json", outcome_payload)
         report_path = self._write_temp_file("artifacts/playwright_recording_report.md", "# recording report\n")
+        if missing_global_bug_report:
+            global_bug_report = str(self.temp_path / "missing_global_bug_report.md")
+        elif bug_recorded and not missing_bug_report:
+            global_bug_report = bug_path
+        else:
+            global_bug_report = self._write_temp_file("artifacts/playwright_bug_report.md", "本轮未发现 bug\n")
         artifacts = {
             "playwright_recording_outcomes": outcomes_path,
             "playwright_recording_report": report_path,
+            "playwright_bug_report": global_bug_report,
         }
         if bug_recorded and not missing_bug_report:
-            artifacts["playwright_bug_report"] = read_json(outcomes_path, default=[])[0]["bug_report_path"]
+            artifacts["playwright_bug_report"] = bug_path
         return conductor.complete_phase(
             state.run_id,
             Phase.PLAYWRIGHT_GENERATOR.value,
@@ -345,6 +365,8 @@ class ConductorSmokeTests(unittest.TestCase):
         if not with_outcomes or state.status == RunStatus.BLOCKED.value and state.next_action.kind != "confirm_phase":
             return state
         state = self._confirm_stage2_recording(conductor, state)
+        if state.current_phase != Phase.PLAYWRIGHT_GENERATOR.value:
+            return state
         return self._complete_stage2_scripts(conductor, state, with_outcomes=with_outcomes)
 
     def _reach_kb_phase(self, conductor: QAConductor):
@@ -420,6 +442,7 @@ class ConductorSmokeTests(unittest.TestCase):
         gate = read_json(state.artifacts["phase2_recording_gate_result"], default={})
         self.assertFalse(gate["ok"])
         self.assertIn("recording outcome", " ".join(gate["blocking_reasons"]))
+        self.assertEqual(gate["details"]["missing_case_ids"], ["TC001"])
 
     def test_stage2a_success_waits_for_confirmation_before_script_generation(self) -> None:
         conductor = self._make_conductor(impact_executor=FakeImpactVerificationExecutor(self._passed_verification_outcome()))
@@ -453,7 +476,25 @@ class ConductorSmokeTests(unittest.TestCase):
         )
         gate = read_json(state.artifacts["phase2_recording_gate_result"], default={})
         self.assertFalse(gate["ok"])
-        self.assertIn("bug_report_path", " ".join(gate["blocking_reasons"]))
+        self.assertIn("可追溯的 bug 记录", " ".join(gate["blocking_reasons"]))
+
+    def test_stage2a_blocks_when_bug_report_missing_even_without_bugs(self) -> None:
+        conductor = self._make_conductor(impact_executor=FakeImpactVerificationExecutor(self._passed_verification_outcome()))
+        state = self._plan_and_enter_stage1(conductor)
+        state = self._complete_stage1(conductor, state)
+        state = self._complete_stage2_recording(conductor, state, missing_global_bug_report=True)
+        gate = read_json(state.artifacts["phase2_recording_gate_result"], default={})
+        self.assertFalse(gate["ok"])
+        self.assertIn("playwright_bug_report.md", " ".join(gate["blocking_reasons"]))
+
+    def test_stage2a_blocks_when_manual_review_outcome_is_used(self) -> None:
+        conductor = self._make_conductor(impact_executor=FakeImpactVerificationExecutor(self._passed_verification_outcome()))
+        state = self._plan_and_enter_stage1(conductor)
+        state = self._complete_stage1(conductor, state)
+        state = self._complete_stage2_recording(conductor, state, manual_review=True)
+        gate = read_json(state.artifacts["phase2_recording_gate_result"], default={})
+        self.assertFalse(gate["ok"])
+        self.assertIn("manual_review", " ".join(gate["blocking_reasons"]))
 
     def test_stage2a_confirmation_requests_stage2b_script_outcomes(self) -> None:
         conductor = self._make_conductor(impact_executor=FakeImpactVerificationExecutor(self._passed_verification_outcome()))
@@ -465,6 +506,19 @@ class ConductorSmokeTests(unittest.TestCase):
         self.assertEqual(state.status, RunStatus.BLOCKED.value)
         self.assertEqual(state.next_action.kind, "run_skill")
         self.assertEqual(state.next_action.required_artifacts, ["playwright_case_outcomes"])
+
+    def test_stage2b_auto_skips_when_no_recording_passed_cases(self) -> None:
+        impact_executor = FakeImpactVerificationExecutor(self._passed_verification_outcome())
+        conductor = self._make_conductor(impact_executor=impact_executor)
+        state = self._plan_and_enter_stage1(conductor)
+        state = self._complete_stage1(conductor, state)
+        state = self._complete_stage2_recording(conductor, state, bug_recorded=True)
+        state = self._confirm_stage2_recording(conductor, state)
+        self.assertEqual(state.current_phase, Phase.IMPACT_VERIFICATION.value)
+        self.assertIn("generated_scripts_manifest", state.artifacts)
+        self.assertEqual(read_json(state.artifacts["generated_scripts_manifest"], default=None), [])
+        self.assertEqual(read_json(state.artifacts["playwright_case_outcomes"], default=None), [])
+        self.assertEqual(impact_executor.calls, 1)
 
     def test_stage2b_blocks_when_script_generation_not_closed(self) -> None:
         conductor = self._make_conductor(impact_executor=FakeImpactVerificationExecutor(self._passed_verification_outcome()))

@@ -85,7 +85,6 @@ class PlaywrightOutcomeType(str, Enum):
 class PlaywrightRecordingOutcomeType(str, Enum):
     RECORDING_PASSED = "recording_passed"
     BUG_RECORDED = "bug_recorded"
-    MANUAL_REVIEW = "manual_review"
 
 
 class NextActionKind(str, Enum):

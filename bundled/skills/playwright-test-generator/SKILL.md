@@ -27,7 +27,9 @@ description: 从 Markdown 测试用例文档生成 Playwright Python 测试脚�
 **执行流程**：
 1. **解析配置**：从输入的 Markdown 文档头部提取测试环境配置（站点、Base URL、账号、角色等）。
 2. **提取预期结果**：从每个用例的"预期结果"部分提取验证点（URL、文案、元素可见性等）。
-3. **强制分批**：为防上下文超载导致跳步，**每次最多处理 5 个用例**（例如：12 条用例分为 5 + 5 + 2 三批处理）。
+3. **基于 `text_case_manifest.json` 规划批次**：所有 `UI自动化=✅` 用例都必须进入批次计划，不能自行漏选。
+4. **强制分批**：为防上下文超载导致跳步，**每次最多处理 5 个用例**（例如：12 条用例分为 5 + 5 + 2 三批处理）。
+5. **保存批次计划**：落盘 `stage2a_execution_plan.json`，用于追溯本轮计划如何覆盖可自动化用例。
 
 ### 阶段2A-2：浏览器真实交互录制与验证（核心）
 
@@ -44,13 +46,14 @@ description: 从 Markdown 测试用例文档生成 Playwright Python 测试脚�
   - 使用 `playwright-cli snapshot` 获取页面状态
   - 对比实际结果与用例文档中的预期结果
   - 如果**不符合预期**：
-    1. 标记为 `FAILED`
+    1. 标记为 `bug_recorded`
     2. 使用 `playwright-cli screenshot --filename=bug-tcxxx.png` 截图
     3. 记录复现步骤和问题描述
     4. 阶段2B跳过该用例，不生成 Python 脚本
     5. 继续下一个用例
+  - 如果页面缺失、流程阻塞、配置异常、接口异常导致无法验证预期，也标记为 `bug_recorded`，并在 `details.progress_status` 写 `blocked`。
   - 如果**符合预期**：
-    1. 标记为 `PASSED`
+    1. 标记为 `recording_passed`
     2. 继续执行后续步骤
     3. 录制完成后输出证明存档
 - 每个用例录制完毕后，**必须按照 `enforcement-gates.md` 的格式**向用户输出带有真实 JavaScript 代码的"证明存档"（仅针对 PASSED 的用例），并同步保存结构化 `recording_trace.json`。
@@ -70,13 +73,15 @@ description: 从 Markdown 测试用例文档生成 Playwright Python 测试脚�
 
 **执行流程**：
 - 阶段2A结束时必须落盘：
+  - `stage2a_execution_plan.json`
   - `playwright_recording_outcomes.json`
   - `playwright_recording_report.md`
-  - `playwright_bug_report.md`（仅当存在 bug_recorded 时必填）
+  - `playwright_bug_report.md`（必须始终生成；没有 bug 时写明本轮未发现 bug）
 - `playwright_recording_outcomes.json` 对每条 `UI自动化=✅` 的用例必须且只能给出一个 outcome：
-  - `recording_passed`：必须附带 `proof_artifact_path`，建议在 `details.recording_trace_path` 中附带结构化 trace
-  - `bug_recorded`：必须附带 `bug_report_path`
-  - `manual_review`：必须附带 `manual_review_reason`
+  - `recording_passed`：必须附带 `proof_artifact_path`，并尽量在 `details.recording_trace_path` 中附带结构化 trace
+  - `bug_recorded`：必须能在 `playwright_bug_report.md` 中通过 TC 编号或 BUG 编号追溯，可在 `details.progress_status` 写 `failed` 或 `blocked`
+- 阶段2A不允许 `manual_review`。任何实际结果与预期不符、页面缺失、流程阻塞、配置异常、接口异常，都记录为 `bug_recorded`。
+- `playwright_recording_report.md` 是给测试同事看的进度摘要，只写总数、通过数、失败/阻塞数、逐条 TC 状态和 BUG 编号，不写账号、页面结构、AI调试上下文或阶段2B计划。
 - 阶段2A只证明需求测试已经真实执行，不生成 Python 脚本。QA Agent 会先展示录制报告和 bug list，等待用户确认后才进入阶段2B。
 
 ### 阶段2B-1：Python 代码生成（仅针对 recording_passed 用例）
@@ -89,10 +94,10 @@ description: 从 Markdown 测试用例文档生成 Playwright Python 测试脚�
 - `references/element-location-strategies.md` - 选择器生成规范
 
 **执行流程**：
-- **仅针对阶段2A `recording_passed` 的用例生成代码**；`bug_recorded` 和 `manual_review` 不进入脚本生成。
+- **仅针对阶段2A `recording_passed` 的用例生成代码**；`bug_recorded` 不进入脚本生成。
 - 先从 `recording_trace.json` / proof 中的 CLI JavaScript 生成最小 replay 脚本，验证 JS → Python 转换能在 pytest 环境中跑通。
 - replay 通过后，再按 `test-case-authoring-spec.md` 整理成 OK UI 规范脚本，补齐 `_CONFIG`、pytest.mark、allure、fixture/POM 复用。
-- 生成代码必须来自阶段2A proof 中真实记录的 JavaScript。若 proof 没有对应动作，不能凭空猜；必须输出 `script_blocker_report.md` 并在 outcome 中标记 `script_blocked`。
+- 生成代码必须来自阶段2A proof/recording_trace 中真实记录的动作。若 proof 或 trace 缺少足够动作，不能凭空猜；必须输出 `script_blocker_report.md` 并在 outcome 中标记 `script_blocked`。
 
 ### 阶段2B-2：自测调试与闭环（批次内必须闭环）
 
@@ -143,9 +148,10 @@ description: 从 Markdown 测试用例文档生成 Playwright Python 测试脚�
 - TC003: 搜索功能异常 → bug-tc003.png
 
 📁 生成文件：
+- stage2a_execution_plan.json
 - playwright_recording_outcomes.json
 - playwright_recording_report.md
-- playwright_bug_report.md (如有 bug)
+- playwright_bug_report.md
 
 ━━━━━━━━━━━━━━━━━━━━━━━━
 ```
@@ -233,7 +239,7 @@ npm install -g @playwright/cli@latest
 4. **每个步骤执行后立即验证预期结果**
 5. 如果验证失败：截图、记录 bug、输出 `bug_recorded`
 6. 如果验证通过：输出 proof、`recording_trace.json`、`recording_passed`
-7. 所有批次执行完成后，落盘 `playwright_recording_outcomes.json`、`playwright_recording_report.md` 和可选 `playwright_bug_report.md`
+7. 所有批次执行完成后，落盘 `stage2a_execution_plan.json`、`playwright_recording_outcomes.json`、`playwright_recording_report.md` 和 `playwright_bug_report.md`
 8. QA Agent 展示录制执行结果，等待用户确认
 9. 阶段2B只针对 `recording_passed` 用例生成 Python 脚本，先 replay 再整理成 OK UI 规范脚本
 10. 每批运行 `pytest --collect-only` 和 `pytest`；3 轮仍失败则输出 `script_blocker_report.md` 并阻塞
