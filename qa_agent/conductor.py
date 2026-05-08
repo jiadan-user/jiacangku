@@ -44,6 +44,8 @@ from qa_agent.models import (
     PhaseStatus,
     PlaywrightCaseOutcome,
     PlaywrightOutcomeType,
+    PlaywrightRecordingOutcome,
+    PlaywrightRecordingOutcomeType,
     RequirementPacket,
     RunState,
     RunStatus,
@@ -65,11 +67,17 @@ SKILL_PATHS = {
 
 PHASE_REQUIRED_ARTIFACTS = {
     Phase.SENIOR_QA_BRAIN: ["analysis_report", "textcases"],
-    Phase.PLAYWRIGHT_GENERATOR: ["playwright_case_outcomes"],
+    Phase.PLAYWRIGHT_GENERATOR: ["playwright_recording_outcomes", "playwright_recording_report"],
     Phase.IMPACT_VERIFICATION: [],
     Phase.OK_UI_REGRESSION: ["ok_ui_dry_run_preview", "ok_ui_execution_report", "release_recommendation"],
     Phase.KNOWLEDGE_BASE_UPDATE: ["knowledge_base_update_preview", "knowledge_base_update_result"],
 }
+
+PLAYWRIGHT_PROGRESS_KEY = "playwright_generator_progress"
+PLAYWRIGHT_STAGE_RECORDING = "recording"
+PLAYWRIGHT_STAGE_RECORDING_COMPLETED = "recording_completed"
+PLAYWRIGHT_STAGE_SCRIPT_PENDING = "script_pending"
+PLAYWRIGHT_STAGE_SCRIPT_COMPLETED = "script_completed"
 
 NEW_FEATURE_PHASES = [
     Phase.INTAKE,
@@ -443,6 +451,11 @@ class QAConductor:
 
         phase = self._phase_from_name(state.current_phase)
         if state.status == RunStatus.BLOCKED.value:
+            if phase == Phase.PLAYWRIGHT_GENERATOR:
+                action = self._playwright_next_action(state)
+                if action:
+                    state.next_action = action
+                    return
             if phase in SKILL_PATHS:
                 skill_path = str(self.config.project_root / SKILL_PATHS[phase])
                 if not Path(skill_path).exists():
@@ -515,6 +528,53 @@ class QAConductor:
             summary=state.blocked_reason or "继续推进到下一个动作点",
             resume_command=f"python -m qa_agent.cli next --run-id {state.run_id}",
         )
+
+    def _playwright_next_action(self, state: RunState) -> NextAction | None:
+        skill_path = str(self.config.project_root / SKILL_PATHS[Phase.PLAYWRIGHT_GENERATOR])
+        if not Path(skill_path).exists():
+            return NextAction(
+                kind=NextActionKind.FIX_ENVIRONMENT.value,
+                phase=Phase.PLAYWRIGHT_GENERATOR.value,
+                summary=state.blocked_reason or "缺少 playwright-test-generator skill，请先同步内嵌资源",
+                skill_path=skill_path,
+                resume_command="python -m qa_agent.cli doctor",
+            )
+
+        progress = self._playwright_progress(state)
+        stage = progress.get("stage", PLAYWRIGHT_STAGE_RECORDING)
+        if stage == PLAYWRIGHT_STAGE_RECORDING_COMPLETED:
+            return NextAction(
+                kind=NextActionKind.CONFIRM_PHASE.value,
+                phase=Phase.PLAYWRIGHT_GENERATOR.value,
+                summary="确认阶段2A录制执行结果和 bug list 后继续脚本生成",
+                required_artifacts=[],
+                resume_command=f"python -m qa_agent.cli complete --run-id {state.run_id} --phase {Phase.PLAYWRIGHT_GENERATOR.value}",
+                details={
+                    "recording_report": state.artifacts.get("playwright_recording_report", ""),
+                    "bug_report": state.artifacts.get("playwright_bug_report", ""),
+                    "recording_outcomes": state.artifacts.get("playwright_recording_outcomes", ""),
+                    "proof_artifacts_manifest": state.artifacts.get("proof_artifacts_manifest", ""),
+                },
+            )
+        if stage == PLAYWRIGHT_STAGE_SCRIPT_PENDING:
+            return NextAction(
+                kind=NextActionKind.RUN_SKILL.value,
+                phase=Phase.PLAYWRIGHT_GENERATOR.value,
+                summary="执行 playwright-test-generator 阶段2B，生成 Python 脚本并完成自测",
+                skill_path=skill_path,
+                instruction_path=state.artifacts.get(f"{Phase.PLAYWRIGHT_GENERATOR.value}_instruction", ""),
+                required_artifacts=["playwright_case_outcomes"],
+                resume_command=(
+                    f"python -m qa_agent.cli complete --run-id {state.run_id} "
+                    f"--phase {Phase.PLAYWRIGHT_GENERATOR.value} --artifact playwright_case_outcomes=<path>"
+                ),
+                details={
+                    "recording_outcomes": state.artifacts.get("playwright_recording_outcomes", ""),
+                    "recording_report": state.artifacts.get("playwright_recording_report", ""),
+                    "memory_context": state.artifacts.get("memory_context", ""),
+                },
+            )
+        return None
 
     def _complete_command(self, run_id: str, phase: Phase) -> str:
         parts = ["python -m qa_agent.cli complete", f"--run-id {run_id}", f"--phase {phase.value}"]
@@ -645,9 +705,7 @@ class QAConductor:
         absolute_skill_path = self.config.project_root / skill_path
         state.artifacts[f"{phase.value}_skill_path"] = str(absolute_skill_path)
 
-        instruction_path = self.store.artifact_path(state.run_id, f"{phase.value}_instruction.md")
-        write_text(instruction_path, self._build_instruction(state, phase))
-        state.artifacts[f"{phase.value}_instruction"] = str(instruction_path)
+        self._write_phase_instruction(state, phase)
 
         self._mark(state, phase, PhaseStatus.BLOCKED)
         if not absolute_skill_path.exists():
@@ -658,6 +716,12 @@ class QAConductor:
             state.blocked_reason = f"请按 {skill_path} 执行，完成后用 complete 继续"
         state.status = RunStatus.BLOCKED.value
         return state
+
+    def _write_phase_instruction(self, state: RunState, phase: Phase) -> str:
+        instruction_path = self.store.artifact_path(state.run_id, f"{phase.value}_instruction.md")
+        write_text(instruction_path, self._build_instruction(state, phase))
+        state.artifacts[f"{phase.value}_instruction"] = str(instruction_path)
+        return str(instruction_path)
 
     def _phase_impact_analysis(self, state: RunState) -> RunState:
         self._mark(state, Phase.IMPACT_ANALYSIS, PhaseStatus.RUNNING)
@@ -787,22 +851,66 @@ class QAConductor:
         return state
 
     def _complete_playwright_generator(self, state: RunState) -> RunState:
-        gate = self._validate_phase2_outputs(state)
-        self._store_gate_result(state, "phase2_gate_result", gate)
+        progress = self._playwright_progress(state)
+        stage = progress.get("stage", PLAYWRIGHT_STAGE_RECORDING)
+        if stage == PLAYWRIGHT_STAGE_RECORDING_COMPLETED:
+            self._append_confirmation(
+                state,
+                UserConfirmationRecord(
+                    phase=Phase.PLAYWRIGHT_GENERATOR.value,
+                    summary="已确认阶段2A录制执行结果，进入阶段2B脚本生成自测",
+                    details={
+                        "playwright_recording_outcomes": state.artifacts.get("playwright_recording_outcomes", ""),
+                        "playwright_recording_report": state.artifacts.get("playwright_recording_report", ""),
+                        "playwright_bug_report": state.artifacts.get("playwright_bug_report", ""),
+                    },
+                ),
+            )
+            self._write_playwright_progress(
+                state,
+                stage=PLAYWRIGHT_STAGE_SCRIPT_PENDING,
+                recording_confirmed=True,
+                script_started_at=utc_now_iso(),
+            )
+            self._write_phase_instruction(state, Phase.PLAYWRIGHT_GENERATOR)
+            self._mark(state, Phase.PLAYWRIGHT_GENERATOR, PhaseStatus.BLOCKED)
+            state.status = RunStatus.BLOCKED.value
+            state.blocked_reason = "阶段2A已确认，请执行阶段2B生成 Python 脚本并完成自测"
+            return state
+
+        if stage == PLAYWRIGHT_STAGE_SCRIPT_PENDING:
+            gate = self._validate_phase2_script_outputs(state)
+            self._store_gate_result(state, "phase2_gate_result", gate)
+            if not gate.ok:
+                self._write_playwright_progress(state, stage=PLAYWRIGHT_STAGE_SCRIPT_PENDING)
+                return self._block_with_gate(state, Phase.PLAYWRIGHT_GENERATOR, gate)
+            self._write_playwright_progress(state, stage=PLAYWRIGHT_STAGE_SCRIPT_COMPLETED, script_completed_at=utc_now_iso())
+            self._append_confirmation(
+                state,
+                UserConfirmationRecord(
+                    phase=Phase.PLAYWRIGHT_GENERATOR.value,
+                    summary="已验收 playwright Python 脚本生成与自测结果",
+                    details={
+                        "playwright_case_outcomes": state.artifacts.get("playwright_case_outcomes", ""),
+                        "generated_scripts_manifest": state.artifacts.get("generated_scripts_manifest", ""),
+                    },
+                ),
+            )
+            state.blocked_reason = ""
+            return state
+
+        gate = self._validate_phase2_recording_outputs(state)
+        self._store_gate_result(state, "phase2_recording_gate_result", gate)
         if not gate.ok:
             return self._block_with_gate(state, Phase.PLAYWRIGHT_GENERATOR, gate)
-        self._append_confirmation(
+        self._write_playwright_progress(
             state,
-            UserConfirmationRecord(
-                phase=Phase.PLAYWRIGHT_GENERATOR.value,
-                summary="已验收 playwright 自动化转译结果",
-                details={
-                    "playwright_case_outcomes": state.artifacts.get("playwright_case_outcomes", ""),
-                    "generated_scripts_manifest": state.artifacts.get("generated_scripts_manifest", ""),
-                },
-            ),
+            stage=PLAYWRIGHT_STAGE_RECORDING_COMPLETED,
+            recording_completed_at=utc_now_iso(),
         )
-        state.blocked_reason = ""
+        self._mark(state, Phase.PLAYWRIGHT_GENERATOR, PhaseStatus.BLOCKED)
+        state.status = RunStatus.BLOCKED.value
+        state.blocked_reason = "阶段2A录制执行已完成，请先确认录制报告和 bug list，再进入 Python 脚本生成"
         return state
 
     def _complete_legacy_update(self, state: RunState) -> RunState:
@@ -997,23 +1105,131 @@ class QAConductor:
             },
         )
 
-    def _validate_phase2_outputs(self, state: RunState) -> PhaseGateResult:
+    def _validate_phase2_recording_outputs(self, state: RunState) -> PhaseGateResult:
         manifest_payload = read_json(state.artifacts.get("text_case_manifest", ""), default={}) or {}
         reasons: list[str] = []
         warnings: list[str] = []
         if not manifest_payload:
-            reasons.append("缺少 text_case_manifest.json，无法校验阶段2逐条闭环。")
+            reasons.append("缺少 text_case_manifest.json，无法校验阶段2A录制闭环。")
 
-        outcomes_path = self._artifact_value(state, "playwright_case_outcomes", "case_outcomes")
+        report_path = self._artifact_value(state, "playwright_recording_report", "recording_report")
+        if not read_text(report_path):
+            reasons.append("缺少 playwright_recording_report.md，或录制执行报告为空。")
+
+        outcomes_path = self._artifact_value(state, "playwright_recording_outcomes", "recording_outcomes")
         outcome_payload = read_json(outcomes_path, default=[]) or []
         if not outcome_payload:
-            reasons.append("缺少 playwright_case_outcomes.json，无法确认每条可自动化用例的唯一结局。")
+            reasons.append("缺少 playwright_recording_outcomes.json，无法确认每条可自动化用例的录制结局。")
 
         automatable_cases = [
             item["tc_id"]
             for item in manifest_payload.get("cases", [])
             if item.get("ui_automatable")
         ]
+        outcomes = [PlaywrightRecordingOutcome(**item) for item in outcome_payload] if outcome_payload else []
+        grouped: dict[str, list[PlaywrightRecordingOutcome]] = {}
+        for outcome in outcomes:
+            grouped.setdefault(outcome.tc_id, []).append(outcome)
+
+        proof_manifest: list[dict[str, Any]] = []
+        bug_count = 0
+        for tc_id in automatable_cases:
+            case_outcomes = grouped.get(tc_id, [])
+            if len(case_outcomes) != 1:
+                reasons.append(f"{tc_id} 需要且只能有 1 个唯一 recording outcome，当前为 {len(case_outcomes)} 个。")
+                continue
+            outcome = case_outcomes[0]
+            if outcome.outcome not in {item.value for item in PlaywrightRecordingOutcomeType}:
+                reasons.append(f"{tc_id} 的 recording outcome `{outcome.outcome}` 不在允许集合内。")
+                continue
+            if outcome.outcome == PlaywrightRecordingOutcomeType.RECORDING_PASSED.value:
+                if not outcome.proof_artifact_path or not Path(outcome.proof_artifact_path).exists():
+                    reasons.append(f"{tc_id} 标记为 recording_passed，但 proof_artifact_path 不存在。")
+                else:
+                    proof_manifest.append(
+                        {
+                            "tc_id": tc_id,
+                            "proof_artifact_path": outcome.proof_artifact_path,
+                            "recording_trace_path": outcome.details.get("recording_trace_path", ""),
+                        }
+                    )
+                    trace_path = outcome.details.get("recording_trace_path", "")
+                    if trace_path and not Path(trace_path).exists():
+                        warnings.append(f"{tc_id} 提供了 recording_trace_path，但文件不存在: {trace_path}")
+            elif outcome.outcome == PlaywrightRecordingOutcomeType.BUG_RECORDED.value:
+                bug_count += 1
+                if not outcome.bug_report_path or not Path(outcome.bug_report_path).exists():
+                    reasons.append(f"{tc_id} 标记为 bug_recorded，但 bug_report_path 不存在。")
+            elif not outcome.manual_review_reason:
+                reasons.append(f"{tc_id} 标记为 manual_review，但缺少 manual_review_reason。")
+
+        bug_report_path = self._artifact_value(state, "playwright_bug_report", "bug_report")
+        if bug_count and not read_text(bug_report_path):
+            reasons.append("存在 bug_recorded 用例，但缺少 playwright_bug_report.md 或内容为空。")
+
+        unexpected_cases = sorted(set(grouped) - set(automatable_cases))
+        if unexpected_cases:
+            warnings.append(
+                "以下 recording outcome 未在阶段1可自动化用例清单中出现，将保留但不计入强门禁: "
+                + ", ".join(unexpected_cases)
+            )
+
+        proof_manifest_path = ""
+        if not reasons:
+            proof_manifest_target = self.store.artifact_path(state.run_id, "proof_artifacts_manifest.json")
+            write_json(proof_manifest_target, proof_manifest)
+            state.artifacts["proof_artifacts_manifest"] = str(proof_manifest_target)
+            proof_manifest_path = str(proof_manifest_target)
+
+        return PhaseGateResult(
+            phase=Phase.PLAYWRIGHT_GENERATOR.value,
+            ok=not reasons,
+            summary=(
+                f"阶段2A门禁通过，{len(automatable_cases)} 条可自动化用例已完成录制执行闭环，等待确认。"
+                if not reasons
+                else "阶段2A门禁未通过，存在未闭环或缺少 proof/bug 报告的可自动化用例。"
+            ),
+            blocking_reasons=reasons,
+            warnings=warnings,
+            details={
+                "text_case_manifest": state.artifacts.get("text_case_manifest", ""),
+                "playwright_recording_outcomes": outcomes_path,
+                "playwright_recording_report": report_path,
+                "playwright_bug_report": bug_report_path,
+                "proof_artifacts_manifest": proof_manifest_path,
+                "automatable_case_count": len(automatable_cases),
+                "recording_passed_count": len(proof_manifest),
+                "bug_recorded_count": bug_count,
+            },
+        )
+
+    def _validate_phase2_script_outputs(self, state: RunState) -> PhaseGateResult:
+        manifest_payload = read_json(state.artifacts.get("text_case_manifest", ""), default={}) or {}
+        reasons: list[str] = []
+        warnings: list[str] = []
+        if not manifest_payload:
+            reasons.append("缺少 text_case_manifest.json，无法校验阶段2B脚本生成闭环。")
+
+        outcomes_path = self._artifact_value(state, "playwright_case_outcomes", "case_outcomes")
+        outcome_payload = read_json(outcomes_path, default=[]) or []
+        recording_payload = read_json(
+            self._artifact_value(state, "playwright_recording_outcomes", "recording_outcomes"),
+            default=[],
+        ) or []
+        recording_outcomes = [PlaywrightRecordingOutcome(**item) for item in recording_payload] if recording_payload else []
+        automatable_cases = [
+            item.tc_id
+            for item in recording_outcomes
+            if item.outcome == PlaywrightRecordingOutcomeType.RECORDING_PASSED.value
+        ]
+        if not recording_payload:
+            automatable_cases = [
+                item["tc_id"]
+                for item in manifest_payload.get("cases", [])
+                if item.get("ui_automatable")
+            ]
+        if automatable_cases and not outcome_payload:
+            reasons.append("缺少 playwright_case_outcomes.json，无法确认每条录制通过用例的脚本生成结局。")
         outcomes = [PlaywrightCaseOutcome(**item) for item in outcome_payload] if outcome_payload else []
         grouped: dict[str, list[PlaywrightCaseOutcome]] = {}
         for outcome in outcomes:
@@ -1036,16 +1252,21 @@ class QAConductor:
                     reasons.append(f"{tc_id} 的自动化脚本缺少 collect-only/pytest 通过证明。")
                 if outcome.script_path:
                     generated_scripts.append(outcome.script_path)
+            elif outcome.outcome == PlaywrightOutcomeType.SCRIPT_BLOCKED.value:
+                if not outcome.script_blocker_report_path or not Path(outcome.script_blocker_report_path).exists():
+                    reasons.append(f"{tc_id} 标记为 script_blocked，但 script_blocker_report_path 不存在。")
+                reasons.append(f"{tc_id} 脚本生成仍处于阻塞状态，必须批次内修复后才能进入影响分析。")
             elif outcome.outcome == PlaywrightOutcomeType.BUG_RECORDED.value:
-                if not outcome.bug_report_path or not Path(outcome.bug_report_path).exists():
-                    reasons.append(f"{tc_id} 标记为 bug_recorded，但 bug_report_path 不存在。")
-            elif not outcome.manual_review_reason:
-                reasons.append(f"{tc_id} 标记为 manual_review，但缺少 manual_review_reason。")
+                reasons.append(f"{tc_id} 已在阶段2A标记为 recording_passed，阶段2B不允许改为 bug_recorded。")
+            elif outcome.outcome == PlaywrightOutcomeType.MANUAL_REVIEW.value:
+                if not outcome.manual_review_reason:
+                    reasons.append(f"{tc_id} 标记为 manual_review，但缺少 manual_review_reason。")
+                reasons.append(f"{tc_id} 脚本生成进入 manual_review，必须处理当前脚本批次后才能进入影响分析。")
 
         unexpected_cases = sorted(set(grouped) - set(automatable_cases))
         if unexpected_cases:
             warnings.append(
-                "以下 outcome 未在阶段1可自动化用例清单中出现，将保留但不计入强门禁: "
+                "以下阶段2B outcome 不属于阶段2A recording_passed 清单，将保留但不计入强门禁: "
                 + ", ".join(unexpected_cases)
             )
 
@@ -1058,9 +1279,9 @@ class QAConductor:
             phase=Phase.PLAYWRIGHT_GENERATOR.value,
             ok=not reasons,
             summary=(
-                f"阶段2门禁通过，{len(automatable_cases)} 条可自动化用例已逐条闭环。"
+                f"阶段2B门禁通过，{len(automatable_cases)} 条录制通过用例已生成脚本并自测闭环。"
                 if not reasons
-                else "阶段2门禁未通过，存在未闭环或缺少自测证明的可自动化用例。"
+                else "阶段2B门禁未通过，存在未生成脚本、未通过自测或进入人工处理的用例。"
             ),
             blocking_reasons=reasons,
             warnings=warnings,
@@ -1144,6 +1365,19 @@ class QAConductor:
             if value:
                 return value
         return ""
+
+    def _playwright_progress(self, state: RunState) -> dict[str, Any]:
+        return read_json(state.artifacts.get(PLAYWRIGHT_PROGRESS_KEY, ""), default={}) or {}
+
+    def _write_playwright_progress(self, state: RunState, **updates: Any) -> dict[str, Any]:
+        progress = self._playwright_progress(state)
+        progress.update({key: value for key, value in updates.items() if value is not None})
+        path = Path(state.artifacts.get(PLAYWRIGHT_PROGRESS_KEY, "")) if state.artifacts.get(PLAYWRIGHT_PROGRESS_KEY) else None
+        if not path:
+            path = self.store.artifact_path(state.run_id, f"{PLAYWRIGHT_PROGRESS_KEY}.json")
+        write_json(path, progress)
+        state.artifacts[PLAYWRIGHT_PROGRESS_KEY] = str(path)
+        return progress
 
     def _append_confirmation(self, state: RunState, record: UserConfirmationRecord) -> None:
         confirmation_path = self.store.artifact_path(state.run_id, "user_confirmations.json")
@@ -1558,6 +1792,9 @@ class QAConductor:
             "## 核心产物",
         ]
         for key in [
+            "playwright_recording_report",
+            "playwright_bug_report",
+            "playwright_case_outcomes",
             "impact_candidates",
             "change_attribution_report",
             "legacy_update_gate",
@@ -1662,23 +1899,53 @@ class QAConductor:
             return "\n".join(parts)
 
         if phase == Phase.PLAYWRIGHT_GENERATOR:
+            progress = self._playwright_progress(state)
+            if progress.get("stage") == PLAYWRIGHT_STAGE_SCRIPT_PENDING:
+                recording_outcomes = state.artifacts.get("playwright_recording_outcomes", "")
+                proof_manifest = state.artifacts.get("proof_artifacts_manifest", "")
+                parts = [
+                    f"# 阶段: {phase.value} 阶段2B - Python脚本生成与自测",
+                    "",
+                    f"请读取 `{skill_path}`，只执行阶段2B脚本生成、自测和批次内调试闭环。",
+                    "",
+                    "## 输入",
+                    f"- 测试用例文档: {state.artifacts.get('kb_text_case_draft_path') or state.artifacts.get('textcases', '')}",
+                    f"- 阶段1清单: {state.artifacts.get('text_case_manifest', '')}",
+                    f"- 阶段2A录制结局: {recording_outcomes}",
+                    f"- proof manifest: {proof_manifest}",
+                    f"- 阶段2A录制报告: {state.artifacts.get('playwright_recording_report', '')}",
+                    "",
+                    "## 要求",
+                    "- 只处理阶段2A outcome 为 recording_passed 的用例",
+                    "- 有 bug_recorded 的用例不生成脚本",
+                    "- 先从 proof/recording_trace 生成最小 replay 脚本，验证 JS 到 Python 转换",
+                    "- replay 通过后再整理成 OK UI 规范脚本，补齐 _CONFIG、pytest.mark、allure、fixture/POM 复用",
+                    "- 每批最多 5 条，当前批次 collect-only 和 pytest 都通过后再进入下一批",
+                    "- 3 轮仍失败时输出 script_blocker_report.md，并在 playwright_case_outcomes.json 中标记 script_blocked；QA Agent 会阻塞在当前阶段",
+                    "- complete 当前阶段时必须回传 playwright_case_outcomes.json",
+                    "- 每条 recording_passed 用例必须最终为 script_generated，并附带 script_path、collect_only_passed=true、pytest_passed=true",
+                ]
+                self._append_memory_instruction(parts, state)
+                return "\n".join(parts)
+
             parts = [
-                f"# 阶段: {phase.value}",
+                f"# 阶段: {phase.value} 阶段2A - 录制执行与验证",
                 "",
-                f"请读取 `{skill_path}` 并按其定义的 5 阶段流程执行。",
+                f"请读取 `{skill_path}`，先执行阶段2A录制执行与验证，不要在本轮生成 Python 脚本。",
                 "",
                 "## 输入",
                 f"- 测试用例文档: {state.artifacts.get('kb_text_case_draft_path') or state.artifacts.get('textcases', '')}",
                 f"- 阶段1清单: {state.artifacts.get('text_case_manifest', '')}",
                 "",
                 "## 要求",
-                "- 按 SKILL.md 的 5 个阶段严格顺序执行",
+                "- 按 SKILL.md 的阶段2A流程执行真实浏览器录制和每步预期验证",
                 "- 每个阶段开始前先读取 SKILL.md 指定的 references 文件",
                 "- 每批最多 5 条用例",
-                "- 生成的脚本暂不直接入库，先交由影响回归阶段验证",
-                "- complete 当前阶段时必须回传 playwright_case_outcomes.json",
-                "- 对每条 UI自动化=✅ 的用例，必须给出唯一 outcome: script_generated / bug_recorded / manual_review",
-                "- script_generated 的用例必须同时附带 collect-only 和 pytest 通过证明",
+                "- 本轮只生成 proof、截图、录制执行报告和 bug list，不生成 Python 脚本",
+                "- complete 当前阶段时必须回传 playwright_recording_outcomes.json 和 playwright_recording_report.md",
+                "- 若存在 bug_recorded，用 artifact 额外回传 playwright_bug_report=<path>",
+                "- 对每条 UI自动化=✅ 的用例，必须给出唯一 recording outcome: recording_passed / bug_recorded / manual_review",
+                "- recording_passed 必须附带 proof_artifact_path；bug_recorded 必须附带 bug_report_path；manual_review 必须附带 manual_review_reason",
             ]
             self._append_memory_instruction(parts, state)
             return "\n".join(parts)
@@ -2494,6 +2761,9 @@ class QAConductor:
             f"- change_attribution_report: {state.artifacts.get('change_attribution_report', '')}",
             f"- regression_selector_plan: {state.artifacts.get('regression_selector_plan', '')}",
             f"- text_case_manifest: {state.artifacts.get('text_case_manifest', '')}",
+            f"- playwright_recording_outcomes: {state.artifacts.get('playwright_recording_outcomes', '')}",
+            f"- playwright_recording_report: {state.artifacts.get('playwright_recording_report', '')}",
+            f"- playwright_bug_report: {state.artifacts.get('playwright_bug_report', '')}",
             f"- playwright_case_outcomes: {state.artifacts.get('playwright_case_outcomes', '')}",
             "",
             "## Text Case Binding",
@@ -2526,6 +2796,9 @@ class QAConductor:
             "change_attribution_report",
             "regression_selector_plan",
             "text_case_manifest",
+            "playwright_recording_outcomes",
+            "playwright_recording_report",
+            "playwright_bug_report",
             "playwright_case_outcomes",
         ]:
             value = state.artifacts.get(key, "")

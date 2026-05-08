@@ -11,29 +11,45 @@ class BasePage:
     def goto(self, url, timeout=60000, wait_until="domcontentloaded"):
         """
         导航到指定 URL（官方推荐：使用 domcontentloaded + 元素级等待）
-        
+
         Args:
             url: 目标 URL（可以是完整 URL 或相对路径）
             timeout: 超时时间（毫秒），默认 60 秒（跨国站点访问较慢）
             wait_until: 加载策略，默认 domcontentloaded（官方推荐，禁止使用 networkidle）
                        可选值：domcontentloaded/commit（commit 对重定向更宽容）
-        
+
         注意：
         - 官方明确禁止使用 wait_until="load" 或 "networkidle"
         - 导航后应配合元素级等待：page.locator("关键元素").wait_for(state="visible")
         """
-        try:
-            self.page.goto(url, timeout=timeout, wait_until=wait_until)
-        except Exception as e:
-            if "ERR_ABORTED" in str(e) and wait_until != "commit":
-                # 重定向/资源中断导致，用 commit 重试后等待 dom 就绪
-                try:
-                    self.page.goto(url, timeout=timeout, wait_until="commit")
-                    self.page.wait_for_load_state("domcontentloaded", timeout=15000)
-                except Exception:
-                    raise e
-            else:
+        max_retries = 2
+        last_exc = None
+        for attempt in range(max_retries + 1):
+            try:
+                response = self.page.goto(url, timeout=timeout, wait_until=wait_until)
+                if response and response.status >= 500:
+                    # 服务端 5xx，等待后重试
+                    if attempt < max_retries:
+                        self.page.wait_for_timeout(2000)
+                        continue
+                    raise RuntimeError(f"导航返回 HTTP {response.status}，已重试 {max_retries} 次: {url}")
+                return
+            except RuntimeError:
                 raise
+            except Exception as e:
+                last_exc = e
+                if "ERR_ABORTED" in str(e) and wait_until != "commit":
+                    # 重定向/资源中断导致，用 commit 重试后等待 dom 就绪
+                    try:
+                        self.page.goto(url, timeout=timeout, wait_until="commit")
+                        self.page.wait_for_load_state("domcontentloaded", timeout=15000)
+                        return
+                    except Exception:
+                        pass
+                if attempt < max_retries:
+                    self.page.wait_for_timeout(2000)
+                    continue
+                raise last_exc
     
     def wait_for_page_load(self, state="load", timeout=30000):
         """

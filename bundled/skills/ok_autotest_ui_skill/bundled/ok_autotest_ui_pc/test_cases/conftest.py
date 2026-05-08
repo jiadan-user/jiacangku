@@ -17,6 +17,18 @@ os.environ.setdefault("PW_TEST_SCREENSHOT_NO_FONTS_READY", "1")
 logger = setup_logger()
 
 
+@pytest.hookimpl(trylast=True)
+def pytest_sessionstart(session):
+    """保证 Allure 输出目录存在。
+
+    pytest.ini 使用 ``--clean-alluredir`` 时，若清理发生在其它 hook 之后或未重建目录，
+    fixture teardown 阶段写入 ``*-container.json`` 可能触发 FileNotFoundError，导致进程以非 0 退出。
+    在 session 起始阶段最后再次 mkdir，避免目录缺失。
+    """
+    allure_dir = Path(session.config.rootpath) / "reports" / "allure-results"
+    allure_dir.mkdir(parents=True, exist_ok=True)
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # 【关键修复】Playwright Sync API 与 asyncio 事件循环冲突
 #

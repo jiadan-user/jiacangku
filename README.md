@@ -3,7 +3,7 @@
 `QA_Agent` 是一个测试编排项目。你在这个仓库里让 AI 工作时，它会帮你串起：
 
 - `senior-qa-brain`：分析 Figma / PRD，输出分析报告和文本用例
-- `playwright-test-generator`：把可自动化文本用例转成 UI 自动化脚本
+- `playwright-test-generator`：先录制执行并产出 bug list，再把录制通过的用例转成 UI 自动化脚本
 - `ok_autotest_ui_skill`：做 PC UI 回归
 - `knowledge-base-manager`：把本次产物同步回知识库
 
@@ -19,8 +19,10 @@ flowchart TD
     Run --> Split{"模式路径"}
     Split -->|"新需求 / 混合"| SQB["senior-qa-brain<br/>分析报告 + 文本用例"]
     SQB --> SQBGate["阶段1门禁<br/>结构校验 + 文本用例归档"]
-    SQBGate --> PTG["playwright-test-generator<br/>录制 + 生成脚本 + 自测"]
-    PTG --> PTGGate["阶段2门禁<br/>每条可自动化用例唯一 outcome"]
+    SQBGate --> PTG2A["playwright-test-generator 2A<br/>录制执行 + proof + bug list"]
+    PTG2A --> PTGConfirm["确认录制报告和 bug list"]
+    PTGConfirm --> PTG2B["playwright-test-generator 2B<br/>Python 脚本生成 + 自测"]
+    PTG2B --> PTGGate["阶段2门禁<br/>录制通过用例脚本化闭环"]
     PTGGate --> Impact["影响分析与候选归并"]
 
     Split -->|"纯回归"| Impact
@@ -165,7 +167,7 @@ python -m qa_agent.cli memory export --target qa-agent --query "QA Agent 旧脚�
 1. `senior-qa-brain`
    AI 会先停在分析报告，等你确认后再继续生成文本用例。
 2. `playwright-test-generator`
-   AI 会要求产出逐条 case outcome，确认每条 `UI自动化=✅` 的用例都有唯一结局。
+   AI 会先执行阶段2A，产出逐条 recording outcome、proof 和 bug list；你确认录制报告后，再进入阶段2B生成 Python 脚本并自测。
 3. `影响回归与变更归因`
    AI 会先跑受影响用例，再给你一份简洁归因报告，等你确认后才允许改旧脚本或 promotion 新脚本。
 4. `旧脚本更新执行`
@@ -181,7 +183,8 @@ python -m qa_agent.cli memory export --target qa-agent --query "QA Agent 旧脚�
 如果你用 CLI 或要求 AI 手动 `complete` 某个阶段，常见产物是：
 
 - 阶段1：`analysis_report=<path>`、`textcases=<path>`
-- 阶段2：`playwright_case_outcomes=<path>`
+- 阶段2A：`playwright_recording_outcomes=<path>`、`playwright_recording_report=<path>`，如有 bug 再加 `playwright_bug_report=<path>`
+- 阶段2B：`playwright_case_outcomes=<path>`
 - 阶段3：`ok_ui_dry_run_preview=<path>`、`ok_ui_execution_report=<path>`、`release_recommendation=<path>`
 - 知识库阶段：`knowledge_base_update_preview=<path>`、`knowledge_base_update_result=<path>`
 
@@ -190,7 +193,7 @@ python -m qa_agent.cli memory export --target qa-agent --query "QA Agent 旧脚�
 | 阶段 | artifact key |
 | --- | --- |
 | 阶段1 | `analysis_report`, `textcases`, `text_case_manifest`, `kb_text_case_draft_path` |
-| 阶段2 | `playwright_case_outcomes`, `generated_scripts_manifest` |
+| 阶段2 | `playwright_recording_outcomes`, `playwright_recording_report`, `playwright_bug_report`, `proof_artifacts_manifest`, `playwright_case_outcomes`, `generated_scripts_manifest` |
 | 影响分析 | `impact_candidates`, `overlap_report` |
 | 影响归因 | `impact_run_selector_plan`, `impact_run_results`, `change_attribution_report` |
 | 更新循环 | `legacy_update_tasks`, `legacy_update_gate`, `legacy_rerecord_request`, `legacy_rerecord_instruction`, `legacy_update_candidate_manifest`, `catalog_refresh_after_script_changes_round_XX`, `regression_selector_plan` |
@@ -220,6 +223,9 @@ python -m qa_agent.cli memory export --target qa-agent --query "QA Agent 旧脚�
 - `run_state.json`
 - `analysis_report.*`
 - `text_case_manifest.json`
+- `playwright_recording_outcomes.json`
+- `playwright_recording_report.md`
+- `playwright_bug_report.md`
 - `playwright_case_outcomes.json`
 - `impact_candidates.json`
 - `change_attribution_report.md`

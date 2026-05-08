@@ -40,8 +40,10 @@ flowchart TD
     Split -->|"新需求 / 混合"| SQB["阶段1 senior-qa-brain"]
     SQB --> Draft["文本用例草稿直写 knowledge_base/文本用例"]
     Draft --> Gate1["阶段1门禁"]
-    Gate1 --> PTG["阶段2 playwright-test-generator"]
-    PTG --> Gate2["阶段2逐条闭环门禁"]
+    Gate1 --> PTG2A["阶段2A playwright-test-generator 录制执行"]
+    PTG2A --> RecordConfirm["确认录制报告和 bug list"]
+    RecordConfirm --> PTG2B["阶段2B Python脚本生成与自测"]
+    PTG2B --> Gate2["阶段2脚本化闭环门禁"]
     Gate2 --> Impact["影响分析与候选归并"]
 
     Split -->|"纯回归"| Impact
@@ -167,38 +169,66 @@ warning 不阻止 `run` 创建任务，但会写入本次 run 的 `doctor_result
 ### 强制要求
 
 - 必须先读 `bundled/skills/playwright-test-generator/SKILL.md`
-- 必须按 skill 的 5 个阶段执行
+- 必须按 skill 的阶段2A/阶段2B流程执行
+- 阶段2A先完成所有可自动化用例的真实浏览器录制执行、预期验证、proof 和 bug list
+- 阶段2A通过门禁后必须等待人工确认，再进入阶段2B
+- 阶段2B只处理阶段2A `recording_passed` 的用例
 - 生成的脚本先停留在 staging/run 产物中，不直接 promotion
 
 ### complete 时必须提交
 
+阶段2A：
+
+- `playwright_recording_outcomes=<path>`
+- `playwright_recording_report=<path>`
+- 如存在 bug：`playwright_bug_report=<path>`
+
+阶段2B：
+
 - `playwright_case_outcomes=<path>`
 
-### `playwright_case_outcomes.json` 契约
+### `playwright_recording_outcomes.json` 契约
 
-对每条 `UI自动化=✅` 的用例，必须给出且只能给出一个 outcome：
+对每条 `UI自动化=✅` 的用例，必须给出且只能给出一个 recording outcome：
 
-- `script_generated`
+- `recording_passed`
 - `bug_recorded`
 - `manual_review`
 
 其中：
 
-- `script_generated` 必须附带 `script_path`，并证明 `collect-only` 和 `pytest` 已通过
+- `recording_passed` 必须附带 `proof_artifact_path`
 - `bug_recorded` 必须附带 `bug_report_path`
 - `manual_review` 必须附带 `manual_review_reason`
+
+### `playwright_case_outcomes.json` 契约
+
+对每条阶段2A `recording_passed` 的用例，必须给出且只能给出一个 outcome：
+
+- `script_generated`
+- `script_blocked`
+
+其中：
+
+- `script_generated` 必须附带 `script_path`，并证明 `collect-only` 和 `pytest` 已通过
+- `script_blocked` 必须附带 `script_blocker_report_path`，且阶段2B门禁不通过，必须批次内处理后才能继续
 
 ### 阶段2门禁
 
 编排层必须检查：
 
 - `text_case_manifest.json` 存在
-- 每条 `UI自动化=✅` 的用例都有唯一 outcome
+- 阶段2A每条 `UI自动化=✅` 的用例都有唯一 recording outcome
+- `recording_passed` 的 proof 存在
+- `bug_recorded` 的 bug report 存在
+- 阶段2A通过后等待人工确认，不进入影响分析
+- 阶段2B每条 `recording_passed` 的用例都有唯一脚本 outcome
 - 不允许 silent drop
 - 脚本产物必须有自测通过证明
 
 通过后额外生成：
 
+- `proof_artifacts_manifest.json`
 - `generated_scripts_manifest.json`
 
 ## 影响分析与候选归并
@@ -458,6 +488,12 @@ warning 不阻止 `run` 创建任务，但会写入本次 run 的 `doctor_result
 - `impact_split.json`
 - `text_case_manifest.json`
 - `phase1_gate_result.json`
+- `playwright_recording_outcomes.json`
+- `playwright_recording_report.md`
+- `playwright_bug_report.md`
+- `proof_artifacts_manifest.json`
+- `phase2_recording_gate_result.json`
+- `playwright_generator_progress.json`
 - `playwright_case_outcomes.json`
 - `generated_scripts_manifest.json`
 - `phase2_gate_result.json`

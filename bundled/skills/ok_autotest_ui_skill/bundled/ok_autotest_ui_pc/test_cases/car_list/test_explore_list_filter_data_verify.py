@@ -71,7 +71,7 @@ def test_tc085_filter_city_cards_match(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
 
     with allure.step("步骤2：切换城市到 Dubai"):
         list_page.click_city_filter()
@@ -116,7 +116,7 @@ def test_tc086_filter_price_range_cards_match(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
 
     with allure.step(f"步骤2：设置价格区间 {min_price}-{max_price}"):
         list_page.click_price_filter()
@@ -154,7 +154,7 @@ def test_tc087_filter_mileage_only_max(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
 
     with allure.step("步骤2：点击 Mileage，仅输入最大值 30000"):
         list_page.click_mileage_filter()
@@ -189,7 +189,7 @@ def test_tc088_filter_mileage_non_numeric(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
 
     with allure.step("步骤2：点击 Mileage，输入非数字"):
         list_page.click_mileage_filter()
@@ -226,7 +226,7 @@ def test_tc089_filter_multi_conditions_combined(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
 
     with allure.step("步骤2：打开 Filter，选择 Body Style"):
         list_page.click_filter()
@@ -276,7 +276,7 @@ def test_tc090_filter_brand_deselect(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
 
     with allure.step("步骤2：记录原始卡片数量"):
         original_count = list_page.get_car_items_count()
@@ -288,13 +288,13 @@ def test_tc090_filter_brand_deselect(page, config):
         logger.info("✓ 已选择 Brand: Aito")
 
     with allure.step("步骤4：记录筛选后卡片数量"):
-        page.wait_for_load_state("networkidle", timeout=15000)
+        page.wait_for_load_state("networkidle", timeout=30000)
         filtered_count = list_page.get_car_items_count()
         logger.info(f"✓ 筛选后卡片数量: {filtered_count}")
 
     with allure.step("步骤5：直接导航回原始 URL 取消 Brand 筛选"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
         logger.info("✓ 已导航回原始 URL 取消 Brand 筛选")
 
     with allure.step("验证列表恢复"):
@@ -322,7 +322,7 @@ def test_tc091_filter_result_title_count_update(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
 
     with allure.step("步骤2：记录原始浏览器标题"):
         original_title = list_page.get_browser_title()
@@ -367,7 +367,7 @@ def test_tc092_filter_price_clear_button(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
 
     with allure.step("步骤2：设置价格区间 5000-50000 并确认"):
         list_page.click_price_filter()
@@ -437,7 +437,7 @@ def test_tc094_filter_search_clear_restore(page, config):
 
     with allure.step("步骤1：导航到目标 URL"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
 
     with allure.step("步骤2：记录原始卡片数量"):
         original_count = list_page.get_car_items_count()
@@ -451,7 +451,7 @@ def test_tc094_filter_search_clear_restore(page, config):
 
     with allure.step("步骤4：导航回原始 URL 恢复列表"):
         list_page.navigate_to_url(config["target_url"])
-        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=15000)
+        page.locator(list_page.FILTER_ITEM_CONTENT).first.wait_for(state="visible", timeout=30000)
         logger.info("✓ 已导航回原始 URL")
 
     with allure.step("验证列表恢复"):

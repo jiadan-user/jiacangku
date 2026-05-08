@@ -112,12 +112,21 @@ class ExploreListPage(BasePage):
             raise
 
     def navigate_to_url(self, url):
-        """直接导航到指定 URL，若当前页面已匹配则跳过加载"""
+        """直接导航到指定 URL，若当前页面已匹配则跳过加载；遇到 5xx 自动重试"""
         try:
             if _urls_match(self.page.url, url):
                 self.logger.info(f"当前页面已匹配目标 URL，跳过导航")
                 return
-            self.page.goto(url, wait_until="domcontentloaded", timeout=30000)
+            max_retries = 2
+            for attempt in range(max_retries + 1):
+                response = self.page.goto(url, wait_until="domcontentloaded", timeout=30000)
+                if response and response.status >= 500:
+                    self.logger.warning(f"HTTP {response.status}，第 {attempt + 1} 次重试: {url}")
+                    if attempt < max_retries:
+                        self.page.wait_for_timeout(2000)
+                        continue
+                    raise RuntimeError(f"导航返回 HTTP {response.status}，已重试 {max_retries} 次: {url}")
+                break
             # 等待筛选栏渲染完成作为页面就绪信号，替代固定 5 秒等待
             try:
                 self.page.locator(self.FILTER_ITEM_CONTENT).first.wait_for(
@@ -362,7 +371,7 @@ class ExploreListPage(BasePage):
         """点击 Filter 按钮展开筛选面板"""
         try:
             self.page.locator(self.FILTER_ITEM_CONTENT).filter(has_text="Filter").first.click()
-            self.page.wait_for_timeout(2000)
+            self.page.locator(self.FILTER_MODAL).first.wait_for(state="visible", timeout=15000)
         except Exception as e:
             self.logger.error(f"点击 Filter 失败: {e}")
             raise
@@ -370,7 +379,7 @@ class ExploreListPage(BasePage):
     def is_filter_modal_visible(self):
         """判断 Filter 弹窗是否可见"""
         try:
-            return self.page.locator(self.FILTER_MODAL).first.is_visible(timeout=3000)
+            return self.page.locator(self.FILTER_MODAL).first.is_visible(timeout=10000)
         except Exception:
             return False
 
