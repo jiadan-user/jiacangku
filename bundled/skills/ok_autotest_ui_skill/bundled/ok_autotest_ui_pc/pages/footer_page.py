@@ -134,14 +134,31 @@ class FooterPage(BasePage):
             footer = self.page.locator(self.FOOTER_CONTAINER).first
             bounding_box = footer.bounding_box()
             page_height = self.page.evaluate("document.body.scrollHeight")
-            viewport_height = self.page.viewport_size["height"]
+            
+            # 安全获取 viewport 高度（兼容 viewport_size 为 None 的情况）
+            viewport_size = self.page.viewport_size
+            if viewport_size and "height" in viewport_size:
+                viewport_height = viewport_size["height"]
+            else:
+                # 备用方案：通过 JavaScript 获取视口高度
+                viewport_height = self.page.evaluate("window.innerHeight")
+                self.logger.warning(f"viewport_size 为 None，使用 window.innerHeight 获取视口高度: {viewport_height}px")
+            
+            # Footer 底部位置
+            footer_bottom = bounding_box["y"] + bounding_box["height"]
+            # 允许的误差：Footer 底部到页面底部的距离在 100px 以内认为是"在底部"
+            # （考虑到页面可能有 body margin/padding 或其他元素的 margin）
+            distance_to_bottom = page_height - footer_bottom
+            is_at_bottom = distance_to_bottom <= 100
             
             return {
                 "y": bounding_box["y"],
                 "height": bounding_box["height"],
                 "page_height": page_height,
                 "viewport_height": viewport_height,
-                "is_at_bottom": bounding_box["y"] + bounding_box["height"] >= page_height - 10
+                "footer_bottom": footer_bottom,
+                "distance_to_bottom": distance_to_bottom,
+                "is_at_bottom": is_at_bottom
             }
         except Exception as e:
             self.logger.error(f"获取 Footer 位置失败: {e}")
