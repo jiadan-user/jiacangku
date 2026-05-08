@@ -65,9 +65,11 @@ open:_ snapshot:_ click:_ fill:_ type:_ press:_ screenshot:_ close:_
 
 ---
 
-## Required `recording_trace.json`
+## `recording_trace.json`
 
-Every `recording_passed` case must have a machine-readable trace saved next to the proof artifact. The path should be recorded in `playwright_recording_outcomes.json` as `details.recording_trace_path`.
+Every `recording_passed` case should have a machine-readable trace saved next to the proof artifact. The path should be recorded in `playwright_recording_outcomes.json` as `details.recording_trace_path`.
+
+QA Agent does not block Stage 2A delivery when the trace is missing, because the bug list and recording result should still be delivered first. Missing or inaccessible traces become Stage 2B blockers: do not invent Python scripts from memory when proof/trace does not contain enough real actions.
 
 Minimum schema:
 

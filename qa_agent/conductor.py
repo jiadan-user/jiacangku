@@ -67,7 +67,11 @@ SKILL_PATHS = {
 
 PHASE_REQUIRED_ARTIFACTS = {
     Phase.SENIOR_QA_BRAIN: ["analysis_report", "textcases"],
-    Phase.PLAYWRIGHT_GENERATOR: ["playwright_recording_outcomes", "playwright_recording_report"],
+    Phase.PLAYWRIGHT_GENERATOR: [
+        "playwright_recording_outcomes",
+        "playwright_recording_report",
+        "playwright_bug_report",
+    ],
     Phase.IMPACT_VERIFICATION: [],
     Phase.OK_UI_REGRESSION: ["ok_ui_dry_run_preview", "ok_ui_execution_report", "release_recommendation"],
     Phase.KNOWLEDGE_BASE_UPDATE: ["knowledge_base_update_preview", "knowledge_base_update_result"],
@@ -854,6 +858,15 @@ class QAConductor:
         progress = self._playwright_progress(state)
         stage = progress.get("stage", PLAYWRIGHT_STAGE_RECORDING)
         if stage == PLAYWRIGHT_STAGE_RECORDING_COMPLETED:
+            recording_payload = read_json(
+                self._artifact_value(state, "playwright_recording_outcomes", "recording_outcomes"),
+                default=[],
+            ) or []
+            recording_passed_count = sum(
+                1
+                for item in recording_payload
+                if isinstance(item, dict) and item.get("outcome") == PlaywrightRecordingOutcomeType.RECORDING_PASSED.value
+            )
             self._append_confirmation(
                 state,
                 UserConfirmationRecord(
@@ -866,6 +879,37 @@ class QAConductor:
                     },
                 ),
             )
+            if recording_passed_count == 0:
+                case_outcomes_path = self.store.artifact_path(state.run_id, "playwright_case_outcomes.json")
+                generated_manifest_path = self.store.artifact_path(state.run_id, "generated_scripts_manifest.json")
+                write_json(case_outcomes_path, [])
+                write_json(generated_manifest_path, [])
+                state.artifacts["playwright_case_outcomes"] = str(case_outcomes_path)
+                state.artifacts["generated_scripts_manifest"] = str(generated_manifest_path)
+                self._store_gate_result(
+                    state,
+                    "phase2_gate_result",
+                    PhaseGateResult(
+                        phase=Phase.PLAYWRIGHT_GENERATOR.value,
+                        ok=True,
+                        summary="阶段2A没有 recording_passed 用例，阶段2B脚本生成自动跳过。",
+                        details={
+                            "playwright_recording_outcomes": state.artifacts.get("playwright_recording_outcomes", ""),
+                            "playwright_case_outcomes": str(case_outcomes_path),
+                            "generated_scripts_manifest": str(generated_manifest_path),
+                            "recording_passed_count": 0,
+                        },
+                    ),
+                )
+                self._write_playwright_progress(
+                    state,
+                    stage=PLAYWRIGHT_STAGE_SCRIPT_COMPLETED,
+                    recording_confirmed=True,
+                    script_completed_at=utc_now_iso(),
+                    script_skipped_reason="no_recording_passed_cases",
+                )
+                state.blocked_reason = ""
+                return state
             self._write_playwright_progress(
                 state,
                 stage=PLAYWRIGHT_STAGE_SCRIPT_PENDING,
@@ -1113,59 +1157,102 @@ class QAConductor:
             reasons.append("缺少 text_case_manifest.json，无法校验阶段2A录制闭环。")
 
         report_path = self._artifact_value(state, "playwright_recording_report", "recording_report")
-        if not read_text(report_path):
+        report_text = read_text(report_path)
+        if not report_text:
             reasons.append("缺少 playwright_recording_report.md，或录制执行报告为空。")
+        elif len(report_text) > 20000:
+            warnings.append("playwright_recording_report.md 内容偏长；建议只保留同事可读的执行进度摘要。")
+
+        bug_report_path = self._artifact_value(state, "playwright_bug_report", "bug_report")
+        bug_report_text = read_text(bug_report_path)
+        if not bug_report_text:
+            reasons.append("缺少 playwright_bug_report.md，或 bug list 为空；即使无 bug 也必须写明本轮未发现 bug。")
+
+        execution_plan_path = self._artifact_value(state, "stage2a_execution_plan", "playwright_stage2a_execution_plan")
+        if not read_text(execution_plan_path):
+            warnings.append("缺少 stage2a_execution_plan.json；不阻塞阶段2A交付，但建议补充批次计划用于追溯。")
 
         outcomes_path = self._artifact_value(state, "playwright_recording_outcomes", "recording_outcomes")
         outcome_payload = read_json(outcomes_path, default=[]) or []
         if not outcome_payload:
             reasons.append("缺少 playwright_recording_outcomes.json，无法确认每条可自动化用例的录制结局。")
+        if outcome_payload and not isinstance(outcome_payload, list):
+            reasons.append("playwright_recording_outcomes.json 必须是数组。")
+            outcome_payload = []
 
         automatable_cases = [
             item["tc_id"]
             for item in manifest_payload.get("cases", [])
             if item.get("ui_automatable")
         ]
-        outcomes = [PlaywrightRecordingOutcome(**item) for item in outcome_payload] if outcome_payload else []
+        outcomes: list[PlaywrightRecordingOutcome] = []
+        for index, item in enumerate(outcome_payload):
+            if not isinstance(item, dict):
+                reasons.append(f"playwright_recording_outcomes.json 第 {index + 1} 项不是对象。")
+                continue
+            try:
+                outcomes.append(PlaywrightRecordingOutcome(**item))
+            except TypeError as exc:
+                reasons.append(f"playwright_recording_outcomes.json 第 {index + 1} 项格式错误: {exc}")
         grouped: dict[str, list[PlaywrightRecordingOutcome]] = {}
+        invalid_outcome_case_ids: set[str] = set()
+        allowed_outcomes = {item.value for item in PlaywrightRecordingOutcomeType}
         for outcome in outcomes:
             grouped.setdefault(outcome.tc_id, []).append(outcome)
+            if outcome.outcome == "manual_review":
+                invalid_outcome_case_ids.add(outcome.tc_id)
+                reasons.append(
+                    f"{outcome.tc_id} 标记为 manual_review；阶段2A不再允许该状态，"
+                    "不符合预期或阻塞验证请记录为 bug_recorded。"
+                )
+            elif outcome.outcome not in allowed_outcomes:
+                invalid_outcome_case_ids.add(outcome.tc_id)
+                reasons.append(f"{outcome.tc_id} 的 recording outcome `{outcome.outcome}` 不在允许集合内。")
 
         proof_manifest: list[dict[str, Any]] = []
         bug_count = 0
+        missing_case_ids: list[str] = []
+        duplicate_case_ids: list[str] = []
         for tc_id in automatable_cases:
             case_outcomes = grouped.get(tc_id, [])
             if len(case_outcomes) != 1:
+                if not case_outcomes:
+                    missing_case_ids.append(tc_id)
+                else:
+                    duplicate_case_ids.append(tc_id)
                 reasons.append(f"{tc_id} 需要且只能有 1 个唯一 recording outcome，当前为 {len(case_outcomes)} 个。")
                 continue
             outcome = case_outcomes[0]
-            if outcome.outcome not in {item.value for item in PlaywrightRecordingOutcomeType}:
-                reasons.append(f"{tc_id} 的 recording outcome `{outcome.outcome}` 不在允许集合内。")
+            if tc_id in invalid_outcome_case_ids:
                 continue
             if outcome.outcome == PlaywrightRecordingOutcomeType.RECORDING_PASSED.value:
                 if not outcome.proof_artifact_path or not Path(outcome.proof_artifact_path).exists():
                     reasons.append(f"{tc_id} 标记为 recording_passed，但 proof_artifact_path 不存在。")
                 else:
+                    trace_path = outcome.details.get("recording_trace_path", "")
                     proof_manifest.append(
                         {
                             "tc_id": tc_id,
                             "proof_artifact_path": outcome.proof_artifact_path,
-                            "recording_trace_path": outcome.details.get("recording_trace_path", ""),
+                            "recording_trace_path": trace_path,
                         }
                     )
-                    trace_path = outcome.details.get("recording_trace_path", "")
-                    if trace_path and not Path(trace_path).exists():
+                    if not trace_path:
+                        warnings.append(f"{tc_id} 缺少 recording_trace_path；阶段2A不阻塞，但阶段2B不能凭空生成脚本。")
+                    elif not Path(trace_path).exists():
                         warnings.append(f"{tc_id} 提供了 recording_trace_path，但文件不存在: {trace_path}")
             elif outcome.outcome == PlaywrightRecordingOutcomeType.BUG_RECORDED.value:
                 bug_count += 1
-                if not outcome.bug_report_path or not Path(outcome.bug_report_path).exists():
-                    reasons.append(f"{tc_id} 标记为 bug_recorded，但 bug_report_path 不存在。")
-            elif not outcome.manual_review_reason:
-                reasons.append(f"{tc_id} 标记为 manual_review，但缺少 manual_review_reason。")
-
-        bug_report_path = self._artifact_value(state, "playwright_bug_report", "bug_report")
-        if bug_count and not read_text(bug_report_path):
-            reasons.append("存在 bug_recorded 用例，但缺少 playwright_bug_report.md 或内容为空。")
+                bug_id = str(outcome.details.get("bug_id", ""))
+                has_global_record = bool(
+                    bug_report_text
+                    and (
+                        tc_id in bug_report_text
+                        or (bug_id and bug_id in bug_report_text)
+                    )
+                )
+                if not has_global_record:
+                    reasons.append(f"{tc_id} 标记为 bug_recorded，但 playwright_bug_report.md 中缺少可追溯的 bug 记录。")
 
         unexpected_cases = sorted(set(grouped) - set(automatable_cases))
         if unexpected_cases:
@@ -1196,10 +1283,14 @@ class QAConductor:
                 "playwright_recording_outcomes": outcomes_path,
                 "playwright_recording_report": report_path,
                 "playwright_bug_report": bug_report_path,
+                "stage2a_execution_plan": execution_plan_path,
                 "proof_artifacts_manifest": proof_manifest_path,
                 "automatable_case_count": len(automatable_cases),
                 "recording_passed_count": len(proof_manifest),
                 "bug_recorded_count": bug_count,
+                "missing_case_ids": missing_case_ids,
+                "duplicate_case_ids": duplicate_case_ids,
+                "unexpected_case_ids": unexpected_cases,
             },
         )
 
@@ -1942,10 +2033,14 @@ class QAConductor:
                 "- 每个阶段开始前先读取 SKILL.md 指定的 references 文件",
                 "- 每批最多 5 条用例",
                 "- 本轮只生成 proof、截图、录制执行报告和 bug list，不生成 Python 脚本",
-                "- complete 当前阶段时必须回传 playwright_recording_outcomes.json 和 playwright_recording_report.md",
-                "- 若存在 bug_recorded，用 artifact 额外回传 playwright_bug_report=<path>",
-                "- 对每条 UI自动化=✅ 的用例，必须给出唯一 recording outcome: recording_passed / bug_recorded / manual_review",
-                "- recording_passed 必须附带 proof_artifact_path；bug_recorded 必须附带 bug_report_path；manual_review 必须附带 manual_review_reason",
+                "- complete 当前阶段时必须回传 playwright_recording_outcomes.json、playwright_recording_report.md 和 playwright_bug_report.md",
+                "- 建议额外回传 stage2a_execution_plan=<path>；缺失只记 warning，但执行计划仍应生成用于追溯",
+                "- 对每条 UI自动化=✅ 的用例，必须给出唯一 recording outcome: recording_passed / bug_recorded",
+                "- 阶段2A不允许 manual_review；实际结果不符合预期、页面缺失、流程阻塞、配置异常、接口异常都记录为 bug_recorded",
+                "- 报告里可以展示失败/阻塞；JSON 中统一用 bug_recorded，并可用 details.progress_status=failed|blocked 区分",
+                "- recording_passed 必须附带 proof_artifact_path；bug_recorded 必须能在 bug report 中通过 TC编号或 BUG编号追溯",
+                "- playwright_bug_report.md 必须始终生成；没有 bug 时写明本轮未发现 bug",
+                "- recording_trace_path 缺失不会阻塞阶段2A，但阶段2B不能凭空生成脚本",
             ]
             self._append_memory_instruction(parts, state)
             return "\n".join(parts)
