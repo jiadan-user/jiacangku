@@ -297,7 +297,7 @@
 #### 📊 用例属性
 - **优先级**: P2
 - **测试类型**: 功能测试 (regression)
-- **UI自动化**: ❌ 不可自动化
+- **UI自动化**: ✅ 可自动化（已匹配自动化脚本：`体验/详情页/核心信息区域/test_detail_page_title_area.py::test_tc009_title_format_validation`）
 
 ---
 

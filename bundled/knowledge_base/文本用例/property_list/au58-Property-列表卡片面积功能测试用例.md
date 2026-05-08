@@ -20,6 +20,9 @@
 
 ### TC001 列表页卡片展示面积
 
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_area.py::test_tc001_list_cards_show_area`）
+
 **步骤**：打开买房列表页，查看列表卡片内容。  
 **预期**：每条列表卡片均展示面积信息（面积文案可见）。  
 **验证**：每张卡片存在非空面积区域或面积文案。
@@ -27,6 +30,9 @@
 ---
 
 ### TC002 列表卡片面积格式正确
+
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_area.py::test_tc002_area_format_correct`）
 
 **步骤**：在列表页查看卡片面积展示。  
 **预期**：面积格式正确（如：XX sqm、XX m²、XX sq ft）。  
@@ -36,6 +42,9 @@
 
 ### TC003 列表卡片面积可读性
 
+**优先级**：P1
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_area.py::test_tc003_area_readability`）
+
 **步骤**：在列表页查看卡片面积文案。  
 **预期**：面积文案清晰可读，字体大小适中，无遮挡。  
 **验证**：面积元素可见且文案长度合理。
@@ -44,6 +53,9 @@
 
 ### TC004 列表卡片面积与详情页一致
 
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_area.py::test_tc004_area_matches_detail_page`）
+
 **步骤**：记录列表页某张卡片的面积，点击进入详情页，查看详情页面积。  
 **预期**：列表页面积与详情页面积一致。  
 **验证**：两处面积数值和单位相同。
@@ -51,6 +63,9 @@
 ---
 
 ### TC005 面积为空或特殊情况处理
+
+**优先级**：P1
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_area.py::test_tc005_area_special_cases`）
 
 **步骤**：查找面积为空或显示特殊情况的卡片。  
 **预期**：特殊情况下有合理的展示（如 "Contact for details" 等）。  

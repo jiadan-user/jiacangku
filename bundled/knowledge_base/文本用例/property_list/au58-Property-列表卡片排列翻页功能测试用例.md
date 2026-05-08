@@ -22,6 +22,9 @@
 
 ### TC001 列表卡片排列 - 一行展示4个卡片
 
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_sort_pagination_commercial_rent.py::test_tc001_list_layout_4_cards_per_row`）
+
 **步骤**：打开列表页，等待列表加载完成。  
 **预期**：列表页采用网格布局，每行展示4个房产卡片。  
 **验证**：页面列表区域中，第一行可见的卡片数量为4个（或符合4列网格布局）。
@@ -29,6 +32,9 @@
 ---
 
 ### TC002 分页 - 有多页时 Next 按钮可见
+
+**优先级**：P1
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_sort_pagination_commercial_rent.py::test_tc002_pagination_next_visible_when_has_multiple_pages`）
 
 **步骤**：打开列表页，滚动至分页区域。  
 **预期**：当列表有多页时，分页区域「Next」按钮可见。  
@@ -38,6 +44,9 @@
 
 ### TC003 分页 - 点击 Next 后 URL 更新
 
+**优先级**：P1
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_sort_pagination_commercial_rent.py::test_tc003_pagination_click_next_url_updates`）
+
 **步骤**：在有多页的列表页点击分页「Next」按钮。  
 **预期**：页面跳转到下一页，URL 含分页参数或与首页 URL 不同。  
 **验证**：URL 包含 page/p= 等分页标识或与点击前 URL 不同。
@@ -45,6 +54,9 @@
 ---
 
 ### TC004 分页 - 点击页码 2 进入第二页
+
+**优先级**：P1
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_sort_pagination_rent.py::test_tc004_pagination_click_page_2_layout_maintained`）
 
 **步骤**：在有多页的列表页点击分页中的页码「2」。  
 **预期**：页面跳转到第二页，列表仍保持一行4个卡片的排列方式。  
@@ -54,6 +66,9 @@
 
 ### TC005 视图切换 - 点击 Map 切换到地图视图
 
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_sort_pagination_commercial_rent.py::test_tc005_click_map_button_switches_to_map_view`）
+
 **步骤**：在列表页点击「Map」按钮或地图视图切换控件。  
 **预期**：页面切换到地图视图，显示地图和标记点。  
 **验证**：页面显示地图组件，URL 可能包含 map 相关参数或视图标识。
@@ -61,6 +76,9 @@
 ---
 
 ### TC006 视图切换 - 点击 List 切换回列表视图
+
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_sort_pagination_commercial_rent.py::test_tc006_click_list_button_switches_back_to_list_view`）
 
 **步骤**：在地图视图页面点击「List」按钮或列表视图切换控件。  
 **预期**：页面切换回列表视图，列表保持一行4个卡片的排列方式。  

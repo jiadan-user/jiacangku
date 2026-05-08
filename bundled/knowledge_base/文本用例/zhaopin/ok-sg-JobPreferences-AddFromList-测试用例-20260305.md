@@ -283,6 +283,9 @@
 
 ### 主流程录制证明（TC003 + TC007）
 
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`zhaopin/test_sg_job_preferences_add_from_list.py::test_sg_add_pref_authenticated_should_redirect_directly_to_add_page`）
+
 **【MCP JavaScript 代码（由 Playwright Python 实测转换）】**
 
 ```js

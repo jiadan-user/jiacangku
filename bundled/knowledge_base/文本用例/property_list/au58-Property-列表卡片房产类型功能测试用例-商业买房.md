@@ -29,6 +29,9 @@
 
 ### TC001 列表页卡片展示房产类型（商业地产卖房）
 
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_property_type_commercial_buy.py::test_tc001_list_cards_show_property_type_commercial_buy`）
+
 **步骤**：打开商业地产卖房列表页，统计卡片数量，获取第一张卡片的房产类型文本。
 **预期**：列表至少有一张卡片，且第一张卡片房产类型文案非空。
 **验证**：`get_list_card_links_count(path_part="cate-commercial-buy-") > 0`，`get_first_card_property_type_text` 非空。
@@ -36,6 +39,9 @@
 ---
 
 ### TC002 列表卡片房产类型取值合理（商业地产卖房）
+
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_property_type_commercial_buy.py::test_tc002_property_type_values_valid_commercial_buy`）
 
 **步骤**：获取第一张卡片房产类型文本，调用合理性校验。
 **预期**：取值为系统支持的枚举值或合理英文字符串（`is_property_type_valid` 返回 True）。
@@ -45,6 +51,9 @@
 
 ### TC003 列表卡片房产类型可读性（商业地产卖房）
 
+**优先级**：P1
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_property_type_commercial_buy.py::test_tc003_property_type_readability_commercial_buy`）
+
 **步骤**：获取第一张卡片房产类型文本，检查长度。
 **预期**：文案清晰可读，长度小于 100 字符。
 **验证**：`len(prop_type) < 100`。
@@ -53,6 +62,9 @@
 
 ### TC004 列表卡片房产类型与详情页一致（商业地产卖房）
 
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_property_type_commercial_buy.py::test_tc004_property_type_matches_detail_page_commercial_buy`）
+
 **步骤**：记录列表页第一张卡片房产类型，点击进入详情页，检查详情页正文。
 **预期**：详情页 body 文本中包含列表页的房产类型文案。
 **验证**：`list_prop_type in detail_page.locator("body").inner_text()`。
@@ -60,6 +72,9 @@
 ---
 
 ### TC005 房产类型为空或特殊情况处理（商业地产卖房）
+
+**优先级**：P1
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_property_type_commercial_buy.py::test_tc005_property_type_special_cases_commercial_buy`）
 
 **步骤**：获取前 5 张卡片的房产类型文本列表。
 **预期**：至少有一张卡片展示了有效的房产类型文案。

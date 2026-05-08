@@ -98,6 +98,7 @@ class ConductorSmokeTests(unittest.TestCase):
         self.temp_path = Path(self.temp_dir.name)
         self.kb_root = self.temp_path / "knowledge_base"
         (self.kb_root / "文本用例").mkdir(parents=True, exist_ok=True)
+        (self.kb_root / "业务规则库" / "车辆模块").mkdir(parents=True, exist_ok=True)
         self.regression_root = self.temp_path / "regression_project"
         (self.regression_root / "test_cases").mkdir(parents=True, exist_ok=True)
 
@@ -167,10 +168,40 @@ class ConductorSmokeTests(unittest.TestCase):
         }
 
     def _sample_analysis_report(self) -> str:
-        return "# 列表测试分析报告\n\n- 风险点: 卡片布局、字段展示、跳转入口\n"
+        return (
+            "# 列表测试分析报告\n\n"
+            "## 知识库依据\n"
+            "- bundled/knowledge_base/业务规则库/车辆模块/车辆列表页规则.md\n\n"
+            "- 风险点: 卡片布局、字段展示、跳转入口\n"
+        )
 
-    def _sample_textcases(self, *, missing_ui_marker: bool = False) -> str:
+    def _sample_textcases(
+        self,
+        *,
+        missing_ui_marker: bool = False,
+        missing_business_sections: bool = False,
+        vague_preconditions: bool = False,
+    ) -> str:
         ui_line = "" if missing_ui_marker else "- **UI自动化**: ✅ 可自动化\n"
+        business_sections = (
+            "## 业务属性\n"
+            "- 业务域: 车辆业务域\n"
+            "- 模块: 车辆列表\n"
+            "- 功能: 列表卡片展示\n"
+            "- 用户角色: 访客\n"
+            "- 入口位置: 首页 Cars 图标 / Browse 菜单\n"
+            "- 知识库依据: bundled/knowledge_base/业务规则库/车辆模块/车辆列表页规则.md\n\n"
+            "## 测试范围\n"
+            "- 覆盖范围: AE 站车辆列表首屏卡片展示\n"
+            "- 不覆盖范围: 支付、第三方授权\n\n"
+        )
+        if missing_business_sections:
+            business_sections = ""
+        tc001_precondition = (
+            "- 已进入车列表页\n"
+            if vague_preconditions
+            else "- 访客身份，无需登录；打开 https://ae.example.com/en/city-abu-dhabi/cate-car/?iconSource=car；确认页面标题含 Cars 且筛选栏可见\n"
+        )
         return (
             "# OK-AE-Car-列表-测试用例\n\n"
             "## 测试环境配置（必填）\n\n"
@@ -179,10 +210,11 @@ class ConductorSmokeTests(unittest.TestCase):
             "| 站点 | ae | 站点 |\n"
             "| 基础URL | https://ae.example.com/car | 基础地址 |\n"
             "| 角色 | visitor | 角色 |\n\n"
+            f"{business_sections}"
             "## 测试用例\n\n"
             "### TC001: 车列表大卡样式展示\n\n"
             "#### 📋 前置条件\n"
-            "- 已进入车列表页\n\n"
+            f"{tc001_precondition}\n"
             "#### 🎬 执行步骤\n"
             "1. 打开车列表页\n"
             "2. 观察首屏列表卡片\n\n"
@@ -195,7 +227,7 @@ class ConductorSmokeTests(unittest.TestCase):
             "---\n\n"
             "### TC002: 车列表卡片视觉感受\n\n"
             "#### 📋 前置条件\n"
-            "- 已进入车列表页\n\n"
+            "- 访客身份，无需登录；打开 https://ae.example.com/en/city-abu-dhabi/cate-car/?iconSource=car\n\n"
             "#### 🎬 执行步骤\n"
             "1. 观察卡片阴影和动效\n\n"
             "#### ✅ 预期结果\n"
@@ -221,11 +253,19 @@ class ConductorSmokeTests(unittest.TestCase):
         self.assertTrue(Path(state.artifacts["memory_context"]).exists())
         self.assertIn("Usage Rule", read_text(state.artifacts["memory_context"]))
 
-    def _complete_stage1(self, conductor: QAConductor, state, *, missing_ui_marker: bool = False):
-        analysis_path = self._write_temp_file("artifacts/analysis_report.md", self._sample_analysis_report())
+    def _complete_stage1(
+        self,
+        conductor: QAConductor,
+        state,
+        *,
+        missing_ui_marker: bool = False,
+        analysis_text: str | None = None,
+        textcases_text: str | None = None,
+    ):
+        analysis_path = self._write_temp_file("artifacts/analysis_report.md", analysis_text or self._sample_analysis_report())
         textcases_path = self._write_temp_file(
             "artifacts/textcases.md",
-            self._sample_textcases(missing_ui_marker=missing_ui_marker),
+            textcases_text or self._sample_textcases(missing_ui_marker=missing_ui_marker),
         )
         return conductor.complete_phase(
             state.run_id,
@@ -407,6 +447,22 @@ class ConductorSmokeTests(unittest.TestCase):
         self.assertEqual(state.next_action.required_artifacts, ["analysis_report", "textcases"])
         self.assertIn("complete", state.next_action.resume_command)
 
+    def test_stage1_instruction_includes_rule_library_paths(self) -> None:
+        conductor = self._make_conductor()
+        state = self._plan_and_enter_stage1(conductor)
+        instruction = read_text(state.artifacts[f"{Phase.SENIOR_QA_BRAIN.value}_instruction"])
+        self.assertIn("业务规则库读取要求", instruction)
+        self.assertIn(str(self.kb_root / "业务规则库" / "车辆模块"), instruction)
+
+    def test_stage1_instruction_reports_rule_library_miss(self) -> None:
+        conductor = self._make_conductor()
+        conductor.config.knowledge_base_routing["rule_library_routes"].pop("car", None)
+        state = conductor.plan(self._new_feature_inputs())
+        state = conductor.advance(state.run_id)
+        instruction = read_text(state.artifacts[f"{Phase.SENIOR_QA_BRAIN.value}_instruction"])
+        self.assertIn("规则库未命中", instruction)
+        self.assertIn("不要编造业务规则", instruction)
+
     def test_stage1_gate_writes_kb_draft_and_manifest(self) -> None:
         conductor = self._make_conductor(impact_executor=FakeImpactVerificationExecutor(self._passed_verification_outcome()))
         state = self._plan_and_enter_stage1(conductor)
@@ -415,12 +471,31 @@ class ConductorSmokeTests(unittest.TestCase):
         manifest = read_json(state.artifacts["text_case_manifest"], default={})
         self.assertEqual(manifest["module"], "car")
         self.assertEqual(len(manifest["cases"]), 2)
+        self.assertEqual(manifest["business_attributes"][0], "业务域: 车辆业务域")
+        self.assertIn(str(self.kb_root / "业务规则库" / "车辆模块"), manifest["rule_library_paths"])
         kb_draft = Path(state.artifacts["kb_text_case_draft_path"])
         self.assertTrue(kb_draft.exists())
         self.assertEqual(kb_draft.parent, self.kb_root / "文本用例" / "test_car")
         self.assertIn("TC001", read_text(kb_draft))
         gate = read_json(state.artifacts["phase1_gate_result"], default={})
         self.assertTrue(gate["ok"])
+
+    def test_stage1_gate_keeps_nested_bucket_relative_to_kb_text_root(self) -> None:
+        conductor = self._make_conductor()
+        packet = {"candidate_modules": ["homepage"], "site": "ae", "feature_name": "首页"}
+        bucket = conductor._knowledge_base_bucket(packet)
+        self.assertEqual(bucket, "Tiyan/首页")
+        path = conductor._knowledge_base_draft_path(packet, "textcases.md", bucket)
+        self.assertEqual(path.parent, self.kb_root / "文本用例" / "Tiyan" / "首页")
+
+    def test_stage1_gate_blocks_absolute_text_case_bucket(self) -> None:
+        conductor = self._make_conductor()
+        conductor.config.knowledge_base_routing["text_case_buckets"]["car"]["bucket"] = str(self.temp_path / "outside")
+        state = self._plan_and_enter_stage1(conductor)
+        state = self._complete_stage1(conductor, state)
+        gate = read_json(state.artifacts["phase1_gate_result"], default={})
+        self.assertFalse(gate["ok"])
+        self.assertIn("bucket 必须是相对路径片段", " ".join(gate["blocking_reasons"]))
 
     def test_stage1_gate_blocks_when_ui_automation_marker_missing(self) -> None:
         conductor = self._make_conductor()
@@ -431,6 +506,33 @@ class ConductorSmokeTests(unittest.TestCase):
         gate = read_json(state.artifacts["phase1_gate_result"], default={})
         self.assertFalse(gate["ok"])
         self.assertIn("UI自动化", " ".join(gate["blocking_reasons"]))
+
+    def test_stage1_gate_blocks_when_analysis_report_lacks_kb_basis(self) -> None:
+        conductor = self._make_conductor()
+        state = self._plan_and_enter_stage1(conductor)
+        state = self._complete_stage1(conductor, state, analysis_text="# 列表测试分析报告\n\n- 风险点: 卡片布局\n")
+        gate = read_json(state.artifacts["phase1_gate_result"], default={})
+        self.assertFalse(gate["ok"])
+        self.assertIn("知识库依据", " ".join(gate["blocking_reasons"]))
+
+    def test_stage1_gate_blocks_when_business_sections_missing(self) -> None:
+        conductor = self._make_conductor()
+        state = self._plan_and_enter_stage1(conductor)
+        textcases = self._sample_textcases(missing_business_sections=True)
+        state = self._complete_stage1(conductor, state, textcases_text=textcases)
+        gate = read_json(state.artifacts["phase1_gate_result"], default={})
+        self.assertFalse(gate["ok"])
+        self.assertIn("业务属性", " ".join(gate["blocking_reasons"]))
+        self.assertIn("测试范围", " ".join(gate["blocking_reasons"]))
+
+    def test_stage1_gate_blocks_vague_automatable_preconditions(self) -> None:
+        conductor = self._make_conductor()
+        state = self._plan_and_enter_stage1(conductor)
+        textcases = self._sample_textcases(vague_preconditions=True)
+        state = self._complete_stage1(conductor, state, textcases_text=textcases)
+        gate = read_json(state.artifacts["phase1_gate_result"], default={})
+        self.assertFalse(gate["ok"])
+        self.assertIn("前置条件不可执行", " ".join(gate["blocking_reasons"]))
 
     def test_stage2_gate_blocks_when_automatable_case_has_no_outcome(self) -> None:
         conductor = self._make_conductor(impact_executor=FakeImpactVerificationExecutor(self._passed_verification_outcome()))
@@ -1072,6 +1174,14 @@ class ConductorSmokeTests(unittest.TestCase):
         self.assertEqual(resolved, link_python)
         self.assertTrue(resolved.is_symlink())
         self.assertNotEqual(resolved, target_python.resolve())
+
+    def test_config_keeps_knowledge_base_routing_fragments_relative(self) -> None:
+        config = load_config(Path(__file__).resolve().parents[1])
+        buckets = config.knowledge_base_routing["text_case_buckets"]
+        self.assertEqual(buckets["homepage"]["bucket"], "Tiyan/首页")
+        self.assertEqual(buckets["property"]["bucket"], "Property/Basic/List")
+        self.assertFalse(Path(buckets["homepage"]["bucket"]).is_absolute())
+        self.assertFalse(Path(buckets["property"]["bucket"]).is_absolute())
 
     def test_impact_analysis_uses_scoped_reasons_not_generic_case_metadata(self) -> None:
         matching_script = self.regression_root / "test_cases" / "car" / "test_car_list.py"

@@ -26,6 +26,8 @@
 
 ### TC001 地图视图默认加载
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_fullscreen.py::test_tc001_map_view_loads_correctly`）
+
 **优先级**：P0
 **类型**：smoke
 
@@ -43,6 +45,8 @@
 ---
 
 ### TC002 点击全屏按钮进入全屏模式
+
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_fullscreen.py::test_tc002_click_fullscreen_button_enters_fullscreen`）
 
 **优先级**：P0
 **类型**：smoke
@@ -63,6 +67,8 @@
 
 ### TC003 全屏模式下地图正常展示
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_fullscreen.py::test_tc003_fullscreen_map_renders_correctly`）
+
 **优先级**：P1
 **类型**：smoke
 
@@ -82,6 +88,8 @@
 
 ### TC004 全屏模式下点击退出全屏按钮恢复正常视图
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_fullscreen.py::test_tc004_click_exit_fullscreen_restores_normal_view`）
+
 **优先级**：P0
 **类型**：smoke
 
@@ -99,6 +107,8 @@
 ---
 
 ### TC005 全屏切换按钮持续可见
+
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_fullscreen.py::test_tc005_fullscreen_button_always_visible`）
 
 **优先级**：P1
 **类型**：regression
@@ -119,10 +129,10 @@
 
 ## 执行记录
 
-| 用例 | 状态 | 执行时间 | 备注 |
-|------|------|----------|------|
-| TC001 | 待执行 | - | - |
-| TC002 | 待执行 | - | - |
-| TC003 | 待执行 | - | - |
-| TC004 | 待执行 | - | - |
-| TC005 | 待执行 | - | - |
+| 用例 | 状态 | 执行时间 | 备注 | UI自动化 |
+| ------ | ------ | ---------- | ------ | --- |
+| TC001 | 待执行 | - | - | ✅ 可自动化 |
+| TC002 | 待执行 | - | - | ✅ 可自动化 |
+| TC003 | 待执行 | - | - | ✅ 可自动化 |
+| TC004 | 待执行 | - | - | ✅ 可自动化 |
+| TC005 | 待执行 | - | - | ✅ 可自动化 |

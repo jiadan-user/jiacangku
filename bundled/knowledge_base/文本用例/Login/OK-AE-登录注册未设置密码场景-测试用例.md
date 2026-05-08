@@ -163,7 +163,7 @@
 #### 📊 用例属性
 - **优先级**: P1
 - **测试类型**: 正向 / 时序
-- **UI自动化**: ❌ 不可自动化（需等待60秒，影响测试效率）
+- **UI自动化**: ✅ 可自动化（按脚本顺序匹配：`login/test_ok_ae_login_register_no_password_tc001_tc016.py::test_tc007_code_input_initial`）
 
 ---
 
