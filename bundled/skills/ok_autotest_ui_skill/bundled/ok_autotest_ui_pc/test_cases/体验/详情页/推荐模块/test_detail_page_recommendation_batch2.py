@@ -53,38 +53,25 @@ def page(config):
     函数级 fixture：每个测试用例使用独立的浏览器实例
     确保测试隔离性，避免状态相互影响
     """
+    from utils.browser_manager import BrowserManager
+    
     logger.info("=" * 80)
     logger.info("【Function Setup】创建独立浏览器实例")
     logger.info("=" * 80)
-    
-    browser_type = config["browser"]["type"]
-    headless = config["browser"].get("headless", False)
-    viewport = config["browser"].get("viewport", {"width": 1920, "height": 1080})
-    
-    from playwright.sync_api import sync_playwright
-    playwright = sync_playwright().start()
-    
-    if browser_type == "chromium":
-        browser = playwright.chromium.launch(headless=headless)
-    elif browser_type == "firefox":
-        browser = playwright.firefox.launch(headless=headless)
-    elif browser_type == "webkit":
-        browser = playwright.webkit.launch(headless=headless)
-    else:
-        raise ValueError(f"不支持的浏览器类型: {browser_type}")
-    
-    context = browser.new_context(viewport=viewport)
-    page = context.new_page()
-    
-    yield page
-    
+
+    browser_manager = BrowserManager()
+    _page = browser_manager.start_browser(
+        browser_type=config["browser"]["type"],
+        headless=config["browser"].get("headless", False),
+        viewport=config["browser"].get("viewport", {"width": 1920, "height": 1080})
+    )
+
+    yield _page
+
     logger.info("=" * 80)
     logger.info("【Function Teardown】关闭浏览器实例")
     logger.info("=" * 80)
-    page.close()
-    context.close()
-    browser.close()
-    playwright.stop()
+    browser_manager.close_browser(_page)
 
 
 @pytest.fixture(scope="module")

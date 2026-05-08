@@ -224,19 +224,33 @@ def test_our_apps_section_display(page, config):
         logger.info("✓ Our Apps 区块可见")
     
     with allure.step("验证2：Our Apps 区块包含应用下载相关内容"):
-        # 检查是否有 App Store 或 Google Play 相关文本
+        # 响应式设计：大窗口显示文本，小窗口只显示图标
         our_apps_text = page.locator("text=Our Apps").locator("xpath=..").inner_text()
         
+        # 方式1：检查文本（大窗口）
         has_app_store_text = "app store" in our_apps_text.lower() or "download on" in our_apps_text.lower()
         has_google_play_text = "google play" in our_apps_text.lower() or "get it on" in our_apps_text.lower()
         
-        assert has_app_store_text or has_google_play_text, \
-            f"Our Apps 区块未包含应用下载相关内容。文本: {our_apps_text}"
+        # 方式2：检查图标/链接（小窗口）
+        has_app_store_link = footer_page.is_app_store_image_visible(timeout=3000)
+        has_google_play_link = footer_page.is_google_play_image_visible(timeout=3000)
+        
+        # 至少要有一种方式能检测到下载入口
+        has_any_content = (has_app_store_text or has_google_play_text or 
+                          has_app_store_link or has_google_play_link)
+        
+        assert has_any_content, \
+            f"Our Apps 区块未包含应用下载相关内容。文本: {our_apps_text}, " \
+            f"App Store图标: {has_app_store_link}, Google Play图标: {has_google_play_link}"
         
         if has_app_store_text:
-            logger.info("✓ 包含 App Store 相关内容")
+            logger.info("✓ 包含 App Store 文本")
         if has_google_play_text:
-            logger.info("✓ 包含 Google Play 相关内容")
+            logger.info("✓ 包含 Google Play 文本")
+        if has_app_store_link:
+            logger.info("✓ 包含 App Store 下载图标")
+        if has_google_play_link:
+            logger.info("✓ 包含 Google Play 下载图标")
     
     logger.info("="*80)
     logger.info("✅ TC-FOOTER-E-003 测试通过！")

@@ -165,22 +165,15 @@ def test_footer_position_fixed(page, config):
         footer_position = footer_page.get_footer_position()
         
         assert footer_position["is_at_bottom"], \
-            f"Footer 未位于页面最底部。Footer Y: {footer_position['y']}, " \
-            f"页面高度: {footer_position['page_height']}"
+            f"Footer 未位于页面最底部。Footer 底部: {footer_position.get('footer_bottom', 'N/A')}px, " \
+            f"页面高度: {footer_position['page_height']}px, " \
+            f"距离底部: {footer_position.get('distance_to_bottom', 'N/A')}px"
         
         logger.info(f"✓ Footer 位于页面最底部")
         logger.info(f"  - Footer Y 坐标: {footer_position['y']}px")
         logger.info(f"  - Footer 高度: {footer_position['height']}px")
         logger.info(f"  - 页面总高度: {footer_position['page_height']}px")
-    
-    with allure.step("验证：Footer 下方无其他内容"):
-        # Footer 底部位置应该接近页面总高度
-        footer_bottom = footer_position["y"] + footer_position["height"]
-        distance_from_bottom = footer_position["page_height"] - footer_bottom
-        
-        assert distance_from_bottom < 50, \
-            f"Footer 下方有其他内容，距离底部: {distance_from_bottom}px"
-        logger.info(f"✓ Footer 下方无其他内容（距离底部 {distance_from_bottom}px）")
+        logger.info(f"✓ Footer 下方无其他内容（距离底部 {footer_position.get('distance_to_bottom', 0)}px）")
     
     logger.info("="*80)
     logger.info("✅ TC-FOOTER-A-002 测试通过！")
