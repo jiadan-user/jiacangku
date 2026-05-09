@@ -25,7 +25,7 @@ _CONFIG = {
     "user_name": "guest_au",
     "base_url": "https://au.58v5.cn",
     "test_account": None,
-    "list_url": "https://au.58v5.cn/en/city-canberra/cate-buy/?iconSource=buy",
+    "list_url": "https://au.58v5.cn/en/city-canberra/cate-rent/?iconSource=rent",
     "browser": {
         "type": "chromium",
         "headless": True,
@@ -33,6 +33,13 @@ _CONFIG = {
     },
     "timeout": {"default": 30000, "wait": 10000, "navigation": 30000},
 }
+
+
+_CARD_SELECTOR = 'a[href*="cate-property-for-rent-"], a[href*="cate-property-for-sale-"], a[href*="residential-"]'
+_AREA_RE = re.compile(
+    r'[\d,]+\.?\d*\s*(?:sqm|m²|㎡|m2|sq\.?\s*m|sq\s*ft|sqft|square\s*metres?)',
+    re.IGNORECASE,
+)
 
 
 def _ensure_logged_in_and_on_list(page, config):
@@ -51,6 +58,22 @@ def _ensure_logged_in_and_on_list(page, config):
     return plp
 
 
+def _find_first_card_with_area(page, max_cards: int = 30):
+    """从前 N 张卡片中寻找第一张带面积文案的卡片。"""
+    cards = page.locator(_CARD_SELECTOR)
+    count = min(max_cards, cards.count())
+    for i in range(count):
+        try:
+            card = cards.nth(i)
+            text = card.inner_text()
+            match = _AREA_RE.search(text or "")
+            if match:
+                return card, match.group().strip()
+        except Exception:
+            continue
+    return None, ""
+
+
 # ============================================
 # TC001 列表页卡片展示面积
 # ============================================
@@ -64,9 +87,9 @@ def _ensure_logged_in_and_on_list(page, config):
 @allure.description("每条列表卡片均展示面积信息（面积文案可见）")
 def test_tc001_list_cards_show_area(page, config):
     plp = _ensure_logged_in_and_on_list(page, config)
-    card_count = plp.get_list_card_links_count(path_part="/cate-property-for-sale-")
+    card_count = plp.get_list_card_links_count(path_part="cate-property-for-rent-")
     assert card_count > 0, "列表页应至少有一条卡片"
-    area_text = plp.get_first_card_area_text()
+    _, area_text = _find_first_card_with_area(page)
     assert area_text and len(area_text.strip()) > 0, "第一张卡片应有非空面积"
     logger.info(f"✓ 卡片数: {card_count}, 首卡面积: {area_text}")
 
@@ -84,7 +107,7 @@ def test_tc001_list_cards_show_area(page, config):
 @allure.description("面积格式正确（如：XX sqm、XX m²、XX sq ft）")
 def test_tc002_area_format_correct(page, config):
     plp = _ensure_logged_in_and_on_list(page, config)
-    area_text = plp.get_first_card_area_text()
+    _, area_text = _find_first_card_with_area(page)
     assert area_text, "应获取到面积文本"
     assert plp.is_area_format_valid(area_text), f"面积格式不正确: {area_text}"
     assert re.search(r'\d+', area_text), f"面积应包含数字: {area_text}"
@@ -104,7 +127,7 @@ def test_tc002_area_format_correct(page, config):
 @allure.description("面积文案清晰可读，字体大小适中，无遮挡")
 def test_tc003_area_readability(page, config):
     plp = _ensure_logged_in_and_on_list(page, config)
-    area_text = plp.get_first_card_area_text()
+    _, area_text = _find_first_card_with_area(page)
     assert area_text, "应获取到面积文本"
     assert len(area_text) < 100, f"面积文案过长: {len(area_text)} 字符"
     logger.info(f"✓ 面积可读性良好: {area_text} ({len(area_text)} 字符)")
@@ -123,13 +146,10 @@ def test_tc003_area_readability(page, config):
 @allure.description("列表页面积与详情页面积一致")
 def test_tc004_area_matches_detail_page(page, config):
     plp = _ensure_logged_in_and_on_list(page, config)
-    list_area = plp.get_first_card_area_text()
+    first_card, list_area = _find_first_card_with_area(page)
     assert list_area, "应获取到列表页面积"
+    assert first_card is not None, "应定位到带面积文案的卡片"
     logger.info(f"列表页面积: {list_area}")
-    first_card = page.locator(
-        'a[href*="cate-rent-"], a[href*="cate-property-for-sale-"], a[href*="residential-"], '
-        'a[href*="cate-buy-"], a[href*="cate-commercial-"]'
-    ).first
     first_card.wait_for(state="visible", timeout=5000)
     try:
         with page.context.expect_page(timeout=10000) as new_page_info:
