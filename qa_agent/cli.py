@@ -4,8 +4,10 @@ import argparse
 import json
 import os
 import re
+import signal
 import subprocess
 import sys
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -133,6 +135,10 @@ def build_parser() -> argparse.ArgumentParser:
     dashboard_ok_ui_run.add_argument("--workers", default="1", help="并发 worker 数，支持 1、正整数或 auto；默认 1")
     dashboard_ok_ui_run.add_argument("--max-workers", type=int)
     dashboard_ok_ui_run.add_argument("--artifact-retention", choices=["full", "lean"])
+    dashboard_ok_ui_run.add_argument("--case-timeout", type=int, help="单条用例超时秒数，默认由 OK UI runner 决定；0 表示关闭")
+    dashboard_ok_ui_run.add_argument("--idle-timeout", type=int, help="pytest 阶段无输出/无产物进展超时秒数，默认由 OK UI runner 决定；0 表示关闭")
+    dashboard_ok_ui_run.add_argument("--phase-timeout", type=int, help="pytest 阶段总时长硬上限秒数，默认关闭")
+    dashboard_ok_ui_run.add_argument("--outer-timeout", type=int, default=0, help="qa-agent 外层最终兜底超时秒数，默认关闭")
     dashboard_ok_ui_run.add_argument("--url", help="ui_test_management 地址，默认 http://10.192.35.53:8001，可用 QA_AGENT_DASHBOARD_URL 覆盖")
     dashboard_ok_ui_run.add_argument("--api-key", help="发布 API Key，默认读取 QA_AGENT_DASHBOARD_API_KEY")
     dashboard_ok_ui_run.add_argument("--project-key", default="OK", help="目标项目名，默认 OK")
@@ -223,9 +229,100 @@ def _build_ok_ui_run_command(config, args) -> list[str]:
         ("workers", "--workers"),
         ("max_workers", "--max-workers"),
         ("artifact_retention", "--artifact-retention"),
+        ("case_timeout", "--case-timeout"),
+        ("idle_timeout", "--idle-timeout"),
+        ("phase_timeout", "--phase-timeout"),
     ):
         _add_optional_cli_arg(command, flag, getattr(args, attr, None))
     return command
+
+
+def _process_descendants(pid: int) -> list[int]:
+    try:
+        result = subprocess.run(["pgrep", "-P", str(pid)], capture_output=True, text=True)
+    except (OSError, ValueError):
+        return []
+    if result.returncode not in (0, 1):
+        return []
+    descendants: list[int] = []
+    for raw in result.stdout.split():
+        try:
+            child = int(raw)
+        except ValueError:
+            continue
+        descendants.append(child)
+        descendants.extend(_process_descendants(child))
+    return descendants
+
+
+def _terminate_process_tree(process: subprocess.Popen, *, grace_seconds: float = 3.0) -> None:
+    pids = [process.pid, *_process_descendants(process.pid)]
+    pgids: set[int] = set()
+    for pid in pids:
+        try:
+            pgids.add(os.getpgid(pid))
+        except OSError:
+            continue
+    for sig in (signal.SIGTERM, signal.SIGKILL):
+        for pgid in sorted(pgids):
+            try:
+                os.killpg(pgid, sig)
+            except OSError:
+                pass
+        try:
+            process.wait(timeout=grace_seconds if sig == signal.SIGTERM else 1.0)
+            return
+        except subprocess.TimeoutExpired:
+            continue
+
+
+def _run_ok_ui_command(command: list[str], *, cwd: Path, timeout_seconds: int = 0, stream: bool = False) -> tuple[int, str, str, bool]:
+    process = subprocess.Popen(
+        command,
+        cwd=cwd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT if stream else subprocess.PIPE,
+        text=True,
+        bufsize=1,
+        start_new_session=True,
+    )
+    stdout_lines: list[str] = []
+    stderr_text = ""
+    timed_out = False
+
+    if stream:
+        assert process.stdout is not None
+
+        def _reader() -> None:
+            for line in process.stdout:
+                stdout_lines.append(line)
+                print(line, end="")
+
+        reader = threading.Thread(target=_reader, daemon=True)
+        reader.start()
+        try:
+            returncode = process.wait(timeout=timeout_seconds or None)
+        except subprocess.TimeoutExpired:
+            timed_out = True
+            _terminate_process_tree(process)
+            returncode = process.returncode if process.returncode is not None else -9
+        reader.join(timeout=2)
+        if process.stdout is not None:
+            process.stdout.close()
+        return returncode, "".join(stdout_lines), "", timed_out
+
+    try:
+        stdout_text, stderr_text = process.communicate(timeout=timeout_seconds or None)
+        return process.returncode, stdout_text or "", stderr_text or "", timed_out
+    except subprocess.TimeoutExpired:
+        timed_out = True
+        _terminate_process_tree(process)
+        try:
+            stdout_text, stderr_text = process.communicate(timeout=2)
+        except subprocess.TimeoutExpired:
+            _terminate_process_tree(process, grace_seconds=0.5)
+            stdout_text, stderr_text = "", ""
+        return process.returncode if process.returncode is not None else -9, stdout_text or "", stderr_text or "", timed_out
 
 
 def _extract_ok_ui_run_id(output: str) -> str:
@@ -517,42 +614,48 @@ def main() -> int:
         if args.dashboard_command == "run-ok-ui":
             try:
                 command = _build_ok_ui_run_command(config, args)
+                outer_timeout = int(getattr(args, "outer_timeout", 0) or os.getenv("QA_AGENT_OK_UI_OUTER_TIMEOUT", "0") or 0)
                 if args.json:
-                    completed = subprocess.run(command, cwd=config.project_root, capture_output=True, text=True)
-                    stdout = completed.stdout
-                    stderr = completed.stderr
-                    returncode = completed.returncode
-                else:
-                    process = subprocess.Popen(
+                    returncode, stdout, stderr, outer_timed_out = _run_ok_ui_command(
                         command,
                         cwd=config.project_root,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.STDOUT,
-                        text=True,
-                        bufsize=1,
+                        timeout_seconds=outer_timeout,
+                        stream=False,
                     )
-                    output_lines = []
-                    assert process.stdout is not None
-                    for line in process.stdout:
-                        output_lines.append(line)
-                        print(line, end="")
-                    returncode = process.wait()
-                    stdout = "".join(output_lines)
-                    stderr = ""
+                else:
+                    returncode, stdout, stderr, outer_timed_out = _run_ok_ui_command(
+                        command,
+                        cwd=config.project_root,
+                        timeout_seconds=outer_timeout,
+                        stream=True,
+                    )
                 combined_output = "\n".join(item for item in [stdout, stderr] if item)
                 ok_ui_run_id = _extract_ok_ui_run_id(combined_output)
                 publish_result = {}
                 if ok_ui_run_id:
-                    publish_result = publish_ok_ui_run(
-                        config.project_root,
-                        ok_ui_run_id,
-                        base_url=args.url,
-                        api_key=args.api_key,
-                        project_key=args.project_key,
-                        module=args.module,
-                        site=args.site,
-                        change_mode=args.change_mode,
-                    )
+                    try:
+                        publish_result = publish_ok_ui_run(
+                            config.project_root,
+                            ok_ui_run_id,
+                            base_url=args.url,
+                            api_key=args.api_key,
+                            project_key=args.project_key,
+                            module=args.module,
+                            site=args.site,
+                            change_mode=args.change_mode,
+                        )
+                    except Exception as exc:
+                        publish_result = {
+                            "success": False,
+                            "skipped": bool(outer_timed_out),
+                            "reason": str(exc),
+                        }
+                elif outer_timed_out:
+                    publish_result = {
+                        "success": False,
+                        "skipped": True,
+                        "reason": "OK UI outer timeout triggered before run_id was available; publish skipped",
+                    }
                 else:
                     publish_result = {"success": False, "error": "OK UI run_id not found in command output"}
                 if args.json:
@@ -561,6 +664,7 @@ def main() -> int:
                             {
                                 "ok_ui_returncode": returncode,
                                 "ok_ui_run_id": ok_ui_run_id,
+                                "outer_timed_out": outer_timed_out,
                                 "publish_result": publish_result,
                                 "stdout": stdout,
                                 "stderr": stderr,
@@ -574,6 +678,8 @@ def main() -> int:
                         print(f"OK UI run 已发布到 Dashboard: {publish_result.get('run_uid', ok_ui_run_id)}")
                         if publish_result.get("report_url"):
                             print(f"报告: {publish_result['report_url']}")
+                    elif publish_result.get("skipped"):
+                        print(f"OK UI run 发布跳过: {publish_result.get('reason')}")
                     else:
                         print(f"OK UI run 发布失败: {publish_result.get('error') or publish_result.get('reason')}")
                 if returncode != 0:

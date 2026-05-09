@@ -268,6 +268,8 @@ python -m qa_agent.cli dashboard run-ok-ui \
   --project-key OK
 ```
 
+这个入口会把 OK UI runner 的超时保护一并透传：`--case-timeout` 默认 300 秒，`--idle-timeout` 默认 900 秒，`--phase-timeout` 默认关闭。外层 `--outer-timeout` 默认关闭，只作为最终兜底；如果触发且拿不到 OK UI `run_id`，会跳过发布并提示原因。
+
 如果已经单独跑过 `ok_autotest_ui_skill`，也可以用 OK UI 自己输出的 `run_id` 补发到平台：
 
 ```bash
