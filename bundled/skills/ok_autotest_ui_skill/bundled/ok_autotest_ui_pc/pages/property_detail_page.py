@@ -1,4 +1,6 @@
 # pages/property_detail_page.py
+import re
+
 from pages.base_page import BasePage
 from utils.logger import setup_logger
 
@@ -301,6 +303,20 @@ class PropertyDetailPage(BasePage):
         except Exception:
             return False
 
+    def _normalize_property_introduction_subtitle(self, raw: str) -> str:
+        """DOM 可能把标题与模块名粘在同一行且无换行，去掉模块标题与尾部 Property ID 等噪声。"""
+        if not raw:
+            return ""
+        s = raw.strip()
+        s = re.sub(r"^Property Introduction\s*", "", s, flags=re.I)
+        s = s.strip()
+        if "Property ID:" in s:
+            s = s.split("Property ID:")[0].strip()
+        # 仍过长时只保留首段可读标题（避免整段正文参与断言）
+        if len(s) > 280:
+            s = s[:280].strip()
+        return s
+
     def get_property_introduction_subtitle(self, timeout: int = 10000) -> str:
         """
         获取详情页 Property Introduction 模块的副标题（与列表卡片房产标题一致）。
@@ -314,6 +330,12 @@ class PropertyDetailPage(BasePage):
         result = self.page.evaluate(
             """
             () => {
+                const stripIntro = (line) => {
+                    let L = (line || '').trim();
+                    if (!L) return '';
+                    L = L.replace(/^Property Introduction\\s*/i, '').trim();
+                    return L;
+                };
                 const headings = document.querySelectorAll('h1, h2, h3, h4, [class*="title"], [class*="Title"]');
                 for (const h of headings) {
                     const t = (h.textContent || '').trim();
@@ -322,7 +344,8 @@ class PropertyDetailPage(BasePage):
                         if (!section) continue;
                         const full = (section.textContent || '').split(/\\s*\\n+\\s*/).map(s => s.trim()).filter(Boolean);
                         for (const line of full) {
-                            if (line && line !== 'Property Introduction' && line.length < 500) return line;
+                            const cleaned = stripIntro(line);
+                            if (cleaned && cleaned !== 'Property Introduction' && cleaned.length < 800) return cleaned;
                         }
                     }
                 }
@@ -332,7 +355,8 @@ class PropertyDetailPage(BasePage):
                     if (section) {
                         const full = (section.textContent || '').split(/\\s*\\n+\\s*/).map(s => s.trim()).filter(Boolean);
                         for (const line of full) {
-                            if (line && line !== 'Property Introduction' && line.length < 500) return line;
+                            const cleaned = stripIntro(line);
+                            if (cleaned && cleaned !== 'Property Introduction' && cleaned.length < 800) return cleaned;
                         }
                     }
                 }
@@ -340,4 +364,4 @@ class PropertyDetailPage(BasePage):
             }
             """
         )
-        return result or ""
+        return self._normalize_property_introduction_subtitle(result or "")

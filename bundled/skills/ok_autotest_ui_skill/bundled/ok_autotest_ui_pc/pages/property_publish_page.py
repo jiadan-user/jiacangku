@@ -239,6 +239,162 @@ class PropertyPublishPage(BasePage):
 
         return False
 
+    def _scroll_frame_towards_floor_plan(self, frame: Frame) -> None:
+        """将户型图区块滚入视口（iframe 内需对 frame 滚动；懒加载表单常见）。"""
+        root = self.page
+        for pat in (
+            r"Floor\s*plan",
+            r"floor\s*plans",
+            r"户型",
+            r"Upload\s+floor",
+            r"AI\s+will\s+automatically\s+identify",
+        ):
+            try:
+                frame.get_by_text(re.compile(pat, re.I)).first.scroll_into_view_if_needed(
+                    timeout=8000
+                )
+                root.wait_for_timeout(350)
+                return
+            except Exception:
+                continue
+        for _ in range(12):
+            try:
+                frame.evaluate("() => { try { window.scrollBy(0, 850); } catch (e) {} }")
+            except Exception:
+                try:
+                    root.mouse.wheel(0, 850)
+                except Exception:
+                    pass
+            root.wait_for_timeout(200)
+
+    def _try_upload_floor_plan_in_frame(self, frame: Frame, image_path: str, wait_ms: int) -> bool:
+        """单 frame 内尝试户型图上传（与录制 nth(1) 相比兼容 iframe / 仅 1 个按钮 / 仅 file input）。"""
+        root = self.page
+        choose_re = re.compile(r"Choose File", re.I)
+        upload_btn_re = re.compile(
+            r"Choose File|Upload\s*photos?|Add\s+photos?|^Upload$|Upload\s+image",
+            re.I,
+        )
+        self._scroll_frame_towards_floor_plan(frame)
+
+        floor_sec = None
+        try:
+            cand = frame.locator("div, section, form, article").filter(
+                has=frame.get_by_text(re.compile(r"floor\s*plan|户型|Upload\s+floor", re.I))
+            ).first
+            if cand.is_visible(timeout=4000):
+                floor_sec = cand
+        except Exception:
+            floor_sec = None
+
+        # 1) 户型区块内 Choose File
+        if floor_sec is not None:
+            try:
+                cfs = floor_sec.get_by_role("button", name=choose_re)
+                for i in range(min(cfs.count(), 8)):
+                    b = cfs.nth(i)
+                    try:
+                        if not b.is_visible(timeout=2500):
+                            continue
+                        with root.expect_file_chooser(timeout=20000) as fc_info:
+                            b.scroll_into_view_if_needed(timeout=8000)
+                            try:
+                                b.click(timeout=10000)
+                            except Exception:
+                                b.click(timeout=10000, force=True)
+                        self._apply_files_to_chooser(fc_info.value, image_path)
+                        root.wait_for_timeout(wait_ms)
+                        return True
+                    except Exception:
+                        continue
+            except Exception:
+                pass
+
+            # 1b) 户型区块内 Upload / Add photo（线上可能不叫 Choose File）
+            try:
+                ups = floor_sec.get_by_role("button", name=upload_btn_re)
+                for i in range(min(ups.count(), 10)):
+                    b = ups.nth(i)
+                    try:
+                        if not b.is_visible(timeout=2000):
+                            continue
+                        with root.expect_file_chooser(timeout=20000) as fc_info:
+                            b.scroll_into_view_if_needed(timeout=8000)
+                            try:
+                                b.click(timeout=10000)
+                            except Exception:
+                                b.click(timeout=10000, force=True)
+                        self._apply_files_to_chooser(fc_info.value, image_path)
+                        root.wait_for_timeout(wait_ms)
+                        return True
+                    except Exception:
+                        continue
+            except Exception:
+                pass
+
+            # 1c) 户型区块内 file input（避免与整页序错乱）
+            try:
+                fin_sec = floor_sec.locator('input[type="file"]')
+                for idx in range(min(fin_sec.count(), 6)):
+                    try:
+                        fin_sec.nth(idx).set_input_files(image_path, timeout=15000)
+                        root.wait_for_timeout(wait_ms)
+                        return True
+                    except Exception:
+                        continue
+            except Exception:
+                pass
+
+        # 2) 常见：首张图为 Pictures，第二张 input 为户型图
+        try:
+            files = frame.locator('input[type="file"]')
+            n_inp = files.count()
+            if n_inp >= 2:
+                for idx in range(1, min(n_inp, 10)):
+                    try:
+                        files.nth(idx).set_input_files(image_path, timeout=15000)
+                        root.wait_for_timeout(wait_ms)
+                        return True
+                    except Exception:
+                        continue
+        except Exception:
+            pass
+
+        # 3) 全局 Choose File：录制曾用 nth(1)，线上可能仅有 1 个可见或顺序变化 → 收集可见再试
+        try:
+            cfs = frame.get_by_role("button", name=choose_re)
+            visible_idx: list[int] = []
+            for i in range(min(cfs.count(), 16)):
+                try:
+                    if cfs.nth(i).is_visible(timeout=1800):
+                        visible_idx.append(i)
+                except Exception:
+                    continue
+            order: list[int] = []
+            if len(visible_idx) >= 2:
+                order.append(visible_idx[1])
+            order.extend(i for i in visible_idx if i not in order)
+            if len(visible_idx) == 1:
+                order.append(visible_idx[0])
+            for idx in order:
+                b = cfs.nth(idx)
+                try:
+                    with root.expect_file_chooser(timeout=20000) as fc_info:
+                        b.scroll_into_view_if_needed(timeout=8000)
+                        try:
+                            b.click(timeout=10000)
+                        except Exception:
+                            b.click(timeout=10000, force=True)
+                    self._apply_files_to_chooser(fc_info.value, image_path)
+                    root.wait_for_timeout(wait_ms)
+                    return True
+                except Exception:
+                    continue
+        except Exception:
+            pass
+
+        return False
+
     def upload_single_image(self, image_path: str, wait_ms: int = 2000):
         """上传单张图片（主图区）。
 
@@ -448,17 +604,22 @@ class PropertyPublishPage(BasePage):
 
     def upload_floor_plan(self, image_path: str, wait_ms: int = 2000):
         """上传户型图
-        
-        Args:
-            image_path: 户型图文件绝对路径
-            wait_ms: 上传后等待时间（毫秒）
+
+        旧实现仅在主 document 上 ``Choose File.nth(1).click()``：表单在 iframe、仅 1 个按钮或
+        顺序变化时会 30s 超时。现与 ``upload_single_image`` 一致遍历各 frame，并优先户型区块内按钮 /
+        第二枚 ``input[type=file]``。
         """
-        with self.page.expect_file_chooser() as fc_info:
-            floor_plan_btns = self.page.get_by_role("button", name="Choose File")
-            floor_plan_btns.nth(1).click()
-        file_chooser: FileChooser = fc_info.value
-        file_chooser.set_files(image_path)
-        self.page.wait_for_timeout(wait_ms)
+        last_err: Union[BaseException, None] = None
+        for fr in self.page.frames:
+            try:
+                if self._try_upload_floor_plan_in_frame(fr, image_path, wait_ms):
+                    return
+            except BaseException as e:
+                last_err = e
+                continue
+        raise RuntimeError(
+            "未找到户型图上传入口（各 frame 内 Floor plan 区 Choose File 或多枚 input[type=file]）"
+        ) from last_err
 
     def get_floor_plan_count_text(self) -> str:
         """获取户型图上传计数器文本（如 1/10）"""

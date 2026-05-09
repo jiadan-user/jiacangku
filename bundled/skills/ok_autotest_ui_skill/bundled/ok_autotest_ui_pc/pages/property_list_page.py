@@ -820,32 +820,49 @@ class PropertyListPage(BasePage):
 
     # ========== 位置/邮编相关方法 ==========
 
+    def _extract_location_from_card_text(self, card_text: str) -> str:
+        """从单张卡片 inner_text 解析位置/邮编（与首卡逻辑一致，供批量 TC005 使用）。
+
+        卡片常仅展示 suburb、无 4 位邮编或与标题同行；此前 ``get_card_locations`` 只有邮编/州正则，
+        无前几张卡的「逐行 suburb」回退，会得到全空串导致 ``assert valid_count > 0`` 误报。
+        """
+        if not card_text or not card_text.strip():
+            return ""
+        postcode_match = re.search(r"\b(\d{4})\b", card_text)
+        if postcode_match:
+            return postcode_match.group(1)
+        loc_match = re.search(
+            r"([A-Za-z\s\-]+(?:ACT|NSW|VIC|QLD|SA|WA|TAS|NT)\s*\d{4}?)",
+            card_text,
+        )
+        if loc_match:
+            return loc_match.group(1).strip()
+        lines = [ln.strip() for ln in card_text.split("\n") if ln.strip()]
+        skip_exact = {"list", "map", "filter", "free"}
+        for ln in lines:
+            if re.match(r"^A\$[\d,+-]+", ln) or ln.lower() in skip_exact:
+                continue
+            if "contact for price" in ln.lower():
+                continue
+            if re.match(r"^\d+\s*/\s*\d+$", ln):
+                continue
+            if re.match(r"^OKer[A-Za-z]{2}_", ln) or "agent-avatar" in ln:
+                continue
+            if "sqm" in ln.lower() or "m²" in ln:
+                continue
+            if re.match(r"^(house|unit|apartment|townhouse|townhomes|villa|studio|land)\b", ln, re.I):
+                continue
+            if len(ln) >= 2 and len(ln) <= 80:
+                return ln
+        return ""
+
     def get_first_card_location_text(self):
         """获取第一张卡片的位置/邮编文本（如 suburb、postcode、ACT 2600）"""
         try:
             first_card = self.page.locator('a[href*="cate-rent-"], a[href*="cate-property-for-sale-"], a[href*="residential-"]').first
             first_card.wait_for(state="visible", timeout=5000)
             card_text = first_card.inner_text()
-            # AU 邮编 4 位数字
-            postcode_match = re.search(r'\b(\d{4})\b', card_text)
-            if postcode_match:
-                return postcode_match.group(1)
-            # 或 suburb, State 格式（如 Canberra ACT）
-            loc_match = re.search(r'([A-Za-z\s\-]+(?:ACT|NSW|VIC|QLD|SA|WA|TAS|NT)\s*\d{4}?)', card_text)
-            if loc_match:
-                return loc_match.group(1).strip()
-            # 或纯 suburb 名称
-            lines = [ln.strip() for ln in card_text.split("\n") if ln.strip()]
-            for ln in lines:
-                if re.match(r"^A\$[\d,]+", ln) or ln == "Free":
-                    continue
-                if re.match(r"^\d+\s*/\s*\d+$", ln):
-                    continue
-                if "OKerAU_" in ln or "sqm" in ln or "m²" in ln:
-                    continue
-                if len(ln) >= 2 and len(ln) <= 80:
-                    return ln
-            return ""
+            return self._extract_location_from_card_text(card_text)
         except Exception:
             return ""
 
@@ -858,15 +875,7 @@ class PropertyListPage(BasePage):
             try:
                 card = cards.nth(i)
                 card_text = card.inner_text()
-                postcode_match = re.search(r'\b(\d{4})\b', card_text)
-                if postcode_match:
-                    locations.append(postcode_match.group(1))
-                else:
-                    loc_match = re.search(r'([A-Za-z\s\-]+(?:ACT|NSW|VIC|QLD|SA|WA|TAS|NT)\s*\d{4}?)', card_text)
-                    if loc_match:
-                        locations.append(loc_match.group(1).strip())
-                    else:
-                        locations.append("")
+                locations.append(self._extract_location_from_card_text(card_text))
             except Exception:
                 locations.append("")
         return locations
@@ -1016,7 +1025,8 @@ class PropertyListPage(BasePage):
                 continue
             if re.match(r"^\d+\s*/\s*\d+$", ln):
                 continue
-            if "OKerAU_" in ln or "agent-avatar" in ln or "fav-icon" in ln:
+            # 卖家昵称：OKerAU_ / OKerNZ_ 等，勿与房产标题混淆
+            if re.match(r"^OKer[A-Za-z]{2}_", ln) or "agent-avatar" in ln or "fav-icon" in ln:
                 continue
             if ln in ("List", "Map", "Filter"):
                 continue
@@ -1043,7 +1053,7 @@ class PropertyListPage(BasePage):
                     continue
                 if re.match(r"^\d+\s*/\s*\d+$", ln):
                     continue
-                if "OKerAU_" in ln:
+                if re.match(r"^OKer[A-Za-z]{2}_", ln):
                     continue
                 if ln in ("List", "Map", "Filter"):
                     continue
