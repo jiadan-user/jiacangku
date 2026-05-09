@@ -135,7 +135,7 @@ def _wallet_session_manager(page):
 
 
 def _recover_session_full_login(page, session_manager=None):
-    """登录弹层脚本不可靠时：整页导航后按录制步骤完整登录（与 shared_page 手写分支一致）。"""
+    """登录弹层脚本不可靠时：整页导航后按录制步骤完整登录（与 page 手写分支一致）。"""
     logger.warning("🔧 尝试整页重新登录恢复 Session...")
     user = _CONFIG["test_account"]["username"]
     pwd = _CONFIG["test_account"]["password"]
@@ -189,7 +189,7 @@ def _handle_login_modal_with_auto_login(page, session_manager=None):
     try:
         login_page.handle_cookie_popup()
 
-        # 第一步：邮箱 + Continue（page 级，与 shared_page 模块登录一致）
+        # 第一步：邮箱 + Continue（page 级，与 page 模块登录一致）
         try:
             email_box = page.get_by_role(
                 "textbox", name=re.compile(r"Email or phone number", re.I)
@@ -327,38 +327,22 @@ _CONFIG = {
 
 
 # ============================================
-# Pytest Fixtures（config 使用 conftest 的 module 作用域，避免与 page(class) 冲突）
+# Pytest Fixtures（使用 conftest.py 的 page fixture）
 # ============================================
 
-@pytest.fixture(scope="module")
-def shared_page():
-    """模块级别的共享浏览器实例 - 整个测试文件只打开一次浏览器
+@pytest.fixture(scope="module", autouse=True)
+def setup_wallet_module(page):
+    """模块级别初始化：登录、绑定银行账户、设置控制台监听
     
-    优化点：
-    1. 所有测试类共享同一个浏览器实例
-    2. 只登录一次，Session保存后复用
-    3. 只绑定一次银行账户（如果需要）
-    4. 大幅减少测试执行时间
-    5. 监听控制台日志，自动清除提现限制
-    
-    注意：使用 mark_in_use()/mark_released() 保护实例不被 pytest hooks 提前清理。
+    使用 conftest.py 的 page fixture，添加钱包模块特定的初始化逻辑：
+    1. 监听控制台日志，自动清除提现限制
+    2. 登录并保存 Session
+    3. 自动绑定银行账户（如果未绑定）
+    4. 清除提现阻塞
     """
-    from utils.browser_manager import BrowserManager
-    
     logger.info("="*80)
-    logger.info("【Module Setup】创建共享浏览器实例（整个模块共享）")
+    logger.info("【Wallet Module Setup】初始化钱包测试模块")
     logger.info("="*80)
-    
-    browser_manager = BrowserManager()
-    page = browser_manager.start_browser(
-        browser_type=_CONFIG['browser']['type'],
-        headless=_CONFIG['browser']['headless'],
-        base_url=_CONFIG['base_url'],
-        viewport=_CONFIG['browser']['viewport']
-    )
-    
-    # 标记为使用中，防止被 pytest hooks 的 _cleanup_all(force=False) 清理
-    browser_manager.mark_in_use()
     
     # 【新增】监听控制台日志，自动清除提现限制
     def handle_console_message(msg):
@@ -462,15 +446,11 @@ def shared_page():
         if not _clear_withdrawal_in_progress(page):
             logger.warning("⚠️ 存在提现阻塞且无法自动清除，部分测试可能会失败")
     
-    yield page
-    
-    # 标记为已释放
-    browser_manager.mark_released()
+    yield
     
     logger.info("="*80)
-    logger.info("【Module Teardown】关闭共享浏览器实例")
+    logger.info("【Wallet Module Teardown】钱包模块测试完成")
     logger.info("="*80)
-    browser_manager.close_browser(page)
 
 
 @pytest.fixture
@@ -495,7 +475,7 @@ def redis_client():
 
 
 @pytest.fixture(autouse=True)
-def navigate_to_home(shared_page, request):
+def navigate_to_home(page, request):
     """每个测试前自动导航回钱包主页，确保测试间状态一致
     
     优化点：
@@ -519,36 +499,36 @@ def navigate_to_home(shared_page, request):
     try:
         # 【新增】检查页面是否仍然有效
         try:
-            current_url = shared_page.url
+            current_url = page.url
             logger.info(f"当前URL: {current_url}")
         except Exception as e:
             logger.error(f"❌ 无法获取页面URL（页面可能已失效）: {e}")
             # 尝试恢复
             logger.info("🔧 尝试通过导航恢复页面...")
             try:
-                shared_page.goto(_CONFIG['base_url'], timeout=15000)
-                shared_page.wait_for_timeout(3000)
-                current_url = shared_page.url
+                page.goto(_CONFIG['base_url'], timeout=15000)
+                page.wait_for_timeout(3000)
+                current_url = page.url
                 logger.info(f"恢复后URL: {current_url}")
             except Exception as recover_error:
                 logger.error(f"❌ 页面恢复失败: {recover_error}")
                 raise
         
-        _repair_blank_page_or_fail(shared_page, "navigate_to_home 初始 URL")
+        _repair_blank_page_or_fail(page, "navigate_to_home 初始 URL")
 
         # 登录弹窗：优先自动登录（保存 Session），再清理遗留遮罩
-        _dismiss_or_login_pc_modal(shared_page, _wallet_session_manager(shared_page))
-        _repair_blank_page_or_fail(shared_page, "处理登录弹窗后")
+        _dismiss_or_login_pc_modal(page, _wallet_session_manager(page))
+        _repair_blank_page_or_fail(page, "处理登录弹窗后")
         
         # 【关键修复】先关闭所有可能遗留的弹窗，避免遮挡主页面元素
         try:
             # 尝试关闭所有dialog（可能有多个）
-            dialog_count = shared_page.get_by_role("dialog").count()
+            dialog_count = page.get_by_role("dialog").count()
             if dialog_count > 0:
                 logger.info(f"⚠️ 检测到 {dialog_count} 个遗留弹窗，正在关闭...")
                 for i in range(min(dialog_count, 3)):  # 最多关闭3个
-                    shared_page.keyboard.press("Escape")
-                    shared_page.wait_for_timeout(300)
+                    page.keyboard.press("Escape")
+                    page.wait_for_timeout(300)
                 logger.info("✓ 已关闭遗留弹窗")
         except Exception as e:
             logger.debug(f"关闭弹窗时出现异常（可忽略）: {e}")
@@ -558,9 +538,9 @@ def navigate_to_home(shared_page, request):
 
         if is_blank:
             logger.error("❌ 检测到 about:blank 页面！")
-            _wait_out_transient_blank(shared_page, timeout_ms=12000)
+            _wait_out_transient_blank(page, timeout_ms=12000)
             try:
-                current_url = shared_page.url
+                current_url = page.url
             except Exception:
                 current_url = "about:blank"
             is_blank = current_url == "about:blank"
@@ -571,52 +551,52 @@ def navigate_to_home(shared_page, request):
             logger.error("❌ about:blank 在等待导航后仍存在，启动 Session/导航恢复…")
 
             # 使用专门的恢复函数
-            if _recover_from_blank_page(shared_page):
+            if _recover_from_blank_page(page):
                 logger.info("✅ 成功从 about:blank 恢复")
-                _dismiss_or_login_pc_modal(shared_page, _wallet_session_manager(shared_page))
+                _dismiss_or_login_pc_modal(page, _wallet_session_manager(page))
             else:
                 logger.error("❌ 首次恢复未能离开 about:blank")
             
-            _repair_blank_page_or_fail(shared_page, "about:blank 分支处理后")
+            _repair_blank_page_or_fail(page, "about:blank 分支处理后")
 
         elif is_wrong_page:
             # 如果不是about:blank但也不在home页，正常导航
             logger.info(f"⚠️ 当前不在home页({current_url})，导航到home页")
-            shared_page.goto(_CONFIG['base_url'], timeout=15000, wait_until='load')
-            shared_page.wait_for_load_state("domcontentloaded", timeout=10000)
-            shared_page.wait_for_timeout(2000)
-            _handle_load_fail_error(shared_page)
+            page.goto(_CONFIG['base_url'], timeout=15000, wait_until='load')
+            page.wait_for_load_state("domcontentloaded", timeout=10000)
+            page.wait_for_timeout(2000)
+            _handle_load_fail_error(page)
             
             # 验证导航成功
-            new_url = shared_page.url
+            new_url = page.url
             if new_url == "about:blank" or "/wallet/home" not in new_url:
                 logger.error(f"❌ 导航失败，当前: {new_url}")
                 # 再试一次
                 logger.info("🔧 重试导航...")
-                shared_page.goto(_CONFIG['base_url'], timeout=15000)
-                shared_page.wait_for_timeout(3000)
+                page.goto(_CONFIG['base_url'], timeout=15000)
+                page.wait_for_timeout(3000)
             else:
                 logger.info(f"✓ 成功导航到: {new_url}")
-
-            _dismiss_or_login_pc_modal(shared_page, _wallet_session_manager(shared_page))
-            _repair_blank_page_or_fail(shared_page, "错误页导航后")
+            
+            _dismiss_or_login_pc_modal(page, _wallet_session_manager(page))
+            _repair_blank_page_or_fail(page, "错误页导航后")
 
         # 【新增】额外等待页面稳定，确保所有元素已加载
-        shared_page.wait_for_load_state("domcontentloaded", timeout=5000)
-        shared_page.wait_for_timeout(1000)
+        page.wait_for_load_state("domcontentloaded", timeout=5000)
+        page.wait_for_timeout(1000)
         # 导航 / 恢复后可能再次弹出登录层
-        _dismiss_or_login_pc_modal(shared_page, _wallet_session_manager(shared_page))
-        _repair_blank_page_or_fail(shared_page, "navigate_to_home 前置收尾")
+        _dismiss_or_login_pc_modal(page, _wallet_session_manager(page))
+        _repair_blank_page_or_fail(page, "navigate_to_home 前置收尾")
 
     except Exception as e:
         logger.warning(f"导航到home页时异常: {e}")
         # 尝试强制导航
         try:
-            shared_page.goto(_CONFIG['base_url'], timeout=15000)
-            shared_page.wait_for_load_state("domcontentloaded", timeout=10000)
-            shared_page.wait_for_timeout(2000)
-            _dismiss_or_login_pc_modal(shared_page, _wallet_session_manager(shared_page))
-            _repair_blank_page_or_fail(shared_page, "navigate_to_home 异常分支强制导航后")
+            page.goto(_CONFIG['base_url'], timeout=15000)
+            page.wait_for_load_state("domcontentloaded", timeout=10000)
+            page.wait_for_timeout(2000)
+            _dismiss_or_login_pc_modal(page, _wallet_session_manager(page))
+            _repair_blank_page_or_fail(page, "navigate_to_home 异常分支强制导航后")
         except Exception as retry_error:
             logger.error(f"❌ 强制导航也失败: {retry_error}")
     
@@ -1821,7 +1801,7 @@ def _check_balance_sufficient(page, min_amount=20.0):
 # 银行账户绑定测试（提现前置条件）
 # ============================================
 
-@pytest.mark.skip(reason="此功能已集成到模块级shared_page fixture中，无需独立执行")
+@pytest.mark.skip(reason="此功能已集成到模块级setup_wallet_module fixture中，无需独立执行")
 @pytest.mark.p0
 @pytest.mark.wallet
 @pytest.mark.ae
@@ -1842,9 +1822,9 @@ def _check_balance_sufficient(page, min_amount=20.0):
 - 填写Name/Email
 - 提交绑定成功
 """)
-def test_bind_bank_account_before_withdrawal(shared_page):
-    """TC015: 提现前绑定银行账户完整流程（已改为使用模块级shared_page）"""
-    pass  # 功能已集成到模块级shared_page fixture中
+def test_bind_bank_account_before_withdrawal(page):
+    """TC015: 提现前绑定银行账户完整流程（已集成到模块级setup_wallet_module中）"""
+    pass  # 功能已集成到模块级setup_wallet_module fixture中
 
 
 # ============================================
@@ -1861,7 +1841,7 @@ def test_bind_bank_account_before_withdrawal(shared_page):
 @allure.title("辅助工具: 清除进行中的提现限制")
 @allure.severity(allure.severity_level.CRITICAL)
 @allure.description("当页面出现'Withdrawal in progress'时，自动获取Reference ID并更新状态为成功，解除提现限制")
-def test_helper_clear_withdrawal_in_progress(shared_page):
+def test_helper_clear_withdrawal_in_progress(page):
     """辅助工具: 清除进行中的提现限制（需要时手动执行）
     
     使用场景：
@@ -1874,7 +1854,7 @@ def test_helper_clear_withdrawal_in_progress(shared_page):
     logger.info("="*80)
     
     # 直接调用清除函数
-    result = _clear_withdrawal_in_progress(shared_page)
+    result = _clear_withdrawal_in_progress(page)
     
     if result:
         logger.info("="*80)
@@ -2155,7 +2135,7 @@ class TestBalanceDisplayFeature:
     """余额显示/隐藏完整流程（TC003-TC006）
     
     从 test_wallet_balance_display.py 迁移
-    优化点：使用模块级shared_page，无需重复创建浏览器
+    优化点：使用模块级page，无需重复创建浏览器
     """
     
     @pytest.mark.case_id_wallet_balance_hide_01
@@ -2163,18 +2143,18 @@ class TestBalanceDisplayFeature:
     @allure.title("TC003: 默认状态余额应为隐藏状态显示星号")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description("验证钱包页面首次加载时，余额默认显示为星号隐藏状态")
-    def test_balance_default_hidden_with_asterisks(self, shared_page):
+    def test_balance_default_hidden_with_asterisks(self, page):
         """TC003: 默认状态余额应为隐藏状态显示星号"""
         
         # 确保在Home页面，如不在则自动返回
-        _ensure_on_home_page(shared_page)
+        _ensure_on_home_page(page)
         
         logger.info("="*80)
         logger.info("TC003: 默认状态余额应为隐藏状态显示星号")
         logger.info("="*80)
         
         with allure.step("读取余额显示状态"):
-            balance_text = _get_balance_display_text(shared_page)
+            balance_text = _get_balance_display_text(page)
             logger.info(f"✓ 当前余额显示: {balance_text}")
         
         with allure.step("验证余额默认隐藏为星号"):
@@ -2189,7 +2169,7 @@ class TestBalanceDisplayFeature:
     @allure.title("TC004: 点击眼睛图标应显示实际余额和汇率")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description("验证点击余额右侧的眼睛图标后能够显示实际余额金额和当地货币汇率")
-    def test_click_eye_icon_should_show_balance(self, shared_page):
+    def test_click_eye_icon_should_show_balance(self, page):
         """TC004: 点击眼睛图标应显示实际余额和汇率"""
         
         logger.info("="*80)
@@ -2197,20 +2177,20 @@ class TestBalanceDisplayFeature:
         logger.info("="*80)
         
         with allure.step("点击眼睛图标"):
-            shared_page.wait_for_timeout(1000)
-            shared_page.get_by_role('img').nth(2).click()
-            shared_page.wait_for_timeout(1000)
+            page.wait_for_timeout(1000)
+            page.get_by_role('img').nth(2).click()
+            page.wait_for_timeout(1000)
             logger.info("✓ 点击眼睛图标")
         
         with allure.step("验证余额和汇率显示"):
-            balance_text = _get_balance_display_text(shared_page, wait_ms=1000)
+            balance_text = _get_balance_display_text(page, wait_ms=1000)
             logger.info(f"✓ 当前余额显示: {balance_text}")
             
             assert balance_text and "$" in balance_text and "****" not in balance_text, \
                 f"余额未显示实际金额，当前显示: {balance_text}"
             logger.info("✓ 余额显示实际金额（美元）")
             
-            local_currency = shared_page.locator('text=/AED|≈/')
+            local_currency = page.locator('text=/AED|≈/')
             if local_currency.is_visible(timeout=2000):
                 logger.info("✓ 当地货币汇率已显示")
         
@@ -2221,7 +2201,7 @@ class TestBalanceDisplayFeature:
     @allure.title("TC005: 再次点击眼睛图标应隐藏余额")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description("验证再次点击眼睛图标后余额重新隐藏为星号")
-    def test_click_eye_icon_again_should_hide_balance(self, shared_page):
+    def test_click_eye_icon_again_should_hide_balance(self, page):
         """TC005: 再次点击眼睛图标应隐藏余额"""
         
         logger.info("="*80)
@@ -2229,12 +2209,12 @@ class TestBalanceDisplayFeature:
         logger.info("="*80)
         
         with allure.step("再次点击眼睛图标隐藏余额"):
-            shared_page.get_by_role('img').nth(2).click()
-            shared_page.wait_for_timeout(1000)
+            page.get_by_role('img').nth(2).click()
+            page.wait_for_timeout(1000)
             logger.info("✓ 第二次点击眼睛图标")
         
         with allure.step("验证余额已重新隐藏"):
-            balance_text = _get_balance_display_text(shared_page, wait_ms=1000)
+            balance_text = _get_balance_display_text(page, wait_ms=1000)
             logger.info(f"✓ 当前余额显示: {balance_text}")
             
             assert balance_text and "****" in balance_text, f"余额未隐藏，当前显示: {balance_text}"
@@ -2247,7 +2227,7 @@ class TestBalanceDisplayFeature:
     @allure.title("TC006: 点击Balance区域的问号图标应显示钱包规则说明")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description("验证点击Balance标题旁的问号图标后能够跳转到FAQ页面")
-    def test_click_question_icon_should_show_wallet_rules(self, shared_page):
+    def test_click_question_icon_should_show_wallet_rules(self, page):
         """TC006: 点击Balance区域的问号图标应显示钱包规则说明"""
         
         logger.info("="*80)
@@ -2259,29 +2239,29 @@ class TestBalanceDisplayFeature:
             question_icon = None
             
             # 方法1: 通过Balance附近的svg或img元素
-            balance_area = shared_page.locator('text="Balance"').locator('..')
+            balance_area = page.locator('text="Balance"').locator('..')
             if balance_area.is_visible(timeout=2000):
                 question_icon = balance_area.locator('svg, img, [role="button"]').filter(has_text=re.compile(r'^\s*$')).first
             
             # 方法2: 如果方法1失败，尝试通过class或data属性
             if not question_icon or not question_icon.is_visible(timeout=1000):
-                question_icon = shared_page.locator('svg[class*="question"], img[alt*="help"], [class*="help-icon"], svg[class*="icon"]').first
+                question_icon = page.locator('svg[class*="question"], img[alt*="help"], [class*="help-icon"], svg[class*="icon"]').first
             
             # 方法3: 通过截图位置，Balance文字后的第一个可点击元素
             if not question_icon or not question_icon.is_visible(timeout=1000):
-                question_icon = shared_page.locator('text="Balance"').locator('..').locator('svg, img').first
+                question_icon = page.locator('text="Balance"').locator('..').locator('svg, img').first
             
             if question_icon and question_icon.is_visible(timeout=3000):
                 # 记录点击前的URL
-                original_url = shared_page.url
+                original_url = page.url
                 logger.info(f"点击前URL: {original_url}")
                 
                 # 尝试两种方式：popup或当前页面跳转
                 try:
                     # 方式1: 尝试作为popup打开
-                    with shared_page.expect_popup(timeout=5000) as popup_info:
+                    with page.expect_popup(timeout=5000) as popup_info:
                         question_icon.click()
-                        shared_page.wait_for_timeout(2000)
+                        page.wait_for_timeout(2000)
                     
                     popup = popup_info.value
                     popup.wait_for_load_state("load", timeout=10000)
@@ -2298,10 +2278,10 @@ class TestBalanceDisplayFeature:
                 except Exception as e:
                     # 方式2: 检查是否在当前页面跳转（已经点击过了，不需要再次点击）
                     logger.info(f"未打开新窗口，检查当前页面是否跳转: {e}")
-                    shared_page.wait_for_timeout(2000)
-                    shared_page.wait_for_load_state("load", timeout=10000)
+                    page.wait_for_timeout(2000)
+                    page.wait_for_load_state("load", timeout=10000)
                     
-                    current_url = shared_page.url
+                    current_url = page.url
                     logger.info(f"✓ 点击后URL: {current_url}")
                     
                     with allure.step("验证跳转到FAQ页面"):
@@ -2311,8 +2291,8 @@ class TestBalanceDisplayFeature:
                     
                     # 返回Home页面供后续测试使用
                     logger.info("返回Home页面...")
-                    shared_page.goto(_CONFIG['base_url'])
-                    shared_page.wait_for_load_state("load", timeout=10000)
+                    page.goto(_CONFIG['base_url'])
+                    page.wait_for_load_state("load", timeout=10000)
             else:
                 logger.warning("⚠️ 未找到问号图标，跳过此测试")
                 pytest.skip("未找到问号图标")
@@ -2344,20 +2324,20 @@ class TestBalanceDisplayFeature:
 @allure.feature("OK")
 @allure.story("钱包 - 提现功能")
 class TestWithdrawButtonFeature:
-    """Withdraw按钮功能测试类（使用模块级shared_page）
+    """Withdraw按钮功能测试类（使用模块级page）
     
-    优化点：使用模块级shared_page，无需重复创建浏览器
+    优化点：使用模块级page，无需重复创建浏览器
     """
 
     @pytest.mark.case_id_wallet_withdraw_01
     @allure.title("TC028: 余额充足且无待处理提现时Withdraw按钮应可点击")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description("验证余额>=20美元且无待处理提现时，Withdraw按钮可点击并打开提现表单")
-    def test_01_withdraw_button_enabled_when_balance_sufficient(self, shared_page):
+    def test_01_withdraw_button_enabled_when_balance_sufficient(self, page):
         """TC028: 余额充足时Withdraw按钮应可点击"""
         
         # 确保在Home页面
-        _ensure_on_home_page(shared_page)
+        _ensure_on_home_page(page)
         
         logger.info("="*80)
         logger.info("TC028: 余额充足时Withdraw按钮应可点击")
@@ -2368,15 +2348,15 @@ class TestWithdrawButtonFeature:
             withdraw_button = None
             for attempt in range(3):
                 try:
-                    withdraw_button = shared_page.get_by_text('Withdraw').first
+                    withdraw_button = page.get_by_text('Withdraw').first
                     if withdraw_button.is_visible(timeout=5000):
                         break
                     logger.warning(f"⚠️ Withdraw按钮不可见，重试 {attempt + 1}/3")
-                    shared_page.wait_for_timeout(2000)
+                    page.wait_for_timeout(2000)
                 except Exception as e:
                     logger.warning(f"⚠️ 查找Withdraw按钮失败 {attempt + 1}/3: {e}")
                     if attempt < 2:
-                        shared_page.wait_for_timeout(2000)
+                        page.wait_for_timeout(2000)
                     else:
                         raise
             
@@ -2396,17 +2376,17 @@ class TestWithdrawButtonFeature:
         
         with allure.step("点击Withdraw按钮"):
             withdraw_button.click()
-            shared_page.wait_for_timeout(2000)
+            page.wait_for_timeout(2000)
             logger.info("✓ 已点击Withdraw按钮")
         
         with allure.step("验证提现表单对话框打开"):
-            dialog_title = shared_page.locator('text="Withdraw"').first
+            dialog_title = page.locator('text="Withdraw"').first
             
             if dialog_title.is_visible(timeout=3000):
                 logger.info("✓ 提现表单对话框成功打开")
             else:
                 # 可能显示了"进行中"提示
-                in_progress_msg = shared_page.locator('text=/Withdrawal in progress/i')
+                in_progress_msg = page.locator('text=/Withdrawal in progress/i')
                 if in_progress_msg.is_visible(timeout=2000):
                     logger.warning("⚠️ 显示提现进行中提示，存在待处理提现")
                     pytest.skip("存在待处理提现，跳过此测试")
@@ -2415,8 +2395,8 @@ class TestWithdrawButtonFeature:
         
         # 关闭对话框，避免影响下一个测试
         with allure.step("关闭提现表单"):
-            shared_page.keyboard.press('Escape')
-            shared_page.wait_for_timeout(1000)
+            page.keyboard.press('Escape')
+            page.wait_for_timeout(1000)
             logger.info("✓ 已关闭提现表单")
         
         logger.info("✅ TC028测试通过\n")
@@ -2425,27 +2405,27 @@ class TestWithdrawButtonFeature:
     @allure.title("TC029: 验证Withdraw按钮功能（检测进行中提示或正常打开表单）")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description("验证点击Withdraw按钮的两种情况：1)存在待处理提现时显示进行中提示 2)无待处理提现时正常打开表单")
-    def test_02_withdraw_button_shows_in_progress_message(self, shared_page):
+    def test_02_withdraw_button_shows_in_progress_message(self, page):
         """TC029: 验证Withdraw按钮功能（兼容已清理阻塞的情况）"""
         
         # 确保在Home页面
-        _ensure_on_home_page(shared_page)
+        _ensure_on_home_page(page)
         
         logger.info("="*80)
         logger.info("TC029: 验证Withdraw按钮功能")
         logger.info("="*80)
         
         with allure.step("点击Withdraw按钮"):
-            withdraw_button = shared_page.get_by_text('Withdraw').first
+            withdraw_button = page.get_by_text('Withdraw').first
             assert withdraw_button.is_visible(timeout=5000), "Withdraw按钮未显示"
             
             withdraw_button.click()
-            shared_page.wait_for_timeout(2000)
+            page.wait_for_timeout(2000)
             logger.info("✓ 已点击Withdraw按钮")
         
         with allure.step("验证显示进行中提示或打开表单"):
             # 查找"Withdrawal in progress"提示
-            in_progress_msg = shared_page.locator('text=/Withdrawal in progress/i')
+            in_progress_msg = page.locator('text=/Withdrawal in progress/i')
             
             if in_progress_msg.is_visible(timeout=3000):
                 logger.info("✓ 显示提现进行中提示：Withdrawal in progress, please try later")
@@ -2455,14 +2435,14 @@ class TestWithdrawButtonFeature:
                 
                 # 先关闭当前弹窗/提示
                 try:
-                    shared_page.keyboard.press('Escape')
-                    shared_page.wait_for_timeout(1000)
+                    page.keyboard.press('Escape')
+                    page.wait_for_timeout(1000)
                     logger.info("✓ 已关闭阻塞提示弹窗")
                 except Exception:
                     pass
                 
                 # 执行清除函数
-                if _clear_withdrawal_in_progress(shared_page):
+                if _clear_withdrawal_in_progress(page):
                     logger.info("✅ 提现阻塞已成功清除")
                 else:
                     logger.error("❌ 提现阻塞清除失败，后续测试可能会受影响")
@@ -2474,7 +2454,7 @@ class TestWithdrawButtonFeature:
                 logger.info("ℹ️ 原因：可能已被自动清理功能清除")
                 
                 # 验证提现表单正常打开
-                dialog_title = shared_page.locator('text="Withdraw"').first
+                dialog_title = page.locator('text="Withdraw"').first
                 if dialog_title.is_visible(timeout=3000):
                     logger.info("✓ 提现表单正常打开")
                     logger.info("✅ TC029测试通过：无进行中的提现，表单正常打开\n")
@@ -2506,7 +2486,7 @@ class TestWithdrawFormDisplay:
     @allure.title("TC030: 打开提现表单应显示可提现金额和绑定账户")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description("验证打开提现表单时显示所有必要信息：余额、账户、手续费等")
-    def test_01_withdraw_form_displays_all_required_info(self, shared_page):
+    def test_01_withdraw_form_displays_all_required_info(self, page):
         """TC030: 打开提现表单应显示完整信息
         
         注意：setup阶段的_clear_withdrawal_in_progress可能已经打开了提现表单（如果没有阻塞）
@@ -2517,14 +2497,14 @@ class TestWithdrawFormDisplay:
         logger.info("="*80)
         
         # 等待页面稳定
-        shared_page.wait_for_timeout(1000)
+        page.wait_for_timeout(1000)
         
         # 步骤1: 检查提现dialog是否已经打开（setup可能已经打开了）
         logger.info("📋 步骤1: 检查提现dialog状态...")
         
         # 使用更宽松的dialog定位（支持<dialog>和<div role="dialog">）
-        dialog_locator = shared_page.locator('dialog, [role="dialog"]').filter(has_text='Set Amount')
-        set_amount_text = shared_page.locator('text=Set Amount').first
+        dialog_locator = page.locator('dialog, [role="dialog"]').filter(has_text='Set Amount')
+        set_amount_text = page.locator('text=Set Amount').first
         
         is_dialog_open = False
         try:
@@ -2541,13 +2521,13 @@ class TestWithdrawFormDisplay:
             
             # 先关闭可能存在的其他对话框
             try:
-                shared_page.keyboard.press('Escape')
-                shared_page.wait_for_timeout(500)
+                page.keyboard.press('Escape')
+                page.wait_for_timeout(500)
             except Exception:
                 pass
             
             # 点击Withdraw按钮
-            withdraw_button = shared_page.get_by_role('button', name='Withdraw').first
+            withdraw_button = page.get_by_role('button', name='Withdraw').first
             
             if not withdraw_button.is_visible(timeout=3000):
                 pytest.fail("❌ Withdraw按钮不可见，无法打开提现表单")
@@ -2557,18 +2537,18 @@ class TestWithdrawFormDisplay:
             logger.info(f"📋 Withdraw按钮状态: {'置灰' if is_disabled else '可点击'}")
             
             if is_disabled:
-                shared_page.screenshot(path="debug_withdraw_button_disabled.png", timeout=60000)
+                page.screenshot(path="debug_withdraw_button_disabled.png", timeout=60000)
                 pytest.skip("⚠️ Withdraw按钮置灰，可能存在新的阻塞")
             
             withdraw_button.click()
             logger.info("✓ 已点击Withdraw按钮")
-            shared_page.wait_for_timeout(3000)  # 增加等待时间
+            page.wait_for_timeout(3000)  # 增加等待时间
             
             # 拍摄点击后的状态
-            shared_page.screenshot(path="debug_after_withdraw_click.png", timeout=60000)
+            page.screenshot(path="debug_after_withdraw_click.png", timeout=60000)
             
             # 检查是否出现阻塞提示
-            blocking_alert = shared_page.locator('text=/Withdrawal in progress/i')
+            blocking_alert = page.locator('text=/Withdrawal in progress/i')
             if blocking_alert.is_visible(timeout=1000):
                 logger.warning("⚠️ 检测到新的提现阻塞，跳过测试")
                 pytest.skip("检测到新的提现阻塞")
@@ -2576,9 +2556,9 @@ class TestWithdrawFormDisplay:
             # 验证dialog已打开 - 检查"Set Amount"文本
             if not set_amount_text.is_visible(timeout=3000):
                 # 尝试查找页面上的所有文本
-                page_text = shared_page.locator('body').inner_text()[:500]
+                page_text = page.locator('body').inner_text()[:500]
                 logger.error(f"📋 页面内容预览: {page_text}")
-                shared_page.screenshot(path="debug_dialog_not_open.png", timeout=60000)
+                page.screenshot(path="debug_dialog_not_open.png", timeout=60000)
                 pytest.fail("❌ 点击Withdraw后dialog仍未打开（未找到Set Amount文本）")
             
             logger.info("✓ Dialog已成功打开")
@@ -2587,7 +2567,7 @@ class TestWithdrawFormDisplay:
         
         with allure.step("验证对话框标题"):
             # 查找包含"Withdraw"的标题（不限定在<dialog>内）
-            dialog_title = shared_page.get_by_text('Withdraw').first
+            dialog_title = page.get_by_text('Withdraw').first
             assert dialog_title.is_visible(timeout=5000), "对话框标题未显示"
             logger.info("✓ 对话框标题显示：Withdraw")
         
@@ -2597,36 +2577,36 @@ class TestWithdrawFormDisplay:
             logger.info("✓ Set Amount区域显示正常")
         
         with allure.step("验证货币选择按钮（USD/AED）"):
-            usd_button = shared_page.get_by_text('USD').first
-            aed_button = shared_page.get_by_text('AED').first
+            usd_button = page.get_by_text('USD').first
+            aed_button = page.get_by_text('AED').first
             
             assert usd_button.is_visible(timeout=3000) or aed_button.is_visible(timeout=3000), \
                 "货币选择按钮未显示"
             logger.info("✓ 货币选择按钮显示正常")
         
         with allure.step("验证可提现余额显示"):
-            balance_label = shared_page.get_by_text('Balance').first
+            balance_label = page.get_by_text('Balance').first
             assert balance_label.is_visible(timeout=3000), "余额标签未显示"
             logger.info(f"✓ 余额标签显示正常")
         
         with allure.step("验证Withdraw All按钮"):
-            withdraw_all_button = shared_page.get_by_text('Withdraw All').first
+            withdraw_all_button = page.get_by_text('Withdraw All').first
             assert withdraw_all_button.is_visible(timeout=3000), "Withdraw All按钮未显示"
             logger.info("✓ Withdraw All按钮显示正常")
         
         with allure.step("验证绑定账户后四位"):
             # 使用通用模式匹配任何已绑定的银行账户（8个星号+4位数字）
-            account_pattern = shared_page.locator('text=/\\*{8}\\d{4}/')
+            account_pattern = page.locator('text=/\\*{8}\\d{4}/')
             assert account_pattern.first.is_visible(timeout=3000), "绑定账户信息未显示"
             account_text = account_pattern.first.inner_text()
             logger.info(f"✓ 绑定账户显示：{account_text}")
         
         with allure.step("验证Withdraw提交按钮"):
             # 查找所有Withdraw按钮，排除主页的那个
-            submit_button = shared_page.get_by_role('button', name='Withdraw').nth(1)  # 第二个Withdraw按钮
+            submit_button = page.get_by_role('button', name='Withdraw').nth(1)  # 第二个Withdraw按钮
             if not submit_button.is_visible(timeout=1000):
                 # 如果找不到第二个，尝试找最后一个
-                submit_button = shared_page.get_by_role('button', name='Withdraw').last
+                submit_button = page.get_by_role('button', name='Withdraw').last
             assert submit_button.is_visible(timeout=3000), "Withdraw提交按钮未显示"
             logger.info("✓ Withdraw提交按钮显示正常")
         
@@ -2708,9 +2688,9 @@ class TestWithdrawCompleteFlow:
     # 类级别变量，用于在测试方法间传递数据
     
     @pytest.fixture(autouse=True)
-    def ensure_home_page(self, shared_page):
+    def ensure_home_page(self, page):
         """每个测试用例执行前确保在Home页面（避免重复自愈检查）"""
-        _ensure_on_home_page(shared_page)
+        _ensure_on_home_page(page)
     reference_id = None
     original_balance = None
     
@@ -2737,7 +2717,7 @@ class TestWithdrawCompleteFlow:
     @allure.title("TC037: 使用Redis验证码提交应成功发起提现并显示成功详情")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description("验证使用Redis获取的验证码成功提交提现，并显示提现详情对话框")
-    def test_withdraw_with_redis_code_should_show_success_details(self, shared_page, shared_redis_client):
+    def test_withdraw_with_redis_code_should_show_success_details(self, page, shared_redis_client):
         """TC037: 使用Redis验证码提交应成功发起提现并显示成功详情"""
         
         logger.info("="*80)
@@ -2748,36 +2728,36 @@ class TestWithdrawCompleteFlow:
         with allure.step("打开提现表单"):
             # 先强制关闭任何遗留的dialog
             try:
-                if shared_page.get_by_role("dialog").count() > 0:
+                if page.get_by_role("dialog").count() > 0:
                     logger.info("检测到遗留弹窗，强制关闭...")
-                    shared_page.keyboard.press("Escape")
-                    shared_page.wait_for_timeout(500)
+                    page.keyboard.press("Escape")
+                    page.wait_for_timeout(500)
                     # 如果还有，再按一次
-                    if shared_page.get_by_role("dialog").count() > 0:
-                        shared_page.keyboard.press("Escape")
-                        shared_page.wait_for_timeout(500)
+                    if page.get_by_role("dialog").count() > 0:
+                        page.keyboard.press("Escape")
+                        page.wait_for_timeout(500)
             except Exception:
                 pass
             
             # 使用.first避免strict mode violation（页面和dialog中可能都有Withdraw按钮）
-            withdraw_button = shared_page.get_by_role('button', name='Withdraw').first
+            withdraw_button = page.get_by_role('button', name='Withdraw').first
             assert withdraw_button.is_visible(timeout=5000), "Withdraw按钮未显示"
 
             withdraw_button.click()
-            shared_page.wait_for_timeout(2000)
+            page.wait_for_timeout(2000)
             logger.info("✓ 已点击Withdraw按钮")
             
             # 检查是否有进行中提示
-            in_progress_msg = shared_page.locator('text=/Withdrawal in progress/i')
+            in_progress_msg = page.locator('text=/Withdrawal in progress/i')
             if in_progress_msg.is_visible(timeout=2000):
                 logger.warning("⚠️ 检测到'Withdrawal in progress'阻塞，尝试自动清除...")
                 
                 # 按ESC关闭阻塞提示
-                shared_page.keyboard.press('Escape')
-                shared_page.wait_for_timeout(1000)
+                page.keyboard.press('Escape')
+                page.wait_for_timeout(1000)
                 
                 # 调用清除函数
-                clear_result = _clear_withdrawal_in_progress(shared_page)
+                clear_result = _clear_withdrawal_in_progress(page)
                 
                 if not clear_result:
                     pytest.skip("阻塞清除失败，跳过测试")
@@ -2785,37 +2765,37 @@ class TestWithdrawCompleteFlow:
                 logger.info("✓ 阻塞已清除，继续测试")
                 
                 # 重新点击Withdraw按钮
-                withdraw_button = shared_page.get_by_role('button', name='Withdraw').first
+                withdraw_button = page.get_by_role('button', name='Withdraw').first
                 withdraw_button.click()
-                shared_page.wait_for_timeout(2000)
+                page.wait_for_timeout(2000)
                 logger.info("✓ 已重新点击Withdraw按钮")
             
             # 等待提现表单打开
-            assert shared_page.get_by_role('dialog').is_visible(timeout=5000), "提现表单未打开"
-            shared_page.wait_for_timeout(1000)  # 等待动画
+            assert page.get_by_role('dialog').is_visible(timeout=5000), "提现表单未打开"
+            page.wait_for_timeout(1000)  # 等待动画
             logger.info("✓ 提现表单已打开")
         
         with allure.step("输入提现金额20美元"):
-            amount_input = shared_page.get_by_role('dialog').get_by_role('textbox')
+            amount_input = page.get_by_role('dialog').get_by_role('textbox')
             amount_input.fill('20')
-            shared_page.wait_for_timeout(500)
+            page.wait_for_timeout(500)
             logger.info("✓ 已输入提现金额：20")
         
         with allure.step("点击Withdraw提交按钮"):
-            submit_button = shared_page.get_by_role('dialog').get_by_role('button', name='Withdraw')
+            submit_button = page.get_by_role('dialog').get_by_role('button', name='Withdraw')
             submit_button.click()
-            shared_page.wait_for_timeout(2000)
+            page.wait_for_timeout(2000)
             logger.info("✓ 已点击提交按钮")
         
         # ========== Act：获取并输入Redis验证码 ==========
         with allure.step("验证验证码对话框打开"):
-            verify_title = shared_page.locator('text="Verification code"')
+            verify_title = page.locator('text="Verification code"')
             assert verify_title.is_visible(timeout=5000), "验证码对话框未打开"
             logger.info("✓ 验证码对话框已打开")
         
         with allure.step("从Redis获取验证码"):
             # 等待验证码发送
-            shared_page.wait_for_timeout(2000)
+            page.wait_for_timeout(2000)
             
             # 从Redis获取验证码
             verification_code = _get_withdrawal_verification_code(shared_redis_client, _CONFIG['test_account']['username'])
@@ -2826,48 +2806,48 @@ class TestWithdrawCompleteFlow:
             logger.info(f"✓ 从Redis获取到验证码：{verification_code}")
         
         with allure.step(f"输入验证码{verification_code}"):
-            code_input = shared_page.get_by_role('textbox', name=re.compile('Enter code'))
+            code_input = page.get_by_role('textbox', name=re.compile('Enter code'))
             code_input.fill(verification_code)
-            shared_page.wait_for_timeout(500)
+            page.wait_for_timeout(500)
             logger.info(f"✓ 已输入验证码：{verification_code}")
         
         with allure.step("点击Confirm按钮提交"):
-            confirm_button = shared_page.get_by_role('button', name='Confirm')
+            confirm_button = page.get_by_role('button', name='Confirm')
             confirm_button.click()
-            shared_page.wait_for_timeout(3000)
+            page.wait_for_timeout(3000)
             logger.info("✓ 已点击Confirm按钮")
         
         # ========== Assert：验证提现详情对话框 ==========
         with allure.step("验证提现详情对话框打开"):
             # 查找"Withdraw to Bank Account"标题
-            details_title = shared_page.locator('text="Withdraw to Bank Account"')
+            details_title = page.locator('text="Withdraw to Bank Account"')
             assert details_title.is_visible(timeout=5000), "提现详情对话框未打开"
             logger.info("✓ 提现详情对话框已打开")
         
         with allure.step("验证显示提现金额"):
             # 提现金额显示格式：$20.00
             # 等待页面稳定后再查找金额
-            shared_page.wait_for_timeout(1000)
+            page.wait_for_timeout(1000)
             
             # 使用重试机制查找金额元素
             # 策略1: 使用正则匹配$金额格式
-            amount_locator_func = lambda: shared_page.locator('text=/\\$\\d+(\\.\\d{2})?/')
+            amount_locator_func = lambda: page.locator('text=/\\$\\d+(\\.\\d{2})?/')
             
-            if not _wait_for_element_with_retry(shared_page, amount_locator_func, 
+            if not _wait_for_element_with_retry(page, amount_locator_func, 
                                                 timeout=3000, max_retries=2, 
                                                 description="提现金额"):
                 # 策略2: 在dialog内查找包含$的文本
                 logger.warning("尝试备用定位策略...")
-                amount_locator_func = lambda: shared_page.get_by_role('dialog').locator(':text("$")')
+                amount_locator_func = lambda: page.get_by_role('dialog').locator(':text("$")')
                 
-                if not _wait_for_element_with_retry(shared_page, amount_locator_func,
+                if not _wait_for_element_with_retry(page, amount_locator_func,
                                                     timeout=2000, max_retries=2,
                                                     description="提现金额(备用)"):
                     pytest.fail("提现金额未显示（所有定位策略失败）")
             
             # 获取金额文本
             actual_amount = _get_element_text_with_retry(
-                shared_page, 
+                page, 
                 amount_locator_func,
                 timeout=2000,
                 max_retries=2,
@@ -2881,22 +2861,22 @@ class TestWithdrawCompleteFlow:
         
         with allure.step("验证显示提现状态时间线"):
             # 验证"Withdrawal Initiated"状态
-            initiated_text = shared_page.locator('text="Withdrawal Initiated"')
+            initiated_text = page.locator('text="Withdrawal Initiated"')
             assert initiated_text.is_visible(timeout=3000), "Withdrawal Initiated状态未显示"
             logger.info("✓ Withdrawal Initiated状态显示")
             
             # 验证"Bank Processing"状态
-            processing_text = shared_page.locator('text="Bank Processing"')
+            processing_text = page.locator('text="Bank Processing"')
             assert processing_text.is_visible(timeout=3000), "Bank Processing状态未显示"
             logger.info("✓ Bank Processing状态显示")
         
         with allure.step("验证显示银行账户后四位"):
             # 使用通用模式匹配任何银行账户号码（8星号+4位数字）
             # 先在dialog内查找带特定class的账户信息
-            account_text = shared_page.get_by_role('dialog').locator('span.flowDetail_value__YWarF').filter(has_text=re.compile(r'\*{8}\d{4}'))
+            account_text = page.get_by_role('dialog').locator('span.flowDetail_value__YWarF').filter(has_text=re.compile(r'\*{8}\d{4}'))
             if not account_text.is_visible(timeout=3000):
                 # 如果找不到，尝试更通用的定位器
-                account_text = shared_page.get_by_role('dialog').locator('text=/\\*{8}\\d{4}/')
+                account_text = page.get_by_role('dialog').locator('text=/\\*{8}\\d{4}/')
             
             assert account_text.first.is_visible(timeout=3000), "银行账户未显示"
             account_number = account_text.first.inner_text()
@@ -2905,11 +2885,11 @@ class TestWithdrawCompleteFlow:
         with allure.step("获取并保存Reference ID"):
             # 查找Reference ID（通常在"Reference ID"或"Ref"后面）
             # 使用.first避免strict mode violation
-            reference_id_locator = shared_page.locator('text=/Reference ID/i').locator('..').locator('text=/\\d{19}/').first
+            reference_id_locator = page.locator('text=/Reference ID/i').locator('..').locator('text=/\\d{19}/').first
 
             if not reference_id_locator.is_visible(timeout=3000):
                 # 尝试其他选择器，使用.first避免strict mode violation
-                reference_id_locator = shared_page.locator('text=/\\d{19}/').first
+                reference_id_locator = page.locator('text=/\\d{19}/').first
 
             TestWithdrawCompleteFlow.reference_id = reference_id_locator.inner_text()
             logger.info(f"✓ Reference ID: {TestWithdrawCompleteFlow.reference_id}")
@@ -2924,7 +2904,7 @@ class TestWithdrawCompleteFlow:
     @allure.title("TC038: 提现成功后使用脚本修改状态为成功应更新提现状态")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description("验证使用update_payment_status.py脚本修改提现状态为成功")
-    def test_update_withdrawal_status_to_success_should_work(self, shared_page):
+    def test_update_withdrawal_status_to_success_should_work(self, page):
         """TC038: 提现成功后使用脚本修改状态为成功应更新提现状态"""
         
         logger.info("="*80)
@@ -2996,7 +2976,7 @@ class TestWithdrawCompleteFlow:
     @allure.title("TC039: 提现成功并修改状态后余额应扣除提现金额")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description("验证提现成功后余额正确扣除提现金额")
-    def test_balance_should_decrease_after_successful_withdrawal(self, shared_page):
+    def test_balance_should_decrease_after_successful_withdrawal(self, page):
         """TC039: 提现成功并修改状态后余额应扣除提现金额"""
         
         logger.info("="*80)
@@ -3005,18 +2985,18 @@ class TestWithdrawCompleteFlow:
         
         # ========== Act：刷新页面并查看余额 ==========
         with allure.step("刷新钱包页面"):
-            shared_page.reload()
-            shared_page.wait_for_load_state("load", timeout=10000)
-            shared_page.wait_for_timeout(3000)
+            page.reload()
+            page.wait_for_load_state("load", timeout=10000)
+            page.wait_for_timeout(3000)
             logger.info("✓ 页面已刷新")
         
         with allure.step("点击眼睛图标显示余额"):
             # 查找眼睛图标（可能有多个，选择余额区域的）
-            eye_icon = shared_page.locator('[class*="eye"]').first
+            eye_icon = page.locator('[class*="eye"]').first
             
             if eye_icon.is_visible(timeout=3000):
                 eye_icon.click()
-                shared_page.wait_for_timeout(1000)
+                page.wait_for_timeout(1000)
                 logger.info("✓ 已点击眼睛图标")
             else:
                 logger.warning("眼睛图标未找到，余额可能已显示")
@@ -3024,7 +3004,7 @@ class TestWithdrawCompleteFlow:
         # ========== Assert：验证余额扣除 ==========
         with allure.step("读取当前余额"):
             # 查找余额文本，格式如 "$4,914.84"
-            balance_locator = shared_page.locator('text=/\\$[\\d,]+\\.\\d{2}/').first
+            balance_locator = page.locator('text=/\\$[\\d,]+\\.\\d{2}/').first
             
             if balance_locator.is_visible(timeout=5000):
                 current_balance_text = balance_locator.inner_text()
@@ -3051,11 +3031,11 @@ class TestWithdrawCompleteFlow:
     @allure.title("TC041: 点击Details应跳转到交易历史页面")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description("验证点击Details按钮跳转到交易历史页面")
-    def test_click_details_should_navigate_to_transaction_history(self, shared_page):
+    def test_click_details_should_navigate_to_transaction_history(self, page):
         """TC041: 点击Details应跳转到交易历史页面"""
         
         # 确保在Home页面
-        _ensure_on_home_page(shared_page)
+        _ensure_on_home_page(page)
         
         logger.info("="*80)
         logger.info("TC041: 点击Details应跳转到交易历史页面")
@@ -3063,32 +3043,32 @@ class TestWithdrawCompleteFlow:
         
         # ========== Act：点击Details按钮 ==========
         with allure.step("点击Details按钮"):
-            details_button = shared_page.locator('text="Details"').first
+            details_button = page.locator('text="Details"').first
             assert details_button.is_visible(timeout=5000), "Details按钮未显示"
             
             details_button.click()
-            shared_page.wait_for_load_state("load", timeout=10000)
-            shared_page.wait_for_timeout(2000)
+            page.wait_for_load_state("load", timeout=10000)
+            page.wait_for_timeout(2000)
             logger.info("✓ 已点击Details按钮")
         
         # ========== Assert：验证跳转到交易历史页面 ==========
         with allure.step("验证跳转到交易历史页面"):
-            current_url = shared_page.url
+            current_url = page.url
             assert "/wallet/details" in current_url, f"未跳转到交易历史页面，当前URL: {current_url}"
             logger.info(f"✓ 已跳转到交易历史页面: {current_url}")
         
         with allure.step("验证页面标题为Transaction History"):
-            page_title = shared_page.locator('text="Transaction History"')
+            page_title = page.locator('text="Transaction History"')
             assert page_title.is_visible(timeout=5000), "Transaction History标题未显示"
             logger.info("✓ 页面标题显示：Transaction History")
         
         with allure.step("验证显示交易记录表格"):
             # 验证表格列标题（使用 .first 避免 strict mode 错误）
-            type_column = shared_page.locator('text="Type"').first
-            date_column = shared_page.locator('text="Date"').first
-            amount_column = shared_page.locator('text="Amount"').first
-            status_column = shared_page.locator('text="Status"').first
-            operate_column = shared_page.locator('text="Operate"').first
+            type_column = page.locator('text="Type"').first
+            date_column = page.locator('text="Date"').first
+            amount_column = page.locator('text="Amount"').first
+            status_column = page.locator('text="Status"').first
+            operate_column = page.locator('text="Operate"').first
 
             assert type_column.is_visible(timeout=3000), "Type列未显示"
             assert date_column.is_visible(timeout=3000), "Date列未显示"
@@ -3100,8 +3080,8 @@ class TestWithdrawCompleteFlow:
         
         # ========== 返回Home页面供后续用例使用 ==========
         with allure.step("返回Home页面"):
-            shared_page.goto(_CONFIG['base_url'])
-            shared_page.wait_for_load_state("load", timeout=10000)
+            page.goto(_CONFIG['base_url'])
+            page.wait_for_load_state("load", timeout=10000)
             logger.info("✓ 已返回Home页面")
         
         logger.info("="*80)
@@ -3112,11 +3092,11 @@ class TestWithdrawCompleteFlow:
     @allure.title("TC042: 交易历史应显示提现记录及状态")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description("验证交易历史页面显示提现记录及其状态信息")
-    def test_transaction_history_should_show_withdrawal_records(self, shared_page):
+    def test_transaction_history_should_show_withdrawal_records(self, page):
         """TC042: 交易历史应显示提现记录及状态"""
         
         # 确保在Home页面才能点击Details按钮
-        _ensure_on_home_page(shared_page)
+        _ensure_on_home_page(page)
         
         logger.info("="*80)
         logger.info("TC042: 交易历史应显示提现记录及状态")
@@ -3128,34 +3108,34 @@ class TestWithdrawCompleteFlow:
             details_button = None
             for attempt in range(3):
                 try:
-                    details_button = shared_page.get_by_text('Details').first
+                    details_button = page.get_by_text('Details').first
                     if details_button.is_visible(timeout=5000):
                         break
                     logger.warning(f"⚠️ Details按钮不可见，重试 {attempt + 1}/3")
-                    shared_page.wait_for_timeout(2000)
+                    page.wait_for_timeout(2000)
                 except Exception as e:
                     logger.warning(f"⚠️ 查找Details按钮失败 {attempt + 1}/3: {e}")
                     if attempt < 2:
-                        shared_page.wait_for_timeout(2000)
+                        page.wait_for_timeout(2000)
                     else:
                         raise
             
             assert details_button and details_button.is_visible(timeout=3000), "Details按钮未显示"
             
             details_button.click()
-            shared_page.wait_for_timeout(2000)
-            shared_page.wait_for_load_state("load", timeout=10000)
+            page.wait_for_timeout(2000)
+            page.wait_for_load_state("load", timeout=10000)
             logger.info("✓ 已进入交易历史页面")
         
         # ========== Assert：验证提现记录显示 ==========
         with allure.step("验证显示Withdrawal类型记录"):
-            withdrawal_text = shared_page.locator('text="Withdrawal"').first
+            withdrawal_text = page.locator('text="Withdrawal"').first
             assert withdrawal_text.is_visible(timeout=5000), "未找到Withdrawal类型记录"
             logger.info("✓ 显示Withdrawal类型记录")
         
         with allure.step("验证显示提现金额"):
             # 查找负数金额，如"-$20"（使用 .first 避免 strict mode 错误）
-            negative_amount = shared_page.locator('text=/-\\$\\d+/').first
+            negative_amount = page.locator('text=/-\\$\\d+/').first
 
             if negative_amount.is_visible(timeout=3000):
                 amount_text = negative_amount.inner_text()
@@ -3165,7 +3145,7 @@ class TestWithdrawCompleteFlow:
         
         with allure.step("验证显示提现状态"):
             # 查找状态文本："Bank Processing" 或 "Receiving Bank Processed"
-            status_locator = shared_page.locator('text=/Bank Processing|Receiving Bank Processed/').first
+            status_locator = page.locator('text=/Bank Processing|Receiving Bank Processed/').first
             
             if status_locator.is_visible(timeout=3000):
                 status_text = status_locator.inner_text()
@@ -3178,7 +3158,7 @@ class TestWithdrawCompleteFlow:
                 logger.warning("未找到提现状态显示")
         
         with allure.step("验证每条记录显示Details链接"):
-            details_links = shared_page.locator('text="Details"')
+            details_links = page.locator('text="Details"')
             details_count = details_links.count()
             
             assert details_count > 0, "未找到Details链接"
@@ -3186,7 +3166,7 @@ class TestWithdrawCompleteFlow:
         
         with allure.step("验证显示提现日期"):
             # 查找日期格式，如"2026-03-05" 或 "2026/03/05"
-            date_locator = shared_page.locator('text=/\\d{4}[-/]\\d{2}[-/]\\d{2}/').first
+            date_locator = page.locator('text=/\\d{4}[-/]\\d{2}[-/]\\d{2}/').first
             
             if date_locator.is_visible(timeout=3000):
                 date_text = date_locator.inner_text()
@@ -3196,7 +3176,7 @@ class TestWithdrawCompleteFlow:
         
         with allure.step("验证最新记录显示在顶部"):
             # 获取第一条记录的类型
-            first_record_type = shared_page.locator('text="Withdrawal"').first
+            first_record_type = page.locator('text="Withdrawal"').first
             
             # 验证第一条记录是否可见（即在列表顶部）
             assert first_record_type.is_visible(timeout=3000), "最新提现记录未显示在列表顶部"
@@ -3204,8 +3184,8 @@ class TestWithdrawCompleteFlow:
         
         # ========== 返回Home页面供后续用例使用 ==========
         with allure.step("返回Home页面"):
-            shared_page.goto(_CONFIG['base_url'])
-            shared_page.wait_for_load_state("load", timeout=10000)
+            page.goto(_CONFIG['base_url'])
+            page.wait_for_load_state("load", timeout=10000)
             logger.info("✓ 已返回Home页面")
         
         logger.info("="*80)
@@ -3216,11 +3196,11 @@ class TestWithdrawCompleteFlow:
     @allure.title("TC032: 提现金额为空提交应提示必填")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description("验证提现金额为空时提交被阻止，显示必填提示")
-    def test_withdraw_empty_amount_should_show_required_message(self, shared_page):
+    def test_withdraw_empty_amount_should_show_required_message(self, page):
         """TC032: 提现金额为空提交应提示必填"""
         
         # 确保在Home页面
-        _ensure_on_home_page(shared_page)
+        _ensure_on_home_page(page)
         
         logger.info("="*80)
         logger.info("TC032: 提现金额为空提交应提示必填")
@@ -3228,42 +3208,42 @@ class TestWithdrawCompleteFlow:
         
         # ========== Act：打开提现表单并直接提交 ==========
         with allure.step("点击Withdraw按钮打开表单"):
-            withdraw_button = shared_page.get_by_role('button', name='Withdraw')
+            withdraw_button = page.get_by_role('button', name='Withdraw')
             assert withdraw_button.is_visible(timeout=5000), "Withdraw按钮未显示"
             
             withdraw_button.click()
-            shared_page.wait_for_timeout(2000)
+            page.wait_for_timeout(2000)
             logger.info("✓ 已点击Withdraw按钮")
             
             # 检查是否有进行中提示
-            in_progress_msg = shared_page.locator('text=/Withdrawal in progress/i')
+            in_progress_msg = page.locator('text=/Withdrawal in progress/i')
             if in_progress_msg.is_visible(timeout=2000):
                 pytest.skip("存在待处理提现，无法打开表单")
         
         with allure.step("不输入金额，直接点击提交按钮"):
             # 提现金额保持为空，直接点击对话框中的Withdraw提交按钮
-            submit_button = shared_page.get_by_role('dialog').get_by_role('button', name='Withdraw')
+            submit_button = page.get_by_role('dialog').get_by_role('button', name='Withdraw')
             submit_button.click()
-            shared_page.wait_for_timeout(1000)
+            page.wait_for_timeout(1000)
             logger.info("✓ 已点击提交按钮（金额为空）")
         
         # ========== Assert：验证错误提示 ==========
         with allure.step("验证显示必填提示"):
             # 查找alert提示："Enter withdrawal amount"
-            error_message = shared_page.locator('text="Enter withdrawal amount"')
+            error_message = page.locator('text="Enter withdrawal amount"')
             
             assert error_message.is_visible(timeout=3000), "未显示必填提示"
             logger.info("✓ 显示必填提示：Enter withdrawal amount")
         
         with allure.step("验证提现表单仍然打开"):
             # 确认对话框标题"Withdraw"仍然显示
-            dialog_title = shared_page.locator('text="Withdraw"').first
+            dialog_title = page.locator('text="Withdraw"').first
             assert dialog_title.is_visible(timeout=2000), "提现表单已关闭"
             logger.info("✓ 提现表单仍然打开（未提交成功）")
         
         # 清理：关闭提示，准备下一个测试
         with allure.step("关闭错误提示"):
-            shared_page.wait_for_timeout(1000)
+            page.wait_for_timeout(1000)
             # 提示会自动消失，无需手动关闭
             logger.info("✓ 错误提示已处理")
         
@@ -3275,11 +3255,11 @@ class TestWithdrawCompleteFlow:
     @allure.title("TC035: 邮箱验证码为空提交应提示必填")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description("验证邮箱验证码为空时Confirm按钮被禁用，提交被阻止")
-    def test_withdraw_empty_verification_code_should_disable_confirm(self, shared_page):
+    def test_withdraw_empty_verification_code_should_disable_confirm(self, page):
         """TC035: 邮箱验证码为空提交应提示必填"""
 
         # 确保在Home页面
-        _ensure_on_home_page(shared_page)
+        _ensure_on_home_page(page)
 
         logger.info("="*80)
         logger.info("TC035: 邮箱验证码为空提交应提示必填")
@@ -3289,14 +3269,14 @@ class TestWithdrawCompleteFlow:
         with allure.step("打开提现表单"):
             # 先强制关闭任何遗留的dialog
             try:
-                if shared_page.get_by_role("dialog").count() > 0:
+                if page.get_by_role("dialog").count() > 0:
                     logger.info("检测到遗留弹窗，强制关闭...")
-                    shared_page.keyboard.press("Escape")
-                    shared_page.wait_for_timeout(500)
+                    page.keyboard.press("Escape")
+                    page.wait_for_timeout(500)
                     # 如果还有，再按一次
-                    if shared_page.get_by_role("dialog").count() > 0:
-                        shared_page.keyboard.press("Escape")
-                        shared_page.wait_for_timeout(500)
+                    if page.get_by_role("dialog").count() > 0:
+                        page.keyboard.press("Escape")
+                        page.wait_for_timeout(500)
             except Exception:
                 pass
             
@@ -3311,17 +3291,17 @@ class TestWithdrawCompleteFlow:
                     # 如果第2次重试，先刷新页面
                     if attempt == 1:
                         logger.info("第2次重试，先刷新页面清除可能的状态...")
-                        shared_page.reload(wait_until="load")
-                        shared_page.wait_for_timeout(3000)
+                        page.reload(wait_until="load")
+                        page.wait_for_timeout(3000)
                     
                     # 如果第3次重试，导航回Home页面
                     if attempt == 2:
                         logger.info("第3次重试，导航回Home页面...")
-                        shared_page.goto(_CONFIG['base_url'], wait_until="load")
-                        shared_page.wait_for_timeout(3000)
+                        page.goto(_CONFIG['base_url'], wait_until="load")
+                        page.wait_for_timeout(3000)
                     
                     # 确保Withdraw按钮可见
-                    withdraw_button = shared_page.get_by_role('button', name='Withdraw').first
+                    withdraw_button = page.get_by_role('button', name='Withdraw').first
                     if not withdraw_button.is_visible(timeout=5000):
                         logger.warning(f"Withdraw按钮不可见...")
                         if attempt < max_retries - 1:
@@ -3331,32 +3311,32 @@ class TestWithdrawCompleteFlow:
                     
                     # 关闭可能阻止点击的对话框
                     try:
-                        modal_count = shared_page.locator('[role="dialog"][aria-modal="true"]').count()
+                        modal_count = page.locator('[role="dialog"][aria-modal="true"]').count()
                         if modal_count > 0:
                             logger.info(f"检测到 {modal_count} 个阻塞对话框，尝试关闭...")
                             for _ in range(modal_count):
-                                shared_page.keyboard.press('Escape')
-                                shared_page.wait_for_timeout(300)
+                                page.keyboard.press('Escape')
+                                page.wait_for_timeout(300)
                     except Exception:
                         pass
                     
                     # 点击Withdraw按钮（使用force=True）
                     withdraw_button.click(force=True)
-                    shared_page.wait_for_timeout(3000)  # 增加等待时间
+                    page.wait_for_timeout(3000)  # 增加等待时间
                     logger.info("✓ 已点击Withdraw按钮")
                     
                     # 检查dialog是否打开
-                    dialog = shared_page.get_by_role('dialog')
+                    dialog = page.get_by_role('dialog')
                     if dialog.is_visible(timeout=5000):
-                        shared_page.wait_for_timeout(1000)  # 等待动画完成
+                        page.wait_for_timeout(1000)  # 等待动画完成
                         logger.info("✓ 提现表单已打开")
                         form_opened = True
                         break
                     else:
                         logger.warning(f"提现表单未打开 (尝试 {attempt + 1}/{max_retries})")
                         # 关闭可能存在的其他弹窗
-                        shared_page.keyboard.press("Escape")
-                        shared_page.wait_for_timeout(500)
+                        page.keyboard.press("Escape")
+                        page.wait_for_timeout(500)
                         
                 except Exception as e:
                     logger.error(f"打开提现表单失败 (尝试 {attempt + 1}/{max_retries}): {e}")
@@ -3368,40 +3348,40 @@ class TestWithdrawCompleteFlow:
 
         # ========== Act：输入合法金额触发验证码对话框 ==========
         with allure.step("输入合法提现金额20美元"):
-            amount_input = shared_page.get_by_role('dialog').get_by_role('textbox')
+            amount_input = page.get_by_role('dialog').get_by_role('textbox')
             amount_input.fill('20')
-            shared_page.wait_for_timeout(500)
+            page.wait_for_timeout(500)
             logger.info("✓ 已输入提现金额：20")
         
         with allure.step("点击Withdraw提交按钮触发验证码对话框"):
-            submit_button = shared_page.get_by_role('dialog').get_by_role('button', name='Withdraw')
+            submit_button = page.get_by_role('dialog').get_by_role('button', name='Withdraw')
             submit_button.click()
-            shared_page.wait_for_timeout(2000)
+            page.wait_for_timeout(2000)
             logger.info("✓ 已点击提交按钮")
         
         # ========== Act：验证码输入框操作 ==========
         with allure.step("验证验证码对话框打开"):
             # 查找验证码对话框标题
-            verify_title = shared_page.locator('text="Verification code"')
+            verify_title = page.locator('text="Verification code"')
             assert verify_title.is_visible(timeout=5000), "验证码对话框未打开"
             logger.info("✓ 验证码对话框已打开")
         
         with allure.step("先输入1个字符，再清空验证码"):
             # 先输入一个字符使按钮启用
-            code_input = shared_page.get_by_role('textbox', name=re.compile('Enter code'))
+            code_input = page.get_by_role('textbox', name=re.compile('Enter code'))
             code_input.fill('1')
-            shared_page.wait_for_timeout(500)
+            page.wait_for_timeout(500)
             logger.info("✓ 已输入1个字符")
             
             # 清空验证码
             code_input.fill('')
-            shared_page.wait_for_timeout(500)
+            page.wait_for_timeout(500)
             logger.info("✓ 已清空验证码")
         
         # ========== Assert：验证Confirm按钮被禁用 ==========
         with allure.step("验证Confirm按钮被禁用"):
             # 查找Confirm按钮
-            confirm_button = shared_page.get_by_role('button', name='Confirm')
+            confirm_button = page.get_by_role('button', name='Confirm')
             
             # 验证按钮存在但被禁用
             assert confirm_button.is_visible(timeout=3000), "Confirm按钮未显示"
@@ -3424,11 +3404,11 @@ class TestWithdrawCompleteFlow:
     @allure.title("TC036: 邮箱验证码错误提交应提示验证码错误")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description("验证输入错误的验证码后提交失败，显示错误提示")
-    def test_withdraw_incorrect_verification_code_should_show_error(self, shared_page):
+    def test_withdraw_incorrect_verification_code_should_show_error(self, page):
         """TC036: 邮箱验证码错误提交应提示验证码错误"""
 
         # 确保在Home页面
-        _ensure_on_home_page(shared_page)
+        _ensure_on_home_page(page)
 
         logger.info("="*80)
         logger.info("TC036: 邮箱验证码错误提交应提示验证码错误")
@@ -3438,14 +3418,14 @@ class TestWithdrawCompleteFlow:
         with allure.step("打开提现表单"):
             # 先强制关闭任何遗留的dialog
             try:
-                if shared_page.get_by_role("dialog").count() > 0:
+                if page.get_by_role("dialog").count() > 0:
                     logger.info("检测到遗留弹窗，强制关闭...")
-                    shared_page.keyboard.press("Escape")
-                    shared_page.wait_for_timeout(500)
+                    page.keyboard.press("Escape")
+                    page.wait_for_timeout(500)
                     # 如果还有，再按一次
-                    if shared_page.get_by_role("dialog").count() > 0:
-                        shared_page.keyboard.press("Escape")
-                        shared_page.wait_for_timeout(500)
+                    if page.get_by_role("dialog").count() > 0:
+                        page.keyboard.press("Escape")
+                        page.wait_for_timeout(500)
             except Exception:
                 pass
             
@@ -3460,17 +3440,17 @@ class TestWithdrawCompleteFlow:
                     # 如果第2次重试，先刷新页面
                     if attempt == 1:
                         logger.info("第2次重试，先刷新页面清除可能的状态...")
-                        shared_page.reload(wait_until="load")
-                        shared_page.wait_for_timeout(3000)
+                        page.reload(wait_until="load")
+                        page.wait_for_timeout(3000)
                     
                     # 如果第3次重试，导航回Home页面
                     if attempt == 2:
                         logger.info("第3次重试，导航回Home页面...")
-                        shared_page.goto(_CONFIG['base_url'], wait_until="load")
-                        shared_page.wait_for_timeout(3000)
+                        page.goto(_CONFIG['base_url'], wait_until="load")
+                        page.wait_for_timeout(3000)
                     
                     # 确保Withdraw按钮可见
-                    withdraw_button = shared_page.get_by_role('button', name='Withdraw').first
+                    withdraw_button = page.get_by_role('button', name='Withdraw').first
                     if not withdraw_button.is_visible(timeout=5000):
                         logger.warning(f"Withdraw按钮不可见...")
                         if attempt < max_retries - 1:
@@ -3480,32 +3460,32 @@ class TestWithdrawCompleteFlow:
                     
                     # 关闭可能阻止点击的对话框
                     try:
-                        modal_count = shared_page.locator('[role="dialog"][aria-modal="true"]').count()
+                        modal_count = page.locator('[role="dialog"][aria-modal="true"]').count()
                         if modal_count > 0:
                             logger.info(f"检测到 {modal_count} 个阻塞对话框，尝试关闭...")
                             for _ in range(modal_count):
-                                shared_page.keyboard.press('Escape')
-                                shared_page.wait_for_timeout(300)
+                                page.keyboard.press('Escape')
+                                page.wait_for_timeout(300)
                     except Exception:
                         pass
                     
                     # 点击Withdraw按钮（使用force=True）
                     withdraw_button.click(force=True)
-                    shared_page.wait_for_timeout(3000)  # 增加等待时间
+                    page.wait_for_timeout(3000)  # 增加等待时间
                     logger.info("✓ 已点击Withdraw按钮")
                     
                     # 检查dialog是否打开
-                    dialog = shared_page.get_by_role('dialog')
+                    dialog = page.get_by_role('dialog')
                     if dialog.is_visible(timeout=5000):
-                        shared_page.wait_for_timeout(1000)  # 等待动画完成
+                        page.wait_for_timeout(1000)  # 等待动画完成
                         logger.info("✓ 提现表单已打开")
                         form_opened = True
                         break
                     else:
                         logger.warning(f"提现表单未打开 (尝试 {attempt + 1}/{max_retries})")
                         # 关闭可能存在的其他弹窗
-                        shared_page.keyboard.press("Escape")
-                        shared_page.wait_for_timeout(500)
+                        page.keyboard.press("Escape")
+                        page.wait_for_timeout(500)
                         
                 except Exception as e:
                     logger.error(f"打开提现表单失败 (尝试 {attempt + 1}/{max_retries}): {e}")
@@ -3516,39 +3496,39 @@ class TestWithdrawCompleteFlow:
                 pytest.fail(f"提现表单未打开（{max_retries}次重试后失败）")
 
         with allure.step("输入提现金额20美元"):
-            amount_input = shared_page.get_by_role('dialog').get_by_role('textbox')
+            amount_input = page.get_by_role('dialog').get_by_role('textbox')
             amount_input.fill('20')
-            shared_page.wait_for_timeout(500)
+            page.wait_for_timeout(500)
             logger.info("✓ 已输入提现金额：20")
 
         with allure.step("点击Withdraw提交按钮触发验证码对话框"):
-            submit_button = shared_page.get_by_role('dialog').get_by_role('button', name='Withdraw')
+            submit_button = page.get_by_role('dialog').get_by_role('button', name='Withdraw')
             submit_button.click()
-            shared_page.wait_for_timeout(2000)
+            page.wait_for_timeout(2000)
             logger.info("✓ 已点击提交按钮")
 
         # ========== Act：输入错误验证码并提交 ==========
         with allure.step("输入错误的验证码000000"):
-            code_input = shared_page.get_by_role('textbox', name=re.compile('Enter code'))
+            code_input = page.get_by_role('textbox', name=re.compile('Enter code'))
             code_input.fill('000000')
-            shared_page.wait_for_timeout(500)
+            page.wait_for_timeout(500)
             logger.info("✓ 已输入错误验证码：000000")
         
         with allure.step("点击Confirm按钮提交"):
-            confirm_button = shared_page.get_by_role('button', name='Confirm')
+            confirm_button = page.get_by_role('button', name='Confirm')
             confirm_button.click()
-            shared_page.wait_for_timeout(2000)
+            page.wait_for_timeout(2000)
             logger.info("✓ 已点击Confirm按钮")
         
         # ========== Assert：验证错误提示 ==========
         with allure.step("验证显示验证码错误提示"):
             # 查找alert提示："Incorrect verification code" 或包含 "verification code" 的错误提示
             # 使用更宽松的匹配
-            error_message = shared_page.locator('text=/[Ii]ncorrect.*verification.*code/')
+            error_message = page.locator('text=/[Ii]ncorrect.*verification.*code/')
             
             if not error_message.is_visible(timeout=3000):
                 # 尝试其他可能的错误提示
-                error_message = shared_page.locator('text=/verification.*code.*incorrect/i')
+                error_message = page.locator('text=/verification.*code.*incorrect/i')
             
             assert error_message.is_visible(timeout=1000), "未显示验证码错误提示"
             error_text = error_message.inner_text()
@@ -3556,7 +3536,7 @@ class TestWithdrawCompleteFlow:
         
         with allure.step("验证验证码对话框仍然打开"):
             # 确认对话框标题"Verification code"仍然显示
-            verify_title = shared_page.locator('text="Verification code"')
+            verify_title = page.locator('text="Verification code"')
             assert verify_title.is_visible(timeout=2000), "验证码对话框已关闭"
             logger.info("✓ 验证码对话框仍然打开（提交失败）")
         
@@ -3595,16 +3575,16 @@ class TestWithdrawHistoryDetails:
     @allure.title("TC043: 点击提现记录的Details应打开提现详情对话框")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description("验证点击交易历史中提现记录的Details按钮后打开详情对话框，显示完整提现信息")
-    def test_click_withdrawal_record_details_should_open_dialog(self, shared_page):
+    def test_click_withdrawal_record_details_should_open_dialog(self, page):
         """TC043: 点击提现记录的Details应打开提现详情对话框"""
         
         # 测试开始前检测白屏
-        if shared_page.url == "about:blank":
+        if page.url == "about:blank":
             logger.error("测试开始前检测到白屏 URL: about:blank")
-            _repair_blank_page_or_fail(shared_page, "TC043 测试开始前")
+            _repair_blank_page_or_fail(page, "TC043 测试开始前")
         
         # 确保在Home页面才能点击Details按钮
-        _ensure_on_home_page(shared_page)
+        _ensure_on_home_page(page)
         
         logger.info("="*80)
         logger.info("TC043: 点击提现记录的Details应打开提现详情对话框")
@@ -3615,61 +3595,61 @@ class TestWithdrawHistoryDetails:
             # 关闭可能遗留的验证码对话框或提现表单
             try:
                 # 尝试关闭验证码对话框
-                verification_dialog = shared_page.get_by_role('dialog').filter(has_text='verification code')
+                verification_dialog = page.get_by_role('dialog').filter(has_text='verification code')
                 if verification_dialog.is_visible(timeout=1000):
-                    shared_page.keyboard.press('Escape')
-                    shared_page.wait_for_timeout(500)
+                    page.keyboard.press('Escape')
+                    page.wait_for_timeout(500)
                     logger.info("✓ 已关闭验证码对话框")
                 
                 # 尝试关闭提现表单
-                withdraw_dialog = shared_page.get_by_role('dialog').filter(has_text='Withdraw')
+                withdraw_dialog = page.get_by_role('dialog').filter(has_text='Withdraw')
                 if withdraw_dialog.is_visible(timeout=1000):
-                    shared_page.keyboard.press('Escape')
-                    shared_page.wait_for_timeout(500)
+                    page.keyboard.press('Escape')
+                    page.wait_for_timeout(500)
                     logger.info("✓ 已关闭提现表单")
             except Exception as e:
                 logger.info(f"清理对话框: {e}")
             
             # 点击Details按钮进入交易历史
-            details_link = shared_page.get_by_text('Details').first
+            details_link = page.get_by_text('Details').first
             assert details_link.is_visible(timeout=5000), "Details链接未显示"
             
             details_link.click()
-            shared_page.wait_for_timeout(2000)
-            shared_page.wait_for_load_state("load", timeout=10000)
+            page.wait_for_timeout(2000)
+            page.wait_for_load_state("load", timeout=10000)
             logger.info("✓ 已进入交易历史页面")
         
         # ========== Act：点击第一条提现记录的Details按钮 ==========
         with allure.step("点击第一条Withdrawal记录的Details按钮"):
             # 检测白屏
-            if shared_page.url == "about:blank":
+            if page.url == "about:blank":
                 logger.error("点击前检测到白屏 URL: about:blank")
-                _repair_blank_page_or_fail(shared_page, "TC043 点击 Details 单元格前")
+                _repair_blank_page_or_fail(page, "TC043 点击 Details 单元格前")
             
             # 使用MCP录制的成功选择器
-            details_cell = shared_page.get_by_role('cell', name='Details').first
+            details_cell = page.get_by_role('cell', name='Details').first
             details_cell.click(timeout=15000)
-            shared_page.wait_for_timeout(1500)
+            page.wait_for_timeout(1500)
             try:
-                shared_page.wait_for_load_state("domcontentloaded", timeout=15000)
+                page.wait_for_load_state("domcontentloaded", timeout=15000)
             except Exception:
                 pass
-            shared_page.wait_for_timeout(1500)
+            page.wait_for_timeout(1500)
             logger.info("✓ 已点击Details按钮")
             
             # 点击后检测白屏
-            if shared_page.url == "about:blank":
+            if page.url == "about:blank":
                 logger.error("点击后检测到白屏 URL: about:blank")
-                _repair_blank_page_or_fail(shared_page, "TC043 点击 Details 单元格后")
+                _repair_blank_page_or_fail(page, "TC043 点击 Details 单元格后")
         
         # ========== Assert：验证提现详情对话框 ==========
         with allure.step("验证详情对话框打开"):
             # 详情可能是 modal dialog，也可能是 /wallet/details 路由下的页面内面板（无 role=dialog）
-            dlg = shared_page.get_by_role("dialog").filter(
+            dlg = page.get_by_role("dialog").filter(
                 has_text=re.compile(r"Withdraw\s+to\s+Bank|Reference\s+ID", re.I)
             )
-            panel_marker = shared_page.locator('text="Withdraw to Bank Account"').or_(
-                shared_page.get_by_text(re.compile(r"Reference\s+ID", re.I))
+            panel_marker = page.locator('text="Withdraw to Bank Account"').or_(
+                page.get_by_text(re.compile(r"Reference\s+ID", re.I))
             )
             detail_visible = False
             try:
@@ -3687,34 +3667,34 @@ class TestWithdrawHistoryDetails:
             )
             logger.info("✓ 提现详情已展示（dialog 或页面内面板）")
 
-        detail_scope = _wallet_withdraw_detail_scope(shared_page)
+        detail_scope = _wallet_withdraw_detail_scope(page)
 
         with allure.step("验证对话框标题"):
             # 对话框标题应该是"Withdraw to Bank Account"
-            dialog_title = shared_page.locator('text="Withdraw to Bank Account"')
+            dialog_title = page.locator('text="Withdraw to Bank Account"')
             assert dialog_title.is_visible(timeout=3000), "对话框标题未显示"
             logger.info("✓ 对话框标题显示：Withdraw to Bank Account")
         
         with allure.step("验证显示提现金额"):
             # 使用重试机制查找金额元素
             # 策略1: 使用正则匹配$金额格式
-            amount_locator_func = lambda: shared_page.locator('text=/\\$\\d+\\.\\d{2}/').first
+            amount_locator_func = lambda: page.locator('text=/\\$\\d+\\.\\d{2}/').first
             
-            if not _wait_for_element_with_retry(shared_page, amount_locator_func, 
+            if not _wait_for_element_with_retry(page, amount_locator_func, 
                                                 timeout=3000, max_retries=2, 
                                                 description="提现金额(TC043)"):
                 # 策略2: 在dialog内查找包含$的文本
                 logger.warning("尝试备用定位策略...")
                 amount_locator_func = lambda: detail_scope.locator(':text("$")').first
                 
-                if not _wait_for_element_with_retry(shared_page, amount_locator_func,
+                if not _wait_for_element_with_retry(page, amount_locator_func,
                                                     timeout=2000, max_retries=2,
                                                     description="提现金额(备用)"):
                     pytest.fail("提现金额未显示（所有定位策略失败）")
             
             # 获取金额文本
             amount_text = _get_element_text_with_retry(
-                shared_page, 
+                page, 
                 amount_locator_func,
                 timeout=2000,
                 max_retries=2,
@@ -3728,27 +3708,27 @@ class TestWithdrawHistoryDetails:
         
         with allure.step("验证显示提现状态时间线"):
             # 验证状态节点 - 使用.first避免strict mode violation
-            initiated_status = shared_page.locator('text="Withdrawal Initiated"').first
+            initiated_status = page.locator('text="Withdrawal Initiated"').first
             assert initiated_status.is_visible(timeout=3000), "Withdrawal Initiated状态未显示"
             logger.info("✓ Withdrawal Initiated状态显示")
             
             # 验证存在处理状态（至少显示一个）
-            processing_status = shared_page.locator('text="Bank Processing"').or_(shared_page.locator('text="Receiving Bank Processed"'))
+            processing_status = page.locator('text="Bank Processing"').or_(page.locator('text="Receiving Bank Processed"'))
             assert processing_status.first.is_visible(timeout=3000), "处理状态未显示"
             logger.info("✓ 处理状态显示")
         
         with allure.step("验证显示银行账户后四位"):
             # 查找银行账户号（********xxxx格式，8个星号+4位数字）
-            account_locator = shared_page.locator('text=/\\*{8}\\d{4}/')
+            account_locator = page.locator('text=/\\*{8}\\d{4}/')
             assert account_locator.is_visible(timeout=3000), "银行账户未显示"
             account_text = account_locator.inner_text()
             logger.info(f"✓ 银行账户显示：{account_text}")
         
         with allure.step("验证显示Reference ID"):
             # 检测并恢复白屏
-            if shared_page.url == "about:blank":
+            if page.url == "about:blank":
                 logger.error("检测到白屏 URL: about:blank")
-                _repair_blank_page_or_fail(shared_page, "TC043 Reference ID 步骤")
+                _repair_blank_page_or_fail(page, "TC043 Reference ID 步骤")
             
             # 查找Reference ID（19位数字）；详情可能是全页而非 dialog
             reference_id_locator = detail_scope.locator('text=/\\d{19}/').first
@@ -3764,16 +3744,16 @@ class TestWithdrawHistoryDetails:
             except Exception as e:
                 logger.warning(f"Reference ID验证异常: {e}")
                 # 检测白屏
-                if shared_page.url == "about:blank":
+                if page.url == "about:blank":
                     logger.error("检测到白屏 URL: about:blank")
-                    _repair_blank_page_or_fail(shared_page, "TC043 Reference ID 异常分支")
+                    _repair_blank_page_or_fail(page, "TC043 Reference ID 异常分支")
                 raise
         
         with allure.step("验证显示Help链接"):
             # 检测并恢复白屏（Help链接可能触发导航）
-            if shared_page.url == "about:blank":
+            if page.url == "about:blank":
                 logger.error("检测到白屏 URL: about:blank")
-                _repair_blank_page_or_fail(shared_page, "TC043 Help 链接前")
+                _repair_blank_page_or_fail(page, "TC043 Help 链接前")
             
             # 查找Help链接（可能有多个，取第一个）
             # 限制在对话框内查找，避免匹配到页面其他位置的Help
@@ -3787,13 +3767,13 @@ class TestWithdrawHistoryDetails:
                 logger.warning("⚠️ Help链接未找到，跳过验证")
         
         # 再次检测白屏
-        if shared_page.url == "about:blank":
+        if page.url == "about:blank":
             logger.error("检测到白屏 URL: about:blank")
-            _repair_blank_page_or_fail(shared_page, "TC043 收尾")
+            _repair_blank_page_or_fail(page, "TC043 收尾")
         
         with allure.step("验证显示Close按钮"):
             # 查找Close按钮
-            close_btn = shared_page.get_by_role('button', name='Close')
+            close_btn = page.get_by_role('button', name='Close')
             assert close_btn.is_visible(timeout=3000), "Close按钮未显示"
             logger.info("✓ Close按钮显示")
         
@@ -3805,7 +3785,7 @@ class TestWithdrawHistoryDetails:
     @allure.title("TC044: 提现详情对话框的Reference ID应可复制")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description("验证Reference ID文本可以被选中并复制到剪贴板")
-    def test_reference_id_should_be_copyable(self, shared_page):
+    def test_reference_id_should_be_copyable(self, page):
         """TC044: 提现详情对话框的Reference ID应可复制"""
         
         logger.info("="*80)
@@ -3814,7 +3794,7 @@ class TestWithdrawHistoryDetails:
         
         # 验证前置条件：详情对话框已打开
         # 使用更具体的过滤条件避免strict mode violation（可能有验证码dialog同时打开）
-        dialog = shared_page.get_by_role('dialog').filter(has_text='Reference ID').first
+        dialog = page.get_by_role('dialog').filter(has_text='Reference ID').first
         if not dialog.is_visible(timeout=2000):
             logger.info("⚠️ 详情对话框未打开，跳过测试")
             pytest.skip("详情对话框未打开，请先运行TC043")
@@ -3832,13 +3812,13 @@ class TestWithdrawHistoryDetails:
         with allure.step("尝试选中Reference ID"):
             # 双击Reference ID尝试选中
             reference_id_locator.dblclick()
-            shared_page.wait_for_timeout(500)
+            page.wait_for_timeout(500)
             logger.info("✓ 已双击Reference ID")
         
         with allure.step("复制Reference ID到剪贴板"):
             # 使用键盘快捷键复制
-            shared_page.keyboard.press('Control+C')  # Windows/Linux
-            shared_page.wait_for_timeout(500)
+            page.keyboard.press('Control+C')  # Windows/Linux
+            page.wait_for_timeout(500)
             logger.info("✓ 已执行复制操作")
         
         # ========== Assert：验证复制成功 ==========
@@ -3847,7 +3827,7 @@ class TestWithdrawHistoryDetails:
             # 注意：这需要浏览器上下文支持clipboard
             try:
                 # 创建一个临时输入框来验证剪贴板内容
-                shared_page.evaluate("""
+                page.evaluate("""
                     () => {
                         const input = document.createElement('input');
                         document.body.appendChild(input);
@@ -3869,7 +3849,7 @@ class TestWithdrawHistoryDetails:
     @allure.title("TC045: 关闭提现详情对话框应返回交易历史列表")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description("验证点击Close按钮关闭详情对话框后返回交易历史列表页面")
-    def test_close_dialog_should_return_to_history_list(self, shared_page):
+    def test_close_dialog_should_return_to_history_list(self, page):
         """TC045: 关闭提现详情对话框应返回交易历史列表"""
         
         logger.info("="*80)
@@ -3878,7 +3858,7 @@ class TestWithdrawHistoryDetails:
         
         # 验证前置条件：详情对话框已打开
         # 使用更具体的过滤条件避免strict mode violation（可能有验证码dialog同时打开）
-        dialog = shared_page.get_by_role('dialog').filter(has_text='Reference ID').first
+        dialog = page.get_by_role('dialog').filter(has_text='Reference ID').first
         if not dialog.is_visible(timeout=2000):
             logger.info("⚠️ 详情对话框未打开，跳过测试")
             pytest.skip("详情对话框未打开，请先运行TC043")
@@ -3889,7 +3869,7 @@ class TestWithdrawHistoryDetails:
             assert close_btn.is_visible(timeout=3000), "Close按钮未显示"
             
             close_btn.click()
-            shared_page.wait_for_timeout(1000)
+            page.wait_for_timeout(1000)
             logger.info("✓ 已点击Close按钮")
         
         # ========== Assert：验证返回交易历史列表 ==========
@@ -3900,12 +3880,12 @@ class TestWithdrawHistoryDetails:
         
         with allure.step("验证返回交易历史列表页面"):
             # 验证页面标题"Transaction History"
-            page_title = shared_page.locator('text="Transaction History"')
+            page_title = page.locator('text="Transaction History"')
             assert page_title.is_visible(timeout=3000), "Transaction History标题未显示"
             logger.info("✓ Transaction History标题显示")
             
             # 验证交易记录表格存在
-            table = shared_page.locator('table')
+            table = page.locator('table')
             assert table.is_visible(timeout=3000), "交易记录表格未显示"
             logger.info("✓ 交易记录表格显示")
             
@@ -3913,14 +3893,14 @@ class TestWithdrawHistoryDetails:
             required_headers = ['Type', 'Amount', 'Status']
             for header in required_headers:
                 # 使用更宽松的选择器
-                header_locator = shared_page.locator(f'text="{header}"').first
+                header_locator = page.locator(f'text="{header}"').first
                 assert header_locator.is_visible(timeout=2000), f"列标题'{header}'未显示"
             logger.info(f"✓ 表格列标题显示：{', '.join(required_headers)}")
         
         # ========== 返回Home页面供后续用例使用 ==========
         with allure.step("返回Home页面"):
-            shared_page.goto(_CONFIG['base_url'])
-            shared_page.wait_for_load_state("load", timeout=10000)
+            page.goto(_CONFIG['base_url'])
+            page.wait_for_load_state("load", timeout=10000)
             logger.info("✓ 已返回Home页面")
         
         logger.info("="*80)
@@ -3950,35 +3930,35 @@ class TestWithdrawUnboundAndAnomaly:
     @allure.title("TC048: 余额≥$20且无待处理提现时Withdraw仍置灰则为异常")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description("验证在余额充足且无待处理提现时Withdraw按钮应可用，否则视为异常")
-    def test_withdraw_should_be_enabled_when_balance_ok_no_pending(self, shared_page):
-        if not _ensure_bank_account_bound(shared_page, auto_bind=True):
+    def test_withdraw_should_be_enabled_when_balance_ok_no_pending(self, page):
+        if not _ensure_bank_account_bound(page, auto_bind=True):
             pytest.skip("TC048 需要已绑定银行账户")
         with allure.step("点击Withdraw并验证可打开表单或为异常"):
-            shared_page.get_by_role('button', name='Withdraw').click()
-            shared_page.wait_for_timeout(2000)
-            if shared_page.locator('text=/Withdrawal in progress/i').is_visible(timeout=2000):
-                shared_page.keyboard.press('Escape')
-                shared_page.wait_for_timeout(500)
+            page.get_by_role('button', name='Withdraw').click()
+            page.wait_for_timeout(2000)
+            if page.locator('text=/Withdrawal in progress/i').is_visible(timeout=2000):
+                page.keyboard.press('Escape')
+                page.wait_for_timeout(500)
                 pytest.skip("存在待处理提现，请先执行状态更新脚本")
             # 无待处理时，应打开提现表单（Set Amount 区域可见）
-            set_amount = shared_page.locator('text="Set Amount"')
+            set_amount = page.locator('text="Set Amount"')
             assert set_amount.is_visible(timeout=5000), "异常：余额充足且无待处理时Withdraw应可用，当前仍置灰或无法打开表单"
         with allure.step("关闭提现对话框"):
-            shared_page.keyboard.press('Escape')
-            shared_page.wait_for_timeout(500)
+            page.keyboard.press('Escape')
+            page.wait_for_timeout(500)
         logger.info("✅ TC048 通过：Withdraw 在无待处理时可用")
 
     @pytest.mark.case_id_wallet_withdraw_tc049
     @allure.title("TC049: 未绑定银行账户时Withdraw按钮应置灰")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description("验证未绑定银行账户时Withdraw按钮显示为置灰状态")
-    def test_withdraw_button_disabled_when_unbound(self, shared_page):
+    def test_withdraw_button_disabled_when_unbound(self, page):
         with allure.step("前置条件：确保未绑定"):
-            _ensure_unbound_for_withdraw(shared_page, _CONFIG['base_url'])
+            _ensure_unbound_for_withdraw(page, _CONFIG['base_url'])
         with allure.step("验证Withdraw按钮为置灰状态"):
-            withdraw_btn = shared_page.get_by_text('Withdraw').first
+            withdraw_btn = page.get_by_text('Withdraw').first
             assert withdraw_btn.is_visible(timeout=5000), "Withdraw按钮未显示"
-            btn = shared_page.locator('button:has-text("Withdraw")').first
+            btn = page.locator('button:has-text("Withdraw")').first
             if btn.is_visible(timeout=2000):
                 has_disable_class = btn.evaluate("el => el.className.includes('AmountArea_disable')")
                 assert has_disable_class, "未绑定时Withdraw按钮应包含置灰样式 AmountArea_disable"
@@ -3988,18 +3968,18 @@ class TestWithdrawUnboundAndAnomaly:
     @allure.title("TC050: 未绑定银行账户时点击Withdraw应引导绑定银行账户")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description("验证点击Withdraw后打开Bind Bank Account对话框而非提现表单")
-    def test_click_withdraw_opens_bind_dialog_when_unbound(self, shared_page):
+    def test_click_withdraw_opens_bind_dialog_when_unbound(self, page):
         with allure.step("前置条件：确保未绑定"):
-            _ensure_unbound_for_withdraw(shared_page, _CONFIG['base_url'])
+            _ensure_unbound_for_withdraw(page, _CONFIG['base_url'])
         with allure.step("点击Withdraw按钮"):
-            shared_page.get_by_text('Withdraw').first.click()
-            shared_page.wait_for_timeout(2000)
+            page.get_by_text('Withdraw').first.click()
+            page.wait_for_timeout(2000)
         with allure.step("验证打开Bind Bank Account对话框"):
-            bind_heading = shared_page.get_by_role('heading', name='Bind Bank Account')
+            bind_heading = page.get_by_role('heading', name='Bind Bank Account')
             assert bind_heading.is_visible(timeout=5000), "应打开Bind Bank Account对话框"
         with allure.step("关闭对话框"):
-            shared_page.keyboard.press('Escape')
-            shared_page.wait_for_timeout(500)
+            page.keyboard.press('Escape')
+            page.wait_for_timeout(500)
         logger.info("✅ TC050 通过：点击 Withdraw 引导绑定")
 
 
@@ -4028,19 +4008,19 @@ class TestRechargeAndWithdrawAll:
     @allure.title("TC051: 使用提现功能使余额降至$20以下（简化版）")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description("验证单次提现流程即可，无需循环多次（优化耗时）")
-    def test_withdraw_to_reduce_balance(self, shared_page, redis_client):
+    def test_withdraw_to_reduce_balance(self, page, redis_client):
         """TC051: 简化版 - 只验证一次提现 + 状态更新流程"""
-        if not _ensure_bank_account_bound(shared_page, auto_bind=True):
+        if not _ensure_bank_account_bound(page, auto_bind=True):
             pytest.skip("需要先绑定银行账户")
         
         with allure.step("验证当前余额"):
-            shared_page.reload()
-            shared_page.wait_for_timeout(2000)
-            eye = shared_page.locator('[class*="eye"]').first
+            page.reload()
+            page.wait_for_timeout(2000)
+            eye = page.locator('[class*="eye"]').first
             if eye.is_visible(timeout=2000):
                 eye.click()
-                shared_page.wait_for_timeout(1000)
-            balance_loc = shared_page.locator('text=/\\$[\\d,]+\\.\\d{2}/').first
+                page.wait_for_timeout(1000)
+            balance_loc = page.locator('text=/\\$[\\d,]+\\.\\d{2}/').first
             if balance_loc.is_visible(timeout=3000):
                 balance_text = balance_loc.inner_text().replace('$', '').replace(',', '')
                 current_balance = float(balance_text)
@@ -4052,33 +4032,33 @@ class TestRechargeAndWithdrawAll:
         
         with allure.step("执行一次提现（金额20）"):
             # 点击Withdraw按钮打开提现表单
-            shared_page.get_by_role('button', name='Withdraw').first.click()
-            shared_page.wait_for_timeout(2000)
+            page.get_by_role('button', name='Withdraw').first.click()
+            page.wait_for_timeout(2000)
             
             # 检查是否有"Withdrawal in progress"阻塞
-            if shared_page.locator('text=/Withdrawal in progress/i').is_visible(timeout=2000):
+            if page.locator('text=/Withdrawal in progress/i').is_visible(timeout=2000):
                 pytest.skip("存在待处理提现，请先运行辅助工具清除")
 
             # 等待提现表单dialog打开
-            assert shared_page.get_by_role('dialog').is_visible(timeout=5000), "提现表单未打开"
-            shared_page.wait_for_timeout(1000)  # 等待动画
+            assert page.get_by_role('dialog').is_visible(timeout=5000), "提现表单未打开"
+            page.wait_for_timeout(1000)  # 等待动画
             logger.info("✓ 提现表单已打开")
 
             # 在dialog内定位输入框并填充金额
-            amount_input = shared_page.get_by_role('dialog').get_by_role('textbox').first
+            amount_input = page.get_by_role('dialog').get_by_role('textbox').first
             amount_input.fill("20")
-            shared_page.wait_for_timeout(500)
+            page.wait_for_timeout(500)
             logger.info("✓ 已输入提现金额：20")
 
             # 点击dialog内的Withdraw提交按钮
-            submit_button = shared_page.get_by_role('dialog').get_by_role('button', name='Withdraw')
+            submit_button = page.get_by_role('dialog').get_by_role('button', name='Withdraw')
             submit_button.click()
-            shared_page.wait_for_timeout(2000)
+            page.wait_for_timeout(2000)
             logger.info("✓ 已点击提交按钮")
 
             # 等待验证码对话框打开
-            assert shared_page.locator('text="Verification code"').is_visible(timeout=5000), "验证码对话框未打开"
-            shared_page.wait_for_timeout(1000)
+            assert page.locator('text="Verification code"').is_visible(timeout=5000), "验证码对话框未打开"
+            page.wait_for_timeout(1000)
             logger.info("✓ 验证码对话框已打开")
 
             # 获取验证码
@@ -4087,46 +4067,46 @@ class TestRechargeAndWithdrawAll:
                 pytest.skip("无法从Redis获取验证码")
 
             # 填入验证码
-            code_input = shared_page.get_by_role('textbox', name=re.compile('Enter.*code', re.I))
+            code_input = page.get_by_role('textbox', name=re.compile('Enter.*code', re.I))
             code_input.fill(code)
-            shared_page.wait_for_timeout(500)
+            page.wait_for_timeout(500)
             logger.info(f"✓ 已输入验证码：{code}")
             
             # 点击Confirm按钮（使用增强的白屏防护）
             logger.info("准备点击Confirm按钮...")
             
             # 记录点击前的URL
-            url_before_click = shared_page.url
+            url_before_click = page.url
             logger.info(f"点击前URL: {url_before_click}")
             
             # 点击Confirm按钮
-            confirm_button = shared_page.get_by_role('button', name='Confirm')
+            confirm_button = page.get_by_role('button', name='Confirm')
             confirm_button.click()
             logger.info("✓ 已点击Confirm按钮")
-            _wait_out_transient_blank(shared_page, 12000)
+            _wait_out_transient_blank(page, 12000)
 
             # 策略1: 先等待一段时间让后端处理
-            shared_page.wait_for_timeout(3000)
+            page.wait_for_timeout(3000)
             
             # 策略2: 循环检查页面状态，直到稳定或超时
             max_wait_cycles = 15  # 最多等待15秒
             stable_url = None
             
             for cycle in range(max_wait_cycles):
-                current_url = shared_page.url
+                current_url = page.url
                 logger.info(f"检查URL (轮次{cycle+1}/{max_wait_cycles}): {current_url}")
                 
                 # 如果是about:blank，等待并重试
                 if current_url == "about:blank":
                     logger.warning(f"⚠️ 检测到白屏 (轮次{cycle+1})，等待页面稳定...")
-                    _wait_out_transient_blank(shared_page, 2000)
+                    _wait_out_transient_blank(page, 2000)
                     continue
                 
                 # 如果URL正常，检查是否稳定
                 if current_url != "about:blank":
                     # 再等待1秒，看URL是否会变化
-                    shared_page.wait_for_timeout(1000)
-                    url_after_wait = shared_page.url
+                    page.wait_for_timeout(1000)
+                    url_after_wait = page.url
                     
                     if url_after_wait == current_url and url_after_wait != "about:blank":
                         # URL稳定且不是白屏
@@ -4141,21 +4121,21 @@ class TestRechargeAndWithdrawAll:
                         continue
             
             # 策略3: 如果循环结束仍是白屏，执行完整修复链（避免仅靠 goto 仍卡在 LoginPC / blank）
-            final_url = shared_page.url
+            final_url = page.url
             if final_url == "about:blank":
                 logger.error(f"❌ 等待{max_wait_cycles}秒后仍是白屏，执行 Session/登录修复链...")
                 try:
-                    shared_page.go_back(wait_until="domcontentloaded", timeout=8000)
-                    shared_page.wait_for_timeout(1500)
+                    page.go_back(wait_until="domcontentloaded", timeout=8000)
+                    page.wait_for_timeout(1500)
                 except Exception as gb_err:
                     logger.debug(f"go_back 可选步骤失败: {gb_err}")
-                if shared_page.url == "about:blank":
-                    _repair_blank_page_or_fail(shared_page, "TC051 Confirm 验证码提交后")
+                if page.url == "about:blank":
+                    _repair_blank_page_or_fail(page, "TC051 Confirm 验证码提交后")
             
-            logger.info(f"✓ 最终URL: {shared_page.url}")
+            logger.info(f"✓ 最终URL: {page.url}")
             
             # 检查对话框状态（验证提交是否完成）
-            dialog = shared_page.get_by_role("dialog")
+            dialog = page.get_by_role("dialog")
             logger.info("检查验证码对话框状态...")
             for check_attempt in range(5):  # 最多检查5次
                 try:
@@ -4165,14 +4145,14 @@ class TestRechargeAndWithdrawAll:
                 except Exception:
                     logger.info("✓ 对话框已不可见")
                     break
-                shared_page.wait_for_timeout(1000)
+                page.wait_for_timeout(1000)
             
             # 确保在正确的页面上
-            _ensure_on_home_page(shared_page)
+            _ensure_on_home_page(page)
 
             # 获取Reference ID
             # 使用.first避免strict mode violation
-            ref_locator = shared_page.locator('text=/\\d{19}/').first
+            ref_locator = page.locator('text=/\\d{19}/').first
             if ref_locator.is_visible(timeout=5000):
                 TestRechargeAndWithdrawAll.reference_id = ref_locator.inner_text().strip()
                 logger.info(f"✓ Reference ID: {TestRechargeAndWithdrawAll.reference_id}")
@@ -4180,11 +4160,11 @@ class TestRechargeAndWithdrawAll:
                 # 尝试从其他位置获取（可能在交易历史页面）
                 logger.warning("主页面未找到Reference ID，尝试从Details获取...")
                 try:
-                    details_btn = shared_page.get_by_text("Details").first
+                    details_btn = page.get_by_text("Details").first
                     if details_btn.is_visible(timeout=3000):
                         details_btn.click()
-                        shared_page.wait_for_timeout(2000)
-                        ref_locator = shared_page.locator('text=/\\d{19}/').first
+                        page.wait_for_timeout(2000)
+                        ref_locator = page.locator('text=/\\d{19}/').first
                         if ref_locator.is_visible(timeout=3000):
                             TestRechargeAndWithdrawAll.reference_id = ref_locator.inner_text().strip()
                             logger.info(f"✓ Reference ID (从Details获取): {TestRechargeAndWithdrawAll.reference_id}")
@@ -4215,18 +4195,18 @@ class TestRechargeAndWithdrawAll:
     @allure.title("TC052: 余额小于$20时执行充值脚本应成功增加余额")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description("执行充值脚本后刷新页面验证余额增加且Withdraw可用")
-    def test_recharge_script_increases_balance(self, shared_page):
+    def test_recharge_script_increases_balance(self, page):
         # 确保在Home页面
-        _ensure_on_home_page(shared_page)
+        _ensure_on_home_page(page)
         
         with allure.step("记录充值前余额（若可见）"):
-            shared_page.reload()
-            shared_page.wait_for_timeout(3000)
-            eye = shared_page.locator('[class*="eye"]').first
+            page.reload()
+            page.wait_for_timeout(3000)
+            eye = page.locator('[class*="eye"]').first
             if eye.is_visible(timeout=2000):
                 eye.click()
-                shared_page.wait_for_timeout(1000)
-            balance_loc = shared_page.locator('text=/\\$[\\d,]+\\.\\d{2}/').first
+                page.wait_for_timeout(1000)
+            balance_loc = page.locator('text=/\\$[\\d,]+\\.\\d{2}/').first
             if balance_loc.is_visible(timeout=3000):
                 t = balance_loc.inner_text().replace('$', '').replace(',', '')
                 try:
@@ -4253,17 +4233,17 @@ class TestRechargeAndWithdrawAll:
                 logger.warning(f"充值脚本错误输出: {result.stderr[:200]}")
             assert result.returncode == 0, f"充值脚本失败: {result.stderr or result.stdout}"
         with allure.step("等待并刷新页面"):
-            shared_page.wait_for_timeout(5000)
-            shared_page.reload()
-            shared_page.wait_for_load_state("load", timeout=10000)
-            shared_page.wait_for_timeout(3000)
+            page.wait_for_timeout(5000)
+            page.reload()
+            page.wait_for_load_state("load", timeout=10000)
+            page.wait_for_timeout(3000)
         with allure.step("点击眼睛图标查看余额"):
-            eye = shared_page.locator('[class*="eye"]').first
+            eye = page.locator('[class*="eye"]').first
             if eye.is_visible(timeout=3000):
                 eye.click()
-                shared_page.wait_for_timeout(1000)
+                page.wait_for_timeout(1000)
         with allure.step("验证余额≥20且Withdraw可用"):
-            balance_loc = shared_page.locator('text=/\\$[\\d,]+\\.\\d{2}/').first
+            balance_loc = page.locator('text=/\\$[\\d,]+\\.\\d{2}/').first
             assert balance_loc.is_visible(timeout=5000), "余额未显示"
             balance_text = balance_loc.inner_text().replace('$', '').replace(',', '')
             current = float(balance_text)
@@ -4274,29 +4254,29 @@ class TestRechargeAndWithdrawAll:
     @allure.title("TC053-TC055: 充值记录完整验证（合并优化）")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description("一次性验证：充值记录显示、详情对话框、余额计算（合并3个用例）")
-    def test_deposit_records_and_balance_verification(self, shared_page):
+    def test_deposit_records_and_balance_verification(self, page):
         """TC053: 通过余额变化验证充值成功"""
         
         # 确保在Home页面
-        _ensure_on_home_page(shared_page)
+        _ensure_on_home_page(page)
         
         # TC053: 在home页面通过余额验证充值是否成功
         with allure.step("TC053: 在home页面查看余额验证充值成功"):
             # 确保在home页面
-            shared_page.goto(_CONFIG['base_url'])
-            shared_page.wait_for_load_state("load", timeout=10000)
-            shared_page.wait_for_timeout(2000)
-            if shared_page.url == "about:blank" or "/wallet/home" not in shared_page.url:
+            page.goto(_CONFIG['base_url'])
+            page.wait_for_load_state("load", timeout=10000)
+            page.wait_for_timeout(2000)
+            if page.url == "about:blank" or "/wallet/home" not in page.url:
                 logger.warning("TC053: 导航后异常 URL，尝试 _ensure_on_home_page 恢复")
-                _ensure_on_home_page(shared_page)
-                shared_page.goto(_CONFIG['base_url'])
-                shared_page.wait_for_load_state("domcontentloaded", timeout=15000)
-                shared_page.wait_for_timeout(2000)
+                _ensure_on_home_page(page)
+                page.goto(_CONFIG['base_url'])
+                page.wait_for_load_state("domcontentloaded", timeout=15000)
+                page.wait_for_timeout(2000)
             
             # 点击眼睛图标显示余额（与 TC052 一致，避免 nth(img) 点到无关图标导致超时 / about:blank）
-            eye_icon = shared_page.locator('[class*="eye"]').first
+            eye_icon = page.locator('[class*="eye"]').first
             if not eye_icon.is_visible(timeout=3000):
-                alt = shared_page.locator('img[class*="eye"]').first
+                alt = page.locator('img[class*="eye"]').first
                 if alt.is_visible(timeout=2000):
                     eye_icon = alt
             if eye_icon.is_visible(timeout=3000):
@@ -4304,17 +4284,17 @@ class TestRechargeAndWithdrawAll:
                     eye_icon.click(timeout=15000)
                 except Exception as e:
                     logger.warning(f"眼睛图标首次点击失败，刷新后重试: {e}")
-                    _ensure_on_home_page(shared_page)
-                    shared_page.goto(_CONFIG['base_url'])
-                    shared_page.wait_for_load_state("domcontentloaded", timeout=15000)
-                    shared_page.wait_for_timeout(2000)
-                    eye_icon = shared_page.locator('[class*="eye"]').first
+                    _ensure_on_home_page(page)
+                    page.goto(_CONFIG['base_url'])
+                    page.wait_for_load_state("domcontentloaded", timeout=15000)
+                    page.wait_for_timeout(2000)
+                    eye_icon = page.locator('[class*="eye"]').first
                     eye_icon.click(timeout=15000)
-                shared_page.wait_for_timeout(1000)
+                page.wait_for_timeout(1000)
                 logger.info("✓ 已点击眼睛图标显示余额")
             
             # 获取当前余额
-            balance_locator = shared_page.locator('text=/\\$[\\d,]+\\.\\d{2}/').first
+            balance_locator = page.locator('text=/\\$[\\d,]+\\.\\d{2}/').first
             if balance_locator.is_visible(timeout=3000):
                 balance_text = balance_locator.inner_text()
                 current_balance = float(balance_text.replace('$', '').replace(',', ''))
@@ -4350,49 +4330,49 @@ class TestRechargeAndWithdrawAll:
     @allure.title("TC056: 充值后再次提现应成功")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description("验证充值后可以正常发起提现")
-    def test_withdraw_after_recharge_succeeds(self, shared_page, redis_client):
+    def test_withdraw_after_recharge_succeeds(self, page, redis_client):
         # 确保在Home页面
-        _ensure_on_home_page(shared_page)
+        _ensure_on_home_page(page)
         
-        if not _ensure_bank_account_bound(shared_page):
+        if not _ensure_bank_account_bound(page):
             pytest.skip("需要已绑定银行账户")
-        shared_page.goto(_CONFIG['base_url'])
-        shared_page.wait_for_load_state("load", timeout=10000)
-        shared_page.wait_for_timeout(2000)
+        page.goto(_CONFIG['base_url'])
+        page.wait_for_load_state("load", timeout=10000)
+        page.wait_for_timeout(2000)
         
         # 关闭可能遗留的对话框
         try:
             # 先用通用方式关闭所有dialog
-            if shared_page.get_by_role("dialog").is_visible(timeout=2000):
+            if page.get_by_role("dialog").is_visible(timeout=2000):
                 logger.info("检测到遗留弹窗，按ESC关闭...")
-                shared_page.keyboard.press("Escape")
-                shared_page.wait_for_timeout(1000)
+                page.keyboard.press("Escape")
+                page.wait_for_timeout(1000)
                 
                 # 如果还有，再按一次
-                if shared_page.get_by_role("dialog").is_visible(timeout=1000):
-                    shared_page.keyboard.press("Escape")
-                    shared_page.wait_for_timeout(1000)
+                if page.get_by_role("dialog").is_visible(timeout=1000):
+                    page.keyboard.press("Escape")
+                    page.wait_for_timeout(1000)
                     logger.info("✓ 已关闭多个遗留弹窗")
         except Exception as e:
             logger.debug(f"清理对话框: {e}")
         
         # 点击Withdraw按钮
-        withdraw_btn = shared_page.get_by_role('button', name='Withdraw').first
+        withdraw_btn = page.get_by_role('button', name='Withdraw').first
         assert withdraw_btn.is_visible(timeout=5000), "Withdraw按钮未显示"
         withdraw_btn.click()
-        shared_page.wait_for_timeout(2000)
+        page.wait_for_timeout(2000)
         logger.info("✓ 已点击Withdraw按钮")
         
         # 检查是否有阻塞，如果有则清除
-        if shared_page.locator('text=/Withdrawal in progress/i').is_visible(timeout=2000):
+        if page.locator('text=/Withdrawal in progress/i').is_visible(timeout=2000):
             logger.warning("⚠️ 检测到'Withdrawal in progress'阻塞，尝试自动清除...")
             
             # 关闭阻塞提示
-            shared_page.keyboard.press('Escape')
-            shared_page.wait_for_timeout(1000)
+            page.keyboard.press('Escape')
+            page.wait_for_timeout(1000)
             
             # 调用清除函数
-            clear_result = _clear_withdrawal_in_progress(shared_page)
+            clear_result = _clear_withdrawal_in_progress(page)
             
             if not clear_result:
                 pytest.skip("阻塞清除失败，跳过测试")
@@ -4400,28 +4380,28 @@ class TestRechargeAndWithdrawAll:
             logger.info("✓ 阻塞已清除，继续测试")
             
             # 重新点击Withdraw按钮
-            shared_page.get_by_role('button', name='Withdraw').first.click()
-            shared_page.wait_for_timeout(2000)
+            page.get_by_role('button', name='Withdraw').first.click()
+            page.wait_for_timeout(2000)
         
         # 等待提现表单dialog打开
-        assert shared_page.get_by_role('dialog').is_visible(timeout=5000), "提现表单未打开"
-        shared_page.wait_for_timeout(1000)  # 等待动画完成
+        assert page.get_by_role('dialog').is_visible(timeout=5000), "提现表单未打开"
+        page.wait_for_timeout(1000)  # 等待动画完成
         logger.info("✓ 提现表单已打开")
         
         # 输入提现金额（在dialog内定位输入框）
-        amount_input = shared_page.get_by_role('dialog').get_by_role('textbox').first
+        amount_input = page.get_by_role('dialog').get_by_role('textbox').first
         amount_input.fill("20")
-        shared_page.wait_for_timeout(500)
+        page.wait_for_timeout(500)
         logger.info("✓ 已输入提现金额：20")
         
         # 点击Withdraw提交按钮触发验证码对话框
-        submit_button = shared_page.get_by_role('dialog').get_by_role('button', name='Withdraw')
+        submit_button = page.get_by_role('dialog').get_by_role('button', name='Withdraw')
         submit_button.click()
-        shared_page.wait_for_timeout(2000)
+        page.wait_for_timeout(2000)
         logger.info("✓ 已点击Withdraw提交按钮")
         
         # 等待验证码对话框打开
-        assert shared_page.locator('text="Verification code"').is_visible(timeout=5000), "验证码对话框未打开"
+        assert page.locator('text="Verification code"').is_visible(timeout=5000), "验证码对话框未打开"
         logger.info("✓ 验证码对话框已打开")
         
         # 获取验证码并填入
@@ -4430,33 +4410,33 @@ class TestRechargeAndWithdrawAll:
             pytest.skip("无法获取验证码")
         
         # 使用更通用的定位器（可能是Enter verification code或Enter code）
-        code_input = shared_page.get_by_role('textbox', name=re.compile('Enter.*code', re.I))
+        code_input = page.get_by_role('textbox', name=re.compile('Enter.*code', re.I))
         code_input.fill(code)
-        shared_page.wait_for_timeout(500)
+        page.wait_for_timeout(500)
         logger.info(f"✓ 已输入验证码：{code}")
-        shared_page.get_by_role('button', name='Confirm').click()
-        shared_page.wait_for_timeout(1500)
+        page.get_by_role('button', name='Confirm').click()
+        page.wait_for_timeout(1500)
 
         try:
-            if shared_page.url == "about:blank":
-                if not _wait_out_transient_blank(shared_page, timeout_ms=22000):
+            if page.url == "about:blank":
+                if not _wait_out_transient_blank(page, timeout_ms=22000):
                     logger.warning("TC056: Confirm 后白屏未在窗口期内恢复")
-                if shared_page.url == "about:blank":
-                    _repair_blank_page_or_fail(shared_page, "TC056_after_confirm")
-            shared_page.wait_for_load_state("domcontentloaded", timeout=15000)
+                if page.url == "about:blank":
+                    _repair_blank_page_or_fail(page, "TC056_after_confirm")
+            page.wait_for_load_state("domcontentloaded", timeout=15000)
         except Exception as e:
             logger.warning(f"TC056: 提交后等待加载异常（继续尝试解析 Reference ID）: {e}")
 
-        shared_page.wait_for_timeout(2000)
+        page.wait_for_timeout(2000)
 
-        ref_loc = shared_page.locator('text=/\\d{19}/').first
+        ref_loc = page.locator('text=/\\d{19}/').first
         if not ref_loc.is_visible(timeout=8000):
             logger.warning("TC056: 当前页未见 Reference ID，回钱包首页再查找")
-            _ensure_on_home_page(shared_page)
-            shared_page.goto(_CONFIG['base_url'])
-            shared_page.wait_for_load_state("domcontentloaded", timeout=15000)
-            shared_page.wait_for_timeout(2500)
-            ref_loc = shared_page.locator('text=/\\d{19}/').first
+            _ensure_on_home_page(page)
+            page.goto(_CONFIG['base_url'])
+            page.wait_for_load_state("domcontentloaded", timeout=15000)
+            page.wait_for_timeout(2500)
+            ref_loc = page.locator('text=/\\d{19}/').first
 
         assert ref_loc.is_visible(timeout=8000), "提现提交后应显示Reference ID"
         logger.info("✅ TC056 通过")
@@ -4465,60 +4445,60 @@ class TestRechargeAndWithdrawAll:
     @allure.title("TC057: Withdraw All 一键全额提现功能")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description("点击Withdraw All后提现金额应自动填充为当前余额")
-    def test_withdraw_all_fills_full_balance(self, shared_page):
+    def test_withdraw_all_fills_full_balance(self, page):
         """TC057: 点击Withdraw All应自动填充全额余额"""
-        if not _ensure_bank_account_bound(shared_page):
+        if not _ensure_bank_account_bound(page):
             pytest.skip("需要已绑定银行账户")
         
         # 确保在Home页面
-        _ensure_on_home_page(shared_page)
-        shared_page.wait_for_timeout(1000)
+        _ensure_on_home_page(page)
+        page.wait_for_timeout(1000)
         
         # 【增强】使用重试机制打开提现表单
         withdraw_opened = False
         for attempt in range(3):
             try:
-                withdraw_button = shared_page.get_by_role('button', name='Withdraw').first
+                withdraw_button = page.get_by_role('button', name='Withdraw').first
                 if not withdraw_button.is_visible(timeout=5000):
                     logger.warning(f"⚠️ Withdraw按钮不可见，重试 {attempt + 1}/3")
-                    shared_page.wait_for_timeout(2000)
+                    page.wait_for_timeout(2000)
                     continue
                 
                 withdraw_button.click()
-                shared_page.wait_for_timeout(2000)
+                page.wait_for_timeout(2000)
                 
                 # 检查是否有进行中提示
-                if shared_page.locator('text=/Withdrawal in progress/i').is_visible(timeout=2000):
-                    shared_page.keyboard.press('Escape')
+                if page.locator('text=/Withdrawal in progress/i').is_visible(timeout=2000):
+                    page.keyboard.press('Escape')
                     pytest.skip("存在待处理提现")
                 
                 # 检查dialog是否打开
-                if shared_page.get_by_role('dialog').is_visible(timeout=3000):
+                if page.get_by_role('dialog').is_visible(timeout=3000):
                     withdraw_opened = True
                     break
                     
             except Exception as e:
                 logger.warning(f"⚠️ 打开提现表单失败 {attempt + 1}/3: {e}")
                 if attempt < 2:
-                    shared_page.wait_for_timeout(2000)
+                    page.wait_for_timeout(2000)
         
         if not withdraw_opened:
             pytest.skip("无法打开提现表单")
         
         # 【增强】查找Withdraw All按钮
-        withdraw_all_btn = shared_page.locator('text="Withdraw All"')
+        withdraw_all_btn = page.locator('text="Withdraw All"')
         assert withdraw_all_btn.is_visible(timeout=3000), "Withdraw All按钮未显示"
         
         withdraw_all_btn.click()
-        shared_page.wait_for_timeout(1000)
+        page.wait_for_timeout(1000)
         
         # 验证金额已自动填充
-        amount_input = shared_page.locator('input[placeholder*="0"]').first
+        amount_input = page.locator('input[placeholder*="0"]').first
         if amount_input.is_visible(timeout=2000):
             filled = amount_input.input_value()
             assert filled and float(filled.replace(',', '')) > 0, "Withdraw All应自动填充金额"
         
-        shared_page.keyboard.press('Escape')
+        page.keyboard.press('Escape')
         logger.info("✅ TC057 通过")
 
    

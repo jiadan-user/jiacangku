@@ -36,6 +36,9 @@
 
 ### TC001 地图容器正常加载渲染
 
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_load_state.py::test_tc001_map_container_loads_correctly`）
+
 **前提条件**：浏览器新标签，未访问过该页面
 
 **测试步骤**：
@@ -53,6 +56,9 @@
 
 ### TC002 地图结果数量徽标正常展示
 
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_load_state.py::test_tc002_results_badge_displays_correctly`）
+
 **前提条件**：地图视图已加载完成
 
 **测试步骤**：
@@ -68,6 +74,9 @@
 ---
 
 ### TC003 地图 Pin 点标记正常渲染
+
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_load_state.py::test_tc003_map_pins_render_correctly`）
 
 **前提条件**：地图视图已加载完成，当前视口范围内有房产数据
 
@@ -85,6 +94,9 @@
 
 ### TC004 地图控件正常加载（缩放/定位按钮）
 
+**优先级**：P1
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_load_state.py::test_tc004_map_controls_load_correctly`）
+
 **前提条件**：地图视图已加载完成
 
 **测试步骤**：
@@ -101,6 +113,9 @@
 ---
 
 ### TC005 从列表视图切换到地图视图后地图正常加载
+
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_load_state.py::test_tc005_switch_from_list_to_map_view`）
 
 **前提条件**：初始为列表视图（URL 含 `view=list` 或去掉 `view` 参数）
 
@@ -121,10 +136,10 @@
 
 ## 执行记录
 
-| 用例 | 执行日期 | 结果 | 备注 |
-|------|---------|------|------|
-| TC001 | - | - | - |
-| TC002 | - | - | - |
-| TC003 | - | - | - |
-| TC004 | - | - | - |
-| TC005 | - | - | - |
+| 用例 | 执行日期 | 结果 | 备注 | UI自动化 |
+| ------ | --------- | ------ | ------ | --- |
+| TC001 | - | - | - | ✅ 可自动化 |
+| TC002 | - | - | - | ✅ 可自动化 |
+| TC003 | - | - | - | ✅ 可自动化 |
+| TC004 | - | - | - | ✅ 可自动化 |
+| TC005 | - | - | - | ✅ 可自动化 |

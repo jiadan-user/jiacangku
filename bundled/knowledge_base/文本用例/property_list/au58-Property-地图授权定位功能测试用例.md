@@ -31,6 +31,9 @@
 
 ### TC001 地图视图页面正常加载
 
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_geolocation.py::test_map_view_page_loads_successfully`）
+
 **步骤**：打开目标地图视图页面，等待地图加载完成。
 **预期**：页面正常加载，地图渲染完成，可见地图区域、搜索框、房源 pin 点。
 **验证**：地图容器元素可见，URL 包含 `view=map`。
@@ -39,6 +42,9 @@
 
 ### TC002 地图页显示定位按钮
 
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_geolocation.py::test_location_button_is_visible`）
+
 **步骤**：在地图视图页面，查找定位（My Location）按钮。
 **预期**：地图右侧或右下角显示定位图标按钮（通常为圆形图标，内有定位箭头）。
 **验证**：定位按钮元素存在且可见，bounding_box 宽高大于 0。
@@ -46,6 +52,9 @@
 ---
 
 ### TC003 点击定位按钮触发浏览器授权弹窗
+
+**优先级**：P1
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_geolocation.py::test_click_location_button_triggers_permission_request`）
 
 **步骤**：
 1. 打开地图视图页面
@@ -57,6 +66,9 @@
 ---
 
 ### TC004 授权定位后地图中心移动到当前位置
+
+**优先级**：P1
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_geolocation_permission.py::test_map_center_moves_after_geolocation_granted`）
 
 **步骤**：
 1. 使用 Playwright 预设地理位置（如悉尼：latitude=-33.8688, longitude=151.2093）
@@ -70,6 +82,9 @@
 ---
 
 ### TC005 拒绝授权后地图保持原始中心点
+
+**优先级**：P2
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_geolocation_permission.py::test_map_center_unchanged_after_geolocation_denied`）
 
 **步骤**：
 1. 使用 Playwright 拒绝地理位置权限

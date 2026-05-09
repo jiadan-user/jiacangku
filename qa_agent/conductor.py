@@ -1059,6 +1059,20 @@ class QAConductor:
         if not textcases_text:
             reasons.append("缺少 textcases，或测试用例文档内容为空。")
 
+        rule_paths, invalid_rule_routes = self._knowledge_base_rule_paths(packet)
+        if invalid_rule_routes:
+            reasons.extend(invalid_rule_routes)
+        if report_text:
+            if rule_paths and "知识库依据" not in report_text:
+                reasons.append("分析报告缺少“知识库依据”章节，无法确认已读取业务规则库。")
+            if not rule_paths and not self._mentions_kb_miss(report_text):
+                reasons.append("业务规则库未命中时，分析报告必须明确写出“规则库未命中”或“知识库未命中”。")
+        if textcases_text:
+            if "业务属性" not in textcases_text:
+                reasons.append("测试用例文档缺少“业务属性”说明。")
+            if "测试范围" not in textcases_text:
+                reasons.append("测试用例文档缺少“测试范围”说明。")
+
         document = parse_markdown_document(textcases_path) if textcases_text else None
         environment = document.environment if document else {}
         if not environment:
@@ -1100,6 +1114,10 @@ class QAConductor:
                 missing.append("UI自动化")
             if missing:
                 reasons.append(f"{case.tc_id or case.title or '未命名用例'} 缺少字段: {', '.join(missing)}。")
+            if case.ui_automatable:
+                precondition_reason = self._executable_precondition_issue(case)
+                if precondition_reason:
+                    reasons.append(f"{case.tc_id or case.title or '未命名用例'} 前置条件不可执行: {precondition_reason}")
 
         bucket = self._knowledge_base_bucket(packet)
         if not bucket:
@@ -1107,6 +1125,8 @@ class QAConductor:
                 f"模块 `{(packet.get('candidate_modules') or [''])[0]}` 缺少知识库文本用例路由，"
                 "请先在 config/knowledge_base_routing.yaml 中补齐。"
             )
+        elif not self._is_safe_relative_fragment(bucket):
+            reasons.append(f"知识库文本用例 bucket 必须是相对路径片段，不能是绝对路径或包含 `..`: {bucket}")
 
         kb_path = ""
         if not reasons:
@@ -1120,6 +1140,9 @@ class QAConductor:
                 kb_text_case_draft_path=str(target_path),
                 environment=environment,
                 cases=cases,
+                business_attributes=self._extract_document_section_lines(textcases_text, "业务属性"),
+                test_scope=self._extract_document_section_lines(textcases_text, "测试范围"),
+                rule_library_paths=[str(path) for path in rule_paths],
             )
             manifest_path = self.store.artifact_path(state.run_id, "text_case_manifest.json")
             write_json(manifest_path, to_data(manifest))
@@ -1146,6 +1169,7 @@ class QAConductor:
                 "ui_automatable_count": sum(case.ui_automatable for case in cases),
                 "environment_keys": sorted(environment.keys()),
                 "kb_text_case_draft_path": kb_path,
+                "rule_library_paths": [str(path) for path in rule_paths],
             },
         )
 
@@ -1546,6 +1570,91 @@ class QAConductor:
                 lines.append(stripped)
         return lines
 
+    def _mentions_kb_miss(self, text: str) -> bool:
+        return any(token in text for token in ("规则库未命中", "知识库未命中", "未命中业务规则库"))
+
+    def _extract_document_section_lines(self, text: str, section_name: str) -> list[str]:
+        pattern = re.compile(
+            rf"^#{{1,6}}\s*.*?{re.escape(section_name)}.*?\n(.*?)(?=^#{{1,6}}\s+|\Z)",
+            flags=re.S | re.M,
+        )
+        match = pattern.search(text or "")
+        if not match:
+            return []
+        lines: list[str] = []
+        for line in match.group(1).splitlines():
+            stripped = line.strip()
+            if not stripped or stripped in {"---"}:
+                continue
+            stripped = re.sub(r"^\d+\.\s*", "", stripped)
+            stripped = re.sub(r"^-\s*", "", stripped)
+            if stripped:
+                lines.append(stripped)
+        return lines
+
+    def _is_safe_relative_fragment(self, value: str) -> bool:
+        if not value or Path(value).is_absolute():
+            return False
+        return ".." not in Path(value).parts
+
+    def _rule_route_values(self, packet: dict[str, Any]) -> list[str]:
+        module = normalize_text((packet.get("candidate_modules") or [""])[0]).replace(" ", "")
+        route_map = self.config.knowledge_base_routing.get("rule_library_routes", {})
+        route = route_map.get(module, [])
+        if isinstance(route, str):
+            return [route]
+        if isinstance(route, list):
+            return [str(item) for item in route if str(item).strip()]
+        if isinstance(route, dict):
+            for key in ("routes", "paths", "rules"):
+                value = route.get(key)
+                if isinstance(value, str):
+                    return [value]
+                if isinstance(value, list):
+                    return [str(item) for item in value if str(item).strip()]
+        return []
+
+    def _knowledge_base_rule_paths(self, packet: dict[str, Any]) -> tuple[list[Path], list[str]]:
+        knowledge_base_root = Path(self.config.skills.get("paths", {}).get("knowledge_base_root", ""))
+        rule_root = knowledge_base_root / "业务规则库"
+        paths: list[Path] = []
+        errors: list[str] = []
+        for route in self._rule_route_values(packet):
+            if not self._is_safe_relative_fragment(route):
+                errors.append(f"业务规则库 route 必须是相对路径片段，不能是绝对路径或包含 `..`: {route}")
+                continue
+            target = rule_root / route
+            if not target.exists():
+                errors.append(f"业务规则库 route 不存在: {target}")
+                continue
+            paths.append(target)
+        return paths, errors
+
+    def _executable_precondition_issue(self, case: TextCaseManifestEntry) -> str:
+        text = " ".join(case.preconditions)
+        normalized = normalize_text(text)
+        checks = {
+            "角色/登录态": any(
+                token in text
+                for token in ("访客", "游客", "未登录", "已登录", "登录态", "角色", "买家", "卖家", "buyer", "seller")
+            ),
+            "入口URL或导航路径": bool(re.search(r"https?://|/\w|URL|路径|打开|访问|进入|导航|首页|Browse", text, flags=re.I)),
+            "账号或测试数据": any(
+                token in text
+                for token in ("账号", "测试数据", "无需登录", "无", "邮箱", "手机", "商品", "车辆", "帖子", "数据", "ID", "@")
+            ),
+            "准备动作": any(token in text for token in ("打开", "访问", "进入", "点击", "登录", "清空", "选择", "创建", "准备")),
+            "就绪验证点": any(token in text for token in ("确认", "可见", "显示", "加载完成", "存在", "标题", "URL", "按钮", "输入框")),
+        }
+        missing = [name for name, ok in checks.items() if not ok]
+        vague_tokens = ("系统准备好", "数据准备好", "已准备好", "账号正常", "页面已加载", "已进入页面", "已进入")
+        vague = any(normalize_text(token) in normalized for token in vague_tokens)
+        if vague and missing:
+            return f"包含含糊表达，且缺少 {', '.join(missing)}。"
+        if missing:
+            return f"缺少 {', '.join(missing)}。"
+        return ""
+
     def _knowledge_base_bucket(self, packet: dict[str, Any]) -> str:
         module = normalize_text((packet.get("candidate_modules") or [""])[0]).replace(" ", "")
         bucket_map = self.config.knowledge_base_routing.get("text_case_buckets", {})
@@ -1555,6 +1664,8 @@ class QAConductor:
         return route.get("bucket", "")
 
     def _knowledge_base_draft_path(self, packet: dict[str, Any], textcases_path: str, bucket: str) -> Path:
+        if not self._is_safe_relative_fragment(bucket):
+            raise ValueError(f"知识库文本用例 bucket 必须是相对路径片段: {bucket}")
         knowledge_base_root = Path(self.config.skills.get("paths", {}).get("knowledge_base_root", ""))
         source_name = Path(textcases_path).name
         generic_names = {"testcases.md", "textcases.md", "cases.md"}
@@ -1964,6 +2075,8 @@ class QAConductor:
         packet = self._requirement_packet(state)
 
         if phase == Phase.SENIOR_QA_BRAIN:
+            rule_paths, rule_route_errors = self._knowledge_base_rule_paths(packet)
+            knowledge_base_root = Path(self.config.skills.get("paths", {}).get("knowledge_base_root", ""))
             parts = [
                 f"# 阶段: {phase.value}",
                 "",
@@ -1977,13 +2090,33 @@ class QAConductor:
                 parts.append(f"- 需求文档: {ref}")
             parts.extend(
                 [
+                    f"- 业务规则库根目录: {knowledge_base_root / '业务规则库'}",
+                    "",
+                    "## 业务规则库读取要求",
+                ]
+            )
+            if rule_paths:
+                parts.append("- 必须先读取以下业务规则库路径，再生成分析报告和文本用例：")
+                parts.extend(f"  - {path}" for path in rule_paths)
+            else:
+                parts.append("- 规则库未命中：当前 module 未配置可用业务规则库路径。")
+                parts.append("- 不要编造业务规则；请在分析报告中写明“规则库未命中”，并把缺失规则列为待确认问题。")
+            if rule_route_errors:
+                parts.append("- 规则库路由配置异常：")
+                parts.extend(f"  - {item}" for item in rule_route_errors)
+            parts.extend(
+                [
                     "",
                     "## 要求",
                     "- 按 SKILL.md 流程逐步执行，不要跳步",
+                    "- 分析报告必须包含“知识库依据”章节，列出实际读取的业务规则库文件路径；若规则库未命中，必须明确写“规则库未命中”或“知识库未命中”",
                     "- 生成分析报告后等待用户确认",
                     "- 确认后生成 Markdown 测试用例",
                     "- complete 当前阶段时必须回传 analysis_report 和 textcases 两个产物路径",
                     "- 文本用例必须包含测试环境配置表格、TC编号、前置条件、步骤、预期、优先级、测试类型、UI自动化",
+                    "- 文本用例必须包含“业务属性”和“测试范围”",
+                    "- 每条 UI自动化=✅ 的用例，前置条件必须写成可执行准备：角色/登录态、入口 URL 或导航路径、账号/测试数据、准备动作、就绪验证点",
+                    "- 不要只写“系统准备好”“已进入页面”“数据已准备好”“账号正常”等含糊前置条件",
                 ]
             )
             self._append_memory_instruction(parts, state)

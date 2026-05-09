@@ -46,6 +46,9 @@
 
 ### TC001 左侧卡片数量不超过结果徽标数字
 
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_card_count.py::test_left_card_count_le_badge_number`）
+
 **前提条件**：浏览器新标签，直接访问地图模式 URL（含 `view=map` 参数）
 
 **测试步骤**：
@@ -65,6 +68,9 @@
 
 ### TC002 结果徽标正确展示房源总数
 
+**优先级**：P1
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_card_count.py::test_results_badge_displays_correctly`）
+
 **前提条件**：地图视图已加载完成
 
 **测试步骤**：
@@ -82,6 +88,9 @@
 ---
 
 ### TC003 左侧卡片第1页数量不超过每页最大限制（24张）
+
+**优先级**：P1
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_card_count.py::test_left_card_page_limit`）
 
 **前提条件**：直接访问含 `view=map` 的地图模式 URL
 
@@ -101,6 +110,9 @@
 ---
 
 ### TC004 翻到第2页后卡片数量仍满足约束
+
+**优先级**：P1
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_card_count.py::test_second_page_card_count`）
 
 **前提条件**：地图视图已加载，总房源数 > 24（存在第2页）
 
@@ -122,6 +134,9 @@
 ---
 
 ### TC005 从列表视图切换到地图视图后数量关系正确
+
+**优先级**：P2
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_card_count.py::test_switch_to_map_view_card_count`）
 
 **前提条件**：初始为列表视图（URL 不含 `view=map` 参数）
 
@@ -145,10 +160,10 @@
 
 ## 执行记录
 
-| 用例 | 执行日期 | 结果 | 备注 |
-|------|---------|------|------|
-| TC001 | - | - | - |
-| TC002 | - | - | - |
-| TC003 | - | - | - |
-| TC004 | - | - | - |
-| TC005 | - | - | - |
+| 用例 | 执行日期 | 结果 | 备注 | UI自动化 |
+| ------ | --------- | ------ | ------ | --- |
+| TC001 | - | - | - | ✅ 可自动化 |
+| TC002 | - | - | - | ✅ 可自动化 |
+| TC003 | - | - | - | ✅ 可自动化 |
+| TC004 | - | - | - | ✅ 可自动化 |
+| TC005 | - | - | - | ✅ 可自动化 |

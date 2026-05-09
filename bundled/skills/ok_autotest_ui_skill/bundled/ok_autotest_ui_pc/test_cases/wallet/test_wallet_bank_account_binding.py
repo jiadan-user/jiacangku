@@ -1004,68 +1004,38 @@ class TestBankAccountUnbinding:
     - 预计节省时间：~60%（从 90秒降至 36秒）
     """
     
-    @pytest.fixture(scope="class")
-    def shared_page(self):
-        """类级别 fixture：创建浏览器，测试类结束后关闭
-        
-        注意：使用 mark_in_use()/mark_released() 保护实例不被 pytest hooks 提前清理。
-        """
-        from utils.browser_manager import BrowserManager
-        
-        logger.info("="*80)
-        logger.info("【Shared Browser】创建共享浏览器实例")
-        logger.info("="*80)
-        
-        browser_manager = BrowserManager()
-        page = browser_manager.start_browser(
-            browser_type=_CONFIG['browser']['type'],
-            headless=_CONFIG['browser']['headless'],
-            base_url=_CONFIG['base_url'],
-            viewport=_CONFIG['browser']['viewport']
-        )
-        
-        # 标记为使用中，防止被 pytest hooks 的 _cleanup_all(force=False) 清理
-        browser_manager.mark_in_use()
-        
-        yield page
-        
-        # 标记为已释放
-        browser_manager.mark_released()
-        
-        logger.info("="*80)
-        logger.info("【Shared Browser】关闭共享浏览器实例")
-        logger.info("="*80)
-        browser_manager.close_browser(page)
-    
     @pytest.fixture(scope="class", autouse=True)
-    def setup_class(self, shared_page):
-        """类级别 setup：登录并导航到钱包页面，所有测试共享"""
+    def setup_class(self, page):
+        """类级别 setup：登录并导航到钱包页面，所有测试共享
+        
+        使用 conftest.py 的 page fixture（已由 BrowserManager 管理）
+        """
         logger.info("="*80)
         logger.info("【Setup】银行账户解绑测试套件（TC007-TC014）")
         logger.info("="*80)
         
         # Session 复用
         session_name = f"{_CONFIG['site']}_{_CONFIG['role']}_{_CONFIG['user_name']}_wallet"
-        session_manager = SessionManager(shared_page, _CONFIG['base_url'], session_name)
+        session_manager = SessionManager(page, _CONFIG['base_url'], session_name)
         
         with allure.step("加载 Session 或执行登录"):
             if session_manager.load_session():
                 logger.info("✓ 成功加载已保存的 Session")
-                shared_page.goto(_CONFIG['base_url'])
-                shared_page.wait_for_load_state("load", timeout=10000)
-                shared_page.wait_for_timeout(2000)
+                page.goto(_CONFIG['base_url'])
+                page.wait_for_load_state("load", timeout=10000)
+                page.wait_for_timeout(2000)
                 
                 # 关闭可能遗留的对话框
-                _close_blocking_dialogs(shared_page)
+                _close_blocking_dialogs(page)
                 # Session 失效时常驻 LoginPC 遮罩，需自动登录而非仅关弹窗（与提现用例一致）
                 from test_cases.wallet.test_wallet_withdrawal import (
                     _dismiss_or_login_pc_modal,
                     _repair_blank_page_or_fail,
                 )
 
-                _dismiss_or_login_pc_modal(shared_page, session_manager)
+                _dismiss_or_login_pc_modal(page, session_manager)
                 _repair_blank_page_or_fail(
-                    shared_page, phase="bank_unbind.setup_class after session"
+                    page, phase="bank_unbind.setup_class after session"
                 )
             else:
                 logger.info("⚠️ 未找到 Session，跳过解绑测试（需先运行绑定测试）")
@@ -1073,7 +1043,7 @@ class TestBankAccountUnbinding:
         
         # 验证账户已绑定
         with allure.step("验证银行账户已绑定"):
-            account_text = shared_page.locator('text="************7854"')
+            account_text = page.locator('text="************7854"')
             if not account_text.is_visible(timeout=3000):
                 pytest.skip("银行账户未绑定，需要先运行TC016-TC023")
             logger.info("✓ 确认银行账户已绑定")
@@ -1091,31 +1061,31 @@ class TestBankAccountUnbinding:
     @allure.title("TC007: 已绑定银行账户时应显示账号后四位和解绑入口")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description("验证已绑定银行账户时，Bank Account区域显示账号后四位和三点菜单图标")
-    def test_01_bound_bank_account_should_display_last_four_digits_and_unbind_entry(self, shared_page):
+    def test_01_bound_bank_account_should_display_last_four_digits_and_unbind_entry(self, page):
         """TC007: 已绑定银行账户时应显示账号后四位和解绑入口"""
         
         # 测试开始前清理对话框
-        _close_blocking_dialogs(shared_page)
+        _close_blocking_dialogs(page)
         
         logger.info("="*80)
         logger.info("TC007: 已绑定银行账户时应显示账号后四位和解绑入口")
         logger.info("="*80)
         
         with allure.step("验证账号后四位显示"):
-            account_text = shared_page.locator('text="************7854"')
+            account_text = page.locator('text="************7854"')
             assert account_text.is_visible(timeout=5000), "账号后四位未显示"
             logger.info("✓ 账号后四位显示正常: ************7854")
         
         with allure.step("验证三点菜单图标显示"):
             # 使用多策略验证菜单图标可见性
             try:
-                bank_section = shared_page.locator('text="Bank Account"').locator('..').locator('..')
+                bank_section = page.locator('text="Bank Account"').locator('..').locator('..')
                 more_menu = bank_section.get_by_role('img').last
                 assert more_menu.is_visible(timeout=5000), "三点菜单图标未显示"
                 logger.info("✓ 三点菜单图标显示正常")
             except Exception:
                 # 后备检查：账号文本存在即认为菜单可用
-                account_text = shared_page.locator('text="************7854"')
+                account_text = page.locator('text="************7854"')
                 assert account_text.is_visible(timeout=3000), "银行账户信息未显示"
                 logger.info("✓ 三点菜单图标显示正常（通过账号信息验证）")
         
@@ -1128,7 +1098,7 @@ class TestBankAccountUnbinding:
     @allure.title("TC008: 点击银行账户三点菜单应显示解绑选项")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description("验证点击三点菜单后显示Unbind Bank Account选项")
-    def test_02_click_bank_account_menu_should_show_unbind_option(self, shared_page):
+    def test_02_click_bank_account_menu_should_show_unbind_option(self, page):
         """TC008: 点击银行账户三点菜单应显示解绑选项"""
         
         logger.info("="*80)
@@ -1136,17 +1106,17 @@ class TestBankAccountUnbinding:
         logger.info("="*80)
         
         # 检测并恢复白屏
-        _check_and_recover_from_blank_page(shared_page, _CONFIG['base_url'])
+        _check_and_recover_from_blank_page(page, _CONFIG['base_url'])
         
         with allure.step("点击三点菜单图标"):
-            _click_bank_account_more_menu(shared_page)
+            _click_bank_account_more_menu(page)
             logger.info("✓ 已点击三点菜单")
             
             # 检测白屏
-            _check_and_recover_from_blank_page(shared_page, _CONFIG['base_url'])
+            _check_and_recover_from_blank_page(page, _CONFIG['base_url'])
         
         with allure.step("验证显示Unbind Bank Account选项"):
-            unbind_option = shared_page.get_by_role('tooltip').locator('div').filter(
+            unbind_option = page.get_by_role('tooltip').locator('div').filter(
                 has_text='Unbind Bank Account'
             )
             assert unbind_option.is_visible(timeout=5000), "Unbind Bank Account选项未显示"
@@ -1154,8 +1124,8 @@ class TestBankAccountUnbinding:
         
         # 点击页面其他位置关闭菜单
         with allure.step("关闭菜单"):
-            shared_page.mouse.click(500, 300)
-            shared_page.wait_for_timeout(500)
+            page.mouse.click(500, 300)
+            page.wait_for_timeout(500)
             logger.info("✓ 已关闭菜单")
         
         logger.info("✅ TC008测试通过\n")
@@ -1167,7 +1137,7 @@ class TestBankAccountUnbinding:
     @allure.title("TC009: 点击解绑应弹出二次确认对话框")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description("验证点击Unbind Bank Account后弹出确认对话框，显示标题Unbind和确认按钮")
-    def test_03_click_unbind_should_show_confirmation_dialog(self, shared_page):
+    def test_03_click_unbind_should_show_confirmation_dialog(self, page):
         """TC009: 点击解绑应弹出二次确认对话框"""
         
         logger.info("="*80)
@@ -1175,39 +1145,39 @@ class TestBankAccountUnbinding:
         logger.info("="*80)
         
         # 检测并恢复白屏
-        _check_and_recover_from_blank_page(shared_page, _CONFIG['base_url'])
+        _check_and_recover_from_blank_page(page, _CONFIG['base_url'])
         
         with allure.step("点击三点菜单"):
-            _click_bank_account_more_menu(shared_page)
-            shared_page.wait_for_timeout(800)
+            _click_bank_account_more_menu(page)
+            page.wait_for_timeout(800)
             logger.info("✓ 已点击三点菜单")
             
             # 检测白屏
-            _check_and_recover_from_blank_page(shared_page, _CONFIG['base_url'])
+            _check_and_recover_from_blank_page(page, _CONFIG['base_url'])
         
         with allure.step("点击Unbind Bank Account"):
-            shared_page.get_by_role('tooltip').locator('div').filter(
+            page.get_by_role('tooltip').locator('div').filter(
                 has_text='Unbind Bank Account'
             ).click()
-            shared_page.wait_for_timeout(800)
+            page.wait_for_timeout(800)
             logger.info("✓ 已点击Unbind Bank Account")
         
         with allure.step("验证确认对话框显示"):
-            dialog_title = shared_page.locator('text="Unbind"').first
+            dialog_title = page.locator('text="Unbind"').first
             assert dialog_title.is_visible(timeout=5000), "对话框标题Unbind未显示"
             logger.info("✓ 对话框标题显示: Unbind")
             
-            dialog_content = shared_page.locator('text="Are you sure to unbind the bank account?"')
+            dialog_content = page.locator('text="Are you sure to unbind the bank account?"')
             assert dialog_content.is_visible(timeout=5000), "对话框内容未显示"
             logger.info("✓ 对话框内容显示: Are you sure to unbind the bank account?")
             
-            confirm_button = shared_page.get_by_role('button', name='Confirm')
+            confirm_button = page.get_by_role('button', name='Confirm')
             assert confirm_button.is_visible(timeout=5000), "Confirm按钮未显示"
             logger.info("✓ Confirm按钮显示正常")
 
             # 截图仅作佐证：长时间 screenshot 可能卡在字体/合成（PW_TEST_SCREENSHOT_NO_FONTS_READY 亦未必够用）
             try:
-                shared_page.screenshot(
+                page.screenshot(
                     path="reports/screenshots/tc009_unbind_dialog.png",
                     timeout=15000,
                     animations="disabled",
@@ -1217,8 +1187,8 @@ class TestBankAccountUnbinding:
                 logger.warning(f"TC009 截图跳过（断言已通过）: {sc_err}")
         
         with allure.step("关闭对话框"):
-            shared_page.keyboard.press('Escape')
-            shared_page.wait_for_timeout(800)
+            page.keyboard.press('Escape')
+            page.wait_for_timeout(800)
             logger.info("✓ 已关闭对话框")
         
         logger.info("✅ TC009测试通过\n")
@@ -1230,7 +1200,7 @@ class TestBankAccountUnbinding:
     @allure.title("TC010/TC011/TC012: 取消解绑的三种方式（X按钮/ESC键/点击蒙层）")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description("验证通过X按钮、ESC键、点击蒙层三种方式取消解绑，银行账户均保持绑定状态")
-    def test_04_cancel_unbind_three_ways(self, shared_page):
+    def test_04_cancel_unbind_three_ways(self, page):
         """TC010/TC011/TC012: 取消解绑的三种方式（合并优化版本）"""
         
         logger.info("="*80)
@@ -1242,26 +1212,26 @@ class TestBankAccountUnbinding:
             logger.info("\n[TC010] 测试点击X按钮取消解绑")
             
             # 打开对话框
-            _click_bank_account_more_menu(shared_page)
-            shared_page.wait_for_timeout(800)
-            shared_page.get_by_role('tooltip').locator('div').filter(
+            _click_bank_account_more_menu(page)
+            page.wait_for_timeout(800)
+            page.get_by_role('tooltip').locator('div').filter(
                 has_text='Unbind Bank Account'
             ).click()
-            shared_page.wait_for_timeout(800)
+            page.wait_for_timeout(800)
             logger.info("✓ 解绑确认对话框已打开")
             
             # 点击X按钮
-            close_button = shared_page.locator('.WithdrawTo_closeIcon__aZQPW')
+            close_button = page.locator('.WithdrawTo_closeIcon__aZQPW')
             close_button.click()
-            shared_page.wait_for_timeout(800)
+            page.wait_for_timeout(800)
             logger.info("✓ 已点击X按钮")
             
             # 验证对话框关闭且账户仍绑定
-            dialog = shared_page.locator('text="Unbind"').first
+            dialog = page.locator('text="Unbind"').first
             assert not dialog.is_visible(timeout=2000), "对话框未关闭"
             logger.info("✓ 对话框已关闭")
             
-            account_text = shared_page.locator('text="************7854"')
+            account_text = page.locator('text="************7854"')
             assert account_text.is_visible(timeout=3000), "银行账户已被解绑"
             logger.info("✓ 银行账户仍保持绑定状态")
             logger.info("✅ TC010通过：X按钮取消解绑成功\n")
@@ -1271,25 +1241,25 @@ class TestBankAccountUnbinding:
             logger.info("[TC011] 测试按ESC键取消解绑")
             
             # 打开对话框
-            _click_bank_account_more_menu(shared_page)
-            shared_page.wait_for_timeout(800)
-            shared_page.get_by_role('tooltip').locator('div').filter(
+            _click_bank_account_more_menu(page)
+            page.wait_for_timeout(800)
+            page.get_by_role('tooltip').locator('div').filter(
                 has_text='Unbind Bank Account'
             ).click()
-            shared_page.wait_for_timeout(800)
+            page.wait_for_timeout(800)
             logger.info("✓ 解绑确认对话框已打开")
             
             # 按ESC键
-            shared_page.keyboard.press('Escape')
-            shared_page.wait_for_timeout(800)
+            page.keyboard.press('Escape')
+            page.wait_for_timeout(800)
             logger.info("✓ 已按ESC键")
             
             # 验证对话框关闭且账户仍绑定
-            dialog = shared_page.locator('text="Unbind"').first
+            dialog = page.locator('text="Unbind"').first
             assert not dialog.is_visible(timeout=2000), "对话框未关闭"
             logger.info("✓ 对话框已关闭")
             
-            account_text = shared_page.locator('text="************7854"')
+            account_text = page.locator('text="************7854"')
             assert account_text.is_visible(timeout=3000), "银行账户已被解绑"
             logger.info("✓ 银行账户仍保持绑定状态")
             logger.info("✅ TC011通过：ESC键取消解绑成功\n")
@@ -1299,25 +1269,25 @@ class TestBankAccountUnbinding:
             logger.info("[TC012] 测试点击蒙层取消解绑")
             
             # 打开对话框
-            _click_bank_account_more_menu(shared_page)
-            shared_page.wait_for_timeout(800)
-            shared_page.get_by_role('tooltip').locator('div').filter(
+            _click_bank_account_more_menu(page)
+            page.wait_for_timeout(800)
+            page.get_by_role('tooltip').locator('div').filter(
                 has_text='Unbind Bank Account'
             ).click()
-            shared_page.wait_for_timeout(800)
+            page.wait_for_timeout(800)
             logger.info("✓ 解绑确认对话框已打开")
             
             # 点击蒙层（对话框外）
-            shared_page.mouse.click(100, 100)
-            shared_page.wait_for_timeout(800)
+            page.mouse.click(100, 100)
+            page.wait_for_timeout(800)
             logger.info("✓ 已点击蒙层区域")
             
             # 验证对话框关闭且账户仍绑定
-            dialog = shared_page.locator('text="Unbind"').first
+            dialog = page.locator('text="Unbind"').first
             assert not dialog.is_visible(timeout=2000), "对话框未关闭"
             logger.info("✓ 对话框已关闭")
             
-            account_text = shared_page.locator('text="************7854"')
+            account_text = page.locator('text="************7854"')
             assert account_text.is_visible(timeout=3000), "银行账户已被解绑"
             logger.info("✓ 银行账户仍保持绑定状态")
             logger.info("✅ TC012通过：点击蒙层取消解绑成功\n")
@@ -1333,7 +1303,7 @@ class TestBankAccountUnbinding:
     @allure.title("TC014: 有待处理提现时解绑应提示错误")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description("验证存在待处理提现(Bank Processing)时，点击Confirm解绑应显示错误提示，银行账户仍保持绑定")
-    def test_05_unbind_with_pending_withdrawal_should_show_error(self, shared_page):
+    def test_05_unbind_with_pending_withdrawal_should_show_error(self, page):
         """TC014: 有待处理提现时解绑应提示错误（无待处理提现时跳过）"""
         logger.info("="*80)
         logger.info("TC014: 有待处理提现时解绑应提示错误")
@@ -1341,9 +1311,9 @@ class TestBankAccountUnbinding:
 
         with allure.step("检测是否存在待处理提现"):
             # 先关闭可能阻塞的对话框
-            _close_blocking_dialogs(shared_page)
+            _close_blocking_dialogs(page)
             
-            withdraw_btn = shared_page.get_by_role('button', name='Withdraw')
+            withdraw_btn = page.get_by_role('button', name='Withdraw')
             if not withdraw_btn.is_visible(timeout=2000):
                 pytest.skip("Withdraw按钮未显示，无法检测待处理提现")
             
@@ -1353,42 +1323,42 @@ class TestBankAccountUnbinding:
             except Exception as e:
                 logger.warning(f"点击Withdraw按钮失败: {e}")
                 # 再次尝试关闭对话框
-                _close_blocking_dialogs(shared_page)
+                _close_blocking_dialogs(page)
                 withdraw_btn.click(force=True, timeout=5000)
-            shared_page.wait_for_timeout(2000)
-            in_progress_msg = shared_page.locator('text="Withdrawal in progress"')
+            page.wait_for_timeout(2000)
+            in_progress_msg = page.locator('text="Withdrawal in progress"')
             if not in_progress_msg.is_visible(timeout=3000):
-                shared_page.keyboard.press('Escape')
-                shared_page.wait_for_timeout(1000)
+                page.keyboard.press('Escape')
+                page.wait_for_timeout(1000)
                 pytest.skip("当前无待处理提现，TC014跳过")
             logger.info("✓ 检测到待处理提现，继续执行解绑错误场景")
-            shared_page.keyboard.press('Escape')
-            shared_page.wait_for_timeout(1000)
+            page.keyboard.press('Escape')
+            page.wait_for_timeout(1000)
 
         with allure.step("打开解绑确认对话框"):
-            _click_bank_account_more_menu(shared_page)
-            shared_page.wait_for_timeout(800)
-            shared_page.get_by_role('tooltip').locator('div').filter(
+            _click_bank_account_more_menu(page)
+            page.wait_for_timeout(800)
+            page.get_by_role('tooltip').locator('div').filter(
                 has_text='Unbind Bank Account'
             ).click()
-            shared_page.wait_for_timeout(800)
+            page.wait_for_timeout(800)
             logger.info("✓ 解绑确认对话框已打开")
 
         with allure.step("点击Confirm按钮（预期应提示错误）"):
-            shared_page.get_by_role('button', name='Confirm').click()
-            shared_page.wait_for_timeout(3000)
+            page.get_by_role('button', name='Confirm').click()
+            page.wait_for_timeout(3000)
 
         with allure.step("验证：应显示错误提示或账户仍绑定"):
-            error_hint = shared_page.locator('text=/pending|cannot|unbind|error/i').first
-            account_still_bound = shared_page.locator('text="************7854"').is_visible(timeout=2000)
+            error_hint = page.locator('text=/pending|cannot|unbind|error/i').first
+            account_still_bound = page.locator('text="************7854"').is_visible(timeout=2000)
             if error_hint.is_visible(timeout=2000):
                 logger.info("✓ 已显示错误提示")
             assert account_still_bound, "TC014预期：有待处理提现时解绑应失败，银行账户应仍保持绑定"
             logger.info("✓ 银行账户仍保持绑定状态")
 
         with allure.step("关闭可能仍打开的对话框"):
-            shared_page.keyboard.press('Escape')
-            shared_page.wait_for_timeout(500)
+            page.keyboard.press('Escape')
+            page.wait_for_timeout(500)
 
         logger.info("✅ TC014测试通过\n")
     
@@ -1399,7 +1369,7 @@ class TestBankAccountUnbinding:
     @allure.title("TC013: 确认解绑应成功解绑银行账户并显示添加按钮")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description("验证点击Confirm按钮后成功解绑，显示Add Bank Account按钮")
-    def test_99_confirm_unbind_should_successfully_unbind_and_show_add_button(self, shared_page):
+    def test_99_confirm_unbind_should_successfully_unbind_and_show_add_button(self, page):
         """TC013: 确认解绑应成功解绑银行账户并显示添加按钮（最后执行）"""
 
         logger.info("="*80)
@@ -1407,15 +1377,15 @@ class TestBankAccountUnbinding:
         logger.info("="*80)
 
         with allure.step("打开解绑确认对话框"):
-            _click_bank_account_more_menu(shared_page)
-            shared_page.wait_for_timeout(1000)
+            _click_bank_account_more_menu(page)
+            page.wait_for_timeout(1000)
             logger.info("✓ 已点击三点菜单")
 
             # 使用多种策略点击"Unbind Bank Account"
             unbind_clicked = False
             try:
                 # 策略1: 使用tooltip和filter
-                unbind_option = shared_page.get_by_role('tooltip').locator('div').filter(
+                unbind_option = page.get_by_role('tooltip').locator('div').filter(
                     has_text='Unbind Bank Account'
                 )
                 if unbind_option.count() > 0 and unbind_option.first.is_visible(timeout=3000):
@@ -1428,7 +1398,7 @@ class TestBankAccountUnbinding:
             if not unbind_clicked:
                 try:
                     # 策略2: 直接查找文本
-                    unbind_option = shared_page.locator('text="Unbind Bank Account"').first
+                    unbind_option = page.locator('text="Unbind Bank Account"').first
                     if unbind_option.is_visible(timeout=3000):
                         unbind_option.click(timeout=5000, force=True)
                         unbind_clicked = True
@@ -1439,7 +1409,7 @@ class TestBankAccountUnbinding:
             if not unbind_clicked:
                 try:
                     # 策略3: 使用get_by_text
-                    unbind_option = shared_page.get_by_text('Unbind Bank Account', exact=True).first
+                    unbind_option = page.get_by_text('Unbind Bank Account', exact=True).first
                     if unbind_option.is_visible(timeout=3000):
                         unbind_option.click(timeout=5000, force=True)
                         unbind_clicked = True
@@ -1450,27 +1420,27 @@ class TestBankAccountUnbinding:
             if not unbind_clicked:
                 pytest.fail("无法点击Unbind Bank Account选项（所有策略均失败）")
             
-            shared_page.wait_for_timeout(1000)
+            page.wait_for_timeout(1000)
             logger.info("✓ 解绑确认对话框已打开")
         
         with allure.step("点击Confirm按钮确认解绑"):
-            confirm_button = shared_page.get_by_role('button', name='Confirm')
+            confirm_button = page.get_by_role('button', name='Confirm')
             confirm_button.click()
-            shared_page.wait_for_timeout(3000)
+            page.wait_for_timeout(3000)
             logger.info("✓ 已点击Confirm按钮")
         
         with allure.step("验证对话框已关闭"):
-            dialog = shared_page.locator('text="Unbind"').first
+            dialog = page.locator('text="Unbind"').first
             assert not dialog.is_visible(timeout=2000), "对话框未关闭"
             logger.info("✓ 对话框已关闭")
         
         with allure.step("验证显示Add Bank Account按钮"):
-            add_button = shared_page.get_by_text('Add Bank Account')
+            add_button = page.get_by_text('Add Bank Account')
             assert add_button.is_visible(timeout=5000), "Add Bank Account按钮未显示"
             logger.info("✓ Add Bank Account按钮显示正常")
         
         with allure.step("验证之前的银行账户信息不再显示"):
-            account_text = shared_page.locator('text="************7854"')
+            account_text = page.locator('text="************7854"')
             assert not account_text.is_visible(timeout=2000), "银行账户信息仍然显示（未成功解绑）"
             logger.info("✓ 银行账户信息已移除")
         

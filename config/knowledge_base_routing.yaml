@@ -45,3 +45,57 @@ text_case_buckets:
     bucket: Tiyan/列表页
   settings:
     bucket: Tiyan/Settings
+
+rule_library_routes:
+  car:
+    - 车辆模块
+  wallet:
+    - 钱包模块
+  job:
+    - 招聘模块
+  jobs:
+    - 招聘模块
+  publish_job:
+    - 招聘模块
+  job_preferences:
+    - 招聘模块
+  resume:
+    - 招聘模块
+  property_list:
+    - 房产模块
+  property_detail:
+    - 房产模块
+    - 详情页规则
+  property_map:
+    - 房产模块
+  property:
+    - 房产模块
+  marketplace_post:
+    - 商品模块
+    - 通用规则
+  marketplace_order:
+    - 交易模块
+    - 商品模块
+  kyc:
+    - 用户模块
+  seo:
+    - 通用规则
+  ai_chat:
+    - AI能力规则
+    - 消息模块
+  ai_publish:
+    - AI能力规则
+    - 通用规则
+  messages:
+    - 消息模块
+  homepage:
+    - 首页规则
+  search:
+    - 首页规则
+    - 通用规则
+  列表页:
+    - 通用规则
+  list_page:
+    - 通用规则
+  settings:
+    - 用户模块

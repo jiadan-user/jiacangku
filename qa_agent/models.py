@@ -200,6 +200,9 @@ class TextCaseManifest:
     kb_text_case_draft_path: str
     environment: dict[str, str] = field(default_factory=dict)
     cases: list[TextCaseManifestEntry] = field(default_factory=list)
+    business_attributes: list[str] = field(default_factory=list)
+    test_scope: list[str] = field(default_factory=list)
+    rule_library_paths: list[str] = field(default_factory=list)
 
 
 @dataclass

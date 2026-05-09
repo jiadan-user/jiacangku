@@ -50,6 +50,9 @@
 
 ### TC001 地图 Pin 点总数与结果徽标数字相等
 
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_pin_count.py::test_pin_count_equals_badge_number`）
+
 **前提条件**：直接访问含 `view=map` 参数的地图模式 URL
 
 **测试步骤**：
@@ -68,6 +71,9 @@
 
 ### TC002 所有 Pin 点均显示价格文字
 
+**优先级**：P1
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_pin_count.py::test_all_pins_have_price_text`）
+
 **前提条件**：地图视图已加载完成，Pin 点已渲染
 
 **测试步骤**：
@@ -84,6 +90,9 @@
 ---
 
 ### TC003 Rent 页面所有 Pin 点均带 Rent 类型 class
+
+**优先级**：P1
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_pin_count.py::test_rent_pins_have_rent_class`）
 
 **前提条件**：访问 Rent（租房）类型的地图模式页面
 
@@ -102,6 +111,9 @@
 ---
 
 ### TC004 地图缩放后 Pin 点总数与 badge 保持一致
+
+**优先级**：P1
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_pin_count.py::test_pin_count_consistent_after_zoom`）
 
 **前提条件**：地图视图已加载，zoom=11，视口内包含全部 33 条房源
 
@@ -122,6 +134,9 @@
 ---
 
 ### TC005 从列表视图切换到地图视图后 Pin 点正常加载
+
+**优先级**：P2
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_map_pin_count.py::test_pins_load_after_switch_to_map`）
 
 **前提条件**：初始为列表视图（URL 不含 `view=map`）
 
@@ -144,10 +159,10 @@
 
 ## 执行记录
 
-| 用例 | 执行日期 | 结果 | 备注 |
-|------|---------|------|------|
-| TC001 | - | - | - |
-| TC002 | - | - | - |
-| TC003 | - | - | - |
-| TC004 | - | - | - |
-| TC005 | - | - | - |
+| 用例 | 执行日期 | 结果 | 备注 | UI自动化 |
+| ------ | --------- | ------ | ------ | --- |
+| TC001 | - | - | - | ✅ 可自动化 |
+| TC002 | - | - | - | ✅ 可自动化 |
+| TC003 | - | - | - | ✅ 可自动化 |
+| TC004 | - | - | - | ✅ 可自动化 |
+| TC005 | - | - | - | ✅ 可自动化 |
