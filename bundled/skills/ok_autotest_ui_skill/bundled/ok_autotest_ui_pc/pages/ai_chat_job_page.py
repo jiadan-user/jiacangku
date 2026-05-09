@@ -322,3 +322,129 @@ class AiChatJobPage(ChatPage):
         except Exception as e:
             self.logger.error(f"导航到聊天页面失败: {e}")
             raise
+    
+    # ========== M端验证方式（基于消息数量统计）==========
+    
+    def count_messages(self) -> int:
+        """统计当前会话中的消息数量（参考M端实现）
+        
+        Returns:
+            int: 消息数量
+        """
+        try:
+            # 使用更通用的选择器，尝试多种可能的消息容器
+            # PC端可能使用 .t-me-box 作为消息容器类名（从时间戳元素可以推断）
+            selectors = [
+                ".t-me-box",  # PC端常用的消息容器
+                "[class*='message-box']",
+                "[class*='msg-box']",
+                "[class*='chat-item']:not([class*='tips'])",  # M端的选择器
+                "[class*='message']:not([class*='system'])",  # 通用消息，排除系统消息
+            ]
+            
+            for selector in selectors:
+                messages = self.page.locator(selector).all()
+                if len(messages) > 0:
+                    count = len(messages)
+                    self.logger.info(f"当前消息数量: {count} (使用选择器: {selector})")
+                    return count
+            
+            # 如果所有选择器都找不到，返回0
+            self.logger.warning(f"所有选择器都未找到消息元素")
+            return 0
+        except Exception as e:
+            self.logger.warning(f"统计消息数量失败: {e}")
+            return 0
+    
+    def has_ai_reply_in_new_messages(self, initial_count: int, current_count: int) -> bool:
+        """检查新增的消息中是否包含 AI 回复（参考M端实现）
+        
+        Args:
+            initial_count: 发送前的消息数量
+            current_count: 当前的消息数量
+        
+        Returns:
+            bool: 新增消息中是否有 AI 回复
+        """
+        try:
+            if current_count <= initial_count:
+                return False
+            
+            # 使用与 count_messages() 相同的选择器逻辑
+            selectors = [
+                ".t-me-box",
+                "[class*='message-box']",
+                "[class*='msg-box']",
+                "[class*='chat-item']:not([class*='tips'])",
+                "[class*='message']:not([class*='system'])",
+            ]
+            
+            all_messages = []
+            for selector in selectors:
+                messages = self.page.locator(selector).all()
+                if len(messages) > 0:
+                    all_messages = messages
+                    break
+            
+            if not all_messages:
+                self.logger.warning("未找到任何消息元素")
+                return False
+            
+            # 检查新增的消息（从 initial_count 开始）
+            for i in range(initial_count, len(all_messages)):
+                message = all_messages[i]
+                # 检查消息是否包含 AI Auto Reply 标识
+                try:
+                    ai_marker = message.locator("text=/AI Auto Reply|Sent via AI Auto Reply/i")
+                    if ai_marker.count() > 0:
+                        self.logger.info(f"✓ 在第 {i+1} 条消息中检测到 AI 回复")
+                        return True
+                except:
+                    pass
+            
+            return False
+            
+        except Exception as e:
+            self.logger.warning(f"检查新增消息中的 AI 回复时出错: {e}")
+            return False
+    
+    def verify_ai_replied_by_count(self, initial_message_count: int, timeout: int = 30000) -> bool:
+        """验证 AI 是否已自动回复（基于消息数量变化 + AI 标识判断，参考M端实现）
+        
+        Args:
+            initial_message_count: 发送消息前的消息数量
+            timeout: 等待超时时间（毫秒），默认30秒
+        
+        Returns:
+            bool: AI 是否已回复
+        """
+        try:
+            # 等待新消息出现（消息数量增加）
+            start_time = self.page.evaluate("Date.now()")
+            
+            while True:
+                current_count = self.count_messages()
+                
+                # 如果消息数量增加，说明有新回复
+                if current_count > initial_message_count:
+                    self.logger.info(f"✓ 消息数量已增加（从 {initial_message_count} 增加到 {current_count}）")
+                    
+                    # 检查新增的消息中是否包含 AI 回复
+                    if self.has_ai_reply_in_new_messages(initial_message_count, current_count):
+                        self.logger.info("✓ AI 自动回复已显示（消息数量增加 + AI 标识验证通过）")
+                        return True
+                    else:
+                        self.logger.warning("⚠️ 消息数量增加但新增消息中没有 AI 回复，继续等待...")
+                
+                # 检查是否超时
+                elapsed = self.page.evaluate("Date.now()") - start_time
+                if elapsed > timeout:
+                    self.logger.warning(f"✗ AI 自动回复未显示（等待 {timeout/1000}秒 后超时）")
+                    return False
+                
+                # 短暂等待后重试
+                self.page.wait_for_timeout(500)
+                
+        except Exception as e:
+            self.logger.warning(f"✗ 验证 AI 回复时出错: {e}")
+            return False
