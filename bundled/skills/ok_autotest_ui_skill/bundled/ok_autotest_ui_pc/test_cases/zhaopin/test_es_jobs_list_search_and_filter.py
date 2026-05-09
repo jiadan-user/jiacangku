@@ -1597,22 +1597,32 @@ def test_scroll_to_bottom_loads_more_jobs(page, config):
         jobs_list_page.navigate_to_jobs_list()
         es_job_list_first_card_ready(page)
         initial_height = jobs_list_page.get_scroll_height()
-        logger.info(f"✓ 初始scrollHeight: {initial_height}")
+        initial_cards = jobs_list_page.get_job_card_count()
+        logger.info(f"✓ 初始scrollHeight: {initial_height}，职位卡片数: {initial_cards}")
     with allure.step("步骤2：滚动到页面底部，等待加载"):
         initial_url = page.url
         jobs_list_page.scroll_to_bottom()
         logger.info("✓ 已滚动到底部，等待2秒加载")
-    with allure.step("验证：新内容已加载（scrollHeight增大）"):
+    with allure.step("验证：新内容已加载（scrollHeight 增大或卡片数增加）"):
         new_height = jobs_list_page.get_scroll_height()
-        if new_height <= initial_height:
-            for _ in range(2):
+        new_cards = jobs_list_page.get_job_card_count()
+        loaded_more = new_height > initial_height or new_cards > initial_cards
+        if not loaded_more:
+            for _ in range(5):
                 jobs_list_page.scroll_to_bottom()
+                page.wait_for_timeout(1200)
                 new_height = jobs_list_page.get_scroll_height()
-                if new_height > initial_height:
+                new_cards = jobs_list_page.get_job_card_count()
+                if new_height > initial_height or new_cards > initial_cards:
+                    loaded_more = True
                     break
-        assert new_height > initial_height, \
-            f"滚动后scrollHeight应增大，初始: {initial_height}，实际: {new_height}"
-        logger.info(f"✓ scrollHeight增大: {initial_height} → {new_height}")
+        assert loaded_more, (
+            f"滚动后应触发加载更多：scrollHeight {initial_height}→{new_height}，"
+            f"卡片 {initial_cards}→{new_cards}"
+        )
+        logger.info(
+            f"✓ 加载更多信号满足: scrollHeight {initial_height} → {new_height}，卡片 {initial_cards} → {new_cards}"
+        )
     with allure.step("验证：URL不发生变化"):
         assert page.url == initial_url, \
             f"feed流加载后URL不应变化，初始: {initial_url}，实际: {page.url}"

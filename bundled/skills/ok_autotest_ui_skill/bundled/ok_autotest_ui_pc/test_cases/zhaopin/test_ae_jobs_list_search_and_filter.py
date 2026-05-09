@@ -332,13 +332,29 @@ def test_tc008_search_focus_shows_recent_searches(page, config):
     with allure.step("前置条件：确保已登录AE站（账号有历史搜索记录）"):
         ensure_ae_logged_in(page, config)
     jobs_page = JobsListSearchFilterPageAE(page)
+    with allure.step("步骤0：先执行一次搜索生成历史记录"):
+        jobs_page.navigate_to_jobs_list(config['base_url'])
+        search_box = page.get_by_role("textbox", name="Search for anything")
+        search_box.click()
+        search_box.fill("manager")
+        search_box.press("Enter")
+        page.wait_for_load_state("domcontentloaded", timeout=10000)
+        # 等待进入搜索结果页
+        page.wait_for_url(lambda url: "keyword=manager" in url, timeout=10000)
+        dom_content_loaded_soft(page, 10000)
+        # 额外等待，确保前端完成搜索历史持久化到 localStorage
+        page.wait_for_timeout(5000)
+        logger.info("✓ 已执行一次搜索（manager）以生成历史记录")
     with allure.step("步骤1：导航到Jobs列表页"):
         jobs_page.navigate_to_jobs_list(config['base_url'])
+        page.wait_for_timeout(2000)
     with allure.step("步骤2：点击搜索框，不输入任何内容"):
-        page.get_by_role("textbox", name="Search for anything").click()
+        search_box = page.get_by_role("textbox", name="Search for anything")
+        search_box.click()
+        page.wait_for_timeout(1000)
         dom_content_loaded_soft(page, 15000)
     with allure.step("验证：显示 'Recent Searches' 标题的历史记录下拉"):
-        recent_visible = page.get_by_text("Recent Searches").is_visible(timeout=3000)
+        recent_visible = page.get_by_text("Recent Searches").is_visible(timeout=5000)
         assert recent_visible, "聚焦搜索框后应显示 'Recent Searches' 历史下拉"
         logger.info("✓ TC008 Recent Searches下拉可见")
 

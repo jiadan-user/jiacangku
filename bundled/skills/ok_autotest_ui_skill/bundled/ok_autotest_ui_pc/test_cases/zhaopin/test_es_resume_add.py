@@ -25,6 +25,7 @@ from utils.logger import setup_logger
 logger = setup_logger()
 
 from test_cases.zhaopin.explicit_waits import dom_content_loaded_soft, network_idle_soft, sg_wait_jobs_list_url, sg_after_home_jobs_icon
+from test_cases.zhaopin.es_resume_user_db_lock import es_resume_user_db_lock
 
 # ============================================
 # 测试环境配置（来自录制文档，录制与运行使用同一账号）
@@ -59,15 +60,17 @@ _CONFIG = {
 def _es_resume_add_db_cleanup_each(request):
     """每条用例执行前后清理联调库简历相关表，隔离数据、避免 /resume/add 被重定向。"""
     cfg = getattr(request.module, "_CONFIG", {})
-    try:
-        cleanup_es_resume_in_db(cfg)
-    except Exception as exc:
-        logger.warning("用例前置：简历数据清理未执行: %s", exc)
-    yield
-    try:
-        cleanup_es_resume_in_db(cfg)
-    except Exception as exc:
-        logger.warning("用例后置：简历数据清理未执行: %s", exc)
+    uid = str(cfg.get("test_user_id") or "")
+    with es_resume_user_db_lock(user_id=uid or "796567146451408960"):
+        try:
+            cleanup_es_resume_in_db(cfg)
+        except Exception as exc:
+            logger.warning("用例前置：简历数据清理未执行: %s", exc)
+        yield
+        try:
+            cleanup_es_resume_in_db(cfg)
+        except Exception as exc:
+            logger.warning("用例后置：简历数据清理未执行: %s", exc)
 
 
 # ============================================
@@ -1074,22 +1077,44 @@ def test_tc016_current_location_dropdown_select(page, config):
                 "点击后应展开国家列表（AnchorSelector_listItem 节点）"
         logger.info(f"✓ 国家列表已展开（AnchorSelector 项数={list_items.count()}）")
 
-    with allure.step("步骤3：在列表中直接点击 'France'"):
-        france_rows = page.locator("[class*='AnchorSelector_listItem']").filter(
-            has_text="France"
-        )
-        if france_rows.count() > 0:
-            france_item = france_rows.first
-        else:
-            france_item = page.get_by_text("France", exact=True).first
-        assert france_item.is_visible(timeout=5000), \
-            "国家列表中应包含 France 选项"
-        france_item.click()
-        dom_content_loaded_soft(page, 20000)
-        logger.info("✓ 已点击 France")
+    with allure.step("步骤3：在列表中直接点击 'France'（精确匹配行文案，避免并行/滚动导致误点）"):
+        clicked_france = False
+        for attempt in range(3):
+            try:
+                resume_page.scroll_country_list_to_letter("F")
+            except Exception:
+                pass
+            page.wait_for_timeout(400)
+            row = page.locator("[class*='AnchorSelector_listItem']").filter(
+                has_text=re.compile(r"^France$")
+            )
+            if row.count() > 0:
+                france_item = row.first
+            else:
+                france_item = page.get_by_text("France", exact=True).first
+            if france_item.is_visible(timeout=3000):
+                try:
+                    france_item.scroll_into_view_if_needed(timeout=10000)
+                except Exception:
+                    pass
+                france_item.click()
+                dom_content_loaded_soft(page, 20000)
+                logger.info("✓ 已点击 France")
+                clicked_france = True
+                break
+            page.keyboard.press("Escape")
+            page.wait_for_timeout(300)
+            location_input.click()
+            dom_content_loaded_soft(page, 20000)
+        assert clicked_france, "国家列表中应包含可点的 France 选项"
 
     with allure.step("验证：Current Location 字段回显 'France'，面板关闭"):
-        actual_value = resume_page.get_current_location_value_raw()
+        actual_value = ""
+        for _ in range(40):
+            actual_value = resume_page.get_current_location_value_raw()
+            if actual_value == "France":
+                break
+            page.wait_for_timeout(250)
         assert actual_value == "France", \
             f"选择 France 后 Current Location 字段应回显 'France'，实际: {actual_value}"
         # 面板关闭后列表项不可见
@@ -1561,12 +1586,20 @@ def test_tc035_job_function_panel_no_search_filter(page, config):
             dom_content_loaded_soft(page, 20000)
             page.get_by_text(subcategory, exact=True).click()
             dom_content_loaded_soft(page, 20000)
+            # 收起面板后值才写回受控 input；无头下偶发需多拍一次
+            page.keyboard.press("Escape")
+            page.wait_for_timeout(400)
             logger.info("✓ 通过点击完成 Job Function 选择")
 
         with allure.step("验证：Job Function 文本框显示所选分类"):
-            selected_value = jf_textbox.input_value()
-            assert subcategory in selected_value, \
-                f"Job Function 应显示所选分类，实际: {selected_value}"
+            selected_value = ""
+            for _ in range(50):
+                selected_value = resume_page.get_job_function_value()
+                if subcategory in (selected_value or ""):
+                    break
+                page.wait_for_timeout(200)
+            assert subcategory in (selected_value or ""), \
+                f"Job Function 应显示所选分类，实际: {selected_value!r}"
             logger.info(f"✓ Job Function 回显验证通过: {selected_value}")
     finally:
         resume_page._teardown_job_function_mock()

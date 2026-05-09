@@ -639,7 +639,7 @@ class MarketplacePostPage(BasePage):
             if not title_val:
                 self.input_title(fallback_title)
             self.logger.info("⏳ 等待 AI 推荐区加载...")
-            for i in range(30):
+            for i in range(60):
                 self.page.wait_for_timeout(1000)
                 if self.page.evaluate("""
                 () => document.querySelectorAll(
@@ -648,7 +648,7 @@ class MarketplacePostPage(BasePage):
                 """):
                     self.logger.info(f"  ✓ 第{i+1}秒 More Categories 已出现")
                     return
-            self.logger.warning("⚠️ 推荐区可能仍未完全加载，继续尝试点击 More Categories")
+            self.logger.warning("⚠️ 推荐区可能仍未在60秒内加载，继续尝试点击 More Categories")
         except Exception as e:
             self.logger.warning(f"ensure_recommend_category_ui_ready: {e}")
 
@@ -889,8 +889,8 @@ class MarketplacePostPage(BasePage):
                 alt = self.page.locator('[class*="moreCategory"]').first
                 if alt.count() > 0:
                     alt.scroll_into_view_if_needed(timeout=10000)
-                    alt.click(timeout=15000, force=True)
-                    if self._wait_category_modal_any(12000):
+                    alt.click(timeout=25000, force=True)
+                    if self._wait_category_modal_any(18000):
                         self.page.wait_for_timeout(400)
                         self.logger.info("✓ 已点击 More Categories（[class*=\"moreCategory\"]）")
                         return
@@ -908,7 +908,7 @@ class MarketplacePostPage(BasePage):
             except Exception:
                 pass
 
-            max_wait = 55
+            max_wait = 120
             for i in range(max_wait):
                 clicked = self.page.evaluate("""
                 () => {
@@ -938,7 +938,7 @@ class MarketplacePostPage(BasePage):
                 }
                 """)
                 if clicked:
-                    if self._wait_category_modal_any(8000):
+                    if self._wait_category_modal_any(15000):
                         self.page.wait_for_timeout(500)
                         self.logger.info("✓ 已点击More Categories，类别弹层已弹出")
                         return
@@ -952,7 +952,7 @@ class MarketplacePostPage(BasePage):
             self.logger.warning("常规方式未找到 More Categories，尝试点击已选类别区域展开...")
             if self._try_click_category_breadcrumb_to_expand():
                 self.page.wait_for_timeout(2000)
-                for j in range(18):
+                for j in range(40):
                     clicked = self.page.evaluate("""
                     () => {
                         const clickEl = (el) => {
@@ -975,7 +975,7 @@ class MarketplacePostPage(BasePage):
                     }
                     """)
                     if clicked:
-                        if self._wait_category_modal_any(6000):
+                        if self._wait_category_modal_any(12000):
                             self.page.wait_for_timeout(400)
                             self.logger.info("✓ 已点击More Categories（面包屑展开后），类别弹层已弹出")
                             return
@@ -984,7 +984,7 @@ class MarketplacePostPage(BasePage):
             if self._try_open_category_search_modal_fallback():
                 return
 
-            raise Exception("未在55秒内找到或可点击 More Categories")
+            raise Exception("未在120秒内找到或可点击 More Categories")
 
         except Exception as e:
             self.logger.error(f"点击More Categories失败: {e}")
@@ -1281,7 +1281,39 @@ class MarketplacePostPage(BasePage):
             raise
 
     def select_category_electronics_cell_phones_apple(self):
-        """Browse Modal 已打开时，短间隔三连选 Electronics → Cell Phones → Apple（避免子列表约700ms被重置）。"""
+        """Browse Modal 已打开时，短间隔三连选 Electronics → Cell Phones → Apple（避免子列表约700ms被重置）。
+        
+        增强版：如果首次选择失败（未找到 Cell Phones），自动关闭重开 Modal 重试一次。
+        """
+        for retry_count in range(2):  # 最多尝试2次
+            try:
+                self._select_electronics_cellphones_apple_once()
+                return  # 成功则直接返回
+            except Exception as e:
+                error_msg = str(e)
+                if "未找到 Cell Phones" in error_msg and retry_count == 0:
+                    self.logger.warning(
+                        f"⚠️ 首次类目选择失败（{error_msg}），关闭Modal重新打开后重试..."
+                    )
+                    try:
+                        # 关闭所有可能的Modal
+                        self.ensure_category_modals_dismissed()
+                        self.page.wait_for_timeout(800)
+                        # 重新打开类目选择流程
+                        self.click_more_categories()
+                        self.page.wait_for_timeout(500)
+                        self.click_browse_to_find_category()
+                        self.page.wait_for_timeout(500)
+                    except Exception as reopen_err:
+                        self.logger.error(f"重新打开Browse Modal失败: {reopen_err}")
+                        raise e  # 抛出原始错误
+                    # 继续循环进行第二次尝试
+                else:
+                    # 非Cell Phones错误，或已是第二次尝试，直接抛出
+                    raise
+
+    def _select_electronics_cellphones_apple_once(self):
+        """执行一次完整的 Electronics → Cell Phones → Apple 选择（内部方法）。"""
         try:
             self._wait_for_category_select_modal(timeout=15000)
             self.page.wait_for_timeout(400)
@@ -1361,11 +1393,11 @@ class MarketplacePostPage(BasePage):
                     self.logger.warning("⚠️ 检测到顶级 Marketplace 入口但点击失败，继续尝试 Electronics")
 
             elec_ok = False
-            for _attempt in range(25):
+            for _attempt in range(40):
                 if _click_name("Electronics"):
                     elec_ok = True
                     break
-                self.page.wait_for_timeout(350)
+                self.page.wait_for_timeout(450)
             if not elec_ok:
                 avail = self.page.evaluate("""
                 () => {
@@ -1377,8 +1409,28 @@ class MarketplacePostPage(BasePage):
                 }
                 """)
                 raise Exception(f"未找到 Electronics，当前列表项: {avail}")
-            self.page.wait_for_timeout(200)
-            if not _click_name("Cell Phones"):
+            # Electronics 后子列可能尚未渲染，先等 Cell Phones 行出现再点（无头长跑更稳）
+            self.page.wait_for_timeout(400)
+            try:
+                self.page.wait_for_function(
+                    """
+                    () => {
+                        const m = document.querySelector('.category-select-modal');
+                        if (!m) return false;
+                        return Array.from(
+                            m.querySelectorAll('.list-item, [class*="list-item"], li[role="option"], [class*="ListItem"]')
+                        ).some((el) => /cell\\s*phones/i.test((el.textContent || '').trim()));
+                    }
+                    """,
+                    timeout=30000,
+                )
+            except Exception:
+                self.logger.warning("Electronics 后 30s 内未稳定出现 Cell Phones 行，仍尝试点击")
+
+            cell_phones_clicked = False
+            if _click_name("Cell Phones"):
+                cell_phones_clicked = True
+            else:
                 try:
                     self.page.wait_for_function(
                         """
@@ -1386,27 +1438,31 @@ class MarketplacePostPage(BasePage):
                             const m = document.querySelector('.category-select-modal');
                             if (!m) return false;
                             return Array.from(
-                                m.querySelectorAll('.list-item, [class*="list-item"], li[role="option"]')
+                                m.querySelectorAll('.list-item, [class*="list-item"], li[role="option"], [class*="ListItem"]')
                             ).some((el) => /cell\\s*phones/i.test((el.textContent || '').trim()));
                         }
                         """,
-                        timeout=10000,
+                        timeout=30000,
                     )
                 except Exception:
                     pass
-                for _r in range(20):
+                for _r in range(55):
                     if _click_name("Cell Phones"):
+                        cell_phones_clicked = True
                         break
-                    self.page.wait_for_timeout(200)
-                else:
+                    self.page.wait_for_timeout(350)
+                if not cell_phones_clicked:
                     raise Exception("未找到 Cell Phones")
-            self.page.wait_for_timeout(180)
+            # Cell Phones 点击后等待子列（常为 Apple）刷新，避免立即点 Apple 命中旧列表
+            self._wait_cell_phones_sublist_stable(timeout_ms=28000)
+            self.page.wait_for_timeout(220)
             if not _pick_apple():
                 # 列表偶发回到顶级：再点一次 Cell Phones 路径后重试 Apple
                 self.logger.warning("⚠️ Apple 首次未点到，重试 Electronics → Cell Phones → Apple")
                 if _click_name("Electronics"):
                     self.page.wait_for_timeout(200)
                 if _click_name("Cell Phones"):
+                    self._wait_cell_phones_sublist_stable(timeout_ms=22000)
                     self.page.wait_for_timeout(180)
                 if not _pick_apple():
                     avail = self.page.evaluate("""
@@ -2161,11 +2217,69 @@ class MarketplacePostPage(BasePage):
         except Exception as e:
             self.logger.error(f"选择Battery 90%+失败: {e}")
             raise
-    
+
+    def _wait_cell_phones_sublist_stable(self, timeout_ms: int = 28000) -> None:
+        """Cell Phones 选中后，等待子类列表就绪（如 Apple），降低无头长跑下误点旧列表概率。"""
+        try:
+            self.page.wait_for_function(
+                """
+                () => {
+                    const m = document.querySelector('.category-select-modal');
+                    if (!m) return false;
+                    const texts = Array.from(
+                        m.querySelectorAll('.list-item, [class*="list-item"], li[role="option"], [class*="ListItem"]')
+                    ).map((el) => (el.textContent || '').replace(/\\s+/g, ' ').trim()).filter(Boolean);
+                    if (!texts.length) return false;
+                    if (texts.some((t) => /^Apple$/i.test(t) || /iPhone|iPad|MacBook/i.test(t))) return true;
+                    if (texts.some((t) => /Samsung|Google Pixel|Huawei|OnePlus|Xiaomi|OPPO|vivo|realme/i.test(t))) {
+                        return true;
+                    }
+                    return false;
+                }
+                """,
+                timeout=timeout_ms,
+            )
+        except Exception as e:
+            self.logger.warning(
+                f"Cell Phones 子列表稳定等待未在 {timeout_ms}ms 内满足，仍继续选 Apple: {e}"
+            )
+        self.page.wait_for_timeout(300)
+
     # ========== 交付选项方法 ==========
     # 与 `marketplace_post_page.py` 中 MCP 录制路径一致：
     # getByRole('paragraph').filter({ hasText: '...' }) + 滚到底部 + scrollIntoView + scrollBy(-100) 避开固定 Post 底栏
     # 线上文案可能从 postage 改为 shipping 等，故同一选项使用多候选串 + radio/label 兜底。
+
+    def _wait_delivery_section_visible(self, timeout_ms: int = 28000) -> None:
+        """类目等表单就绪后，显式等待 Delivery / Shipping 区块出现在主线（与 TC063 检测一致）。"""
+        try:
+            self.page.wait_for_function(
+                """
+                () => {
+                    const body = document.body && document.body.innerText
+                        ? document.body.innerText.replace(/\\s+/g, ' ')
+                        : '';
+                    if (/Delivery\\s*Options/i.test(body)) return true;
+                    if (/Seller pays for postage|Buyer pays for postage|No delivery required|No shipping required/i.test(body)) {
+                        return true;
+                    }
+                    const main = document.querySelector('main');
+                    if (!main || !main.innerText) return false;
+                    const t = main.innerText.replace(/\\s+/g, ' ');
+                    return (
+                        /Delivery|Shipping options|Postage/i.test(t)
+                        && /pays for postage|pays for shipping|delivery required|shipping required/i.test(t)
+                    );
+                }
+                """,
+                timeout=timeout_ms,
+            )
+            self.logger.info("✓ Delivery 区域已就绪（可见性等待通过）")
+        except Exception as e:
+            self.logger.warning(
+                f"Delivery 区域可见性等待未在 {timeout_ms}ms 内满足，仍尝试点击配送项: {e}"
+            )
+        self.page.wait_for_timeout(350)
 
     def _scroll_to_delivery_block(self) -> None:
         """将 Delivery / Shipping 区域滚入视口，便于选项已渲染。"""
@@ -2189,6 +2303,7 @@ class MarketplacePostPage(BasePage):
 
     def _click_delivery_option_paragraph(self, candidate_texts: list[str]):
         """按候选文案依次尝试点击配送选项（paragraph/div/label/radio）。"""
+        self._wait_delivery_section_visible()
         last_err: Exception | None = None
         for text in candidate_texts:
             try:
@@ -2209,7 +2324,7 @@ class MarketplacePostPage(BasePage):
                 ):
                     try:
                         cand = factory()
-                        cand.wait_for(state="attached", timeout=10000)
+                        cand.wait_for(state="attached", timeout=25000)
                         loc = cand
                         break
                     except Exception:
@@ -2222,10 +2337,10 @@ class MarketplacePostPage(BasePage):
                 self.page.evaluate("window.scrollBy(0, -100)")
                 self.page.wait_for_timeout(300)
                 try:
-                    loc.click(timeout=12000)
+                    loc.click(timeout=20000)
                 except Exception as e:
                     self.logger.warning(f"配送选项常规点击失败，改用 force: {e}")
-                    loc.click(force=True, timeout=15000)
+                    loc.click(force=True, timeout=28000)
                 self.page.wait_for_timeout(800)
                 self.logger.info(f"✓ 已点击配送选项（匹配: {text!r}）")
                 return

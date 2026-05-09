@@ -335,6 +335,11 @@ def test_ae_edit_continue_submits_and_returns_to_return_url(page, config):
 
     with allure.step("点击 Continue 按钮"):
         job_pref_page.click_continue()
+        # 等待跳转完成（从编辑页跳到列表页）
+        try:
+            page.wait_for_url(lambda url: "jobPreference" not in url, timeout=20000)
+        except Exception:
+            pass
         page.wait_for_load_state("domcontentloaded", timeout=15000)
         dom_content_loaded_soft(page, 20000)
         logger.info(f"✓ Continue 后跳转至: {page.url}")

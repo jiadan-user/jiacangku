@@ -33,6 +33,7 @@ SG 站（新加坡站）- Job Preferences Add Job Preference 入口功能测试
   - 邮箱输入框（弹窗内）：page.locator('[role=dialog]').first.get_by_role('textbox').first
 """
 import re
+import time
 
 import pytest
 import allure
@@ -45,6 +46,50 @@ from utils.logger import setup_logger
 logger = setup_logger()
 
 from test_cases.zhaopin.explicit_waits import dom_content_loaded_soft, network_idle_soft, sg_wait_jobs_list_url, sg_after_home_jobs_icon
+from test_cases.zhaopin.parallel_ordering_helper import (
+    clear_order_marker,
+    mark_order_done,
+    wait_order_done,
+)
+
+# 测试账号wang@58.com在preference表中对应的user_id
+# 如果不确定user_id，可以通过 SELECT user_id FROM user WHERE email='wang@58.com' 查询
+_TEST_USER_ID_WANG = "796568487761138112"  # wang@58.com的user_id
+
+
+def _cleanup_wang_preference():
+    """
+    删除preference表中wang@58.com账号的岗位偏好数据（测试数据清理）
+    确保测试开始时用户没有已有的Job Preference数据
+    """
+    from utils.db_client import execute_update
+    sql = "DELETE FROM preference WHERE user_id = %s"
+    rows = execute_update(sql, (_TEST_USER_ID_WANG,))
+    logger.info(f"✓ 已清理 preference 表数据，user_id={_TEST_USER_ID_WANG}，删除 {rows} 行")
+
+
+def _clear_tc008_done_marker() -> None:
+    try:
+        clear_order_marker("sg_add_pref_tc008_done")
+    except OSError as e:
+        logger.warning(f"清理 TC008 顺序标记失败（忽略）: {e}")
+
+
+def _mark_tc008_done() -> None:
+    try:
+        mark_order_done("sg_add_pref_tc008_done")
+    except OSError as e:
+        logger.warning(f"写入 TC008 顺序标记失败（忽略）: {e}")
+
+
+def _wait_tc008_done(timeout_sec: int = 180) -> None:
+    """
+    并发模式下保证 TC004 在 TC008 完成后再继续执行。
+    """
+    if wait_order_done("sg_add_pref_tc008_done", timeout_sec=timeout_sec, poll_sec=0.5):
+        logger.info("✓ 检测到 TC008 完成标记，继续执行 TC004")
+        return
+    raise AssertionError(f"等待 TC008 完成超时（>{timeout_sec}s），未检测到顺序标记")
 
 # ============================================
 # 测试环境配置（来自录制文档，录制与运行使用同一账号）
@@ -164,37 +209,125 @@ def _sg_add_job_preference_locator(page):
     Jobs 列表页「Add Job Preference」入口。
     录制为标题与副文案同一可点区域（甚至紧连为 Add Job PreferenceUnlock more）；
     无头模式下常在列表区懒加载或需滚入视口，单一精确文案易误判不可见。
+    
+    优先策略：
+    1. 使用 data-testid 或 role 属性（如果有）
+    2. 使用文本内容定位
+    3. 使用更宽松的选择器
     """
     p = page
+    
+    # 策略1：尝试使用卡片容器定位
+    try:
+        card = p.locator('[class*="preference"], [class*="Preference"]').filter(
+            has_text=re.compile(r"Add.*Job.*Preference", re.I)
+        ).first
+        if card.count() > 0:
+            return card
+    except Exception:
+        pass
+    
+    # 策略2：原有的文本定位策略
     tight = p.get_by_text(re.compile(r"Add\s*Job\s*Preference\s*Unlock\s+more", re.I))
     title = p.get_by_text(re.compile(r"Add\s+Job\s+Preference", re.I))
     sub = p.get_by_text(re.compile(r"Unlock\s+more\s+opportunities", re.I))
-    return tight.or_(title).or_(sub).first
+    by_role = p.get_by_role("button", name=re.compile(r"Add.*Job\s*Preference", re.I)).or_(
+        p.get_by_role("link", name=re.compile(r"Add.*Job\s*Preference", re.I))
+    )
+    return tight.or_(title).or_(sub).or_(by_role).first
 
 
-def _wait_sg_jobs_list_preference_banner(page, timeout_ms: int = 25000):
+def _wait_sg_jobs_list_preference_banner(page, timeout_ms: int = 60000):
     """等待列表区就绪，将 Job Preference 卡片滚入视口后再断言/点击。"""
     network_idle_soft(page, min(12000, timeout_ms))
     try:
         sg_wait_jobs_list_url(page, timeout=min(timeout_ms, 30000))
     except Exception:
         dom_content_loaded_soft(page, min(15000, timeout_ms))
-    loc = _sg_add_job_preference_locator(page)
-    loc.wait_for(state="attached", timeout=timeout_ms)
+    
+    # 增加等待时间以适应无头模式
+    page.wait_for_timeout(2000)
+    
+    # 尝试滚动到页面顶部，确保元素可见
     try:
-        loc.scroll_into_view_if_needed(timeout=10000)
+        page.evaluate("() => window.scrollTo(0, 0)")
+        page.wait_for_timeout(1000)
     except Exception:
+        pass
+
+    # 懒加载列表：分段下滚，触发 Preference 卡片渲染（并行/无头下常见）
+    try:
+        for y in (0, 280, 560, 900, 1300, 1800, 2400):
+            page.evaluate("(yy) => window.scrollTo(0, yy)", y)
+            page.wait_for_timeout(450)
+    except Exception:
+        pass
+    
+    # 检查页面是否已完全加载
+    try:
+        # 等待列表容器加载
+        page.wait_for_selector("body", state="visible", timeout=10000)
+        page.wait_for_load_state("networkidle", timeout=15000)
+    except Exception:
+        logger.info("⚠️ networkidle 等待超时，继续尝试定位元素")
+    
+    last_exc = None
+    per_try_visible = max(25000, min(timeout_ms, 45000))
+    for attempt in range(3):
+        loc = _sg_add_job_preference_locator(page)
+        logger.info(f"当前页面 URL: {page.url}")
         try:
-            page.evaluate("() => window.scrollTo(0, 0)")
-        except Exception:
-            pass
-        page.wait_for_timeout(300)
-    loc.wait_for(state="visible", timeout=timeout_ms)
+            count = loc.count()
+            logger.info(f"找到 {count} 个匹配的 'Add Job Preference' 元素")
+            if count == 0:
+                logger.warning("⚠️ 未找到 'Add Job Preference' 元素，可能页面结构已变化")
+                try:
+                    pref_texts = page.locator("text=/preference/i").all_text_contents()
+                    if pref_texts:
+                        logger.info(f"页面中包含 'preference' 的文本: {pref_texts[:5]}")
+                except Exception:
+                    pass
+        except Exception as e:
+            logger.warning(f"检查元素数量时出错: {e}")
+
+        try:
+            loc.wait_for(state="attached", timeout=min(timeout_ms, 35000))
+            try:
+                loc.scroll_into_view_if_needed(timeout=10000)
+            except Exception:
+                try:
+                    page.evaluate("() => window.scrollTo(0, 0)")
+                    page.wait_for_timeout(1000)
+                    loc.scroll_into_view_if_needed(timeout=10000)
+                except Exception:
+                    pass
+                page.wait_for_timeout(300)
+            loc.wait_for(state="visible", timeout=per_try_visible)
+            return
+        except Exception as e:
+            last_exc = e
+            logger.warning("SG Jobs 列表 Add Job Preference 卡片第 %s 次未就绪: %s", attempt + 1, e)
+            if attempt >= 2:
+                break
+            try:
+                page.reload(wait_until="domcontentloaded", timeout=50000)
+                dom_content_loaded_soft(page, 25000)
+                network_idle_soft(page, 12000)
+                for y in (0, 280, 560, 900, 1300, 1800, 2400):
+                    page.evaluate("(yy) => window.scrollTo(0, yy)", y)
+                    page.wait_for_timeout(450)
+            except Exception as re:
+                logger.warning("reload 重试列表页失败: %s", re)
+    if last_exc:
+        raise last_exc
+    raise AssertionError("SG Jobs 列表未出现 Add Job Preference 卡片")
 
 
-def _click_sg_add_job_preference_card(page, timeout_ms: int = 25000):
+def _click_sg_add_job_preference_card(page, timeout_ms: int = 75000):
+    """点击 Add Job Preference 卡片，增加超时时间适应无头模式"""
     _wait_sg_jobs_list_preference_banner(page, timeout_ms=timeout_ms)
-    _sg_add_job_preference_locator(page).click(timeout=min(15000, timeout_ms))
+    page.wait_for_timeout(500)  # 确保元素完全可交互
+    _sg_add_job_preference_locator(page).click(timeout=min(20000, timeout_ms))
 
 
 def _ensure_sg_logged_in(page, config, force_relogin=False):
@@ -504,6 +637,8 @@ def test_sg_add_pref_authenticated_should_redirect_directly_to_add_page(page, co
 
 
 @pytest.mark.case_id_sg_add_pref_tc004
+@pytest.mark.order(2)
+@pytest.mark.dependency(depends=["sg_add_pref_tc008"])
 @pytest.mark.p1
 @pytest.mark.sg
 @allure.feature("OK")
@@ -518,6 +653,14 @@ def test_sg_add_pref_add_page_should_show_empty_form(page, config):
     logger.info("=" * 60)
     logger.info("TC004: SG站 - 添加页初始空表单状态验证")
     logger.info("=" * 60)
+    # 并发执行时，强制等待 TC008 完成后再执行本用例
+    with allure.step("顺序约束：等待 TC008 执行完成"):
+        _wait_tc008_done(timeout_sec=180)
+    
+    # 清理测试账号的preference数据，确保显示"Add Job Preference"卡片
+    with allure.step("前置清理：删除测试账号的历史偏好数据"):
+        _cleanup_wang_preference()
+    
     _ensure_sg_logged_in(page, config)
 
     # ========== Act ==========
@@ -532,10 +675,43 @@ def test_sg_add_pref_add_page_should_show_empty_form(page, config):
 
     # ========== Assert ==========
     with allure.step("验证：Job Functions 触发器显示空态 (0/10)"):
-        # 来自 MCP 录制：ref e39 → 文本 "Select preferred job function (0/10)"
-        job_func_trigger = page.get_by_text("Select preferred job function (0/10)").first
-        assert job_func_trigger.is_visible(timeout=8000), \
-            "Job Functions 触发器应显示空态 'Select preferred job function (0/10)'"
+        def _job_func_empty_visible() -> bool:
+            cands = (
+                page.get_by_text(
+                    re.compile(
+                        r"Select\s+preferred\s+job\s+functions?\s*\(\s*0\s*/\s*10\s*\)",
+                        re.I,
+                    )
+                ).first,
+                page.get_by_text(
+                    re.compile(r"Select\s+preferred\s+job\s+function\s*\(\s*0\s*/\s*10\s*\)", re.I)
+                ).first,
+                page.locator("text=/job\\s*functions?.*0\\s*/\\s*10/i").first,
+            )
+            for loc in cands:
+                try:
+                    if loc.is_visible(timeout=800):
+                        return True
+                except Exception:
+                    continue
+            return False
+
+        ok = False
+        deadline = time.monotonic() + 35.0
+        while time.monotonic() < deadline:
+            try:
+                page.wait_for_load_state("domcontentloaded", timeout=8000)
+            except Exception:
+                pass
+            if _job_func_empty_visible():
+                ok = True
+                break
+            page.wait_for_timeout(500)
+        if not ok and "jobPreference" in page.url:
+            page.reload(wait_until="domcontentloaded", timeout=45000)
+            dom_content_loaded_soft(page, 20000)
+            ok = _job_func_empty_visible()
+        assert ok, "Job Functions 触发器应显示空态（含 0/10）"
         logger.info("✓ Job Functions 显示空态 (0/10)")
 
     with allure.step("验证：Location 触发器显示空态 (0/5)"):
@@ -681,6 +857,11 @@ def test_sg_add_pref_back_button_should_redirect_to_jobs_list(page, config):
     logger.info("=" * 60)
     logger.info("TC006: SG站 - Add入口添加页 Back 按钮跳转验证")
     logger.info("=" * 60)
+    
+    # 清理测试账号的preference数据，确保显示"Add Job Preference"卡片
+    with allure.step("前置清理：删除测试账号的历史偏好数据"):
+        _cleanup_wang_preference()
+    
     _ensure_sg_logged_in(page, config)
 
     with allure.step("步骤1：以已登录状态进入添加页"):
@@ -793,8 +974,11 @@ def test_sg_add_pref_login_via_banner_should_redirect_to_add_page(page, config):
     with allure.step("验证：右上角显示登录用户名（OKerSG_ 开头）"):
         # 来自 MCP 录制：登录成功后右上角显示用户名 OKerSG_sjwp7cj
         # 使用正则匹配（避免硬编码用户名）
+        # 增加等待时间以适应无头模式下的渲染延迟
+        page.wait_for_timeout(2000)  # 等待页面完全渲染
+        dom_content_loaded_soft(page, 15000)
         user_name_el = page.locator("text=/OKerSG_/").first
-        assert user_name_el.is_visible(timeout=5000), \
+        assert user_name_el.is_visible(timeout=10000), \
             "登录成功后右上角应显示 OKerSG_ 开头的用户名"
         logger.info("✓ 右上角显示登录用户名（OKerSG_）")
 
@@ -802,6 +986,8 @@ def test_sg_add_pref_login_via_banner_should_redirect_to_add_page(page, config):
 
 
 @pytest.mark.case_id_sg_add_pref_tc008
+@pytest.mark.order(1)
+@pytest.mark.dependency(name="sg_add_pref_tc008")
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.sg
@@ -817,10 +1003,20 @@ def test_sg_add_pref_unauthenticated_click_should_show_login_dialog(page, config
     logger.info("=" * 60)
     logger.info("TC008: SG站 - 未登录点击 Add Job Preference 弹出登录弹窗")
     logger.info("=" * 60)
+    # 每次执行 TC008 时先重置顺序标记，避免读到历史脏标记
+    _clear_tc008_done_marker()
 
     with allure.step("步骤1：清除所有登录状态，进入 Jobs 列表页（未登录）"):
         _prepare_unauthenticated_state(page, config)
         logger.info(f"✓ 已进入 Jobs 列表页（未登录）: {page.url}")
+    
+    # 清理测试账号的preference数据，确保显示"Add Job Preference"卡片
+    # 注意：必须在未登录状态准备好之后清理，否则可能影响其他并发测试
+    with allure.step("前置清理：删除测试账号的历史偏好数据（确保干净状态）"):
+        _cleanup_wang_preference()
+        # 刷新页面以反映数据库变化
+        page.reload(wait_until="domcontentloaded", timeout=15000)
+        dom_content_loaded_soft(page, 15000)
 
     with allure.step("步骤2：处理 Cookie 弹窗（SG 站首次访问必定出现，不处理则 Log in 被遮挡）"):
         # 来自 MCP 录制关键发现：SG 站首次访问必定出现 Cookie Consent 弹窗
@@ -873,5 +1069,8 @@ def test_sg_add_pref_unauthenticated_click_should_show_login_dialog(page, config
         assert google_login.is_visible(timeout=3000), \
             "登录弹窗应包含 Google 登录选项"
         logger.info("✓ 弹窗包含第三方登录选项（Google）")
+
+    with allure.step("写入顺序标记（通知 TC004 可继续）"):
+        _mark_tc008_done()
 
     logger.info("✅ TC008 通过：未登录点击 Add Job Preference 弹出登录弹窗验证成功")

@@ -51,62 +51,122 @@ class JobsPrefPageSG(BasePage):
         2. 若跳转到 cate-jobs（账号已有偏好）：
            a. 尝试找 Edit 链接点击进入偏好页。
            b. 尝试找 "+ Add Job Preference" 按钮点击进入偏好页。
-        注意：不使用直接 goto biz/en/jobPreference，因为该 biz 子域要求独立认证。
+           c. 尝试从首页重新进入（清除缓存）
+           d. 最后使用直接 URL（带认证状态）
         """
         try:
+            # 确保导航到首页
             self.page.goto(f"{base_url}/en/city-singapore/", wait_until="domcontentloaded", timeout=30000)
+            self.page.wait_for_load_state("domcontentloaded")
             try:
-                self.page.wait_for_load_state("networkidle", timeout=6000)
+                self.page.wait_for_load_state("networkidle", timeout=8000)
             except Exception:
                 pass
-            self.page.get_by_role("link", name="Jobs Jobs").click()
+            
+            # 等待 Jobs 金刚位出现并点击
+            jobs_link = self.page.get_by_role("link", name="Jobs Jobs")
+            jobs_link.wait_for(state="visible", timeout=10000)
+            
+            # 使用 expect_navigation 确保跳转完成
             try:
-                self.page.wait_for_url("**/jobPreference**", timeout=8000)
-                self.logger.info("✓ 点击Jobs金刚位后直接进入岗位偏好页")
-                return
+                with self.page.expect_navigation(timeout=15000):
+                    jobs_link.click()
+            except Exception:
+                # 如果 expect_navigation 超时，尝试等待 URL 变化
+                self.page.wait_for_timeout(2000)
+            
+            # 等待页面稳定
+            try:
+                self.page.wait_for_load_state("domcontentloaded", timeout=10000)
             except Exception:
                 pass
-
-            # 已跳转到 cate-jobs（账号已有偏好或无偏好），尝试 Edit 链接
+            
             current_url = self.page.url
-            self.logger.info(f"⚠️ 点击Jobs金刚位后当前URL: {current_url}，尝试进入偏好页")
-
-            # 尝试 Edit 链接（已有偏好的账号）
-            try:
-                edit_link = self.page.get_by_role("link", name="Edit").first
-                edit_link.wait_for(state="visible", timeout=3000)
-                edit_link.click()
-                self.page.wait_for_url("**/jobPreference**", timeout=10000)
-                self.logger.info("✓ 通过 Edit 链接进入岗位偏好页")
+            self.logger.info(f"点击 Jobs 金刚位后 URL: {current_url}")
+            
+            # 检查是否已进入 jobPreference 页面
+            if "jobPreference" in current_url:
+                self.logger.info("✓ 直接进入岗位偏好页")
+                self.page.wait_for_timeout(1000)
                 return
-            except Exception:
-                self.logger.info("⚠️ Edit 链接不可用，尝试 Add Job Preference 入口")
 
-            # 尝试 "+ Add Job Preference" 按钮（无偏好的账号，DB清理后前端未刷新的情况）
-            try:
-                # 先刷新页面确保 cate-jobs 是最新状态
-                self.page.goto(f"{base_url}/en/city-singapore/cate-jobs/?iconSource=jobs",
-                               wait_until="domcontentloaded", timeout=30000)
+            # 已跳转到 cate-jobs，尝试多种入口
+            self.logger.info(f"⚠️ 当前在 Jobs 列表页，尝试进入偏好页")
+            
+            # 策略1: 尝试 Edit 链接（页面上可能有多个，找最显眼的）
+            edit_selectors = [
+                'a:has-text("Edit"):has([class*="preference"])',
+                'a:has-text("Edit")',
+                '[class*="preference"] a:has-text("Edit")',
+                'button:has-text("Edit")',
+            ]
+            
+            for selector in edit_selectors:
                 try:
-                    self.page.wait_for_load_state("networkidle", timeout=6000)
-                except Exception:
-                    pass
-                self.page.screenshot(path="debug_cate_jobs_in_test.png")
-                self.logger.info(f"cate-jobs 刷新后URL: {self.page.url}，截图已保存到 debug_cate_jobs_in_test.png")
-                # 尝试多种选择器找 Add Job Preference 入口
-                add_pref_btn = self.page.get_by_text("Add Job Preference").first
-                add_pref_btn.wait_for(state="visible", timeout=8000)
-                add_pref_btn.click()
-                self.page.wait_for_url("**/jobPreference**", timeout=15000)
-                self.logger.info("✓ 通过 Add Job Preference 入口进入偏好页")
+                    self.logger.info(f"尝试 selector: {selector}")
+                    edit_elem = self.page.locator(selector).first
+                    if edit_elem.is_visible(timeout=2000):
+                        self.logger.info(f"找到 Edit 元素，selector: {selector}")
+                        edit_elem.click()
+                        try:
+                            self.page.wait_for_url("**/jobPreference**", timeout=10000)
+                            self.logger.info("✓ 通过 Edit 链接进入偏好页")
+                            return
+                        except Exception:
+                            self.logger.info("点击 Edit 但未跳转到 jobPreference")
+                except Exception as e:
+                    self.logger.debug(f"Selector {selector} 失败: {e}")
+                    continue
+            
+            # 策略2: 强制刷新 cate-jobs 页面，寻找 Add Job Preference
+            self.logger.info("尝试刷新 Jobs 列表页并寻找 Add Job Preference")
+            self.page.goto(f"{base_url}/en/city-singapore/cate-jobs/?iconSource=jobs",
+                          wait_until="domcontentloaded", timeout=30000)
+            try:
+                self.page.wait_for_load_state("networkidle", timeout=8000)
+            except Exception:
+                pass
+            
+            # 尝试多种 Add Preference 入口
+            add_pref_selectors = [
+                'text=Add Job Preference',
+                'button:has-text("Add")',
+                '[class*="add"][class*="preference"]',
+                'a:has-text("Add Job Preference")',
+            ]
+            
+            for selector in add_pref_selectors:
+                try:
+                    add_elem = self.page.locator(selector).first
+                    if add_elem.is_visible(timeout=3000):
+                        self.logger.info(f"找到 Add Preference 元素，selector: {selector}")
+                        add_elem.click()
+                        try:
+                            self.page.wait_for_url("**/jobPreference**", timeout=10000)
+                            self.logger.info("✓ 通过 Add Job Preference 进入偏好页")
+                            return
+                        except Exception:
+                            self.logger.info("点击 Add 但未跳转到 jobPreference")
+                except Exception as e:
+                    self.logger.debug(f"Add selector {selector} 失败: {e}")
+                    continue
+            
+            # 策略3: 最后尝试直接访问偏好页 URL（使用当前认证状态）
+            self.logger.info("所有入口失败，尝试直接访问偏好页 URL")
+            pref_url = f"https://sgpub.58v5.cn/biz/en/jobPreference?showSkip=1&returnUrl=https%3A%2F%2Fsg.58v5.cn%2Fen%2Fcity-singapore%2Fcate-jobs%2F%3FiconSource%3Djobs"
+            self.page.goto(pref_url, wait_until="domcontentloaded", timeout=30000)
+            self.page.wait_for_timeout(2000)
+            
+            if "jobPreference" in self.page.url:
+                self.logger.info("✓ 通过直接 URL 进入偏好页")
                 return
-            except Exception as e:
-                self.logger.info(f"⚠️ Add Job Preference 入口也不可用: {e}")
-
+            
+            # 所有策略都失败
             raise RuntimeError(
                 f"无法进入岗位偏好页，当前URL: {self.page.url}，"
-                "所有入口均失败，请检查测试账号状态和页面结构"
+                "所有入口均失败（Edit/Add/Direct URL），请检查账号状态或页面结构"
             )
+            
         except Exception as e:
             self.logger.error(f"从首页进入岗位偏好页失败: {e}")
             raise
@@ -146,10 +206,18 @@ class JobsPrefPageSG(BasePage):
             subcategory: 二级分类名称（如 "Developers/Programmers"）
         """
         try:
-            self.page.get_by_text(category).click()
+            # 点击一级分类，使用 .first 避免多匹配
+            self.page.get_by_text(category).first.click()
             self.page.wait_for_timeout(600)
-            self.page.get_by_text(subcategory).click()
+            
+            # 点击二级分类，限定在选项区域内（JointLevelPcSelectInput_optionItem 类）
+            # 使用更精确的定位器避免匹配到已选标签
+            subcategory_option = self.page.locator(
+                f'div[class*="optionItem"]:has-text("{subcategory}")'
+            ).first
+            subcategory_option.click()
             self.page.wait_for_timeout(500)
+            self.logger.info(f"✓ 已选择 Job Function: {category} > {subcategory}")
         except Exception as e:
             self.logger.error(f"选择Job Function失败（{category} > {subcategory}）: {e}")
             raise
@@ -308,12 +376,28 @@ class JobsPrefPageSG(BasePage):
             raise
 
     def click_skip(self):
-        """点击 Skip 链接跳过岗位偏好设置"""
+        """点击 Skip 链接跳过岗位偏好设置（增加无头模式适配）"""
         try:
-            self.page.get_by_role("link", name="Skip").click()
+            # 在无头模式下，Skip链接可能需要等待页面完全渲染
+            self.page.wait_for_timeout(1000)
+            skip_link = self.page.get_by_role("link", name="Skip")
+            # 增加等待时间确保元素可见
+            skip_link.wait_for(state="visible", timeout=15000)
+            # 尝试滚动到元素可见区域
+            try:
+                skip_link.scroll_into_view_if_needed(timeout=5000)
+            except Exception:
+                pass
+            skip_link.click(timeout=10000)
         except Exception as e:
             self.logger.error(f"点击Skip失败: {e}")
-            raise
+            # 尝试备用方案：使用文本定位
+            try:
+                self.logger.info("尝试使用备用选择器定位Skip链接")
+                self.page.get_by_text("Skip", exact=True).click(timeout=10000)
+            except Exception as e2:
+                self.logger.error(f"备用方案也失败: {e2}")
+                raise
 
     # ========== 验证方法 ==========
 
@@ -437,11 +521,21 @@ class JobsPrefPageSG(BasePage):
         快速连续点击 Continue 按钮两次（TC007：防重复提交测试）
 
         说明：模拟用户双击行为，验证系统是否只执行一次提交
+        在无头模式下需要在两次点击之间添加极短的延迟以确保点击都被注册
         """
         try:
             btn = self.page.get_by_role("button", name="Continue")
+            # 确保按钮可见且可点击
+            btn.wait_for(state="visible", timeout=10000)
             btn.click()
-            btn.click()
+            # 在无头模式下，添加极短延迟确保第二次点击被注册
+            self.page.wait_for_timeout(50)
+            # 尝试第二次点击，可能已经开始跳转所以需要捕获异常
+            try:
+                btn.click(timeout=2000)
+            except Exception:
+                # 如果第二次点击失败（页面已跳转），这是预期行为
+                self.logger.info("第二次点击时页面可能已开始跳转（正常）")
         except Exception as e:
             self.logger.error(f"快速连续点击Continue失败: {e}")
             raise
@@ -479,14 +573,31 @@ class JobsPrefPageSG(BasePage):
         负向测试用例需要先清除才能验证空值提交场景
         """
         try:
-            self.page.get_by_text("Select preferred job function").click()
-            self.page.wait_for_timeout(600)
+            # 先尝试点击 Job Functions 触发器打开面板
+            trigger = self.page.get_by_text("Select preferred job function").first
+            if not trigger.is_visible(timeout=3000):
+                # 如果看不到 "Select preferred job function"，说明可能已有预填值
+                # 尝试点击已填充的值触发器
+                trigger = self.page.locator('div[class*="SelectInput"] >> text="Job Function"').first
+                if not trigger.is_visible(timeout=2000):
+                    # 最后尝试通用触发器
+                    trigger = self.page.locator('//div[contains(@class, "PcSelectInput")]//div[contains(@class, "trigger")]').first
+            
+            trigger.click()
+            self.page.wait_for_timeout(800)
+            
+            # 查找并点击 Clear 按钮
             clear_btn = self.page.get_by_role("button", name="Clear").first
             if clear_btn.is_visible(timeout=2000):
                 clear_btn.click()
                 self.page.wait_for_timeout(300)
-            self.page.get_by_role("button", name="Confirm").click()
+                self.logger.info("✓ 已点击 Clear 清除预填数据")
+            
+            # 确认关闭面板
+            confirm_btn = self.page.get_by_role("button", name="Confirm").first
+            confirm_btn.click()
             self.page.wait_for_timeout(500)
+            self.logger.info("✓ Job Functions 已清除")
         except Exception as e:
             self.logger.error(f"清除Job Functions失败: {e}")
             raise

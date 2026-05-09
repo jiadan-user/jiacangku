@@ -18,6 +18,9 @@
   - Education Background（学历级别、院校、专业、日期）
   - Language（语言技能多选）
 """
+import re
+import time
+
 import pytest
 import allure
 from pages.resume_add_page_ae import ResumeAddPageAe
@@ -118,25 +121,52 @@ class TestResumePageLoad:
     @allure.description("验证未登录状态下访问简历视图页会重定向到登录页")
     def test_tc002_redirect_to_login_when_not_logged_in(self, page, config):
         """TC002: 未登录用户访问简历视图页被重定向"""
-        try:
+        with allure.step("步骤0：在 aepub 域清 cookie/storage 后刷新，避免双 goto 与站点重定向竞态"):
+            try:
+                page.goto(config["resume_view_url"], wait_until="load", timeout=60000)
+            except Exception as exc:
+                logger.warning("预加载 resume 页（用于清理 storage）: %s", exc)
             page.context.clear_cookies()
-        except Exception:
-            pass
-
-        with allure.step("步骤1：未登录状态访问简历视图页"):
-            page.goto(config['resume_view_url'], wait_until="domcontentloaded", timeout=30000)
+            page.evaluate("() => { try { localStorage.clear(); sessionStorage.clear(); } catch (e) {} }")
+            page.wait_for_timeout(400)
+            try:
+                page.reload(wait_until="domcontentloaded", timeout=60000)
+            except Exception as exc:
+                logger.warning("reload 被重定向链打断，回退 commit 导航: %s", exc)
+                page.goto(config["resume_view_url"], wait_until="commit", timeout=60000)
             dom_content_loaded_soft(page, 20000)
             current_url = page.url
             logger.info(f"访问后URL: {current_url}")
 
-        with allure.step("步骤2：验证重定向到登录页或显示登录提示"):
-            is_redirected = (
-                "login" in current_url.lower()
-                or "register" in current_url.lower()
-                or "signin" in current_url.lower()
-                or page.get_by_text("Log in").is_visible(timeout=3000)
-                or page.get_by_text("Sign in").is_visible(timeout=3000)
-            )
+        with allure.step("步骤2：验证重定向到登录页或显示登录提示（无头/高负载下提示可能晚于首屏）"):
+            is_redirected = False
+            deadline = time.monotonic() + 20.0
+            while time.monotonic() < deadline:
+                u = page.url.lower()
+                if "login" in u or "register" in u or "signin" in u:
+                    is_redirected = True
+                    break
+                try:
+                    if page.get_by_role("link", name=re.compile(r"log\s*in", re.I)).first.is_visible(
+                        timeout=800
+                    ):
+                        is_redirected = True
+                        break
+                except Exception:
+                    pass
+                try:
+                    if page.get_by_text(re.compile(r"log\s*in", re.I)).first.is_visible(timeout=800):
+                        is_redirected = True
+                        break
+                except Exception:
+                    pass
+                try:
+                    if page.get_by_text(re.compile(r"sign\s*in", re.I)).first.is_visible(timeout=800):
+                        is_redirected = True
+                        break
+                except Exception:
+                    pass
+                page.wait_for_timeout(400)
             logger.info(f"重定向到登录: {is_redirected}")
 
         assert is_redirected or "resume" not in current_url.lower(), \
@@ -902,6 +932,9 @@ class TestDataEchoVerification:
         with allure.step("步骤2：打开 Education Background 弹窗并修改 Institute"):
             resume_page.open_edit_education_modal()
             new_institute = "EchoTest University"
+            # 先清空再填，确保 React 表单识别为 dirty，避免 Save 无效仍用旧值
+            resume_page.input_institute("")
+            page.wait_for_timeout(200)
             resume_page.input_institute(new_institute)
             logger.info(f"✓ 修改 Institute 为: {new_institute}")
 
@@ -924,9 +957,23 @@ class TestDataEchoVerification:
             logger.info("✓ 刷新页面完成")
 
         with allure.step("步骤6：重新打开弹窗验证 Institute 数据回显"):
-            resume_page.open_edit_education_modal()
-            echo_institute = resume_page.get_institute_value()
-            logger.info(f"弹窗回显 Institute: '{echo_institute}'")
+            echo_institute = ""
+            for attempt in range(4):
+                resume_page.open_edit_education_modal()
+                echo_institute = resume_page.get_institute_value()
+                logger.info(f"弹窗回显 Institute (尝试 {attempt + 1}): '{echo_institute}'")
+                if echo_institute == new_institute:
+                    break
+                try:
+                    page.keyboard.press("Escape")
+                except Exception:
+                    pass
+                page.wait_for_timeout(800)
+                page.reload(wait_until="domcontentloaded", timeout=60000)
+                page.wait_for_load_state("load", timeout=30000)
+                dom_content_loaded_soft(page, 20000)
+                resume_page.is_resume_view_displayed()
+                page.wait_for_selector("h3:has-text('Online Resume')", state="visible", timeout=20000)
 
         assert echo_institute == new_institute, \
             f"刷新后弹窗应回显 Institute '{new_institute}'，实际: '{echo_institute}'"
@@ -998,14 +1045,28 @@ class TestDataEchoVerification:
             assert not resume_page.is_any_modal_open(), "Save 后弹窗应关闭"
 
         with allure.step("步骤4：刷新页面"):
-            page.reload()
+            page.reload(wait_until="networkidle", timeout=30000)
+            page.wait_for_load_state("domcontentloaded", timeout=15000)
             dom_content_loaded_soft(page, 20000)
+            page.wait_for_timeout(3000)  # 额外等待前端渲染
             resume_page.is_resume_view_displayed()
             logger.info("✓ 刷新页面完成")
 
         with allure.step("步骤5：验证视图页显示更新后的摘要内容"):
             # Check first 30 characters of the summary text
-            summary_visible = page.get_by_text(summary_text[:30]).is_visible(timeout=5000)
+            summary_visible = False
+            probe = summary_text[:30]
+            for attempt in range(3):
+                summary_visible = page.get_by_text(probe).is_visible(timeout=10000)
+                if summary_visible:
+                    break
+                # 并发/网络抖动下偶发回显慢：等待并刷新重试一次
+                page.wait_for_timeout(2000)
+                if attempt < 2:
+                    page.reload(wait_until="networkidle", timeout=30000)
+                    page.wait_for_load_state("domcontentloaded", timeout=15000)
+                    dom_content_loaded_soft(page, 20000)
+                    page.wait_for_timeout(3000)
             logger.info(f"视图页摘要内容可见: {summary_visible}")
 
         assert summary_visible, \

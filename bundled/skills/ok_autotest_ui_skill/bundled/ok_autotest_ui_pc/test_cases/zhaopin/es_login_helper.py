@@ -64,26 +64,29 @@ def ensure_es_logged_in(page, config):
     if session_manager.load_session():
         # ===== 验证Session是否有效 =====
         logger.info("Session加载成功，验证登录状态...")
-        page.goto(
-            f"{config['base_url']}/en/city-madrid2/",
-            wait_until="domcontentloaded",
-            timeout=30000,
-        )
         try:
-            page.wait_for_load_state("networkidle", timeout=12000)
-        except Exception:
-            pass
-        # 官方推荐：等待页面关键元素加载（用户菜单或登录按钮）
-        # 使用 or_() 方法组合多个选择器
-        page.locator("text=/OKerES_/").or_(page.get_by_text("Log in / Register")).first.wait_for(state="visible", timeout=25000)
-        
-        # 使用ES首页Page Object验证登录状态
-        es_home_page = EsHomePage(page)
-        if es_home_page.is_logged_in():
-            logger.info("✓ Session有效，已登录ES站")
-            return
-        else:
-            logger.warning("Session已过期，将执行登录流程")
+            page.goto(
+                f"{config['base_url']}/en/city-madrid2/",
+                wait_until="domcontentloaded",
+                timeout=45000,
+            )
+            try:
+                page.wait_for_load_state("networkidle", timeout=15000)
+            except Exception:
+                pass
+            # 官方推荐：等待页面关键元素加载（用户菜单或登录按钮）
+            # 使用 or_() 方法组合多个选择器，增加超时以应对并行环境
+            page.locator("text=/OKerES_/").or_(page.get_by_text("Log in / Register")).first.wait_for(state="visible", timeout=45000)
+            
+            # 使用ES首页Page Object验证登录状态
+            es_home_page = EsHomePage(page)
+            if es_home_page.is_logged_in():
+                logger.info("✓ Session有效，已登录ES站")
+                return
+            else:
+                logger.warning("Session已过期，将执行登录流程")
+        except Exception as e:
+            logger.warning(f"Session验证失败: {e}，将重新登录")
     else:
         logger.info("未找到有效Session，将执行登录流程")
     

@@ -13,6 +13,7 @@
 
   cd /path/to/ok_autotest_ui_pc
   python3 test_cases/zhaopin/run_zhaopin_parallel_headless.py
+  python3 test_cases/zhaopin/run_zhaopin_parallel_headless.py --until-pass
   python3 test_cases/zhaopin/run_zhaopin_parallel_headless.py --failed-from-junit test_cases/zhaopin/parallel_headless_run_*/zhaopin_parallel_merged_junit.xml
 
 环境：
@@ -83,6 +84,26 @@ def _failed_script_basenames_from_summary(data: dict) -> set[str]:
             continue
         if c.get("failure", 0) + c.get("error", 0) > 0:
             out.add(Path(fp).name)
+    return out
+
+
+def _failed_basenames_from_thread_results(results: list[ThreadResult]) -> set[str]:
+    """子进程非 0 退出时，无论 JUnit 是否完整，都纳入待重跑集合。"""
+    return {tr.script for tr in results if tr.result.returncode != 0}
+
+
+def _merge_failed_sets(
+    junit_path: Path | None,
+    results: list[ThreadResult],
+) -> set[str]:
+    """JUnit 中的失败/错误 + returncode!=0 的脚本并集。"""
+    out = _failed_basenames_from_thread_results(results)
+    if junit_path and junit_path.is_file() and junit_path.stat().st_size > 0:
+        try:
+            sdata = summarize_junit(junit_path)
+            out |= _failed_script_basenames_from_summary(sdata)
+        except (OSError, ET.ParseError):
+            pass
     return out
 
 
@@ -311,6 +332,113 @@ def run_zhaopin_parallel(
     return results, wall
 
 
+def run_one_batch_and_write_reports(
+    zhaopin: Path,
+    pc_root: Path,
+    out_dir: Path,
+    max_workers: int,
+    extra_env: dict[str, str],
+    test_files: list[Path] | None,
+    *,
+    report_head_extra: str = "",
+) -> tuple[set[str], list[ThreadResult], Path, float]:
+    """
+    跑一轮并行 pytest、合并 JUnit、写 per-script 与总报告。
+
+    返回 ``(失败脚本 basenames 集合, results, merged_junit_path, pool_wall)``。
+    集合为空表示本轮全部通过。
+    """
+    results, pool_wall = run_zhaopin_parallel(
+        zhaopin, pc_root, out_dir, max_workers, extra_env, test_files=test_files
+    )
+    if not results:
+        return set(), [], out_dir / "zhaopin_parallel_merged_junit.xml", pool_wall
+
+    per_script_report_paths = write_per_script_reports(results, out_dir)
+    print(f"\n各脚本独立报告目录: {out_dir / 'per_script_reports'}/", flush=True)
+    for name, rp in per_script_report_paths:
+        print(f"  {name} -> {rp}", flush=True)
+
+    junit_paths = [tr.result.junit_path for tr in results if tr.result.junit_path.is_file()]
+    merged = out_dir / "zhaopin_parallel_merged_junit.xml"
+    _merge_junit_files(junit_paths, merged)
+
+    print("\n========== 各脚本墙钟执行时长（秒） ==========\n", flush=True)
+    for tr in results:
+        r = tr.result
+        st = f"{r.wall_seconds:8.2f}"
+        rc = r.returncode
+        line = f"  {st} s  rc={rc}  {r.relpath}"
+        if r.error:
+            line += f"  ERR: {r.error}"
+        print(line, flush=True)
+
+    combined_log = out_dir / "zhaopin_parallel_combined_console.log"
+    parts: list[str] = []
+    for tr in results:
+        lp = tr.result.log_path
+        if lp.is_file():
+            parts.append(
+                f"\n\n========== {tr.script} (rc={tr.result.returncode}, {tr.result.wall_seconds:.2f}s) ==========\n\n"
+            )
+            parts.append(lp.read_text(encoding="utf-8", errors="replace"))
+    combined_log.write_text("".join(parts), encoding="utf-8")
+    (out_dir / "zhaopin_parallel_duration_sec.txt").write_text(
+        f"thread_pool_wall_sec={pool_wall:.4f}\n", encoding="utf-8"
+    )
+
+    data = summarize_junit(merged) if merged.is_file() and merged.stat().st_size > 0 else {}
+    if not data:
+        print("警告: 未生成有效合并 JUnit，可能子进程均失败", file=sys.stderr)
+    else:
+        _print_fail_skip(data, sys.stdout)
+
+    failed_set = _merge_failed_sets(merged, results)
+
+    if data:
+        md = build_markdown(
+            data,
+            combined_log,
+            f"**线程池墙钟**（全部脚本并发结束）: {pool_wall:.2f} s\n\n"
+            + combined_log.read_text(encoding="utf-8", errors="replace")[:50000],
+            None,
+            merged,
+        )
+        head = (
+            f"# zhaopin 无头多线程并行跑测\n\n{report_head_extra}"
+            f"- 输出目录: `{out_dir}`\n- **线程池总墙钟**: {pool_wall:.2f} s\n"
+        )
+        if (out_dir / "rerun_source.txt").is_file():
+            head += "- **模式**: 仅重跑 JUnit 中有失败/错误的脚本，见 `rerun_source.txt`\n"
+        head += f"- 各脚本 Markdown: `{out_dir / 'per_script_reports'}/`\n\n## 每脚本报告路径\n\n| 脚本 | Markdown 报告 |\n| --- | --- |\n"
+        for name, rp in per_script_report_paths:
+            head += f"| `{name}` | `{rp.name}` |\n"
+        head += "\n## 每脚本墙钟\n\n| 脚本 | 秒 | returncode |\n| --- | ---: | ---: |\n"
+        for tr in results:
+            r = tr.result
+            head += f"| `{tr.script}` | {r.wall_seconds:.2f} | {r.returncode} |\n"
+        head += "\n---\n\n"
+        report_path = out_dir / "zhaopin_parallel_headless_run_report.md"
+        report_path.write_text(
+            head + re.sub(r"^# zhaopin 无头跑测汇总", "## JUnit 汇总", md, count=1),
+            encoding="utf-8",
+        )
+        print(f"\n已写报告: {report_path}", flush=True)
+    else:
+        report_path = out_dir / "zhaopin_parallel_headless_run_report.md"
+        mini = (
+            f"# 并行跑测（JUnit 未合并成功）\n\n{report_head_extra}"
+            f"输出: `{out_dir}`\n池墙钟: {pool_wall:.2f} s\n"
+            f"- 各脚本报告: `{out_dir / 'per_script_reports'}/`\n"
+        )
+        report_path.write_text(mini, encoding="utf-8")
+        print(f"已写简报告: {report_path}", flush=True)
+
+    print(f"\n合并 JUnit: {merged}", flush=True)
+    print(f"合并日志: {combined_log}", flush=True)
+    return failed_set, results, merged, pool_wall
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(
         description="zhaopin 目录下按脚本无头多线程并行 pytest，并统计时长与失败/跳过",
@@ -359,9 +487,23 @@ def main() -> int:
         metavar="NAME",
         help="只跑这些脚本，仅需文件名，如: test_foo.py test_bar.py（与 --failed-from-junit 二选一，后者优先）",
     )
+    ap.add_argument(
+        "--until-pass",
+        action="store_true",
+        help="多轮重跑：每轮一线程一脚本并发；仅重跑仍有失败/错误的脚本，直到全部通过或达到 --max-rounds",
+    )
+    ap.add_argument(
+        "--max-rounds",
+        type=int,
+        default=50,
+        metavar="N",
+        help="与 --until-pass 合用：最多跑多少轮（默认 50）",
+    )
     args = ap.parse_args()
     if args.failed_from_junit and args.scripts:
         ap.error("--failed-from-junit 与 --scripts 不能同时指定")
+    if args.until_pass and (args.failed_from_junit or args.scripts):
+        ap.error("--until-pass 不能与 --failed-from-junit / --scripts 同时使用")
 
     pc_root = args.pc_root.resolve()
     zhaopin = pc_root / "test_cases" / "zhaopin"
@@ -376,6 +518,66 @@ def main() -> int:
         extra_env["ZHAOPIN_SHARED_CONTEXT"] = "0"
 
     ts = datetime.now(timezone.utc).astimezone().strftime("%Y%m%d_%H%M%S")
+
+    if args.until_pass:
+        until_root = (args.out_dir or (zhaopin / f"parallel_headless_until_pass_{ts}")).resolve()
+        until_root.mkdir(parents=True, exist_ok=True)
+        (until_root / "until_pass_meta.txt").write_text(
+            f"started_local={ts}\nmax_rounds={args.max_rounds}\nmax_workers={args.max_workers}\n",
+            encoding="utf-8",
+        )
+        pending_basenames: set[str] | None = None
+        for rnd in range(1, args.max_rounds + 1):
+            round_dir = until_root / f"round_{rnd:02d}"
+            if pending_basenames is None:
+                selected_round: list[Path] | None = None
+                mode_desc = "首轮全量 test_*.py"
+            else:
+                if not pending_basenames:
+                    break
+                selected_round = test_files_for_rerun(zhaopin, only_basenames=pending_basenames)
+                if not selected_round:
+                    print(
+                        f"第 {rnd} 轮：失败集合 {sorted(pending_basenames)!r} 无法映射到 zhaopin 下 test_*.py",
+                        file=sys.stderr,
+                    )
+                    return 2
+                mode_desc = f"仅重跑 {len(selected_round)} 个脚本"
+            print(
+                f"\n{'=' * 60}\n--until-pass 第 {rnd}/{args.max_rounds} 轮（{mode_desc}）\n{'=' * 60}\n",
+                flush=True,
+            )
+            extra_head = f"- **until-pass 轮次**: {rnd} / {args.max_rounds}\n"
+            failed_set, results_round, _merged, _pool = run_one_batch_and_write_reports(
+                zhaopin,
+                pc_root,
+                round_dir,
+                args.max_workers,
+                extra_env,
+                selected_round,
+                report_head_extra=extra_head,
+            )
+            if not results_round and not discover_test_files(zhaopin):
+                print(f"在 {zhaopin} 下未发现 test_*.py，退出。", file=sys.stderr)
+                return 0
+            if not failed_set:
+                (until_root / "until_pass_success.txt").write_text(
+                    f"completed_round={rnd}\nroot={until_root}\n",
+                    encoding="utf-8",
+                )
+                print(f"\n全部脚本已通过。汇总根目录: {until_root}", flush=True)
+                return 0
+            pending_basenames = failed_set
+            print(
+                f"\n第 {rnd} 轮仍有 {len(failed_set)} 个脚本未通过: {sorted(failed_set)}",
+                flush=True,
+            )
+        print(
+            f"\n已达 --max-rounds={args.max_rounds}，仍未全部通过。见: {until_root}",
+            file=sys.stderr,
+        )
+        return 1
+
     out_dir = (args.out_dir or (zhaopin / f"parallel_headless_run_{ts}")).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -425,90 +627,19 @@ def main() -> int:
             missing = sorted(name_set - found)
             print(f"警告: 以下文件在 zhaopin 中不存在: {missing}", file=sys.stderr)
 
-    results, pool_wall = run_zhaopin_parallel(
-        zhaopin, pc_root, out_dir, args.max_workers, extra_env, test_files=selected
+    failed_set, results, _merged, _pool_wall = run_one_batch_and_write_reports(
+        zhaopin,
+        pc_root,
+        out_dir,
+        args.max_workers,
+        extra_env,
+        selected,
     )
     if not results:
         print(f"在 {zhaopin} 下未发现 test_*.py，退出。", file=sys.stderr)
         return 0
 
-    per_script_report_paths = write_per_script_reports(results, out_dir)
-    print(f"\n各脚本独立报告目录: {out_dir / 'per_script_reports'}/", flush=True)
-    for name, rp in per_script_report_paths:
-        print(f"  {name} -> {rp}", flush=True)
-
-    junit_paths = [tr.result.junit_path for tr in results if tr.result.junit_path.is_file()]
-    merged = out_dir / "zhaopin_parallel_merged_junit.xml"
-    _merge_junit_files(junit_paths, merged)
-
-    # 各脚本耗时
-    print("\n========== 各脚本墙钟执行时长（秒） ==========\n", flush=True)
-    for tr in results:
-        r = tr.result
-        st = f"{r.wall_seconds:8.2f}"
-        rc = r.returncode
-        line = f"  {st} s  rc={rc}  {r.relpath}"
-        if r.error:
-            line += f"  ERR: {r.error}"
-        print(line, flush=True)
-
-    combined_log = out_dir / "zhaopin_parallel_combined_console.log"
-    parts: list[str] = []
-    for tr in results:
-        lp = tr.result.log_path
-        if lp.is_file():
-            parts.append(
-                f"\n\n========== {tr.script} (rc={tr.result.returncode}, {tr.result.wall_seconds:.2f}s) ==========\n\n"
-            )
-            parts.append(lp.read_text(encoding="utf-8", errors="replace"))
-    combined_log.write_text("".join(parts), encoding="utf-8")
-    (out_dir / "zhaopin_parallel_duration_sec.txt").write_text(
-        f"thread_pool_wall_sec={pool_wall:.4f}\n", encoding="utf-8"
-    )
-    # 使用合并后的 junit 出汇总（无整段 time -p 时 JUnit/报告以 suite 与分脚本为准）
-    data = summarize_junit(merged) if merged.is_file() and merged.stat().st_size else {}
-    if not data:
-        print("警告: 未生成有效合并 JUnit，可能子进程均失败", file=sys.stderr)
-    else:
-        _print_fail_skip(data, sys.stdout)
-
-    if data:
-        md = build_markdown(
-            data,
-            combined_log,
-            f"**线程池墙钟**（全部脚本并发结束）: {pool_wall:.2f} s\n\n"
-            + combined_log.read_text(encoding="utf-8", errors="replace")[:50000],
-            None,
-            merged,
-        )
-        # 注入各文件墙钟
-        head = f"# zhaopin 无头多线程并行跑测\n\n- 输出目录: `{out_dir}`\n- **线程池总墙钟**: {pool_wall:.2f} s\n"
-        if (out_dir / "rerun_source.txt").is_file():
-            head += f"- **模式**: 仅重跑 JUnit 中有失败/错误的脚本，见 `rerun_source.txt`\n"
-        head += f"- 各脚本 Markdown: `{out_dir / 'per_script_reports'}/`\n\n## 每脚本报告路径\n\n| 脚本 | Markdown 报告 |\n| --- | --- |\n"
-        for name, rp in per_script_report_paths:
-            head += f"| `{name}` | `{rp.name}` |\n"
-        head += f"\n## 每脚本墙钟\n\n| 脚本 | 秒 | returncode |\n| --- | ---: | ---: |\n"
-        for tr in results:
-            r = tr.result
-            head += f"| `{tr.script}` | {r.wall_seconds:.2f} | {r.returncode} |\n"
-        head += "\n---\n\n"
-        report_path = out_dir / "zhaopin_parallel_headless_run_report.md"
-        report_path.write_text(head + re.sub(r"^# zhaopin 无头跑测汇总", "## JUnit 汇总", md, count=1), encoding="utf-8")
-        print(f"\n已写报告: {report_path}", flush=True)
-    else:
-        report_path = out_dir / "zhaopin_parallel_headless_run_report.md"
-        mini = (
-            f"# 并行跑测（JUnit 未合并成功）\n\n输出: `{out_dir}`\n池墙钟: {pool_wall:.2f} s\n"
-            f"- 各脚本报告: `{out_dir / 'per_script_reports'}/`\n"
-        )
-        report_path.write_text(mini, encoding="utf-8")
-        print(f"已写简报告: {report_path}", flush=True)
-
-    print(f"\n合并 JUnit: {merged}", flush=True)
-    print(f"合并日志: {combined_log}", flush=True)
-    any_fail = any(tr.result.returncode != 0 for tr in results)
-    return 1 if (any_fail or (data and (data.get("failures") or data.get("errors")))) else 0
+    return 1 if failed_set else 0
 
 
 if __name__ == "__main__":

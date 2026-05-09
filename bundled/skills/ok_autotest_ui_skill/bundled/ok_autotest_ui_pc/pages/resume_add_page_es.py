@@ -158,24 +158,47 @@ class ResumeAddPageEs(BasePage):
         Args:
             country_name: 国家名称（如 'France', 'Spain'）
         """
-        try:
-            # Current Location 是只读输入框，需要点击打开下拉选择器
-            location_input = self.page.get_by_role("textbox", name="Select country/region")
-            location_input.click()
+        last_err = None
+        for attempt in range(3):
+            try:
+                self.page.keyboard.press("Escape")
+                self.page.wait_for_timeout(200)
+                location_input = self.page.get_by_role("textbox", name="Select country/region")
+                location_input.click(timeout=15000)
+                self.page.wait_for_timeout(400)
+                search_input = self.page.get_by_placeholder("Search").first
+                if search_input.is_visible(timeout=2500):
+                    search_input.fill("")
+                    self.page.wait_for_timeout(150)
+                    search_input.fill(country_name)
+                    self.page.wait_for_timeout(500)
+                option = self.page.get_by_text(country_name, exact=True).first
+                option.wait_for(state="visible", timeout=8000)
+                option.click()
+                self.page.wait_for_timeout(400)
+                self.page.keyboard.press("Escape")
+                self.page.wait_for_timeout(300)
+                got = ""
+                try:
+                    got = self.get_current_location_value() or ""
+                except Exception:
+                    got = ""
+                if country_name in got:
+                    return
+                self.logger.warning(
+                    "Current Location 选择后仍为 %r，期望含 %r（第 %s 次重试）",
+                    got,
+                    country_name,
+                    attempt + 1,
+                )
+            except Exception as e:
+                last_err = e
+                self.logger.warning("选择 Current Location 第 %s 次尝试异常: %s", attempt + 1, e)
             self.page.wait_for_timeout(500)
-            # 在搜索框中输入国家名（下拉选择器内的搜索框）
-            search_input = self.page.get_by_placeholder("Search").first
-            if search_input.is_visible(timeout=3000):
-                search_input.fill(country_name)
-                self.page.wait_for_timeout(500)
-            # 等待下拉选项出现并点击匹配项
-            option = self.page.get_by_text(country_name, exact=True).first
-            option.wait_for(state="visible", timeout=5000)
-            option.click()
-            self.page.wait_for_timeout(300)
-        except Exception as e:
-            self.logger.error(f"选择 Current Location 失败: {e}")
-            raise
+        if last_err:
+            self.logger.error(f"选择 Current Location 失败: {last_err}")
+            raise last_err
+        raise RuntimeError(f"未能将 Current Location 选为 {country_name!r}")
 
     def is_continue_button_disabled(self):
         """验证 Continue 按钮是否处于禁用状态"""
@@ -407,11 +430,11 @@ class ResumeAddPageEs(BasePage):
                 route.fulfill(
                     status=200,
                     content_type="application/json",
-                    body=json.dumps({"code": 200, "data": first_level_items})
+                    body=json.dumps({"code": 200, "data": first_level_items}),
                 )
             else:
-                # 提取 categoryId
                 import re
+
                 m = re.search(r"categoryId=(\d+)", url)
                 if m:
                     cat_id = m.group(1)
@@ -419,7 +442,7 @@ class ResumeAddPageEs(BasePage):
                     route.fulfill(
                         status=200,
                         content_type="application/json",
-                        body=json.dumps({"code": 200, "data": items})
+                        body=json.dumps({"code": 200, "data": items}),
                     )
                 else:
                     route.continue_()
@@ -1012,7 +1035,8 @@ class ResumeAddPageEs(BasePage):
             btn.click(timeout=90000, force=force_click)
             self.page.wait_for_timeout(500)
             # 单次等待，避免 wait_for_url 超时后再跑 wait_for_function 导致总时长翻倍
-            self.page.wait_for_function(js_leave_add, timeout=120000)
+            # 联调/无头下 SPA 导航偶发超过 120s（含排队锁等待后的首屏）
+            self.page.wait_for_function(js_leave_add, timeout=180000)
 
         try:
             _attempt(force_click=False)
