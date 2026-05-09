@@ -39,7 +39,7 @@ def _ensure_logged_out_impl(self, base_url=None):
         logger.warning(f"确保退出登录失败: {e}")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def login_config():
     """
     Login模块专用配置（session级别）
@@ -74,15 +74,15 @@ def login_config():
     return config
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def page(login_config):
     """
-    为 login 模块提供优化的 page fixture（session级别，所有测试共享）
+    为 login 模块提供优化的 page fixture（module级别，每个测试文件独立实例）
     
     优化点：
     1. 支持无头模式（通过环境变量 HEADLESS）
     2. 资源拦截（只拦截第三方追踪脚本，保留图片、CSS、JS）
-    3. 整个测试会话复用同一个浏览器实例
+    3. 每个测试文件独立浏览器实例，避免并发竞争
     4. 优化超时时间：将默认 15秒 改为 5秒
     """
     from utils.browser_manager import BrowserManager
@@ -153,15 +153,15 @@ def page(login_config):
             logger.warning(f"[LOGIN] 关闭浏览器失败: {e}")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def preloaded_page(page, login_config):
     """
-    预加载的页面，整个测试会话复用
-    
+    预加载的页面，每个测试文件独立实例（module级别）
+
     优化策略：
     1. 只加载一次页面和 Cookie 处理
     2. 用例间只需要重置登录状态
-    3. 大幅减少页面加载时间
+    3. module-scoped 避免并发时多个文件共用同一个 page 产生竞争
     """
     login_page = LoginPage(page)
     base_url = login_config.get('base_url')
