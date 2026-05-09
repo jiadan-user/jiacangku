@@ -2610,40 +2610,34 @@ class PropertyPage(BasePage):
     # ========== 入口断言辅助方法 ==========
 
     def get_page_h1(self) -> str:
-        """获取页面主标题文案。
-
-        列表/首页改版后常见「首颗 h1 为空占位、真实类目标题在后几颗 h1」或首颗尚未 hydration，
-        仅取 ``h1`` 首节点会得到空串导致入口用例误报。此处依次尝试：
-        等待至少一颗 h1 挂载 → 遍历 h1 取首个非空文案 → 再尝试 ``role=heading`` level=1。
-        """
+        """获取页面 H1 标题文本（尝试多种选择器）"""
+        selectors = [
+            "h1",
+            "[class*='title'] h1",
+            "[class*='header'] h1",
+            "[class*='breadcrumb'] ~ h1",
+            "main h1",
+            "article h1"
+        ]
+        
+        for selector in selectors:
+            try:
+                locator = self.page.locator(selector).first
+                locator.wait_for(state="visible", timeout=5000)
+                text = locator.inner_text().strip()
+                if text:
+                    return text
+            except Exception:
+                continue
+        
+        self.logger.warning("⚠️ 未找到可见的 H1 元素，尝试获取所有 h1")
         try:
-            self.page.wait_for_selector("h1", state="attached", timeout=15000)
-        except Exception:
-            pass
-        try:
-            loc = self.page.locator("h1")
-            n = loc.count()
-            for i in range(min(n, 30)):
-                try:
-                    t = loc.nth(i).inner_text(timeout=8000).strip()
-                    if t:
-                        return t
-                except Exception:
-                    continue
-        except Exception:
-            pass
-        try:
-            role = self.page.get_by_role("heading", level=1)
-            n = role.count()
-            for i in range(min(n, 30)):
-                try:
-                    t = role.nth(i).inner_text(timeout=8000).strip()
-                    if t:
-                        return t
-                except Exception:
-                    continue
-        except Exception:
-            pass
+            all_h1_text = self.page.locator("h1").all_inner_texts()
+            if all_h1_text:
+                return " | ".join([t.strip() for t in all_h1_text if t.strip()])
+        except Exception as e:
+            self.logger.error(f"❌ 获取 H1 完全失败: {e}")
+        
         return ""
 
     def is_browse_dropdown_visible(self) -> bool:
