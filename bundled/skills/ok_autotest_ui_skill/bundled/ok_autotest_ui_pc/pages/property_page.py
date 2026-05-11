@@ -2512,7 +2512,29 @@ class PropertyPage(BasePage):
         点击金刚位「All」图标 → 进入全类目 listpage
         MCP JS: await page.getByRole('link', { name: 'All All' }).click();
         """
-        self.page.locator(self.CATEGORY_ICON_ALL).first.click()
+        all_name_pattern = re.compile(r"^All(?:\s+All)?$", re.IGNORECASE)
+        candidates = [
+            self.page.get_by_role("link", name="All All"),
+            self.page.get_by_role("link", name=all_name_pattern),
+            self.page.locator("a[href*='/listpage/']").filter(has_text=all_name_pattern),
+            self.page.locator("a[href*='/listpage/'][href*='city-']"),
+            self.page.locator(self.CATEGORY_ICON_ALL),
+        ]
+
+        last_error = None
+        for loc in candidates:
+            try:
+                target = loc.first
+                target.wait_for(state="visible", timeout=20000)
+                target.scroll_into_view_if_needed(timeout=20000)
+                target.click(timeout=20000)
+                break
+            except Exception as err:  # noqa: BLE001
+                last_error = err
+        else:
+            raise TimeoutError(f"未找到可点击的 All 入口: {last_error}")
+
+        self.page.wait_for_url("**/listpage/**", timeout=30000)
         self.page.wait_for_load_state("domcontentloaded", timeout=30000)
 
     def click_listpage_property_for_sale(self):
