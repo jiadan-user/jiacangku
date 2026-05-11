@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-04-30T09:10:14Z",
-  "root_dir": "/Users/mengmeng/Desktop/ok_autotest_skill_ui_pc/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc",
-  "case_count": 2292,
-  "governed_case_count": 2115,
+  "generated_at": "2026-05-11T10:03:41Z",
+  "root_dir": "/Users/vickymo/cursor-workspace/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc",
+  "case_count": 2320,
+  "governed_case_count": 2123,
   "cases": [
     {
       "nodeid": "test_cases/ SEO/AE/test_settings_new_messages.py::test_tc001_access_settings_new_messages",
@@ -5504,7 +5504,7 @@
       ],
       "allure_feature": "OK",
       "allure_story": "探索列表页 - Filter 综合筛选",
-      "allure_title": "Filter 弹窗展示 8 个筛选分组：Body Style/Color/Year/Specs/energyType/Transmission/Engine/Drive Type",
+      "allure_title": "Filter 弹窗展示 8 个筛选分组：Body Style/Color/Year/Specs/Fuel Type/Transmission/Engine/Drive Type",
       "severity": "normal",
       "module_id": "car_list",
       "feature_id": "car_list_filter_location",
@@ -5513,7 +5513,7 @@
         "car_list_filter_location",
         "explore_list",
         "filter",
-        "filter_8_body_style_color_year_specs_energytype_transmission_engine_drive_type"
+        "filter_8_body_style_color_year_specs_fuel_type_transmission_engine_drive_type"
       ],
       "baseline_set": "car_list_core",
       "risk_level": null,
@@ -5536,7 +5536,7 @@
       ],
       "allure_feature": "OK",
       "allure_story": "探索列表页 - Filter 综合筛选",
-      "allure_title": "Filter - Body Style 选择 SUV，URL 含 attr_190 参数，列表结果更新",
+      "allure_title": "Filter - Body Style 选择 SUV，URL 含 attr_181 参数，列表结果更新",
       "severity": "normal",
       "module_id": "car_list",
       "feature_id": "car_list_filter_location",
@@ -5545,7 +5545,7 @@
         "car_list_filter_location",
         "explore_list",
         "filter",
-        "filter_body_style_suv_url_attr_190"
+        "filter_body_style_suv_url_attr_181"
       ],
       "baseline_set": "car_list_core",
       "risk_level": null,
@@ -5600,7 +5600,7 @@
       ],
       "allure_feature": "OK",
       "allure_story": "探索列表页 - Filter 综合筛选",
-      "allure_title": "Filter - Year 下拉选项包含历史年份，选择后 URL 含 attr_199",
+      "allure_title": "Filter - Year 下拉选项包含历史年份，选择后 URL 含 attr_190",
       "severity": "normal",
       "module_id": "car_list",
       "feature_id": "car_list_filter_location",
@@ -5609,7 +5609,7 @@
         "car_list_filter_location",
         "explore_list",
         "filter",
-        "filter_year_url_attr_199"
+        "filter_year_url_attr_190"
       ],
       "baseline_set": "car_list_core",
       "risk_level": null,
@@ -5632,7 +5632,7 @@
       ],
       "allure_feature": "OK",
       "allure_story": "探索列表页 - Filter 综合筛选",
-      "allure_title": "Filter - Specs 选择 European，URL 含 attr_194 参数",
+      "allure_title": "Filter - Specs 选择 European，URL 含 attr_186 参数",
       "severity": "normal",
       "module_id": "car_list",
       "feature_id": "car_list_filter_location",
@@ -5641,7 +5641,7 @@
         "car_list_filter_location",
         "explore_list",
         "filter",
-        "filter_specs_european_url_attr_194"
+        "filter_specs_european_url_attr_186"
       ],
       "baseline_set": "car_list_core",
       "risk_level": null,
@@ -5664,7 +5664,7 @@
       ],
       "allure_feature": "OK",
       "allure_story": "探索列表页 - Filter 综合筛选",
-      "allure_title": "Filter - energyType 选择 Petrol，URL 含 attr_192 参数",
+      "allure_title": "Filter - Fuel Type 选择 Petrol，URL 含 attr_183 参数",
       "severity": "normal",
       "module_id": "car_list",
       "feature_id": "car_list_filter_location",
@@ -5673,7 +5673,7 @@
         "car_list_filter_location",
         "explore_list",
         "filter",
-        "filter_energytype_petrol_url_attr_192"
+        "filter_fuel_type_petrol_url_attr_183"
       ],
       "baseline_set": "car_list_core",
       "risk_level": null,
@@ -5696,7 +5696,7 @@
       ],
       "allure_feature": "OK",
       "allure_story": "探索列表页 - Filter 综合筛选",
-      "allure_title": "Filter - Transmission 选择 Auto，URL 含 attr_197 参数",
+      "allure_title": "Filter - Transmission 选择 Auto，URL 含 attr_188 参数",
       "severity": "normal",
       "module_id": "car_list",
       "feature_id": "car_list_filter_location",
@@ -5705,7 +5705,7 @@
         "car_list_filter_location",
         "explore_list",
         "filter",
-        "filter_transmission_auto_url_attr_197"
+        "filter_transmission_auto_url_attr_188"
       ],
       "baseline_set": "car_list_core",
       "risk_level": null,
@@ -5728,7 +5728,7 @@
       ],
       "allure_feature": "OK",
       "allure_story": "探索列表页 - Filter 综合筛选",
-      "allure_title": "Filter - Engine(cc) 输入排量区间 1000-3000，URL 含 attr_479 参数",
+      "allure_title": "Filter - Engine(cc) 输入排量区间 1000-3000，URL 含 attr_184 参数",
       "severity": "normal",
       "module_id": "car_list",
       "feature_id": "car_list_filter_location",
@@ -5737,7 +5737,7 @@
         "car_list_filter_location",
         "explore_list",
         "filter",
-        "filter_engine_cc_1000_3000_url_attr_479"
+        "filter_engine_cc_1000_3000_url_attr_184"
       ],
       "baseline_set": "car_list_core",
       "risk_level": null,
@@ -5760,7 +5760,7 @@
       ],
       "allure_feature": "OK",
       "allure_story": "探索列表页 - Filter 综合筛选",
-      "allure_title": "Filter - Drive Type 选择 AWD，URL 含 attr_191 参数",
+      "allure_title": "Filter - Drive Type 选择 AWD，URL 含 attr_182 参数",
       "severity": "normal",
       "module_id": "car_list",
       "feature_id": "car_list_filter_location",
@@ -5769,7 +5769,7 @@
         "car_list_filter_location",
         "explore_list",
         "filter",
-        "filter_drive_type_awd_url_attr_191"
+        "filter_drive_type_awd_url_attr_182"
       ],
       "baseline_set": "car_list_core",
       "risk_level": null,
@@ -8119,7 +8119,8 @@
         "case_id_chat_ai_reply14",
         "chat",
         "p0",
-        "regression"
+        "regression",
+        "skip"
       ],
       "allure_feature": "OK",
       "allure_story": "聊天功能 - AI 自动回复",
@@ -8291,7 +8292,8 @@
         "case_id_chat_initial_message04",
         "chat",
         "p1",
-        "regression"
+        "regression",
+        "skip"
       ],
       "allure_feature": "OK",
       "allure_story": "聊天功能 - 进入聊天页面",
@@ -8423,7 +8425,8 @@
         "case_id_chat_bubble_seller_left15",
         "chat",
         "p1",
-        "regression"
+        "regression",
+        "skip"
       ],
       "allure_feature": "OK",
       "allure_story": "聊天功能 - 消息气泡布局",
@@ -19221,7 +19224,10 @@
       "site": "ae",
       "markers": [
         "ai_feature",
-        "p0"
+        "ai_suggest_category",
+        "long_tail",
+        "p0",
+        "skip"
       ],
       "allure_feature": null,
       "allure_story": null,
@@ -20246,8 +20252,11 @@
       "site": "ae",
       "markers": [
         "ai",
+        "ai_suggest_category",
         "category",
-        "p1"
+        "long_tail",
+        "p1",
+        "skip"
       ],
       "allure_feature": null,
       "allure_story": null,
@@ -20276,8 +20285,11 @@
       "site": "ae",
       "markers": [
         "ai",
+        "ai_suggest_category",
         "category",
-        "p1"
+        "long_tail",
+        "p1",
+        "skip"
       ],
       "allure_feature": null,
       "allure_story": null,
@@ -20305,8 +20317,11 @@
       "priority": "p0",
       "site": "ae",
       "markers": [
+        "ai_suggest_category",
         "category",
-        "p0"
+        "long_tail",
+        "p0",
+        "skip"
       ],
       "allure_feature": null,
       "allure_story": null,
@@ -20567,6 +20582,122 @@
       "site": "ae",
       "markers": [
         "p2",
+        "price_validation"
+      ],
+      "allure_feature": null,
+      "allure_story": null,
+      "allure_title": null,
+      "severity": null,
+      "module_id": "marketplace_post",
+      "feature_id": "marketplace_post_ok_ae_marketplace_post_20260325",
+      "aliases": [
+        "marketplace",
+        "marketplace_post",
+        "marketplace_post_ok_ae_marketplace_post_20260325",
+        "post"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc050_price_input_letters",
+      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py",
+      "test_name": "test_tc050_price_input_letters",
+      "case_id": null,
+      "priority": "p1",
+      "site": "ae",
+      "markers": [
+        "p1",
+        "price_validation"
+      ],
+      "allure_feature": null,
+      "allure_story": null,
+      "allure_title": null,
+      "severity": null,
+      "module_id": "marketplace_post",
+      "feature_id": "marketplace_post_ok_ae_marketplace_post_20260325",
+      "aliases": [
+        "marketplace",
+        "marketplace_post",
+        "marketplace_post_ok_ae_marketplace_post_20260325",
+        "post"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc051_price_input_special_chars",
+      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py",
+      "test_name": "test_tc051_price_input_special_chars",
+      "case_id": null,
+      "priority": "p2",
+      "site": "ae",
+      "markers": [
+        "p2",
+        "price_validation"
+      ],
+      "allure_feature": null,
+      "allure_story": null,
+      "allure_title": null,
+      "severity": null,
+      "module_id": "marketplace_post",
+      "feature_id": "marketplace_post_ok_ae_marketplace_post_20260325",
+      "aliases": [
+        "marketplace",
+        "marketplace_post",
+        "marketplace_post_ok_ae_marketplace_post_20260325",
+        "post"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc052_price_very_large_amount",
+      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py",
+      "test_name": "test_tc052_price_very_large_amount",
+      "case_id": null,
+      "priority": "p2",
+      "site": "ae",
+      "markers": [
+        "p2",
+        "price_validation"
+      ],
+      "allure_feature": null,
+      "allure_story": null,
+      "allure_title": null,
+      "severity": null,
+      "module_id": "marketplace_post",
+      "feature_id": "marketplace_post_ok_ae_marketplace_post_20260325",
+      "aliases": [
+        "marketplace",
+        "marketplace_post",
+        "marketplace_post_ok_ae_marketplace_post_20260325",
+        "post"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py::test_tc053_price_empty_submit_validation",
+      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_20260325.py",
+      "test_name": "test_tc053_price_empty_submit_validation",
+      "case_id": null,
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "p0",
         "price_validation"
       ],
       "allure_feature": null,
@@ -42546,15 +42677,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_back_to_list",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_back_to_list",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_back_to_list",
       "case_id": "case_id_car_detail_batch6_05",
       "priority": "p1",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch6_05",
         "p1",
         "regression"
@@ -42577,15 +42708,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_basic_features_display",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_basic_features_display",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_basic_features_display",
       "case_id": "case_id_car_detail_batch4_05",
       "priority": "p0",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch4_05",
         "p0",
         "regression"
@@ -42609,15 +42740,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_breadcrumb_cars",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_breadcrumb_cars",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_breadcrumb_cars",
       "case_id": "case_id_car_detail_batch3_04",
       "priority": "p1",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch3_04",
         "p1",
         "regression"
@@ -42640,15 +42771,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_breadcrumb_home",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_breadcrumb_home",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_breadcrumb_home",
       "case_id": "case_id_car_detail_batch3_03",
       "priority": "p1",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch3_03",
         "p1",
         "regression"
@@ -42671,15 +42802,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_breadcrumb_used_cars",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_breadcrumb_used_cars",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_breadcrumb_used_cars",
       "case_id": "case_id_car_detail_batch3_05",
       "priority": "p1",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch3_05",
         "p1",
         "regression"
@@ -42702,15 +42833,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_browse_menu",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_browse_menu",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_browse_menu",
       "case_id": "case_id_car_detail_batch6_01",
       "priority": "p2",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch6_01",
         "p2",
         "regression"
@@ -42734,15 +42865,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_close_map",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_close_map",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_close_map",
       "case_id": "case_id_car_detail_batch1_04",
       "priority": "p0",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch1_04",
         "p0",
         "smoke"
@@ -42765,15 +42896,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_contact_logged_in",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_contact_logged_in",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_contact_logged_in",
       "case_id": "case_id_car_detail_batch2_04",
       "priority": "p1",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch2_04",
         "p1",
         "regression"
@@ -42797,22 +42928,23 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_contact_login_required",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_contact_login_required",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_contact_login_required",
       "case_id": "case_id_car_detail_batch2_01",
       "priority": "p0",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch2_01",
         "p0",
+        "skip",
         "smoke"
       ],
       "allure_feature": "OK",
       "allure_story": "车详情页 - Contact 功能（未登录）",
-      "allure_title": "TC006: 未登录点击 Contact，弹出登录对话框",
+      "allure_title": "TC006: 未登录点击 Contact（跳过：PC 免登录态，不弹登录框）",
       "severity": "critical",
       "module_id": "car",
       "feature_id": "car_contact",
@@ -42820,7 +42952,7 @@
         "car",
         "car_contact",
         "contact",
-        "tc006_contact"
+        "tc006_contact_pc"
       ],
       "baseline_set": null,
       "risk_level": null,
@@ -42829,15 +42961,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_favourites_logged_in",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_favourites_logged_in",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_favourites_logged_in",
       "case_id": "case_id_car_detail_batch2_03",
       "priority": "p1",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch2_03",
         "p1",
         "regression"
@@ -42861,15 +42993,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_favourites_login_required",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_favourites_login_required",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_favourites_login_required",
       "case_id": "case_id_car_detail_batch1_05",
       "priority": "p0",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch1_05",
         "p0",
         "smoke"
@@ -42892,15 +43024,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_footer_links",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_footer_links",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_footer_links",
       "case_id": "case_id_car_detail_batch6_03",
       "priority": "p2",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch6_03",
         "p2",
         "regression"
@@ -42923,15 +43055,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_image_viewer_close",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_image_viewer_close",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_image_viewer_close",
       "case_id": "case_id_car_detail_batch3_02",
       "priority": "p1",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch3_02",
         "p1",
         "regression"
@@ -42954,15 +43086,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_image_viewer_open",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_image_viewer_open",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_image_viewer_open",
       "case_id": "case_id_car_detail_batch3_01",
       "priority": "p1",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch3_01",
         "p1",
         "regression"
@@ -42985,15 +43117,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_location_display",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_location_display",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_location_display",
       "case_id": "case_id_car_detail_batch5_02",
       "priority": "p0",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch5_02",
         "p0",
         "regression"
@@ -43017,15 +43149,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_login_register_entry",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_login_register_entry",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_login_register_entry",
       "case_id": "case_id_car_detail_batch6_02",
       "priority": "p1",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch6_02",
         "p1",
         "regression"
@@ -43048,15 +43180,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_no_sellers_note",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_no_sellers_note",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_no_sellers_note",
       "case_id": "case_id_car_detail_batch5_03",
       "priority": "p2",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch5_03",
         "p2",
         "regression",
@@ -43081,15 +43213,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_page_display_from_listing",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_page_display_from_listing",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_page_display_from_listing",
       "case_id": "case_id_car_detail_batch1_01",
       "priority": "p0",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch1_01",
         "p0",
         "smoke"
@@ -43112,15 +43244,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_page_refresh",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_page_refresh",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_page_refresh",
       "case_id": "case_id_car_detail_batch6_04",
       "priority": "p1",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch6_04",
         "p1",
         "regression"
@@ -43143,15 +43275,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_related_cars_click",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_related_cars_click",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_related_cars_click",
       "case_id": "case_id_car_detail_batch4_03",
       "priority": "p1",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch4_03",
         "p1",
         "regression"
@@ -43175,15 +43307,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_related_cars_display",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_related_cars_display",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_related_cars_display",
       "case_id": "case_id_car_detail_batch4_01",
       "priority": "p1",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch4_01",
         "p1",
         "regression"
@@ -43207,15 +43339,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_related_cars_scroll",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_related_cars_scroll",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_related_cars_scroll",
       "case_id": "case_id_car_detail_batch4_02",
       "priority": "p1",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch4_02",
         "p1",
         "regression"
@@ -43239,15 +43371,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_search_long_string",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_search_long_string",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_search_long_string",
       "case_id": "case_id_car_detail_batch5_04",
       "priority": "p2",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch5_04",
         "p2",
         "regression"
@@ -43270,15 +43402,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_search_special_chars",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_search_special_chars",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_search_special_chars",
       "case_id": "case_id_car_detail_batch5_05",
       "priority": "p2",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch5_05",
         "p2",
         "regression"
@@ -43301,18 +43433,19 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_search_suggestions",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_search_suggestions",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_search_suggestions",
-      "case_id": "case_id_car_detail_batch2_02",
+      "case_id": "case_id_car_detail_tc007",
       "priority": "p0",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch2_02",
+        "case_id_car_detail_tc007",
         "p0",
-        "skip",
+        "regression",
         "smoke"
       ],
       "allure_feature": "OK",
@@ -43333,15 +43466,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_seller_profile_link",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_seller_profile_link",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_seller_profile_link",
       "case_id": "case_id_car_detail_batch2_05",
       "priority": "p1",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch2_05",
         "p1",
         "regression"
@@ -43364,15 +43497,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_sellers_note_display",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_sellers_note_display",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_sellers_note_display",
       "case_id": "case_id_car_detail_batch5_01",
       "priority": "p1",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch5_01",
         "p1",
         "regression"
@@ -43396,15 +43529,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_share_button",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_share_button",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_share_button",
       "case_id": "case_id_car_detail_batch1_02",
       "priority": "p0",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch1_02",
         "p0",
         "smoke"
@@ -43427,15 +43560,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_show_map",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_show_map",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_show_map",
       "case_id": "case_id_car_detail_batch1_03",
       "priority": "p0",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch1_03",
         "p0",
         "smoke"
@@ -43458,15 +43591,15 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_detail.py::test_car_detail_vehicle_info_display",
-      "file_path": "test_cases/test_car/test_ae_car_detail.py",
+      "nodeid": "test_cases/test_car/test_br_car_detail.py::test_car_detail_vehicle_info_display",
+      "file_path": "test_cases/test_car/test_br_car_detail.py",
       "test_name": "test_car_detail_vehicle_info_display",
       "case_id": "case_id_car_detail_batch4_04",
       "priority": "p0",
-      "site": "ae",
+      "site": null,
       "markers": [
-        "ae",
         "allure_description",
+        "br",
         "case_id_car_detail_batch4_04",
         "p0",
         "regression"
@@ -43490,30 +43623,31 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_01_input_valid_price",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_01_input_valid_price",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_01_input_valid_price",
-      "case_id": "case_id_ae_car_publish_p0_01",
+      "case_id": "case_id_br_car_publish_p0_01",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_01",
+        "br",
+        "case_id_br_car_publish_p0_01",
         "p0",
         "smoke"
       ],
       "allure_feature": "OK",
       "allure_story": "车发布页 - 价格设置",
-      "allure_title": "P0-01: 输入有效价格(150000 AED)",
+      "allure_title": "P0-01: 输入有效价格(150000 BRL)",
       "severity": "critical",
       "module_id": "car",
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
-        "p0_01_150000_aed"
+        "p0_01_150000_brl"
       ],
       "baseline_set": "car_publish_core",
       "risk_level": "high",
@@ -43522,30 +43656,31 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_02_input_max_price",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_02_input_max_price",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_02_input_max_price",
-      "case_id": "case_id_ae_car_publish_p0_02",
+      "case_id": "case_id_br_car_publish_p0_02",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_02",
+        "br",
+        "case_id_br_car_publish_p0_02",
         "p0",
         "smoke"
       ],
       "allure_feature": "OK",
       "allure_story": "车发布页 - 价格设置",
-      "allure_title": "P0-02: 输入最大价格(100000000 AED)",
+      "allure_title": "P0-02: 输入最大价格(100000000 BRL)",
       "severity": "critical",
       "module_id": "car",
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
-        "p0_02_100000000_aed"
+        "p0_02_100000000_brl"
       ],
       "baseline_set": "car_publish_core",
       "risk_level": "high",
@@ -43554,16 +43689,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_03_select_body_color_red",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_03_select_body_color_red",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_03_select_body_color_red",
-      "case_id": "case_id_ae_car_publish_p0_03",
+      "case_id": "case_id_br_car_publish_p0_03",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_03",
+        "br",
+        "case_id_br_car_publish_p0_03",
         "p0",
         "smoke"
       ],
@@ -43575,6 +43710,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_03_red"
@@ -43586,16 +43722,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_04_select_body_color_black",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_04_select_body_color_black",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_04_select_body_color_black",
-      "case_id": "case_id_ae_car_publish_p0_04",
+      "case_id": "case_id_br_car_publish_p0_04",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_04",
+        "br",
+        "case_id_br_car_publish_p0_04",
         "p0",
         "smoke"
       ],
@@ -43607,6 +43743,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_04_black"
@@ -43618,16 +43755,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_05_fill_mileage",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_05_fill_mileage",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_05_fill_mileage",
-      "case_id": "case_id_ae_car_publish_p0_05",
+      "case_id": "case_id_br_car_publish_p0_05",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_05",
+        "br",
+        "case_id_br_car_publish_p0_05",
         "p0",
         "smoke"
       ],
@@ -43639,6 +43776,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_05_50000_km"
@@ -43650,16 +43788,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_06_fill_max_mileage",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_06_fill_max_mileage",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_06_fill_max_mileage",
-      "case_id": "case_id_ae_car_publish_p0_06",
+      "case_id": "case_id_br_car_publish_p0_06",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_06",
+        "br",
+        "case_id_br_car_publish_p0_06",
         "p0",
         "smoke"
       ],
@@ -43671,6 +43809,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_06_99999999_km"
@@ -43682,16 +43821,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_07_select_specs_gcc",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_07_select_specs_gcc",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_07_select_specs_gcc",
-      "case_id": "case_id_ae_car_publish_p0_07",
+      "case_id": "case_id_br_car_publish_p0_07",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_07",
+        "br",
+        "case_id_br_car_publish_p0_07",
         "p0",
         "smoke"
       ],
@@ -43703,6 +43842,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_07_gcc",
@@ -43715,16 +43855,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_08_select_specs_european",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_08_select_specs_european",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_08_select_specs_european",
-      "case_id": "case_id_ae_car_publish_p0_08",
+      "case_id": "case_id_br_car_publish_p0_08",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_08",
+        "br",
+        "case_id_br_car_publish_p0_08",
         "p0",
         "smoke"
       ],
@@ -43736,6 +43876,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_08_european",
@@ -43748,16 +43889,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_09_fill_description",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_09_fill_description",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_09_fill_description",
-      "case_id": "case_id_ae_car_publish_p0_09",
+      "case_id": "case_id_br_car_publish_p0_09",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_09",
+        "br",
+        "case_id_br_car_publish_p0_09",
         "p0",
         "smoke"
       ],
@@ -43769,6 +43910,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_09"
@@ -43780,16 +43922,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_10_verify_default_phone",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_10_verify_default_phone",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_10_verify_default_phone",
-      "case_id": "case_id_ae_car_publish_p0_10",
+      "case_id": "case_id_br_car_publish_p0_10",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_10",
+        "br",
+        "case_id_br_car_publish_p0_10",
         "p0",
         "smoke"
       ],
@@ -43801,6 +43943,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_10"
@@ -43812,16 +43955,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_11_verify_default_location",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_11_verify_default_location",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_11_verify_default_location",
-      "case_id": "case_id_ae_car_publish_p0_11",
+      "case_id": "case_id_br_car_publish_p0_11",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_11",
+        "br",
+        "case_id_br_car_publish_p0_11",
         "p0",
         "smoke"
       ],
@@ -43833,6 +43976,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_11"
@@ -43844,16 +43988,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_12_upload_one_exterior_photo",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_12_upload_one_exterior_photo",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_12_upload_one_exterior_photo",
-      "case_id": "case_id_ae_car_publish_p0_12",
+      "case_id": "case_id_br_car_publish_p0_12",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_12",
+        "br",
+        "case_id_br_car_publish_p0_12",
         "p0",
         "smoke"
       ],
@@ -43865,6 +44009,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_12_1"
@@ -43876,16 +44021,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_13_fill_all_core_fields",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_13_fill_all_core_fields",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_13_fill_all_core_fields",
-      "case_id": "case_id_ae_car_publish_p0_13",
+      "case_id": "case_id_br_car_publish_p0_13",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_13",
+        "br",
+        "case_id_br_car_publish_p0_13",
         "p0",
         "smoke"
       ],
@@ -43897,6 +44042,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_13"
@@ -43908,16 +44054,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_15_mileage_filter_negative",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_15_mileage_filter_negative",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_15_mileage_filter_negative",
-      "case_id": "case_id_ae_car_publish_p0_15",
+      "case_id": "case_id_br_car_publish_p0_15",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_15",
+        "br",
+        "case_id_br_car_publish_p0_15",
         "p0",
         "smoke"
       ],
@@ -43929,6 +44075,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_15_tc028"
@@ -43940,16 +44087,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_16_upload_multiple_exterior_photos",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_16_upload_multiple_exterior_photos",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_16_upload_multiple_exterior_photos",
-      "case_id": "case_id_ae_car_publish_p0_16",
+      "case_id": "case_id_br_car_publish_p0_16",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_16",
+        "br",
+        "case_id_br_car_publish_p0_16",
         "p0",
         "smoke"
       ],
@@ -43961,6 +44108,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_16_tc019"
@@ -43972,16 +44120,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_17_partial_required_fields_validation",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_17_partial_required_fields_validation",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_17_partial_required_fields_validation",
-      "case_id": "case_id_ae_car_publish_p0_17",
+      "case_id": "case_id_br_car_publish_p0_17",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_17",
+        "br",
+        "case_id_br_car_publish_p0_17",
         "p0",
         "smoke"
       ],
@@ -43993,6 +44141,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_17_tc042"
@@ -44004,16 +44153,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_18_upload_interior_photo",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_18_upload_interior_photo",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_18_upload_interior_photo",
-      "case_id": "case_id_ae_car_publish_p0_18",
+      "case_id": "case_id_br_car_publish_p0_18",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_18",
+        "br",
+        "case_id_br_car_publish_p0_18",
         "p0",
         "smoke"
       ],
@@ -44025,6 +44174,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_18_tc025"
@@ -44036,16 +44186,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_19_price_zero_validation",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_19_price_zero_validation",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_19_price_zero_validation",
-      "case_id": "case_id_ae_car_publish_p0_19",
+      "case_id": "case_id_br_car_publish_p0_19",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_19",
+        "br",
+        "case_id_br_car_publish_p0_19",
         "p0",
         "smoke"
       ],
@@ -44057,6 +44207,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_19_0_tc010"
@@ -44068,16 +44219,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_20_mileage_empty_validation",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_20_mileage_empty_validation",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_20_mileage_empty_validation",
-      "case_id": "case_id_ae_car_publish_p0_20",
+      "case_id": "case_id_br_car_publish_p0_20",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_20",
+        "br",
+        "case_id_br_car_publish_p0_20",
         "p0",
         "smoke"
       ],
@@ -44089,6 +44240,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_20_tc030"
@@ -44100,16 +44252,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_21_body_color_empty_validation",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_21_body_color_empty_validation",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_21_body_color_empty_validation",
-      "case_id": "case_id_ae_car_publish_p0_21",
+      "case_id": "case_id_br_car_publish_p0_21",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_21",
+        "br",
+        "case_id_br_car_publish_p0_21",
         "p0",
         "smoke"
       ],
@@ -44121,6 +44273,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_21_tc032"
@@ -44132,16 +44285,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_22_specs_empty_validation",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_22_specs_empty_validation",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_22_specs_empty_validation",
-      "case_id": "case_id_ae_car_publish_p0_22",
+      "case_id": "case_id_br_car_publish_p0_22",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_22",
+        "br",
+        "case_id_br_car_publish_p0_22",
         "p0",
         "smoke"
       ],
@@ -44153,6 +44306,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_22_specs_tc036"
@@ -44164,16 +44318,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_23_exterior_photo_empty_validation",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_23_exterior_photo_empty_validation",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_23_exterior_photo_empty_validation",
-      "case_id": "case_id_ae_car_publish_p0_23",
+      "case_id": "case_id_br_car_publish_p0_23",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_23",
+        "br",
+        "case_id_br_car_publish_p0_23",
         "p0",
         "smoke"
       ],
@@ -44185,6 +44339,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_23_tc024"
@@ -44196,16 +44351,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_24_price_max_value",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_24_price_max_value",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_24_price_max_value",
-      "case_id": "case_id_ae_car_publish_p0_24",
+      "case_id": "case_id_br_car_publish_p0_24",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_24",
+        "br",
+        "case_id_br_car_publish_p0_24",
         "p0",
         "smoke"
       ],
@@ -44217,6 +44372,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_24_tc011"
@@ -44228,16 +44384,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_25_mileage_max_truncate",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_25_mileage_max_truncate",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_25_mileage_max_truncate",
-      "case_id": "case_id_ae_car_publish_p0_25",
+      "case_id": "case_id_br_car_publish_p0_25",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_25",
+        "br",
+        "case_id_br_car_publish_p0_25",
         "p0",
         "smoke"
       ],
@@ -44249,6 +44405,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_25_tc029"
@@ -44260,16 +44417,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_26_submit_all_required_fields",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_26_submit_all_required_fields",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_26_submit_all_required_fields",
-      "case_id": "case_id_ae_car_publish_p0_26",
+      "case_id": "case_id_br_car_publish_p0_26",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_26",
+        "br",
+        "case_id_br_car_publish_p0_26",
         "p0",
         "smoke"
       ],
@@ -44281,6 +44438,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_26_tc043"
@@ -44292,16 +44450,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_27_open_car_model_dialog",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_27_open_car_model_dialog",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_27_open_car_model_dialog",
-      "case_id": "case_id_ae_car_publish_p0_27",
+      "case_id": "case_id_br_car_publish_p0_27",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_27",
+        "br",
+        "case_id_br_car_publish_p0_27",
         "p0",
         "smoke"
       ],
@@ -44313,6 +44471,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_27_tc003"
@@ -44324,16 +44483,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_28_select_brand",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_28_select_brand",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_28_select_brand",
-      "case_id": "case_id_ae_car_publish_p0_28",
+      "case_id": "case_id_br_car_publish_p0_28",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_28",
+        "br",
+        "case_id_br_car_publish_p0_28",
         "p0",
         "smoke"
       ],
@@ -44345,6 +44504,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_28_tc004"
@@ -44356,16 +44516,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_29_select_model",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_29_select_model",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_29_select_model",
-      "case_id": "case_id_ae_car_publish_p0_29",
+      "case_id": "case_id_br_car_publish_p0_29",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_29",
+        "br",
+        "case_id_br_car_publish_p0_29",
         "p0",
         "smoke"
       ],
@@ -44377,6 +44537,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_29_tc005"
@@ -44388,16 +44549,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p0_30_select_trim_and_close",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_30_select_trim_and_close",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p0_30_select_trim_and_close",
-      "case_id": "case_id_ae_car_publish_p0_30",
+      "case_id": "case_id_br_car_publish_p0_30",
       "priority": "p0",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p0_30",
+        "br",
+        "case_id_br_car_publish_p0_30",
         "p0",
         "smoke"
       ],
@@ -44409,6 +44570,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p0_30_tc006"
@@ -44420,16 +44582,48 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p1_01_car_model_dialog_cancel_esc",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
-      "test_name": "test_p1_01_car_model_dialog_cancel_esc",
-      "case_id": "case_id_ae_car_publish_p1_01",
-      "priority": "p1",
-      "site": "ae",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p0_31_edit_published_car",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
+      "test_name": "test_p0_31_edit_published_car",
+      "case_id": "case_id_br_car_publish_p0_31",
+      "priority": "p0",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p1_01",
+        "br",
+        "case_id_br_car_publish_p0_31",
+        "p0"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "车发布页 - 编辑功能",
+      "allure_title": "P0-31: 编辑已发布车辆（TC045+TC046）",
+      "severity": "critical",
+      "module_id": "car",
+      "feature_id": "car_publish",
+      "aliases": [
+        "ae_car_publish",
+        "br_car_publish",
+        "car",
+        "car_publish",
+        "p0_31_tc045_tc046"
+      ],
+      "baseline_set": "car_publish_core",
+      "risk_level": "high",
+      "owner": "qa-ui",
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p1_01_car_model_dialog_cancel_esc",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
+      "test_name": "test_p1_01_car_model_dialog_cancel_esc",
+      "case_id": "case_id_br_car_publish_p1_01",
+      "priority": "p1",
+      "site": "br",
+      "markers": [
+        "allure_description",
+        "br",
+        "case_id_br_car_publish_p1_01",
         "p1"
       ],
       "allure_feature": "OK",
@@ -44440,6 +44634,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p1_01_esc_tc007"
@@ -44451,16 +44646,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p1_02_description_character_count",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p1_02_description_character_count",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p1_02_description_character_count",
-      "case_id": "case_id_ae_car_publish_p1_02",
+      "case_id": "case_id_br_car_publish_p1_02",
       "priority": "p1",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p1_02",
+        "br",
+        "case_id_br_car_publish_p1_02",
         "p1"
       ],
       "allure_feature": "OK",
@@ -44471,6 +44666,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p1_02_tc013"
@@ -44482,47 +44678,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p1_03_description_max_length",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
-      "test_name": "test_p1_03_description_max_length",
-      "case_id": "case_id_ae_car_publish_p1_03",
-      "priority": "p1",
-      "site": "ae",
-      "markers": [
-        "ae",
-        "allure_description",
-        "case_id_ae_car_publish_p1_03",
-        "p1"
-      ],
-      "allure_feature": "OK",
-      "allure_story": "车发布页 - 描述",
-      "allure_title": "P1-03: 描述字段最大长度限制(TC014)",
-      "severity": "normal",
-      "module_id": "car",
-      "feature_id": "car_publish",
-      "aliases": [
-        "ae_car_publish",
-        "car",
-        "car_publish",
-        "p1_03_tc014"
-      ],
-      "baseline_set": "car_publish_core",
-      "risk_level": "high",
-      "owner": "qa-ui",
-      "governed": true,
-      "skill_excluded": false
-    },
-    {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p1_04_exterior_photo_count",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p1_04_exterior_photo_count",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p1_04_exterior_photo_count",
-      "case_id": "case_id_ae_car_publish_p1_04",
+      "case_id": "case_id_br_car_publish_p1_04",
       "priority": "p1",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p1_04",
+        "br",
+        "case_id_br_car_publish_p1_04",
         "p1"
       ],
       "allure_feature": "OK",
@@ -44533,6 +44698,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p1_04_tc020"
@@ -44544,16 +44710,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p1_05_mileage_boundary_values",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p1_05_mileage_boundary_values",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p1_05_mileage_boundary_values",
-      "case_id": "case_id_ae_car_publish_p1_05",
+      "case_id": "case_id_br_car_publish_p1_05",
       "priority": "p1",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p1_05",
+        "br",
+        "case_id_br_car_publish_p1_05",
         "p1"
       ],
       "allure_feature": "OK",
@@ -44564,6 +44730,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p1_05_tc027"
@@ -44575,16 +44742,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p1_06_interior_photo_upload",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p1_06_interior_photo_upload",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p1_06_interior_photo_upload",
-      "case_id": "case_id_ae_car_publish_p1_06",
+      "case_id": "case_id_br_car_publish_p1_06",
       "priority": "p1",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p1_06",
+        "br",
+        "case_id_br_car_publish_p1_06",
         "p1"
       ],
       "allure_feature": "OK",
@@ -44595,6 +44762,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p1_06_tc025"
@@ -44606,16 +44774,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p1_07_first_registration_select",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p1_07_first_registration_select",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p1_07_first_registration_select",
-      "case_id": "case_id_ae_car_publish_p1_07",
+      "case_id": "case_id_br_car_publish_p1_07",
       "priority": "p1",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p1_07",
+        "br",
+        "case_id_br_car_publish_p1_07",
         "manual",
         "p1",
         "skip"
@@ -44628,6 +44796,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p1_07_tc033"
@@ -44639,16 +44808,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p1_08_contact_phone_prefilled",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p1_08_contact_phone_prefilled",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p1_08_contact_phone_prefilled",
-      "case_id": "case_id_ae_car_publish_p1_08",
+      "case_id": "case_id_br_car_publish_p1_08",
       "priority": "p1",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p1_08",
+        "br",
+        "case_id_br_car_publish_p1_08",
         "p1"
       ],
       "allure_feature": "OK",
@@ -44659,6 +44828,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p1_08_tc037"
@@ -44670,16 +44840,16 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p1_09_location_search_suggestions",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p1_09_location_search_suggestions",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p1_09_location_search_suggestions",
-      "case_id": "case_id_ae_car_publish_p1_09",
+      "case_id": "case_id_br_car_publish_p1_09",
       "priority": "p1",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "ae",
         "allure_description",
-        "case_id_ae_car_publish_p1_09",
+        "br",
+        "case_id_br_car_publish_p1_09",
         "p1"
       ],
       "allure_feature": "OK",
@@ -44690,6 +44860,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish",
         "p1_09_tc039"
@@ -44701,14 +44872,206 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p2_03_draft_button_visibility",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
-      "test_name": "test_p2_03_draft_button_visibility",
-      "case_id": "case_id_ae_car_publish_p2_03",
-      "priority": "p2",
-      "site": "ae",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p1_11_withdraw_published_car",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
+      "test_name": "test_p1_11_withdraw_published_car",
+      "case_id": "case_id_br_car_publish_p1_11",
+      "priority": "p1",
+      "site": "br",
       "markers": [
-        "case_id_ae_car_publish_p2_03",
+        "allure_description",
+        "br",
+        "case_id_br_car_publish_p1_11",
+        "p1"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "车发布页 - 撤回功能",
+      "allure_title": "P1-11: 撤回已发布车辆（TC047+TC049）",
+      "severity": "normal",
+      "module_id": "car",
+      "feature_id": "car_publish",
+      "aliases": [
+        "ae_car_publish",
+        "br_car_publish",
+        "car",
+        "car_publish",
+        "p1_11_tc047_tc049"
+      ],
+      "baseline_set": "car_publish_core",
+      "risk_level": "high",
+      "owner": "qa-ui",
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p1_12_withdraw_dialog_cancel",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
+      "test_name": "test_p1_12_withdraw_dialog_cancel",
+      "case_id": "case_id_br_car_publish_p1_12",
+      "priority": "p1",
+      "site": "br",
+      "markers": [
+        "allure_description",
+        "br",
+        "case_id_br_car_publish_p1_12",
+        "p1"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "车发布页 - 撤回功能",
+      "allure_title": "P1-12: Withdraw对话框点击Cancel（TC048）",
+      "severity": "normal",
+      "module_id": "car",
+      "feature_id": "car_publish",
+      "aliases": [
+        "ae_car_publish",
+        "br_car_publish",
+        "car",
+        "car_publish",
+        "p1_12_withdraw_cancel_tc048"
+      ],
+      "baseline_set": "car_publish_core",
+      "risk_level": "high",
+      "owner": "qa-ui",
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p1_21_photo_viewer_open",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
+      "test_name": "test_p1_21_photo_viewer_open",
+      "case_id": "case_id_br_car_publish_p1_21",
+      "priority": "p1",
+      "site": "br",
+      "markers": [
+        "allure_description",
+        "br",
+        "case_id_br_car_publish_p1_21",
+        "p1"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "车发布页 - 图片查看器",
+      "allure_title": "P1-21: 点击外观照片缩略图，打开图片查看器（TC021）",
+      "severity": "normal",
+      "module_id": "car",
+      "feature_id": "car_publish",
+      "aliases": [
+        "ae_car_publish",
+        "br_car_publish",
+        "car",
+        "car_publish",
+        "p1_21_tc021"
+      ],
+      "baseline_set": "car_publish_core",
+      "risk_level": "high",
+      "owner": "qa-ui",
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p1_22_photo_set_as_main",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
+      "test_name": "test_p1_22_photo_set_as_main",
+      "case_id": "case_id_br_car_publish_p1_22",
+      "priority": "p1",
+      "site": "br",
+      "markers": [
+        "allure_description",
+        "br",
+        "case_id_br_car_publish_p1_22",
+        "p1"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "车发布页 - 图片查看器",
+      "allure_title": "P1-22: 在图片查看器中点击'Set as Main'，设置主图（TC022）",
+      "severity": "normal",
+      "module_id": "car",
+      "feature_id": "car_publish",
+      "aliases": [
+        "ae_car_publish",
+        "br_car_publish",
+        "car",
+        "car_publish",
+        "p1_22_set_as_main_tc022"
+      ],
+      "baseline_set": "car_publish_core",
+      "risk_level": "high",
+      "owner": "qa-ui",
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p1_23_photo_delete",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
+      "test_name": "test_p1_23_photo_delete",
+      "case_id": "case_id_br_car_publish_p1_23",
+      "priority": "p1",
+      "site": "br",
+      "markers": [
+        "allure_description",
+        "br",
+        "case_id_br_car_publish_p1_23",
+        "p1"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "车发布页 - 图片查看器",
+      "allure_title": "P1-23: 在图片查看器中点击'Delete'，删除图片（TC023）",
+      "severity": "normal",
+      "module_id": "car",
+      "feature_id": "car_publish",
+      "aliases": [
+        "ae_car_publish",
+        "br_car_publish",
+        "car",
+        "car_publish",
+        "p1_23_delete_tc023"
+      ],
+      "baseline_set": "car_publish_core",
+      "risk_level": "high",
+      "owner": "qa-ui",
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p2_03_description_max_length",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
+      "test_name": "test_p2_03_description_max_length",
+      "case_id": "case_id_br_car_publish_p2_03_desc_max",
+      "priority": "p2",
+      "site": "br",
+      "markers": [
+        "allure_description",
+        "br",
+        "case_id_br_car_publish_p2_03_desc_max",
+        "p2"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "车发布页 - 描述",
+      "allure_title": "P2-03: 描述字段最大长度限制(TC015)",
+      "severity": "minor",
+      "module_id": "car",
+      "feature_id": "car_publish",
+      "aliases": [
+        "ae_car_publish",
+        "br_car_publish",
+        "car",
+        "car_publish",
+        "p2_03_tc015"
+      ],
+      "baseline_set": "car_publish_core",
+      "risk_level": "high",
+      "owner": "qa-ui",
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p2_03_draft_button_visibility",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
+      "test_name": "test_p2_03_draft_button_visibility",
+      "case_id": "case_id_br_car_publish_p2_03",
+      "priority": "p2",
+      "site": "br",
+      "markers": [
+        "case_id_br_car_publish_p2_03",
         "p2"
       ],
       "allure_feature": null,
@@ -44719,6 +45082,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish"
       ],
@@ -44729,14 +45093,14 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/test_car/test_ae_car_publish.py::test_p2_05_required_fields_asterisk",
-      "file_path": "test_cases/test_car/test_ae_car_publish.py",
+      "nodeid": "test_cases/test_car/test_br_car_publish.py::test_p2_05_required_fields_asterisk",
+      "file_path": "test_cases/test_car/test_br_car_publish.py",
       "test_name": "test_p2_05_required_fields_asterisk",
-      "case_id": "case_id_ae_car_publish_p2_05",
+      "case_id": "case_id_br_car_publish_p2_05",
       "priority": "p2",
-      "site": "ae",
+      "site": "br",
       "markers": [
-        "case_id_ae_car_publish_p2_05",
+        "case_id_br_car_publish_p2_05",
         "p2"
       ],
       "allure_feature": null,
@@ -44747,6 +45111,7 @@
       "feature_id": "car_publish",
       "aliases": [
         "ae_car_publish",
+        "br_car_publish",
         "car",
         "car_publish"
       ],
@@ -56363,6 +56728,40 @@
       "skill_excluded": false
     },
     {
+      "nodeid": "test_cases/zhaopin/test_es_resume_submit.py::TestESResumeSubmit::test_submit_resume_with_avatar_upload",
+      "file_path": "test_cases/zhaopin/test_es_resume_submit.py",
+      "test_name": "test_submit_resume_with_avatar_upload",
+      "case_id": "case_id_es_resume_submit_02",
+      "priority": "p1",
+      "site": "es",
+      "markers": [
+        "allure_description",
+        "case_id_es_resume_submit_02",
+        "es",
+        "order",
+        "p1",
+        "resume",
+        "smoke"
+      ],
+      "allure_feature": "OK Spain - Resume",
+      "allure_story": "简历提交流程 - 头像上传",
+      "allure_title": "TC002: 完整提交流程 - 头像上传 + 有工作经验场景",
+      "severity": "normal",
+      "module_id": "zhaopin",
+      "feature_id": "zhaopin_",
+      "aliases": [
+        "jobs",
+        "tc002",
+        "zhaopin",
+        "zhaopin_"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
       "nodeid": "test_cases/zhaopin/test_es_resume_submit.py::TestESResumeSubmit::test_submit_resume_with_work_experience",
       "file_path": "test_cases/zhaopin/test_es_resume_submit.py",
       "test_name": "test_submit_resume_with_work_experience",
@@ -58334,6 +58733,8 @@
       "markers": [
         "allure_description",
         "case_id_sg_add_pref_tc004",
+        "dependency",
+        "order",
         "p1",
         "sg"
       ],
@@ -58529,6 +58930,8 @@
       "markers": [
         "allure_description",
         "case_id_sg_add_pref_tc008",
+        "dependency",
+        "order",
         "p0",
         "sg",
         "smoke"
@@ -61484,6 +61887,426 @@
       "skill_excluded": false
     },
     {
+      "nodeid": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py::test_tc001_guest_state",
+      "file_path": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py",
+      "test_name": "test_tc001_guest_state",
+      "case_id": null,
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "guest_chat",
+        "p0"
+      ],
+      "allure_feature": null,
+      "allure_story": null,
+      "allure_title": "TC001: 前置清理后处于免登录状态",
+      "severity": null,
+      "module_id": "tiyan",
+      "feature_id": "tc001",
+      "aliases": [
+        "experience",
+        "tc001",
+        "tiyan"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py::test_tc002_detail_page_direct",
+      "file_path": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py",
+      "test_name": "test_tc002_detail_page_direct",
+      "case_id": null,
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "guest_chat",
+        "p0"
+      ],
+      "allure_feature": null,
+      "allure_story": null,
+      "allure_title": "TC002: 直达帖子详情页（Sales Reps 固定 URL）",
+      "severity": null,
+      "module_id": "tiyan",
+      "feature_id": "tc002_sales_reps_url",
+      "aliases": [
+        "experience",
+        "tc002_sales_reps_url",
+        "tiyan"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py::test_tc003_post_detail",
+      "file_path": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py",
+      "test_name": "test_tc003_post_detail",
+      "case_id": null,
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "guest_chat",
+        "p0"
+      ],
+      "allure_feature": null,
+      "allure_story": null,
+      "allure_title": "TC003: 进入帖子详情页（Contact 可用）",
+      "severity": null,
+      "module_id": "tiyan",
+      "feature_id": "tc003_contact",
+      "aliases": [
+        "experience",
+        "tc003_contact",
+        "tiyan"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py::test_tc004_contact_to_guest_chat",
+      "file_path": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py",
+      "test_name": "test_tc004_contact_to_guest_chat",
+      "case_id": null,
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "guest_chat",
+        "p0"
+      ],
+      "allure_feature": null,
+      "allure_story": null,
+      "allure_title": "TC004: 点击Contact进入免登微聊页",
+      "severity": null,
+      "module_id": "tiyan",
+      "feature_id": "tc004_contact",
+      "aliases": [
+        "experience",
+        "tc004_contact",
+        "tiyan"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py::test_tc005_guest_banner",
+      "file_path": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py",
+      "test_name": "test_tc005_guest_banner",
+      "case_id": null,
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "guest_chat",
+        "p0"
+      ],
+      "allure_feature": null,
+      "allure_story": null,
+      "allure_title": "TC005: 登录引导Banner展示",
+      "severity": null,
+      "module_id": "tiyan",
+      "feature_id": "tc005_banner",
+      "aliases": [
+        "experience",
+        "tc005_banner",
+        "tiyan"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py::test_tc006_input_and_send_state",
+      "file_path": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py",
+      "test_name": "test_tc006_input_and_send_state",
+      "case_id": null,
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "guest_chat",
+        "p0"
+      ],
+      "allure_feature": null,
+      "allure_story": null,
+      "allure_title": "TC006: 消息输入框与Send按钮状态",
+      "severity": null,
+      "module_id": "tiyan",
+      "feature_id": "tc006_send",
+      "aliases": [
+        "experience",
+        "tc006_send",
+        "tiyan"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py::test_tc007_three_dot_hidden",
+      "file_path": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py",
+      "test_name": "test_tc007_three_dot_hidden",
+      "case_id": null,
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "guest_chat",
+        "p0"
+      ],
+      "allure_feature": null,
+      "allure_story": null,
+      "allure_title": "TC007: 免登状态置顶静音拉黑入口屏蔽",
+      "severity": null,
+      "module_id": "tiyan",
+      "feature_id": "tc007",
+      "aliases": [
+        "experience",
+        "tc007",
+        "tiyan"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py::test_tc008_media_icons",
+      "file_path": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py",
+      "test_name": "test_tc008_media_icons",
+      "case_id": null,
+      "priority": "p1",
+      "site": "ae",
+      "markers": [
+        "guest_chat",
+        "p1"
+      ],
+      "allure_feature": null,
+      "allure_story": null,
+      "allure_title": "TC008: picture/file/location 图标展示",
+      "severity": null,
+      "module_id": "tiyan",
+      "feature_id": "tc008_picture_file_location",
+      "aliases": [
+        "experience",
+        "tc008_picture_file_location",
+        "tiyan"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py::test_tc009_send_text",
+      "file_path": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py",
+      "test_name": "test_tc009_send_text",
+      "case_id": null,
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "guest_chat",
+        "p0"
+      ],
+      "allure_feature": null,
+      "allure_story": null,
+      "allure_title": "TC009: 文字消息发送",
+      "severity": null,
+      "module_id": "tiyan",
+      "feature_id": "tc009",
+      "aliases": [
+        "experience",
+        "tc009",
+        "tiyan"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py::test_tc010_default_greeting",
+      "file_path": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py",
+      "test_name": "test_tc010_default_greeting",
+      "case_id": null,
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "guest_chat",
+        "p0"
+      ],
+      "allure_feature": null,
+      "allure_story": null,
+      "allure_title": "TC010: 默认招呼语展示",
+      "severity": null,
+      "module_id": "tiyan",
+      "feature_id": "tc010",
+      "aliases": [
+        "experience",
+        "tc010",
+        "tiyan"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py::test_tc011_media_click_prompts_login",
+      "file_path": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py",
+      "test_name": "test_tc011_media_click_prompts_login",
+      "case_id": null,
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "guest_chat",
+        "p0"
+      ],
+      "allure_feature": null,
+      "allure_story": null,
+      "allure_title": "TC011: 点击富媒体触发登录弹窗",
+      "severity": null,
+      "module_id": "tiyan",
+      "feature_id": "tc011",
+      "aliases": [
+        "experience",
+        "tc011",
+        "tiyan"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py::test_tc012_banner_login_opens_modal",
+      "file_path": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py",
+      "test_name": "test_tc012_banner_login_opens_modal",
+      "case_id": null,
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "guest_chat",
+        "p0"
+      ],
+      "allure_feature": null,
+      "allure_story": null,
+      "allure_title": "TC012: Banner Login 按钮触发登录弹窗",
+      "severity": null,
+      "module_id": "tiyan",
+      "feature_id": "tc012_banner_login",
+      "aliases": [
+        "experience",
+        "tc012_banner_login",
+        "tiyan"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py::test_tc013_login_modal_content",
+      "file_path": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py",
+      "test_name": "test_tc013_login_modal_content",
+      "case_id": null,
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "guest_chat",
+        "p0"
+      ],
+      "allure_feature": null,
+      "allure_story": null,
+      "allure_title": "TC013: 登录弹窗内容验证",
+      "severity": null,
+      "module_id": "tiyan",
+      "feature_id": "tc013",
+      "aliases": [
+        "experience",
+        "tc013",
+        "tiyan"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py::test_tc014_close_modal_stays_guest",
+      "file_path": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py",
+      "test_name": "test_tc014_close_modal_stays_guest",
+      "case_id": null,
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "guest_chat",
+        "p0"
+      ],
+      "allure_feature": null,
+      "allure_story": null,
+      "allure_title": "TC014: 取消登录后继续停留在免登微聊",
+      "severity": null,
+      "module_id": "tiyan",
+      "feature_id": "tc014",
+      "aliases": [
+        "experience",
+        "tc014",
+        "tiyan"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py::test_tc015_login_and_merge",
+      "file_path": "test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py",
+      "test_name": "test_tc015_login_and_merge",
+      "case_id": null,
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "guest_chat",
+        "p0"
+      ],
+      "allure_feature": null,
+      "allure_story": null,
+      "allure_title": "TC015: 完整登录流程与会话合并",
+      "severity": null,
+      "module_id": "tiyan",
+      "feature_id": "tc015",
+      "aliases": [
+        "experience",
+        "tc015",
+        "tiyan"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
       "nodeid": "test_cases/体验/消息中心+发布模块/test_messages_complete.py::test_access_messages_from_home",
       "file_path": "test_cases/体验/消息中心+发布模块/test_messages_complete.py",
       "test_name": "test_access_messages_from_home",
@@ -61552,13 +62375,13 @@
       "nodeid": "test_cases/体验/消息中心+发布模块/test_messages_complete.py::test_block_function",
       "file_path": "test_cases/体验/消息中心+发布模块/test_messages_complete.py",
       "test_name": "test_block_function",
-      "case_id": "case_id_messages_explore_012",
+      "case_id": "case_id_messages_explore_014",
       "priority": "p1",
       "site": "ae",
       "markers": [
         "ae",
         "block",
-        "case_id_messages_explore_012",
+        "case_id_messages_explore_014",
         "conversation",
         "exploration",
         "messages",
@@ -61566,14 +62389,14 @@
       ],
       "allure_feature": "OK - Messages",
       "allure_story": "Messages页面功能探索 - 拉黑功能",
-      "allure_title": "TC012: 测试会话拉黑/取消拉黑完整流程",
+      "allure_title": "TC014: 测试会话拉黑/取消拉黑完整流程",
       "severity": "critical",
       "module_id": "tiyan",
       "feature_id": "tiyan_messages",
       "aliases": [
         "experience",
         "messages",
-        "tc012",
+        "tc014",
         "tiyan",
         "tiyan_messages"
       ],
@@ -61650,40 +62473,6 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/体验/消息中心+发布模块/test_messages_complete.py::test_conversation_list_scroll",
-      "file_path": "test_cases/体验/消息中心+发布模块/test_messages_complete.py",
-      "test_name": "test_conversation_list_scroll",
-      "case_id": "case_id_messages_scroll_022",
-      "priority": "p2",
-      "site": "ae",
-      "markers": [
-        "ae",
-        "case_id_messages_scroll_022",
-        "conversation",
-        "messages",
-        "p2",
-        "scroll"
-      ],
-      "allure_feature": "OK - Messages",
-      "allure_story": "Messages页面功能探索 - 会话列表交互",
-      "allure_title": "TC022: 会话列表滑动功能测试",
-      "severity": "normal",
-      "module_id": "tiyan",
-      "feature_id": "tiyan_messages",
-      "aliases": [
-        "experience",
-        "messages",
-        "tc022",
-        "tiyan",
-        "tiyan_messages"
-      ],
-      "baseline_set": null,
-      "risk_level": null,
-      "owner": "qa-ui",
-      "governed": true,
-      "skill_excluded": false
-    },
-    {
       "nodeid": "test_cases/体验/消息中心+发布模块/test_messages_complete.py::test_conversation_list_scroll_functions",
       "file_path": "test_cases/体验/消息中心+发布模块/test_messages_complete.py",
       "test_name": "test_conversation_list_scroll_functions",
@@ -61720,61 +62509,60 @@
       "nodeid": "test_cases/体验/消息中心+发布模块/test_messages_complete.py::test_conversation_list_time_order",
       "file_path": "test_cases/体验/消息中心+发布模块/test_messages_complete.py",
       "test_name": "test_conversation_list_time_order",
-      "case_id": "case_id_messages_list_order_025",
-      "priority": "p1",
+      "case_id": "case_id_messages_scroll_022",
+      "priority": null,
       "site": "ae",
       "markers": [
         "ae",
-        "case_id_messages_list_order_025",
+        "case_id_messages_scroll_022",
         "conversation",
         "messages",
-        "p1",
-        "timestamp"
+        "scroll"
       ],
       "allure_feature": "OK - Messages",
-      "allure_story": "Messages页面功能探索 - 会话列表时间顺序",
-      "allure_title": "TC025: 会话列表按最新消息时间倒序排列",
-      "severity": "critical",
-      "module_id": "tiyan",
-      "feature_id": "tiyan_messages",
-      "aliases": [
-        "experience",
-        "messages",
-        "tc025",
-        "tiyan",
-        "tiyan_messages"
-      ],
-      "baseline_set": null,
-      "risk_level": null,
-      "owner": "qa-ui",
-      "governed": true,
-      "skill_excluded": false
-    },
-    {
-      "nodeid": "test_cases/体验/消息中心+发布模块/test_messages_complete.py::test_conversation_timestamp",
-      "file_path": "test_cases/体验/消息中心+发布模块/test_messages_complete.py",
-      "test_name": "test_conversation_timestamp",
-      "case_id": "case_id_messages_timestamp_023",
-      "priority": "p2",
-      "site": "ae",
-      "markers": [
-        "ae",
-        "case_id_messages_timestamp_023",
-        "conversation",
-        "messages",
-        "p2",
-        "timestamp"
-      ],
-      "allure_feature": "OK - Messages",
-      "allure_story": "Messages页面功能探索 - 会话列表展示",
-      "allure_title": "TC023: 会话列表时间戳检查",
+      "allure_story": "Messages页面功能探索 - 会话列表交互",
+      "allure_title": "TC022: 会话列表滑动功能测试",
       "severity": "normal",
       "module_id": "tiyan",
       "feature_id": "tiyan_messages",
       "aliases": [
         "experience",
         "messages",
-        "tc023",
+        "tc022",
+        "tiyan",
+        "tiyan_messages"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": false,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/体验/消息中心+发布模块/test_messages_complete.py::test_conversation_sorting_rule",
+      "file_path": "test_cases/体验/消息中心+发布模块/test_messages_complete.py",
+      "test_name": "test_conversation_sorting_rule",
+      "case_id": "case_id_messages_list_sort_040",
+      "priority": "p1",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "case_id_messages_list_sort_040",
+        "conversation",
+        "messages",
+        "p1",
+        "sorting"
+      ],
+      "allure_feature": "OK - Messages",
+      "allure_story": "Messages页面功能测试 - 会话排序",
+      "allure_title": "TC040: 会话排序规则验证（置顶优先）",
+      "severity": "critical",
+      "module_id": "tiyan",
+      "feature_id": "tiyan_messages",
+      "aliases": [
+        "experience",
+        "messages",
+        "tc040",
         "tiyan",
         "tiyan_messages"
       ],
@@ -61856,12 +62644,12 @@
       "nodeid": "test_cases/体验/消息中心+发布模块/test_messages_complete.py::test_explore_message_display",
       "file_path": "test_cases/体验/消息中心+发布模块/test_messages_complete.py",
       "test_name": "test_explore_message_display",
-      "case_id": "case_id_messages_explore_006",
+      "case_id": "case_id_messages_explore_007",
       "priority": "p2",
       "site": "ae",
       "markers": [
         "ae",
-        "case_id_messages_explore_006",
+        "case_id_messages_explore_007",
         "display",
         "exploration",
         "messages",
@@ -61869,48 +62657,14 @@
       ],
       "allure_feature": "OK - Messages",
       "allure_story": "Messages页面功能探索 - 消息展示",
-      "allure_title": "TC006: 探索消息类型和展示",
+      "allure_title": "TC007: 探索消息类型和展示",
       "severity": "normal",
       "module_id": "tiyan",
       "feature_id": "tiyan_messages",
       "aliases": [
         "experience",
         "messages",
-        "tc006",
-        "tiyan",
-        "tiyan_messages"
-      ],
-      "baseline_set": null,
-      "risk_level": null,
-      "owner": "qa-ui",
-      "governed": true,
-      "skill_excluded": false
-    },
-    {
-      "nodeid": "test_cases/体验/消息中心+发布模块/test_messages_complete.py::test_explore_message_sending",
-      "file_path": "test_cases/体验/消息中心+发布模块/test_messages_complete.py",
-      "test_name": "test_explore_message_sending",
-      "case_id": "case_id_messages_explore_004",
-      "priority": "p2",
-      "site": "ae",
-      "markers": [
-        "ae",
-        "case_id_messages_explore_004",
-        "exploration",
-        "messages",
-        "p2",
-        "send"
-      ],
-      "allure_feature": "OK - Messages",
-      "allure_story": "Messages页面功能探索 - 消息发送",
-      "allure_title": "TC004: 探索消息发送功能",
-      "severity": "normal",
-      "module_id": "tiyan",
-      "feature_id": "tiyan_messages",
-      "aliases": [
-        "experience",
-        "messages",
-        "tc004",
+        "tc007",
         "tiyan",
         "tiyan_messages"
       ],
@@ -61924,12 +62678,12 @@
       "nodeid": "test_cases/体验/消息中心+发布模块/test_messages_complete.py::test_explore_user_info",
       "file_path": "test_cases/体验/消息中心+发布模块/test_messages_complete.py",
       "test_name": "test_explore_user_info",
-      "case_id": "case_id_messages_explore_005",
+      "case_id": "case_id_messages_explore_006",
       "priority": "p2",
       "site": "ae",
       "markers": [
         "ae",
-        "case_id_messages_explore_005",
+        "case_id_messages_explore_006",
         "exploration",
         "messages",
         "p2",
@@ -61937,14 +62691,14 @@
       ],
       "allure_feature": "OK - Messages",
       "allure_story": "Messages页面功能探索 - 用户信息",
-      "allure_title": "TC005: 探索用户信息和操作",
+      "allure_title": "TC006: 探索用户信息和操作",
       "severity": "normal",
       "module_id": "tiyan",
       "feature_id": "tiyan_messages",
       "aliases": [
         "experience",
         "messages",
-        "tc005",
+        "tc006",
         "tiyan",
         "tiyan_messages"
       ],
@@ -62020,12 +62774,12 @@
       "nodeid": "test_cases/体验/消息中心+发布模块/test_messages_complete.py::test_mute_function",
       "file_path": "test_cases/体验/消息中心+发布模块/test_messages_complete.py",
       "test_name": "test_mute_function",
-      "case_id": "case_id_messages_explore_011",
+      "case_id": "case_id_messages_explore_014",
       "priority": "p2",
       "site": "ae",
       "markers": [
         "ae",
-        "case_id_messages_explore_011",
+        "case_id_messages_explore_014",
         "conversation",
         "exploration",
         "messages",
@@ -62034,14 +62788,14 @@
       ],
       "allure_feature": "OK - Messages",
       "allure_story": "Messages页面功能探索 - 免打扰功能",
-      "allure_title": "TC011: 测试会话免打扰/取消免打扰功能",
+      "allure_title": "TC014: 测试会话免打扰/取消免打扰功能",
       "severity": "normal",
       "module_id": "tiyan",
       "feature_id": "tiyan_messages",
       "aliases": [
         "experience",
         "messages",
-        "tc011",
+        "tc014",
         "tiyan",
         "tiyan_messages"
       ],
@@ -62089,12 +62843,12 @@
       "nodeid": "test_cases/体验/消息中心+发布模块/test_messages_complete.py::test_phone_button",
       "file_path": "test_cases/体验/消息中心+发布模块/test_messages_complete.py",
       "test_name": "test_phone_button",
-      "case_id": "case_id_messages_explore_008",
+      "case_id": "case_id_messages_explore_014",
       "priority": "p2",
       "site": "ae",
       "markers": [
         "ae",
-        "case_id_messages_explore_008",
+        "case_id_messages_explore_014",
         "conversation",
         "exploration",
         "messages",
@@ -62103,14 +62857,14 @@
       ],
       "allure_feature": "OK - Messages",
       "allure_story": "Messages页面功能探索 - 电话按钮",
-      "allure_title": "TC008: 测试会话页面的电话按钮功能",
+      "allure_title": "TC014: 测试会话页面的电话按钮功能",
       "severity": "normal",
       "module_id": "tiyan",
       "feature_id": "tiyan_messages",
       "aliases": [
         "experience",
         "messages",
-        "tc008",
+        "tc014",
         "tiyan",
         "tiyan_messages"
       ],
@@ -62124,12 +62878,12 @@
       "nodeid": "test_cases/体验/消息中心+发布模块/test_messages_complete.py::test_pin_function",
       "file_path": "test_cases/体验/消息中心+发布模块/test_messages_complete.py",
       "test_name": "test_pin_function",
-      "case_id": "case_id_messages_explore_010",
+      "case_id": "case_id_messages_explore_014",
       "priority": "p2",
       "site": "ae",
       "markers": [
         "ae",
-        "case_id_messages_explore_010",
+        "case_id_messages_explore_014",
         "conversation",
         "exploration",
         "messages",
@@ -62138,14 +62892,14 @@
       ],
       "allure_feature": "OK - Messages",
       "allure_story": "Messages页面功能探索 - 置顶功能",
-      "allure_title": "TC010: 测试会话置顶/取消置顶功能",
+      "allure_title": "TC014: 测试会话置顶/取消置顶功能",
       "severity": "normal",
       "module_id": "tiyan",
       "feature_id": "tiyan_messages",
       "aliases": [
         "experience",
         "messages",
-        "tc010",
+        "tc014",
         "tiyan",
         "tiyan_messages"
       ],
@@ -62193,12 +62947,12 @@
       "nodeid": "test_cases/体验/消息中心+发布模块/test_messages_complete.py::test_security_tip_check",
       "file_path": "test_cases/体验/消息中心+发布模块/test_messages_complete.py",
       "test_name": "test_security_tip_check",
-      "case_id": "case_id_messages_explore_007",
+      "case_id": "case_id_messages_explore_014",
       "priority": "p1",
       "site": "ae",
       "markers": [
         "ae",
-        "case_id_messages_explore_007",
+        "case_id_messages_explore_014",
         "exploration",
         "messages",
         "p1",
@@ -62206,14 +62960,14 @@
       ],
       "allure_feature": "OK - Messages",
       "allure_story": "Messages页面功能探索 - 安全提示",
-      "allure_title": "TC007: 会话页面安全提示检查",
+      "allure_title": "TC014: 会话页面安全提示检查",
       "severity": "normal",
       "module_id": "tiyan",
       "feature_id": "tiyan_messages",
       "aliases": [
         "experience",
         "messages",
-        "tc007",
+        "tc014",
         "tiyan",
         "tiyan_messages"
       ],
@@ -62455,12 +63209,12 @@
       "nodeid": "test_cases/体验/消息中心+发布模块/test_messages_complete.py::test_send_message",
       "file_path": "test_cases/体验/消息中心+发布模块/test_messages_complete.py",
       "test_name": "test_send_message",
-      "case_id": "case_id_messages_explore_013",
+      "case_id": "case_id_messages_explore_014",
       "priority": "p1",
       "site": "ae",
       "markers": [
         "ae",
-        "case_id_messages_explore_013",
+        "case_id_messages_explore_014",
         "conversation",
         "exploration",
         "messages",
@@ -62469,14 +63223,14 @@
       ],
       "allure_feature": "OK - Messages",
       "allure_story": "Messages页面功能探索 - 消息发送",
-      "allure_title": "TC013: 输入框输入消息并发送",
+      "allure_title": "TC014: 输入框输入消息并发送",
       "severity": "critical",
       "module_id": "tiyan",
       "feature_id": "tiyan_messages",
       "aliases": [
         "experience",
         "messages",
-        "tc013",
+        "tc014",
         "tiyan",
         "tiyan_messages"
       ],
@@ -62591,12 +63345,12 @@
       "nodeid": "test_cases/体验/消息中心+发布模块/test_messages_complete.py::test_send_url_message",
       "file_path": "test_cases/体验/消息中心+发布模块/test_messages_complete.py",
       "test_name": "test_send_url_message",
-      "case_id": "case_id_messages_explore_013a",
+      "case_id": "case_id_messages_explore_014a",
       "priority": "p1",
       "site": "ae",
       "markers": [
         "ae",
-        "case_id_messages_explore_013a",
+        "case_id_messages_explore_014a",
         "conversation",
         "exploration",
         "messages",
@@ -62606,14 +63360,14 @@
       ],
       "allure_feature": "OK - Messages",
       "allure_story": "Messages页面功能探索 - 消息发送",
-      "allure_title": "TC013A: 输入框输入URL并发送",
+      "allure_title": "TC014A: 输入框输入URL并发送",
       "severity": "critical",
       "module_id": "tiyan",
       "feature_id": "tiyan_messages",
       "aliases": [
         "experience",
         "messages",
-        "tc013a_url",
+        "tc014a_url",
         "tiyan",
         "tiyan_messages"
       ],
@@ -62627,12 +63381,12 @@
       "nodeid": "test_cases/体验/消息中心+发布模块/test_messages_complete.py::test_three_dots_menu",
       "file_path": "test_cases/体验/消息中心+发布模块/test_messages_complete.py",
       "test_name": "test_three_dots_menu",
-      "case_id": "case_id_messages_explore_009",
+      "case_id": "case_id_messages_explore_014",
       "priority": "p1",
       "site": "ae",
       "markers": [
         "ae",
-        "case_id_messages_explore_009",
+        "case_id_messages_explore_014",
         "conversation",
         "exploration",
         "messages",
@@ -62641,49 +63395,14 @@
       ],
       "allure_feature": "OK - Messages",
       "allure_story": "Messages页面功能探索 - 设置入口",
-      "allure_title": "TC009: 测试会话页面右上角三点菜单（...）",
+      "allure_title": "TC014: 测试会话页面右上角三点菜单（...）",
       "severity": "critical",
       "module_id": "tiyan",
       "feature_id": "tiyan_messages",
       "aliases": [
         "experience",
         "messages",
-        "tc009",
-        "tiyan",
-        "tiyan_messages"
-      ],
-      "baseline_set": null,
-      "risk_level": null,
-      "owner": "qa-ui",
-      "governed": true,
-      "skill_excluded": false
-    },
-    {
-      "nodeid": "test_cases/体验/消息中心+发布模块/test_messages_complete.py::test_unread_message_badge",
-      "file_path": "test_cases/体验/消息中心+发布模块/test_messages_complete.py",
-      "test_name": "test_unread_message_badge",
-      "case_id": "case_id_messages_unread_024",
-      "priority": "p1",
-      "site": "ae",
-      "markers": [
-        "ae",
-        "case_id_messages_unread_024",
-        "conversation",
-        "messages",
-        "notification",
-        "p1",
-        "unread"
-      ],
-      "allure_feature": "OK - Messages",
-      "allure_story": "Messages页面功能探索 - 未读消息提示",
-      "allure_title": "TC024: 未读消息气泡展示测试",
-      "severity": "critical",
-      "module_id": "tiyan",
-      "feature_id": "tiyan_messages",
-      "aliases": [
-        "experience",
-        "messages",
-        "tc024",
+        "tc014",
         "tiyan",
         "tiyan_messages"
       ],
@@ -65241,7 +65960,7 @@
       ],
       "allure_feature": "详情页",
       "allure_story": "Location 区域（访客）",
-      "allure_title": "TC-LOCATION-A-001: Location 模块整体可见且结构完整",
+      "allure_title": "TC-LOCATION-A-001：Location 模块整体可见且结构完整",
       "severity": "blocker",
       "module_id": "tiyan",
       "feature_id": "tiyan_location",
@@ -65273,7 +65992,7 @@
       ],
       "allure_feature": "详情页",
       "allure_story": "Location 区域（访客）",
-      "allure_title": "TC-LOCATION-A-002: Location 标题文案",
+      "allure_title": "TC-LOCATION-A-002：Location 标题文案",
       "severity": "blocker",
       "module_id": "tiyan",
       "feature_id": "tiyan_location",
@@ -65305,7 +66024,7 @@
       ],
       "allure_feature": "详情页",
       "allure_story": "Location 区域（访客）",
-      "allure_title": "TC-LOCATION-A-003: 地址文案展示（非空）",
+      "allure_title": "TC-LOCATION-A-003：地址文案展示",
       "severity": "blocker",
       "module_id": "tiyan",
       "feature_id": "tiyan_location",
@@ -65337,7 +66056,7 @@
       ],
       "allure_feature": "详情页",
       "allure_story": "Location 区域（访客）",
-      "allure_title": "TC-LOCATION-A-004: Show map 预览区与按钮",
+      "allure_title": "TC-LOCATION-A-004：Show map 预览区与按钮",
       "severity": "blocker",
       "module_id": "tiyan",
       "feature_id": "tiyan_location",
@@ -65369,14 +66088,14 @@
       ],
       "allure_feature": "详情页",
       "allure_story": "Location 区域（访客）",
-      "allure_title": "TC-LOCATION-B-001/B-002: 打开地图模态并存在关闭入口",
+      "allure_title": "TC-LOCATION-B-001：点击 Show map 打开全屏地图模态",
       "severity": "blocker",
       "module_id": "tiyan",
       "feature_id": "tiyan_location",
       "aliases": [
         "experience",
         "location",
-        "tc_location_b_001_b_002",
+        "tc_location_b_001_show_map",
         "tiyan",
         "tiyan_location"
       ],
@@ -65401,7 +66120,7 @@
       ],
       "allure_feature": "详情页",
       "allure_story": "Location 区域（访客）",
-      "allure_title": "TC-LOCATION-B-003: 点击关闭图标关闭地图模态",
+      "allure_title": "TC-LOCATION-B-003：点击关闭图标关闭地图模态",
       "severity": "blocker",
       "module_id": "tiyan",
       "feature_id": "tiyan_location",
@@ -65433,7 +66152,7 @@
       ],
       "allure_feature": "详情页",
       "allure_story": "Location 区域（访客）",
-      "allure_title": "TC-LOCATION-B-004: 关闭后可再次打开地图",
+      "allure_title": "TC-LOCATION-B-004：关闭后可再次打开地图",
       "severity": "normal",
       "module_id": "tiyan",
       "feature_id": "tiyan_location",
@@ -65465,7 +66184,7 @@
       ],
       "allure_feature": "详情页",
       "allure_story": "Location 区域（访客）",
-      "allure_title": "TC-LOCATION-C-001: 主信息区地址与 Location 地址一致",
+      "allure_title": "TC-LOCATION-C-001：主信息区地址与 Location 地址一致",
       "severity": "normal",
       "module_id": "tiyan",
       "feature_id": "tiyan_location",
@@ -65497,7 +66216,7 @@
       ],
       "allure_feature": "详情页",
       "allure_story": "Location 区域（访客）",
-      "allure_title": "TC-LOCATION-D-001: Escape 不关闭地图模态",
+      "allure_title": "TC-LOCATION-D-001：地图模态打开后按 Escape 的行为",
       "severity": "minor",
       "module_id": "tiyan",
       "feature_id": "tiyan_location",
@@ -68175,12 +68894,13 @@
       ],
       "allure_feature": "OK",
       "allure_story": "详情页 - 面包屑导航",
-      "allure_title": "箭头分隔符应该正确显示",
+      "allure_title": "TC-BREADCRUMB-A-004：分隔符箭头展示",
       "severity": "normal",
       "module_id": "tiyan",
       "feature_id": "tiyan_",
       "aliases": [
         "experience",
+        "tc_breadcrumb_a_004",
         "tiyan",
         "tiyan_"
       ],
@@ -68207,12 +68927,13 @@
       ],
       "allure_feature": "OK",
       "allure_story": "详情页 - 面包屑导航",
-      "allure_title": "面包屑导航应该在详情页顶部正确显示",
+      "allure_title": "TC-BREADCRUMB-A-001：面包屑基本展示",
       "severity": "blocker",
       "module_id": "tiyan",
       "feature_id": "tiyan_",
       "aliases": [
         "experience",
+        "tc_breadcrumb_a_001",
         "tiyan",
         "tiyan_"
       ],
@@ -68239,12 +68960,13 @@
       ],
       "allure_feature": "OK",
       "allure_story": "详情页 - 面包屑导航",
-      "allure_title": "面包屑节点数量和层级结构应该正确",
+      "allure_title": "TC-BREADCRUMB-A-002：节点数量和层级结构",
       "severity": "blocker",
       "module_id": "tiyan",
       "feature_id": "tiyan_",
       "aliases": [
         "experience",
+        "tc_breadcrumb_a_002",
         "tiyan",
         "tiyan_"
       ],
@@ -68271,13 +68993,13 @@
       ],
       "allure_feature": "OK",
       "allure_story": "详情页 - 面包屑导航",
-      "allure_title": "最后一个节点应该展示为 Span 不可点击",
+      "allure_title": "TC-BREADCRUMB-A-003：当前页节点展示为 Span",
       "severity": "critical",
       "module_id": "tiyan",
       "feature_id": "tiyan_",
       "aliases": [
         "experience",
-        "span",
+        "tc_breadcrumb_a_003_span",
         "tiyan",
         "tiyan_"
       ],
@@ -68304,13 +69026,13 @@
       ],
       "allure_feature": "OK",
       "allure_story": "详情页 - 面包屑导航",
-      "allure_title": "点击面包屑Apartment节点应该跳转到Apartment列表页",
+      "allure_title": "TC-BREADCRUMB-B-004：倒数第二级节点点击跳转",
       "severity": "blocker",
       "module_id": "tiyan",
       "feature_id": "tiyan_",
       "aliases": [
-        "apartment_apartment",
         "experience",
+        "tc_breadcrumb_b_004",
         "tiyan",
         "tiyan_"
       ],
@@ -68337,13 +69059,13 @@
       ],
       "allure_feature": "OK",
       "allure_story": "详情页 - 面包屑导航",
-      "allure_title": "点击面包屑For Sale节点应该跳转到For Sale列表页",
+      "allure_title": "TC-BREADCRUMB-B-003：点击「For Sale」节点",
       "severity": "blocker",
       "module_id": "tiyan",
       "feature_id": "tiyan_",
       "aliases": [
         "experience",
-        "for_sale_for_sale",
+        "tc_breadcrumb_b_003_for_sale",
         "tiyan",
         "tiyan_"
       ],
@@ -68370,12 +69092,13 @@
       ],
       "allure_feature": "OK",
       "allure_story": "详情页 - 面包屑导航",
-      "allure_title": "点击面包屑首页链接应该跳转到首页",
+      "allure_title": "TC-BREADCRUMB-B-001：点击首页链接",
       "severity": "blocker",
       "module_id": "tiyan",
       "feature_id": "tiyan_",
       "aliases": [
         "experience",
+        "tc_breadcrumb_b_001",
         "tiyan",
         "tiyan_"
       ],
@@ -68402,13 +69125,13 @@
       ],
       "allure_feature": "OK",
       "allure_story": "详情页 - 面包屑导航",
-      "allure_title": "点击面包屑Property节点应该跳转到Property列表页",
+      "allure_title": "TC-BREADCRUMB-B-002：点击中间节点链接（Property）",
       "severity": "blocker",
       "module_id": "tiyan",
       "feature_id": "tiyan_",
       "aliases": [
         "experience",
-        "property_property",
+        "tc_breadcrumb_b_002_property",
         "tiyan",
         "tiyan_"
       ],
@@ -68435,12 +69158,13 @@
       ],
       "allure_feature": "OK",
       "allure_story": "详情页 - 面包屑导航",
-      "allure_title": "最后一个节点不应该可点击",
+      "allure_title": "TC-BREADCRUMB-B-005：最后一个节点不可点击",
       "severity": "critical",
       "module_id": "tiyan",
       "feature_id": "tiyan_",
       "aliases": [
         "experience",
+        "tc_breadcrumb_b_005",
         "tiyan",
         "tiyan_"
       ],
@@ -68467,12 +69191,13 @@
       ],
       "allure_feature": "OK",
       "allure_story": "详情页 - 面包屑导航",
-      "allure_title": "面包屑容器布局应该正确",
+      "allure_title": "TC-BREADCRUMB-C-003：面包屑容器布局",
       "severity": "normal",
       "module_id": "tiyan",
       "feature_id": "tiyan_",
       "aliases": [
         "experience",
+        "tc_breadcrumb_c_003",
         "tiyan",
         "tiyan_"
       ],
@@ -68499,12 +69224,13 @@
       ],
       "allure_feature": "OK",
       "allure_story": "详情页 - 面包屑导航",
-      "allure_title": "面包屑链接悬停效果应该正确",
+      "allure_title": "TC-BREADCRUMB-C-002：链接悬停效果",
       "severity": "normal",
       "module_id": "tiyan",
       "feature_id": "tiyan_",
       "aliases": [
         "experience",
+        "tc_breadcrumb_c_002",
         "tiyan",
         "tiyan_"
       ],
@@ -68531,12 +69257,13 @@
       ],
       "allure_feature": "OK",
       "allure_story": "详情页 - 面包屑导航",
-      "allure_title": "超长文本应该正确截断",
+      "allure_title": "TC-BREADCRUMB-C-004：超长文本截断",
       "severity": "normal",
       "module_id": "tiyan",
       "feature_id": "tiyan_",
       "aliases": [
         "experience",
+        "tc_breadcrumb_c_004",
         "tiyan",
         "tiyan_"
       ],
@@ -68563,12 +69290,13 @@
       ],
       "allure_feature": "OK",
       "allure_story": "详情页 - 面包屑导航",
-      "allure_title": "面包屑链接文本样式应该正确",
+      "allure_title": "TC-BREADCRUMB-C-001：面包屑文本样式",
       "severity": "normal",
       "module_id": "tiyan",
       "feature_id": "tiyan_",
       "aliases": [
         "experience",
+        "tc_breadcrumb_c_001",
         "tiyan",
         "tiyan_"
       ],
@@ -68596,12 +69324,13 @@
       ],
       "allure_feature": "OK",
       "allure_story": "详情页 - 面包屑导航",
-      "allure_title": "面包屑导航在移动端应该正常显示",
+      "allure_title": "TC-BREADCRUMB-D-001：移动端显示（375px）",
       "severity": "normal",
       "module_id": "tiyan",
       "feature_id": "tiyan_",
       "aliases": [
         "experience",
+        "tc_breadcrumb_d_001_375px",
         "tiyan",
         "tiyan_"
       ],
@@ -68628,12 +69357,13 @@
       ],
       "allure_feature": "OK",
       "allure_story": "详情页 - 面包屑导航",
-      "allure_title": "面包屑导航在平板端应该正常显示",
+      "allure_title": "TC-BREADCRUMB-D-002：平板端显示（768px）",
       "severity": "minor",
       "module_id": "tiyan",
       "feature_id": "tiyan_",
       "aliases": [
         "experience",
+        "tc_breadcrumb_d_002_768px",
         "tiyan",
         "tiyan_"
       ],
@@ -70017,6 +70747,176 @@
         "footer",
         "tiyan",
         "tiyan_footer"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/体验/首页/Footer/test_footer_page_batch7.py::test_cookie_information_advertising",
+      "file_path": "test_cases/体验/首页/Footer/test_footer_page_batch7.py",
+      "test_name": "test_cookie_information_advertising",
+      "case_id": "case_id_footer_d_008",
+      "priority": "p1",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "allure_description",
+        "case_id_footer_d_008",
+        "footer",
+        "p1",
+        "regression"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "首页 Footer 区域 - Cookie 管理",
+      "allure_title": "TC-FOOTER-D-008：Cookie Information 入口 - 营销 Cookie",
+      "severity": "normal",
+      "module_id": "tiyan",
+      "feature_id": "tiyan_footer_cookie",
+      "aliases": [
+        "experience",
+        "footer_cookie",
+        "tc_footer_d_008_cookie_information_cookie",
+        "tiyan",
+        "tiyan_footer_cookie"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/体验/首页/Footer/test_footer_page_batch7.py::test_cookie_information_all_types",
+      "file_path": "test_cases/体验/首页/Footer/test_footer_page_batch7.py",
+      "test_name": "test_cookie_information_all_types",
+      "case_id": "case_id_footer_d_009",
+      "priority": "p1",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "allure_description",
+        "case_id_footer_d_009",
+        "footer",
+        "p1",
+        "regression"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "首页 Footer 区域 - Cookie 管理",
+      "allure_title": "TC-FOOTER-D-009：Cookie Information 入口 - 所有 Cookie 类型",
+      "severity": "normal",
+      "module_id": "tiyan",
+      "feature_id": "tiyan_footer_cookie",
+      "aliases": [
+        "experience",
+        "footer_cookie",
+        "tc_footer_d_009_cookie_information_cookie",
+        "tiyan",
+        "tiyan_footer_cookie"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/体验/首页/Footer/test_footer_page_batch7.py::test_cookie_information_analytical",
+      "file_path": "test_cases/体验/首页/Footer/test_footer_page_batch7.py",
+      "test_name": "test_cookie_information_analytical",
+      "case_id": "case_id_footer_d_007",
+      "priority": "p1",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "allure_description",
+        "case_id_footer_d_007",
+        "footer",
+        "p1",
+        "regression"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "首页 Footer 区域 - Cookie 管理",
+      "allure_title": "TC-FOOTER-D-007：Cookie Information 入口 - 分析 Cookie",
+      "severity": "normal",
+      "module_id": "tiyan",
+      "feature_id": "tiyan_footer_cookie",
+      "aliases": [
+        "experience",
+        "footer_cookie",
+        "tc_footer_d_007_cookie_information_cookie",
+        "tiyan",
+        "tiyan_footer_cookie"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/体验/首页/Footer/test_footer_page_batch7.py::test_cookie_information_essential",
+      "file_path": "test_cases/体验/首页/Footer/test_footer_page_batch7.py",
+      "test_name": "test_cookie_information_essential",
+      "case_id": "case_id_footer_d_006",
+      "priority": "p1",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "allure_description",
+        "case_id_footer_d_006",
+        "footer",
+        "p1",
+        "regression"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "首页 Footer 区域 - Cookie 管理",
+      "allure_title": "TC-FOOTER-D-006：Cookie Information 入口 - 必要 Cookie",
+      "severity": "normal",
+      "module_id": "tiyan",
+      "feature_id": "tiyan_footer_cookie",
+      "aliases": [
+        "experience",
+        "footer_cookie",
+        "tc_footer_d_006_cookie_information_cookie",
+        "tiyan",
+        "tiyan_footer_cookie"
+      ],
+      "baseline_set": null,
+      "risk_level": null,
+      "owner": "qa-ui",
+      "governed": true,
+      "skill_excluded": false
+    },
+    {
+      "nodeid": "test_cases/体验/首页/Footer/test_footer_page_batch7.py::test_cookie_settings_modal_opens",
+      "file_path": "test_cases/体验/首页/Footer/test_footer_page_batch7.py",
+      "test_name": "test_cookie_settings_modal_opens",
+      "case_id": "case_id_footer_d_002",
+      "priority": "p0",
+      "site": "ae",
+      "markers": [
+        "ae",
+        "allure_description",
+        "case_id_footer_d_002",
+        "footer",
+        "p0",
+        "regression"
+      ],
+      "allure_feature": "OK",
+      "allure_story": "首页 Footer 区域 - Cookie 管理",
+      "allure_title": "TC-FOOTER-D-002：Cookie Settings 弹窗打开",
+      "severity": "critical",
+      "module_id": "tiyan",
+      "feature_id": "tiyan_footer_cookie",
+      "aliases": [
+        "experience",
+        "footer_cookie",
+        "tc_footer_d_002_cookie_settings",
+        "tiyan",
+        "tiyan_footer_cookie"
       ],
       "baseline_set": null,
       "risk_level": null,

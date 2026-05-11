@@ -423,7 +423,7 @@ def ensure_publish_location_filled(page, search_queries=None):
 # P0 核心功能测试用例
 # ============================================
 
-@pytest.mark.case_id_ae_car_publish_p0_01
+@pytest.mark.case_id_br_car_publish_p0_01
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -457,7 +457,7 @@ def test_p0_01_input_valid_price(page, config):
     logger.info("✅ P0-01 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_02
+@pytest.mark.case_id_br_car_publish_p0_02
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -490,7 +490,7 @@ def test_p0_02_input_max_price(page, config):
     logger.info("✅ P0-02 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_03
+@pytest.mark.case_id_br_car_publish_p0_03
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -521,7 +521,7 @@ def test_p0_03_select_body_color_red(page, config):
     logger.info("✅ P0-03 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_04
+@pytest.mark.case_id_br_car_publish_p0_04
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -552,7 +552,7 @@ def test_p0_04_select_body_color_black(page, config):
     logger.info("✅ P0-04 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_05
+@pytest.mark.case_id_br_car_publish_p0_05
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -587,7 +587,7 @@ def test_p0_05_fill_mileage(page, config):
     logger.info("✅ P0-05 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_06
+@pytest.mark.case_id_br_car_publish_p0_06
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -621,7 +621,7 @@ def test_p0_06_fill_max_mileage(page, config):
     logger.info("✅ P0-06 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_07
+@pytest.mark.case_id_br_car_publish_p0_07
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -654,7 +654,7 @@ def test_p0_07_select_specs_gcc(page, config):
     logger.info("✅ P0-07 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_08
+@pytest.mark.case_id_br_car_publish_p0_08
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -687,7 +687,7 @@ def test_p0_08_select_specs_european(page, config):
     logger.info("✅ P0-08 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_09
+@pytest.mark.case_id_br_car_publish_p0_09
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -723,7 +723,7 @@ def test_p0_09_fill_description(page, config):
     logger.info("✅ P0-09 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_10
+@pytest.mark.case_id_br_car_publish_p0_10
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -761,7 +761,7 @@ def test_p0_10_verify_default_phone(page, config):
     logger.info("✅ P0-10 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_11
+@pytest.mark.case_id_br_car_publish_p0_11
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -789,7 +789,7 @@ def test_p0_11_verify_default_location(page, config):
     logger.info("✅ P0-11 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_12
+@pytest.mark.case_id_br_car_publish_p0_12
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -843,7 +843,7 @@ def test_p0_12_upload_one_exterior_photo(page, config):
     logger.info("✅ P0-12 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_13
+@pytest.mark.case_id_br_car_publish_p0_13
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -922,7 +922,7 @@ def test_p0_13_fill_all_core_fields(page, config):
 # 负向验证测试用例
 # ============================================
 
-@pytest.mark.case_id_ae_car_publish_p0_15
+@pytest.mark.case_id_br_car_publish_p0_15
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -960,7 +960,7 @@ def test_p0_15_mileage_filter_negative(page, config):
     logger.info("✅ P0-15 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_16
+@pytest.mark.case_id_br_car_publish_p0_16
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -1019,7 +1019,7 @@ def test_p0_16_upload_multiple_exterior_photos(page, config):
     logger.info("✅ P0-16 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_17
+@pytest.mark.case_id_br_car_publish_p0_17
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -1063,7 +1063,7 @@ def test_p0_17_partial_required_fields_validation(page, config):
     logger.info("✅ P0-17 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_18
+@pytest.mark.case_id_br_car_publish_p0_18
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -1119,7 +1119,7 @@ def test_p0_18_upload_interior_photo(page, config):
 # 必填项验证测试
 # ============================================
 
-@pytest.mark.case_id_ae_car_publish_p0_19
+@pytest.mark.case_id_br_car_publish_p0_19
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -1166,7 +1166,7 @@ def test_p0_19_price_zero_validation(page, config):
     logger.info("✅ P0-19 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_20
+@pytest.mark.case_id_br_car_publish_p0_20
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -1205,7 +1205,7 @@ def test_p0_20_mileage_empty_validation(page, config):
     logger.info("✅ P0-20 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_21
+@pytest.mark.case_id_br_car_publish_p0_21
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -1249,7 +1249,7 @@ def test_p0_21_body_color_empty_validation(page, config):
     logger.info("✅ P0-21 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_22
+@pytest.mark.case_id_br_car_publish_p0_22
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -1298,7 +1298,7 @@ def test_p0_22_specs_empty_validation(page, config):
     logger.info("✅ P0-22 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_23
+@pytest.mark.case_id_br_car_publish_p0_23
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -1362,7 +1362,7 @@ def test_p0_23_exterior_photo_empty_validation(page, config):
     logger.info("✅ P0-23 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_24
+@pytest.mark.case_id_br_car_publish_p0_24
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -1401,7 +1401,7 @@ def test_p0_24_price_max_value(page, config):
     logger.info("✅ P0-24 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_25
+@pytest.mark.case_id_br_car_publish_p0_25
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -1438,7 +1438,7 @@ def test_p0_25_mileage_max_truncate(page, config):
     logger.info("✅ P0-25 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_26
+@pytest.mark.case_id_br_car_publish_p0_26
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -1632,7 +1632,7 @@ def test_p0_26_submit_all_required_fields(page, config):
 # 车型选择三级联动对话框测试
 # ============================================
 
-@pytest.mark.case_id_ae_car_publish_p0_27
+@pytest.mark.case_id_br_car_publish_p0_27
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -1681,7 +1681,7 @@ def test_p0_27_open_car_model_dialog(page, config):
     logger.info("✅ P0-27 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_28
+@pytest.mark.case_id_br_car_publish_p0_28
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -1733,7 +1733,7 @@ def test_p0_28_select_brand(page, config):
     logger.info("✅ P0-28 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_29
+@pytest.mark.case_id_br_car_publish_p0_29
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -1797,7 +1797,7 @@ def test_p0_29_select_model(page, config):
     logger.info("✅ P0-29 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p0_30
+@pytest.mark.case_id_br_car_publish_p0_30
 @pytest.mark.smoke
 @pytest.mark.p0
 @pytest.mark.br
@@ -1865,7 +1865,7 @@ def test_p0_30_select_trim_and_close(page, config):
 # P1优先级测试用例
 # ============================================
 
-@pytest.mark.case_id_ae_car_publish_p1_01
+@pytest.mark.case_id_br_car_publish_p1_01
 @pytest.mark.p1
 @pytest.mark.br
 @allure.feature("OK")
@@ -1905,7 +1905,7 @@ def test_p1_01_car_model_dialog_cancel_esc(page, config):
     logger.info("✅ P1-01 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p1_02
+@pytest.mark.case_id_br_car_publish_p1_02
 @pytest.mark.p1
 @pytest.mark.br
 @allure.feature("OK")
@@ -1943,7 +1943,7 @@ def test_p1_02_description_character_count(page, config):
     logger.info("✅ P1-02 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p2_03_desc_max
+@pytest.mark.case_id_br_car_publish_p2_03_desc_max
 @pytest.mark.p2
 @pytest.mark.br
 @allure.feature("OK")
@@ -1982,7 +1982,7 @@ def test_p2_03_description_max_length(page, config):
     logger.info("✅ P2-03 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p1_04
+@pytest.mark.case_id_br_car_publish_p1_04
 @pytest.mark.p1
 @pytest.mark.br
 @allure.feature("OK")
@@ -2035,7 +2035,7 @@ def test_p1_04_exterior_photo_count(page, config):
     logger.info("✅ P1-04 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p1_05
+@pytest.mark.case_id_br_car_publish_p1_05
 @pytest.mark.p1
 @pytest.mark.br
 @allure.feature("OK")
@@ -2083,7 +2083,7 @@ def test_p1_05_mileage_boundary_values(page, config):
 # ============================================
 
 @pytest.mark.p2
-@pytest.mark.case_id_ae_car_publish_p2_03
+@pytest.mark.case_id_br_car_publish_p2_03
 def test_p2_03_draft_button_visibility(page, config):
     """P2-03: 草稿按钮可见性"""
     
@@ -2108,7 +2108,7 @@ def test_p2_03_draft_button_visibility(page, config):
 
 
 @pytest.mark.p2
-@pytest.mark.case_id_ae_car_publish_p2_05
+@pytest.mark.case_id_br_car_publish_p2_05
 def test_p2_05_required_fields_asterisk(page, config):
     """P2-05: 必填字段标记显示"""
     
@@ -2153,7 +2153,7 @@ def test_p2_05_required_fields_asterisk(page, config):
 
 
 @pytest.mark.p1
-@pytest.mark.case_id_ae_car_publish_p1_12
+@pytest.mark.case_id_br_car_publish_p1_12
 @pytest.mark.br
 @allure.feature("OK")
 @allure.story("车发布页 - 撤回功能")
@@ -2376,7 +2376,7 @@ def test_p1_12_withdraw_dialog_cancel(page, config):
 
 
 @pytest.mark.p1
-@pytest.mark.case_id_ae_car_publish_p1_21
+@pytest.mark.case_id_br_car_publish_p1_21
 @pytest.mark.br
 @allure.feature("OK")
 @allure.story("车发布页 - 图片查看器")
@@ -2545,7 +2545,7 @@ def test_p1_21_photo_viewer_open(page, config):
 
 
 @pytest.mark.p1
-@pytest.mark.case_id_ae_car_publish_p1_22
+@pytest.mark.case_id_br_car_publish_p1_22
 @pytest.mark.br
 @allure.feature("OK")
 @allure.story("车发布页 - 图片查看器")
@@ -2681,7 +2681,7 @@ def test_p1_22_photo_set_as_main(page, config):
 
 
 @pytest.mark.p1
-@pytest.mark.case_id_ae_car_publish_p1_23
+@pytest.mark.case_id_br_car_publish_p1_23
 @pytest.mark.br
 @allure.feature("OK")
 @allure.story("车发布页 - 图片查看器")
@@ -2884,7 +2884,7 @@ def test_p1_23_photo_delete(page, config):
     logger.info("✅ P1-23 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p1_06
+@pytest.mark.case_id_br_car_publish_p1_06
 @pytest.mark.p1
 @pytest.mark.br
 @allure.feature("OK")
@@ -2940,7 +2940,7 @@ def test_p1_06_interior_photo_upload(page, config):
 
 
 @pytest.mark.skip(reason="手动测试用例 - UI元素拦截问题,建议手动验证")
-@pytest.mark.case_id_ae_car_publish_p1_07
+@pytest.mark.case_id_br_car_publish_p1_07
 @pytest.mark.p1
 @pytest.mark.br
 @pytest.mark.manual  # 标记为手动测试
@@ -2989,7 +2989,7 @@ def test_p1_07_first_registration_select(page, config):
     logger.info("✅ P1-07 标记为手动测试")
 
 
-@pytest.mark.case_id_ae_car_publish_p1_08
+@pytest.mark.case_id_br_car_publish_p1_08
 @pytest.mark.p1
 @pytest.mark.br
 @allure.feature("OK")
@@ -3021,7 +3021,7 @@ def test_p1_08_contact_phone_prefilled(page, config):
     logger.info("✅ P1-08 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p1_09
+@pytest.mark.case_id_br_car_publish_p1_09
 @pytest.mark.p1
 @pytest.mark.br
 @allure.feature("OK")
@@ -3065,7 +3065,7 @@ def test_p1_09_location_search_suggestions(page, config):
 # P0 编辑与撤回功能测试用例（Edit/Withdraw 属于核心用户行为，KB优先级为P0/P1）
 # ============================================
 
-@pytest.mark.case_id_ae_car_publish_p0_31
+@pytest.mark.case_id_br_car_publish_p0_31
 @pytest.mark.p0
 @pytest.mark.br
 @allure.feature("OK")
@@ -3338,7 +3338,7 @@ def test_p0_31_edit_published_car(page, config):
     logger.info("✅ P0-31 测试通过!")
 
 
-@pytest.mark.case_id_ae_car_publish_p1_11
+@pytest.mark.case_id_br_car_publish_p1_11
 @pytest.mark.p1
 @pytest.mark.br
 @allure.feature("OK")
