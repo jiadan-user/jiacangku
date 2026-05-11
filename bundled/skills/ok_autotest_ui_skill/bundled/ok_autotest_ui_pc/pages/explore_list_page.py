@@ -689,9 +689,13 @@ class ExploreListPage(BasePage):
             raise
 
     def select_brand_by_popular(self, brand_alt_text):
-        """从热门品牌图标中选择品牌（通过 alt 属性）"""
+        """从热门品牌图标中选择品牌（优先 alt 属性，降级到文字匹配）"""
         try:
-            self.page.get_by_alt_text(brand_alt_text).first.click()
+            loc = self.page.get_by_alt_text(brand_alt_text).first
+            if loc.is_visible(timeout=5000):
+                loc.click()
+            else:
+                self.page.locator(self.CITY_ANCHOR_ITEM).filter(has_text=brand_alt_text).first.click()
             self.page.wait_for_timeout(3000)
         except Exception as e:
             self.logger.error(f"选择热门品牌 '{brand_alt_text}' 失败: {e}")
