@@ -338,8 +338,24 @@ stateDiagram-v2
 
 ---
 
-## 11. 变更历史
+## 11. 关联文本用例与自动化脚本（校验索引）
+
+| 资产 | 仓库内路径（相对于 qa-agent 根目录） |
+|------|----------------------------------------|
+| Messages 功能探索文本用例 | `bundled/knowledge_base/文本用例/Tiyan/消息中心/OK-Messages-功能探索-测试用例-20260306.md` |
+| 免登录微聊文本用例 | `bundled/knowledge_base/文本用例/Tiyan/消息中心/免登录微聊功能探索-测试用例-20260429.md` |
+| Messages 主回归脚本（TC001 等） | `bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/体验/消息中心+发布模块/test_messages_complete.py` |
+| 免登录微聊核心脚本 | `bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/test_cases/体验/消息中心+发布模块/test_guest_chat_from_md_20260506.py` |
+| 免登录微聊历史完整脚本 | `test_guest_chat_complete.py`（仓库根目录，未纳入上述 `test_cases`） |
+
+> **说明**：若目录名为 `消息中心 `（末尾空格）系历史路径，与 `消息中心/` 视为同一业务目录时需以实际检出为准。
+
+---
+
+## 12. 变更历史
 
 | 日期 | 版本 | 变更内容 | 变更人 |
 |------|------|---------|--------|
 | 2026-04-27 | v1.0 | 创建Messages消息中心业务全景文档 | AI Assistant |
+| 2026-05-08 | v1.1 | 同步免登录微聊核心回归范围：以 TC001-TC015 为稳定主链路，复杂跨页登录后深交互暂缓 | QA Agent |
+| 2026-05-10 | v1.2 | 补充关联文本用例与脚本索引，便于与自动化对照校验 | QA Agent |

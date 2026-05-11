@@ -3,6 +3,7 @@ import pytest
 import allure
 from pages.property_page import PropertyPage
 from utils.logger import setup_logger
+from utils.site_guard import guard_site_and_goto_or_skip
 
 logger = setup_logger()
 
@@ -34,6 +35,28 @@ _CONFIG = {
 # ============================================================
 
 _ENTRY_HOME_URL = "https://au.58v5.cn/en/city-canberra/"
+
+
+def _goto_entry_home_or_skip(page, config, *, logger):
+    guard_site_and_goto_or_skip(
+        page,
+        _ENTRY_HOME_URL,
+        ready_locator=page.get_by_text("Browse"),
+        timeout_ms=10000,
+        logger=logger,
+    )
+    page.wait_for_load_state("domcontentloaded", timeout=10000)
+
+
+def _goto_target_page_or_skip(page, *, logger):
+    guard_site_and_goto_or_skip(
+        page,
+        _CONFIG['target_page'],
+        ready_locator=page.get_by_text("Browse"),
+        timeout_ms=10000,
+        logger=logger,
+    )
+    page.wait_for_load_state("domcontentloaded", timeout=10000)
 
 
 @allure.feature("房产列表页入口")
@@ -107,8 +130,7 @@ class TestPropertyEntryPoints:
         返回已处理 Cookie 弹窗的 PropertyPage 实例。
         """
         p = PropertyPage(page)
-        page.goto(_ENTRY_HOME_URL, wait_until="domcontentloaded", timeout=config["timeout"]["navigation"])
-        page.wait_for_load_state("domcontentloaded", timeout=config["timeout"]["navigation"])
+        _goto_entry_home_or_skip(page, config, logger=logger)
         p.handle_cookie_popup()
         page.wait_for_timeout(1000)
         return p
@@ -119,8 +141,7 @@ class TestPropertyEntryPoints:
         yield  # 先执行所有测试
         try:
             logger.info("========== 模块测试完毕，重置页面 ==========")
-            page.goto(_CONFIG['target_page'], wait_until="domcontentloaded", timeout=_CONFIG['timeout']['navigation'])
-            page.wait_for_load_state('domcontentloaded', timeout=_CONFIG['timeout']['navigation'])
+            _goto_target_page_or_skip(page, logger=logger)
             page.wait_for_timeout(1000)
             logger.info("✓ 模块测试完成，页面已重置")
         except Exception as e:
@@ -132,8 +153,7 @@ class TestPropertyEntryPoints:
         yield  # 先执行测试
         try:
             logger.info("========== 用例执行完毕，重置页面到初始状态 ==========")
-            page.goto(_ENTRY_HOME_URL, wait_until="domcontentloaded", timeout=config["timeout"]["navigation"])
-            page.wait_for_load_state("domcontentloaded", timeout=config["timeout"]["navigation"])
+            _goto_entry_home_or_skip(page, config, logger=logger)
             page.wait_for_timeout(1000)
             logger.info(f"✓ 页面已重置到初始状态: {page.url}")
         except Exception as e:
@@ -225,8 +245,7 @@ class TestPropertyEntryPoints:
     @pytest.mark.case_id_entry_003
     def test_tc003_all_icon_opens_listpage_with_property_section(self, entry_page, page, config):
         with allure.step("重置到首页"):
-            page.goto(_ENTRY_HOME_URL, wait_until="domcontentloaded", timeout=config["timeout"]["navigation"])
-            page.wait_for_load_state("domcontentloaded", timeout=config["timeout"]["navigation"])
+            _goto_entry_home_or_skip(page, config, logger=logger)
             entry_page.handle_cookie_popup()
             page.wait_for_timeout(1500)
             logger.info(f"✓ 页面已重置到首页: {_ENTRY_HOME_URL}")
@@ -270,8 +289,7 @@ class TestPropertyEntryPoints:
     @pytest.mark.case_id_entry_004
     def test_tc004_all_to_property_for_sale(self, entry_page, page, config):
         with allure.step("重置到首页"):
-            page.goto(_ENTRY_HOME_URL, wait_until="domcontentloaded", timeout=config["timeout"]["navigation"])
-            page.wait_for_load_state("domcontentloaded", timeout=config["timeout"]["navigation"])
+            _goto_entry_home_or_skip(page, config, logger=logger)
             entry_page.handle_cookie_popup()
             page.wait_for_timeout(1500)
             logger.info(f"✓ 页面已重置到首页: {_ENTRY_HOME_URL}")
@@ -310,8 +328,7 @@ class TestPropertyEntryPoints:
     @pytest.mark.case_id_entry_005
     def test_tc005_all_to_property_for_rent(self, entry_page, page, config):
         with allure.step("重置到首页"):
-            page.goto(_ENTRY_HOME_URL, wait_until="domcontentloaded", timeout=config["timeout"]["navigation"])
-            page.wait_for_load_state("domcontentloaded", timeout=config["timeout"]["navigation"])
+            _goto_entry_home_or_skip(page, config, logger=logger)
             entry_page.handle_cookie_popup()
             page.wait_for_timeout(1500)
             logger.info(f"✓ 页面已重置到首页: {_ENTRY_HOME_URL}")
@@ -350,8 +367,7 @@ class TestPropertyEntryPoints:
     @pytest.mark.case_id_entry_006
     def test_tc006_all_to_student_accommodation(self, entry_page, page, config):
         with allure.step("重置到首页"):
-            page.goto(_ENTRY_HOME_URL, wait_until="domcontentloaded", timeout=config["timeout"]["navigation"])
-            page.wait_for_load_state("domcontentloaded", timeout=config["timeout"]["navigation"])
+            _goto_entry_home_or_skip(page, config, logger=logger)
             entry_page.handle_cookie_popup()
             page.wait_for_timeout(1500)
             logger.info(f"✓ 页面已重置到首页: {_ENTRY_HOME_URL}")
@@ -390,8 +406,7 @@ class TestPropertyEntryPoints:
     @pytest.mark.case_id_entry_007
     def test_tc007_all_to_commercial_for_sale(self, entry_page, page, config):
         with allure.step("重置到首页"):
-            page.goto(_ENTRY_HOME_URL, wait_until="domcontentloaded", timeout=config["timeout"]["navigation"])
-            page.wait_for_load_state("domcontentloaded", timeout=config["timeout"]["navigation"])
+            _goto_entry_home_or_skip(page, config, logger=logger)
             entry_page.handle_cookie_popup()
             page.wait_for_timeout(1500)
             logger.info(f"✓ 页面已重置到首页: {_ENTRY_HOME_URL}")
@@ -457,8 +472,7 @@ class TestPropertyEntryPoints:
     @pytest.mark.case_id_entry_009
     def test_tc009_browse_hover_property_shows_submenu(self, entry_page, page, config):
         with allure.step("重置到首页"):
-            page.goto(_ENTRY_HOME_URL, wait_until="domcontentloaded", timeout=config["timeout"]["navigation"])
-            page.wait_for_load_state("domcontentloaded", timeout=config["timeout"]["navigation"])
+            _goto_entry_home_or_skip(page, config, logger=logger)
             entry_page.handle_cookie_popup()
             page.wait_for_timeout(1500)
             logger.info(f"✓ 页面已重置到首页: {_ENTRY_HOME_URL}")
@@ -500,8 +514,7 @@ class TestPropertyEntryPoints:
     @pytest.mark.case_id_entry_010
     def test_tc010_browse_to_property_for_rent(self, entry_page, page, config):
         with allure.step("重置到首页"):
-            page.goto(_ENTRY_HOME_URL, wait_until="domcontentloaded", timeout=config["timeout"]["navigation"])
-            page.wait_for_load_state("domcontentloaded", timeout=config["timeout"]["navigation"])
+            _goto_entry_home_or_skip(page, config, logger=logger)
             entry_page.handle_cookie_popup()
             page.wait_for_timeout(1500)
             logger.info(f"✓ 页面已重置到首页: {_ENTRY_HOME_URL}")
@@ -543,8 +556,7 @@ class TestPropertyEntryPoints:
     @pytest.mark.case_id_entry_011
     def test_tc011_browse_to_property_for_sale(self, entry_page, page, config):
         with allure.step("重置到首页"):
-            page.goto(_ENTRY_HOME_URL, wait_until="domcontentloaded", timeout=config["timeout"]["navigation"])
-            page.wait_for_load_state("domcontentloaded", timeout=config["timeout"]["navigation"])
+            _goto_entry_home_or_skip(page, config, logger=logger)
             entry_page.handle_cookie_popup()
             page.wait_for_timeout(1500)
             logger.info(f"✓ 页面已重置到首页: {_ENTRY_HOME_URL}")
@@ -586,8 +598,7 @@ class TestPropertyEntryPoints:
     @pytest.mark.case_id_entry_012
     def test_tc012_browse_to_student_accommodation(self, entry_page, page, config):
         with allure.step("重置到首页"):
-            page.goto(_ENTRY_HOME_URL, wait_until="domcontentloaded", timeout=config["timeout"]["navigation"])
-            page.wait_for_load_state("domcontentloaded", timeout=config["timeout"]["navigation"])
+            _goto_entry_home_or_skip(page, config, logger=logger)
             entry_page.handle_cookie_popup()
             page.wait_for_timeout(1500)
             logger.info(f"✓ 页面已重置到首页: {_ENTRY_HOME_URL}")
@@ -629,8 +640,7 @@ class TestPropertyEntryPoints:
     @pytest.mark.case_id_entry_013
     def test_tc013_browse_to_commercial_for_sale(self, entry_page, page, config):
         with allure.step("重置到首页"):
-            page.goto(_ENTRY_HOME_URL, wait_until="domcontentloaded", timeout=config["timeout"]["navigation"])
-            page.wait_for_load_state("domcontentloaded", timeout=config["timeout"]["navigation"])
+            _goto_entry_home_or_skip(page, config, logger=logger)
             entry_page.handle_cookie_popup()
             page.wait_for_timeout(1500)
             logger.info(f"✓ 页面已重置到首页: {_ENTRY_HOME_URL}")

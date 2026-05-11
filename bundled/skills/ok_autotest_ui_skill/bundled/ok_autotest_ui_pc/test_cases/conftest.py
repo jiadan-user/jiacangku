@@ -390,8 +390,13 @@ def pytest_runtest_makereport(item, call):
             screenshot_path = screenshot_dir / screenshot_name
             
             try:
-                # 截图
-                page.screenshot(path=str(screenshot_path), timeout=60000, full_page=True)
+                # 视口截图，避免长页 full_page 长时间卡住
+                page.screenshot(
+                    path=str(screenshot_path),
+                    timeout=20000,
+                    full_page=False,
+                    animations="disabled",
+                )
                 
                 # 附加到 Allure 报告（仅保留截图，不附加其他信息）
                 with open(screenshot_path, 'rb') as f:

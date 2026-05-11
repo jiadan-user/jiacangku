@@ -1,5 +1,6 @@
 # pages/ok_kingkong_nav_page.py
 """纽约城市页搜索框下方金刚位导航（MCP 录制：link name 为「文案 文案」）"""
+import re
 import time
 
 from pages.base_page import BasePage
@@ -18,6 +19,7 @@ class OkKingkongNavPage(BasePage):
     LINK_SERVICES = "Services Services"
     LINK_COMMUNITY = "Community Community"
     LINK_ALL = "All All"
+    ALL_NAME_PATTERN = re.compile(r"^All(?:\s+All)?$", re.IGNORECASE)
 
     def __init__(self, page):
         super().__init__(page)
@@ -107,10 +109,27 @@ class OkKingkongNavPage(BasePage):
 
     def click_kingkong_all_expect_navigation(self, timeout_ms: int = 35000):
         """点击 All 并等待 URL 进入 listpage（兼容客户端路由，不用 expect_navigation）"""
+        candidates = [
+            self.page.get_by_role("link", name=self.LINK_ALL),
+            self.page.get_by_role("link", name=self.ALL_NAME_PATTERN),
+            self.page.locator("a[href*='/listpage/']").filter(has_text=self.ALL_NAME_PATTERN),
+            self.page.locator("a[href*='/listpage/'][href*='city-']"),
+            self.page.locator("a[href*='/listpage/']"),
+        ]
+        last_error = None
         try:
-            loc = self.kingkong_link(self.LINK_ALL)
-            loc.wait_for(state="visible", timeout=20000)
-            loc.click()
+            for loc in candidates:
+                try:
+                    target = loc.first
+                    target.wait_for(state="visible", timeout=20000)
+                    target.scroll_into_view_if_needed(timeout=timeout_ms)
+                    target.click(timeout=timeout_ms)
+                    break
+                except Exception as click_error:
+                    last_error = click_error
+            else:
+                raise TimeoutError(f"未找到可点击 All 入口: {last_error}")
+
             self.page.wait_for_url("**/listpage/**", timeout=timeout_ms)
             self.page.wait_for_load_state("domcontentloaded", timeout=30000)
         except Exception as e:
