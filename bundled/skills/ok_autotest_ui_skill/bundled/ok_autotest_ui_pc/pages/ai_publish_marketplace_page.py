@@ -1,4 +1,5 @@
 # pages/ai_publish_marketplace_page.py
+import re
 from pages.base_page import BasePage
 from utils.logger import setup_logger
 
@@ -15,7 +16,7 @@ class AiPublishMarketplacePage(BasePage):
     def click_marketplace_category(self):
         """点击Marketplace类目，进入Marketplace发布页面"""
         try:
-            self.page.locator('span').filter(has_text='Marketplace').click()
+            self.page.locator('span').filter(has_text=re.compile(r'^For Sale$')).click()
             self.page.wait_for_timeout(1000)
             self.page.wait_for_load_state("domcontentloaded", timeout=15000)
         except Exception as e:
