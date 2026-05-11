@@ -1,7 +1,6 @@
 # test_cases/ai/ai_publish/conftest.py
 """
 AI发布页测试专用配置
-- 失败自动重试 3 次（间隔 2 秒）
 - 失败自动截图并附加到 Allure 报告
 """
 import os
@@ -22,15 +21,6 @@ def _resolve_headless(headless: bool) -> bool:
     return headless
 
 logger = setup_logger()
-
-
-# ========== 失败重试（3次）==========
-
-def pytest_collection_modifyitems(items):
-    """为 ai_publish 目录下的所有测试用例自动添加失败重试（3次，间隔2秒）。"""
-    for item in items:
-        if "ai/ai_publish" in str(item.fspath):
-            item.add_marker(pytest.mark.flaky(reruns=3, reruns_delay=2))
 
 
 # ========== Fixtures ==========

@@ -5,7 +5,7 @@ AE站 - Property发布页AI推荐功能测试
 录制文档：test_cases/ai/ai_publish/ai_publish_Property测试用例_20260311.md
 生成时间：2026-03-11
 
-测试站点：AE (https://aepub.58v5.cn)
+测试站点：AE (https://arpub.58v5.cn)
 测试角色：Seller (卖家)
 测试目标：验证在Property发布页面，当用户上传房产图片和输入Title后，系统会基于AI智能分析，
          显示推荐的房产类目，并支持AI生成描述内容
@@ -28,7 +28,7 @@ _CONFIG = {
     "site_name": "AE站",
     "role": "seller",
     "user_name": "ae_seller_property",
-    "base_url": "https://aepub.58v5.cn",
+    "base_url": "https://arpub.58v5.cn",
     "test_account": {
         "username": "yangyang100@58.com",
         "password": "Qa123456"
@@ -51,70 +51,6 @@ _CONFIG = {
 @pytest.mark.usefixtures("setup_property_page")
 class TestAiPublishProperty:
     """Property发布AI推荐功能测试类"""
-    
-    @pytest.mark.case_id_ai_publish_property_01
-    @pytest.mark.smoke
-    @pytest.mark.p0
-    @pytest.mark.ai
-    @pytest.mark.ae
-    @pytest.mark.ai_publish
-    @pytest.mark.ai_publish_property
-    @pytest.mark.skip(reason="房产发布页改造，暂时跳过")
-    @allure.feature("OK")
-    @allure.story("Property发布AI推荐类目 - 正向场景")
-    @allure.title("上传单张房产图片后应该显示AI推荐类目")
-    @allure.severity(allure.severity_level.CRITICAL)
-    @allure.description("验证用户上传单张房产图片（villa.png）后，页面显示Suggested Categories区域，并推荐至少1个相关类目")
-    def test_upload_single_property_image_ai_recommendations_should_display(self, page, config):
-        """TC001: 上传单张房产图片后显示AI推荐类目"""
-        
-        # ========== Arrange：准备测试对象 ==========
-        property_page = AiPublishPropertyPage(page)
-        
-        logger.info("="*80)
-        logger.info("TC001: 上传单张房产图片后显示AI推荐类目测试")
-        logger.info("="*80)
-        
-        # 准备测试图片路径
-        image_path = os.path.join(os.getcwd(), "test_data/images/villa_1.png")
-        
-        # ========== Act：执行操作 ==========
-        with allure.step("步骤1：上传villa_1.png图片"):
-            property_page.upload_single_image(image_path)
-            logger.info("✓ 上传villa_1.png成功")
-        
-        with allure.step("步骤2：等待 AI 推荐加载"):
-            property_page.wait_for_ai_recommendations()
-            logger.info("✓ AI 推荐加载完成")
-        
-        # ========== Assert：验证结果 ==========
-        with allure.step("验证1：图片成功上传，显示上传计数"):
-            upload_count = property_page.get_upload_count()
-            # 提取已上传数量和总限制（如 "1/20" -> 已上传1张）
-            import re
-            match = re.search(r'(\d+)/(\d+)', upload_count)
-            assert match, f"无法解析上传计数格式，实际: '{upload_count}'"
-            uploaded, total = int(match.group(1)), int(match.group(2))
-            assert uploaded == 1, f"图片上传数量错误，期望: 1，实际: {uploaded}"
-            logger.info(f"✓ 上传计数验证通过: {upload_count}")
-        
-        with allure.step("验证2：页面显示 Suggested Categories 区域"):
-            assert property_page.is_suggested_categories_displayed(), \
-                "Suggested Categories 区域未显示"
-            logger.info("✓ Suggested Categories 区域显示成功")
-        
-        with allure.step("验证3：AI 推荐至少1个相关类目"):
-            categories = property_page.get_suggested_categories_text()
-            assert len(categories) >= 1, \
-                f"AI 推荐类目数量不足，期望: ≥1，实际: {len(categories)}"
-            logger.info(f"✓ AI 推荐类目数量: {len(categories)}")
-            logger.info(f"✓ 推荐类目: {', '.join(categories)}")
-            
-            # 验证推荐类目包含Villa相关内容
-            categories_text = ' '.join(categories).lower()
-            assert 'villa' in categories_text or 'residential' in categories_text, \
-                f"AI 推荐类目不相关，推荐内容: {categories}"
-            logger.info("✓ AI 推荐类目相关性验证通过")
     
     @pytest.mark.case_id_ai_publish_property_02
     @pytest.mark.smoke
@@ -169,73 +105,6 @@ class TestAiPublishProperty:
             assert 0 < len(description) <= 1000, \
                 f"描述内容长度异常，期望: 0-1000字符，实际: {len(description)}字符"
             logger.info("✓ 描述内容长度合理")
-    
-    @pytest.mark.case_id_ai_publish_property_03
-    @pytest.mark.smoke
-    @pytest.mark.p0
-    @pytest.mark.ai
-    @pytest.mark.ai_publish
-    @pytest.mark.ai_publish_property
-    @pytest.mark.ae
-    @pytest.mark.skip(reason="房产发布页改造，暂时跳过")
-    @allure.feature("OK")
-    @allure.story("Property发布AI推荐类目 - 正向场景")
-    @allure.title("上传多张房产图片后应该显示AI推荐类目")
-    @allure.severity(allure.severity_level.CRITICAL)
-    @allure.description("验证用户上传3张公寓图片后，页面显示Suggested Categories区域，AI推荐基于多图片综合分析更准确")
-    def test_upload_multiple_property_images_ai_recommendations_should_display(self, page, config):
-        """TC003: 上传多张房产图片后显示AI推荐类目"""
-        
-        # ========== Arrange：准备测试对象 ==========
-        property_page = AiPublishPropertyPage(page)
-        
-        logger.info("="*80)
-        logger.info("TC003: 上传多张房产图片后显示AI推荐类目测试")
-        logger.info("="*80)
-        
-        image_paths = [
-            os.path.join(os.getcwd(), "test_data/images/apartment_1.png"),
-            os.path.join(os.getcwd(), "test_data/images/apartment_2.png"),
-            os.path.join(os.getcwd(), "test_data/images/apartment_3.png")
-        ]
-        
-        with allure.step("前置：重新导航到发布页面"):
-            property_page.navigate_to_publish_front_and_click_property(config['base_url'])
-            page.wait_for_timeout(6000)
-            logger.info("✓ 页面已重新导航")
-        
-        with allure.step("步骤1：上传3张公寓图片"):
-            property_page.upload_multiple_images(image_paths)
-            logger.info("✓ 上传3张公寓图片成功")
-        
-        with allure.step("步骤2：等待 AI 推荐加载"):
-            property_page.wait_for_ai_recommendations()
-            logger.info("✓ AI 推荐加载完成")
-        
-        with allure.step("验证1：3张图片均成功上传"):
-            upload_count = property_page.get_upload_count()
-            # 提取已上传数量（如 "3/20" -> 已上传3张）
-            import re
-            match = re.search(r'(\d+)/(\d+)', upload_count)
-            assert match, f"无法解析上传计数格式，实际: '{upload_count}'"
-            uploaded, total = int(match.group(1)), int(match.group(2))
-            assert uploaded == 3, f"图片上传数量错误，期望: 3，实际: {uploaded}"
-            logger.info(f"✓ 上传计数验证通过: {upload_count}")
-        
-        with allure.step("验证2：页面显示 Suggested Categories 区域"):
-            assert property_page.is_suggested_categories_displayed(), \
-                "Suggested Categories 区域未显示"
-            logger.info("✓ Suggested Categories 区域显示成功")
-        
-        with allure.step("验证3：AI 推荐基于多图片综合分析"):
-            categories = property_page.get_suggested_categories_text()
-            assert len(categories) >= 1, \
-                f"AI 推荐类目数量不足，期望: ≥1，实际: {len(categories)}"
-            logger.info(f"✓ AI 推荐类目数量: {len(categories)}")
-            categories_text = ' '.join(categories).lower()
-            assert 'apartment' in categories_text or 'residential' in categories_text, \
-                f"AI 推荐类目不相关，推荐内容: {categories}"
-            logger.info("✓ AI 推荐类目相关性验证通过（公寓类型）")
     
     @pytest.mark.case_id_ai_publish_property_04
     @pytest.mark.smoke
@@ -297,56 +166,6 @@ class TestAiPublishProperty:
                 f"描述内容长度异常，期望: 50-1000字符，实际: {len(description)}字符"
             logger.info("✓ 描述内容长度合理")
     
-    @pytest.mark.case_id_ai_publish_property_05
-    @pytest.mark.smoke
-    @pytest.mark.p0
-    @pytest.mark.ai
-    @pytest.mark.ai_publish
-    @pytest.mark.ai_publish_property
-    @pytest.mark.ae
-    @pytest.mark.skip(reason="房产发布页改造，暂时跳过")
-    @allure.feature("OK")
-    @allure.story("Property发布AI推荐类目 - 正向场景")
-    @allure.title("仅输入标题后应该显示AI推荐类目")
-    @allure.severity(allure.severity_level.CRITICAL)
-    @allure.description("验证用户仅输入Title不上传图片时，失焦后页面显示Suggested Categories区域及AI推荐类目")
-    def test_title_only_ai_recommendations_should_display(self, page, config):
-        """TC005: 仅输入标题后显示AI推荐类目（录制：locator('#title').fill + getByText('Description *').click）"""
-        
-        property_page = AiPublishPropertyPage(page)
-        
-        logger.info("="*80)
-        logger.info("TC005: 仅输入标题后显示AI推荐类目测试")
-        logger.info("="*80)
-        
-        title = "Luxury 2BR Apartment in Downtown Dubai"
-        
-        with allure.step("前置：重新导航到发布页面"):
-            property_page.navigate_to_publish_front_and_click_property(config['base_url'])
-            page.wait_for_timeout(6000)
-            logger.info("✓ 页面已重新导航")
-        
-        with allure.step("步骤1：在Title字段输入标题"):
-            property_page.input_title(title)
-            logger.info(f"✓ 输入Title: {title}")
-        
-        with allure.step("步骤2：点击Title字段外部触发失焦"):
-            property_page.click_title_outside()
-            logger.info("✓ Title失焦完成")
-        
-        with allure.step("步骤3：等待 AI 推荐加载"):
-            property_page.wait_for_ai_recommendations()
-            logger.info("✓ AI 推荐加载完成")
-        
-        with allure.step("验证：Suggested Categories 区域显示AI推荐类目"):
-            assert property_page.is_suggested_categories_displayed(), \
-                "Suggested Categories 区域未显示"
-            logger.info("✓ Suggested Categories 区域显示成功")
-            categories = property_page.get_suggested_categories_text()
-            assert len(categories) >= 1, \
-                f"AI 推荐类目数量不足，期望: ≥1，实际: {len(categories)}"
-            logger.info(f"✓ AI 推荐类目数量: {len(categories)}")
-    
     @pytest.mark.case_id_ai_publish_property_06
     @pytest.mark.smoke
     @pytest.mark.p0
@@ -398,79 +217,6 @@ class TestAiPublishProperty:
                 f"描述内容长度异常，期望: 50-1000字符，实际: {len(description)}字符"
             logger.info("✓ 描述内容长度合理")
     
-    @pytest.mark.case_id_ai_publish_property_07
-    @pytest.mark.smoke
-    @pytest.mark.p0
-    @pytest.mark.ai
-    @pytest.mark.ai_publish
-    @pytest.mark.ai_publish_property
-    @pytest.mark.ae
-    @pytest.mark.skip(reason="房产发布页改造，暂时跳过")
-    @allure.feature("OK")
-    @allure.story("Property发布AI推荐类目 - 正向场景")
-    @allure.title("上传图片并输入Title后应该显示AI推荐类目")
-    @allure.severity(allure.severity_level.CRITICAL)
-    @allure.description("验证用户上传图片并输入Title后，图片和Title结合，AI推荐更精准的类目")
-    def test_upload_image_and_input_title_ai_recommendations_should_display(self, page, config):
-        """TC007: 上传图片并输入标题后显示AI推荐类目"""
-        
-        # ========== Arrange：准备测试对象 ==========
-        property_page = AiPublishPropertyPage(page)
-        
-        logger.info("="*80)
-        logger.info("TC007: 上传图片并输入Title后显示AI推荐类目测试")
-        logger.info("="*80)
-        
-        # 准备测试数据
-        image_path = os.path.join(os.getcwd(), "test_data/images/apartment_1.png")
-        title = "Luxury 2BR Apartment in Downtown Dubai"
-        
-        with allure.step("前置：重新导航到发布页面"):
-            property_page.navigate_to_publish_front_and_click_property(config['base_url'])
-            page.wait_for_timeout(6000)
-            logger.info("✓ 页面已重新导航")
-        
-        # ========== Act：执行操作 ==========
-        with allure.step("步骤1：上传apartment_1.png图片"):
-            property_page.upload_single_image(image_path)
-            logger.info("✓ 上传apartment_1.png成功")
-        
-        with allure.step("步骤2：等待图片上传完成"):
-            page.wait_for_timeout(2000)
-            logger.info("✓ 图片上传完成")
-        
-        with allure.step(f"步骤3：输入Title '{title}'"):
-            property_page.input_title(title)
-            logger.info(f"✓ 输入Title: {title}")
-        
-        with allure.step("步骤4：点击Title字段外部触发失焦"):
-            property_page.click_title_outside()
-            logger.info("✓ Title字段失焦完成")
-        
-        with allure.step("步骤5：等待 AI 推荐加载"):
-            property_page.wait_for_ai_recommendations()
-            logger.info("✓ AI 推荐加载完成")
-        
-        # ========== Assert：验证结果 ==========
-        with allure.step("验证1：页面显示 Suggested Categories 区域"):
-            assert property_page.is_suggested_categories_displayed(), \
-                "Suggested Categories 区域未显示"
-            logger.info("✓ Suggested Categories 区域显示成功")
-        
-        with allure.step("验证2：AI 推荐显示更精准的类目"):
-            categories = property_page.get_suggested_categories_text()
-            assert len(categories) >= 2 and len(categories) <= 5, \
-                f"AI 推荐类目数量异常，期望: 2-5个，实际: {len(categories)}"
-            logger.info(f"✓ AI 推荐类目数量: {len(categories)}")
-            logger.info(f"✓ 推荐类目: {', '.join(categories)}")
-            
-            # 验证推荐类目包含Apartment相关内容
-            categories_text = ' '.join(categories).lower()
-            assert 'apartment' in categories_text or 'residential' in categories_text, \
-                f"AI 推荐类目不相关，推荐内容: {categories}"
-            logger.info("✓ AI 推荐类目精准度验证通过")
-    
-  
     @pytest.mark.case_id_ai_publish_property_08
     @pytest.mark.smoke
     @pytest.mark.p0
@@ -541,191 +287,7 @@ class TestAiPublishProperty:
                 "描述内容不包含字母，可能生成失败"
             logger.info("✓ 描述内容格式验证通过")
 
-    @pytest.mark.case_id_ai_publish_property_09
-    @pytest.mark.smoke
-    @pytest.mark.p0
-    @pytest.mark.ai
-    @pytest.mark.ai_publish
-    @pytest.mark.ai_publish_property
-    @pytest.mark.ae
-    @pytest.mark.skip(reason="房产发布页改造，暂时跳过")
-    @allure.feature("OK")
-    @allure.story("Property发布AI推荐类目 - 交互场景")
-    @allure.title("选择AI推荐的类目后应该自动填充到表单")
-    @allure.severity(allure.severity_level.CRITICAL)
-    @allure.description("验证用户点击AI推荐类目后，类目被选中并标记为用户选择的类目")
-    def test_select_ai_recommended_category_should_fill_form(self, page, config):
-        """TC009: 选择AI推荐的类目后自动填充到表单"""
-        
-        # ========== Arrange：准备测试对象 ==========
-        property_page = AiPublishPropertyPage(page)
-        
-        logger.info("="*80)
-        logger.info("TC009: 选择AI推荐类目后自动填充到表单测试")
-        logger.info("="*80)
-        
-        # 准备测试数据
-        image_path = os.path.join(os.getcwd(), "test_data/images/apartment_1.png")
-        title = "Modern Apartment for Rent"
-        
-        with allure.step("前置：重新导航到发布页面"):
-            property_page.navigate_to_publish_front_and_click_property(config['base_url'])
-            page.wait_for_timeout(6000)
-            logger.info("✓ 页面已重新导航")
-        
-        # ========== Act：执行操作 ==========
-        with allure.step("步骤1：上传图片并输入Title"):
-            property_page.upload_single_image(image_path)
-            page.wait_for_timeout(2000)
-            property_page.input_title(title)
-            property_page.click_title_outside()
-            logger.info("✓ 图片和Title准备完成")
-        
-        with allure.step("步骤2：等待 AI 推荐显示"):
-            property_page.wait_for_ai_recommendations()
-            logger.info("✓ AI 推荐已显示")
-        
-        with allure.step("步骤3：点击第一个推荐类目"):
-            property_page.click_suggested_category_first()
-            logger.info("✓ 点击第一个推荐类目成功")
-        
-        # ========== Assert：验证结果 ==========
-        with allure.step("验证：推荐类目被点击（页面无报错）"):
-            # 验证页面未报错，操作成功执行
-            current_url = page.url
-            assert "publish" in current_url, \
-                f"操作后页面异常，当前URL: {current_url}"
-            logger.info("✓ 选择推荐类目操作成功")
-            logger.info("✅ 推荐类目选择功能正常")
-    
-    @pytest.mark.case_id_ai_publish_property_10
-    @pytest.mark.smoke
-    @pytest.mark.p0
-    @pytest.mark.ai
-    @pytest.mark.ai_publish
-    @pytest.mark.ai_publish_property
-    @pytest.mark.ae
-    @pytest.mark.skip(reason="房产发布页改造，暂时跳过")
-    @allure.feature("OK")
-    @allure.story("Property发布AI识别准确性 - 公寓类型")
-    @allure.title("上传公寓图片AI应该识别并推荐Apartment相关类目")
-    @allure.severity(allure.severity_level.CRITICAL)
-    @allure.description("验证AI能够准确识别公寓图片，推荐Apartment相关类目，不应推荐Villa、Land等不相关类目")
-    def test_upload_apartment_image_ai_should_recommend_apartment_category(self, page, config):
-        """TC0010: 上传不同类型的房产图片验证AI识别准确性-公寓"""
-        
-        # ========== Arrange：准备测试对象 ==========
-        property_page = AiPublishPropertyPage(page)
-        
-        logger.info("="*80)
-        logger.info("TC0010: 上传公寓图片验证AI识别准确性测试")
-        logger.info("="*80)
-        
-        # 准备测试数据
-        image_path = os.path.join(os.getcwd(), "test_data/images/apartment_1.png")
-        title = "Modern Apartment"
-        
-        with allure.step("前置：重新导航到发布页面"):
-            property_page.navigate_to_publish_front_and_click_property(config['base_url'])
-            page.wait_for_timeout(6000)
-            logger.info("✓ 页面已重新导航")
-        
-        # ========== Act：执行操作 ==========
-        with allure.step("步骤1：上传公寓图片"):
-            property_page.upload_single_image(image_path)
-            logger.info("✓ 上传公寓图片成功")
-        
-        with allure.step("步骤2：输入Title 'Modern Apartment'"):
-            page.wait_for_timeout(2000)
-            property_page.input_title(title)
-            property_page.click_title_outside()
-            logger.info("✓ 输入Title完成")
-        
-        with allure.step("步骤3：等待 AI 推荐加载"):
-            property_page.wait_for_ai_recommendations()
-            logger.info("✓ AI 推荐加载完成")
-        
-        # ========== Assert：验证结果 ==========
-        with allure.step("验证1：AI 推荐类目包含Apartment相关选项"):
-            categories = property_page.get_suggested_categories_text()
-            categories_text = ' '.join(categories).lower()
-            
-            # 验证包含Apartment相关类目
-            assert 'apartment' in categories_text or 'residential' in categories_text, \
-                f"AI 未推荐Apartment相关类目，推荐内容: {categories}"
-            logger.info("✓ AI 推荐包含Apartment相关类目")
-        
-        with allure.step("验证2：AI 不应推荐Villa、Land等不相关类目"):
-            # 验证不包含明显不相关的类目
-            assert 'land' not in categories_text and 'commercial' not in categories_text, \
-                f"AI 推荐了不相关类目，推荐内容: {categories}"
-            logger.info("✓ AI 未推荐不相关类目")
-            logger.info(f"✓ 推荐类目: {', '.join(categories)}")
-    
-    @pytest.mark.case_id_ai_publish_property_11
-    @pytest.mark.smoke
-    @pytest.mark.p0
-    @pytest.mark.ai
-    @pytest.mark.ai_publish
-    @pytest.mark.ai_publish_property
-    @pytest.mark.ae
-    @pytest.mark.skip(reason="房产发布页改造，暂时跳过")
-    @allure.feature("OK")
-    @allure.story("Property发布AI识别准确性 - 别墅类型")
-    @allure.title("上传别墅图片AI应该识别并推荐Villa相关类目")
-    @allure.severity(allure.severity_level.CRITICAL)
-    @allure.description("验证AI能够准确识别别墅图片，推荐Villa相关类目，不应推荐Apartment、Office等不相关类目")
-    def test_upload_villa_image_ai_should_recommend_villa_category(self, page, config):
-        """TC0011: 上传不同类型的房产图片验证AI识别准确性-别墅"""
-        
-        # ========== Arrange：准备测试对象 ==========
-        property_page = AiPublishPropertyPage(page)
-        
-        logger.info("="*80)
-        logger.info("TC0011: 上传别墅图片验证AI识别准确性测试")
-        logger.info("="*80)
-        
-        # 准备测试数据
-        image_path = os.path.join(os.getcwd(), "test_data/images/villa_1.png")
-        title = "Luxury Villa with Pool"
-        
-        with allure.step("前置：重新导航到发布页面"):
-            property_page.navigate_to_publish_front_and_click_property(config['base_url'])
-            page.wait_for_timeout(6000)
-            logger.info("✓ 页面已重新导航")
-        
-        # ========== Act：执行操作 ==========
-        with allure.step("步骤1：上传别墅图片"):
-            property_page.upload_single_image(image_path)
-            logger.info("✓ 上传别墅图片成功")
-        
-        with allure.step("步骤2：输入Title 'Luxury Villa with Pool'"):
-            page.wait_for_timeout(2000)
-            property_page.input_title(title)
-            property_page.click_title_outside()
-            logger.info("✓ 输入Title完成")
-        
-        with allure.step("步骤3：等待 AI 推荐加载"):
-            property_page.wait_for_ai_recommendations()
-            logger.info("✓ AI 推荐加载完成")
-        
-        # ========== Assert：验证结果 ==========
-        with allure.step("验证1：AI 推荐类目包含Villa相关选项"):
-            categories = property_page.get_suggested_categories_text()
-            categories_text = ' '.join(categories).lower()
-            
-            # 验证包含Villa相关类目
-            assert 'villa' in categories_text or 'residential' in categories_text, \
-                f"AI 未推荐Villa相关类目，推荐内容: {categories}"
-            logger.info("✓ AI 推荐包含Villa相关类目")
-        
-        with allure.step("验证2：AI 不应推荐Apartment、Office等不相关类目"):
-            # 验证不包含明显不相关的类目（如果有Apartment应该不是主推荐）
-            # Villa和Apartment都属于Residential，可能都会出现，所以这里放宽验证
-            assert 'office' not in categories_text and 'commercial' not in categories_text, \
-                f"AI 推荐了不相关类目，推荐内容: {categories}"
-            logger.info("✓ AI 未推荐Office/Commercial等不相关类目")
-            logger.info(f"✓ 推荐类目: {', '.join(categories)}")
+
 
 
 @pytest.fixture(scope="module")
@@ -734,7 +296,7 @@ def setup_property_page(page, config):
     Function级别的前置条件：登录并导航到Property发布页面
     
     前置步骤（来自测试用例文档）：
-    - 访问页面：https://aepub.58v5.cn/biz/en/publish/front
+    - 访问页面：https://arpub.58v5.cn/biz/en/publish/front
     - 若未登录，则先登录（username：yangyang100@58.com/Qa123456）
     - 点击Property，进入Property发布页面
     """
@@ -762,7 +324,7 @@ def setup_property_page(page, config):
     session_manager = SessionManager(page, base_url, session_name=f"{site}_{role}_{account_name}")
     session_loaded = False
     
-    # ========== 步骤1：进入页面 https://aepub.58v5.cn/biz/en/publish/front ==========
+    # ========== 步骤1：进入页面 https://arpub.58v5.cn/biz/en/publish/front ==========
     with allure.step("步骤1：访问发布首页"):
         page.goto(f"{base_url}/biz/en/publish/front", timeout=30000)
         page.wait_for_load_state("domcontentloaded", timeout=15000)
@@ -831,7 +393,7 @@ def setup_property_page(page, config):
     
     with allure.step("验证进入 Property 发布页面"):
         current_url = page.url
-        assert "publish" in current_url and "categoryId=5001" in current_url, \
+        assert "publish" in current_url and "categoryId=9" in current_url, \
             f"未进入Property发布页面，当前URL: {current_url}"
         logger.info(f"✓ 已进入Property发布页面: {current_url}")
         logger.info("✅ Class Setup 完成！")
