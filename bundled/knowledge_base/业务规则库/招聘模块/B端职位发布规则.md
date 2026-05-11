@@ -1,6 +1,6 @@
 # 招聘模块 - B 端职位发布（PC Web）业务规则
 
-> **知识库依据**：由文本用例 [ok-sg-BizJobPublish-测试用例-20260414.md](../../文本用例/zhaopin/ok-sg-BizJobPublish-测试用例-20260414.md) 归档提取；站点与字段以线上为准。
+> **知识库依据**：由文本用例 [ok-sg-BizJobPublish-测试用例-20260414.md](../../文本用例/zhaopin/ok-sg-BizJobPublish-测试用例-20260414.md) 归档提取；站点与字段以线上为准。用例正文已绑定 `pytest` 的 `@pytest.mark.case_id_sg_biz_job_publish_*`（见用例「自动化标识」），UI 自动化分级见各 TC 的 `**UI自动化**`（`ok_autotest_ui_skill` / `senior-qa-brain` 约定）。
 
 ## 1. 功能概述
 
@@ -136,9 +136,11 @@
 | TC019 实测 | BR 站无效 WhatsApp 号码仍可能通过雇主信息提交，与期望「提交失败」不一致；需产品/研发确认是否补前端校验。 |
 | TC051 | 英站发布流程部分字段已验，Job Description 需进入 Job Details 再验（文档内已标注进度）。 |
 | SG 公司信息 | 当前 SG 实测无独立 Display Name 输入框；若他站有差异需按环境拆分用例。 |
+| 文本用例 2026-05-11 | 部分 TC 标注 **⚠️ 半自动化**（如 DB 断言、邮箱验证码），与「纯 Playwright、无外部通道」的 **✅ 可自动化**区分；编排/录制定位时勿将半自动条目误计为 100% UI 自动化。 |
 
 ## 7. 变更历史
 
 | 日期 | 版本 | 变更内容 | 变更人 |
 |------|------|----------|--------|
 | 2026-05-09 | v1.0 | 依据 `ok-sg-BizJobPublish-测试用例-20260414.md` 全量归档生成业务规则 | QA Agent |
+| 2026-05-11 | v1.1 | 同步文本用例：`case_id_*`、UI 自动化分级说明；已知问题补充半自动与可自动边界 | knowledge-base-manager |

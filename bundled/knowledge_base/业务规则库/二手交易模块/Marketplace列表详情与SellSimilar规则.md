@@ -1,5 +1,7 @@
 # Marketplace列表详情与SellSimilar规则
 
+> **知识库依据**：列表/详情与 Sell Similar 行为以线上为准；**Sell Similar** 文本用例主文档为 [sell_similar_test_cases.md](../../文本用例/marketplace/sell_similar_test_cases.md)（与 `test_ae_marketplace_sell_similar_v2.py` 一一对应），每条用例含 `case_id_sell_similar_tc*` 与 `**UI自动化**：✅ 可自动化`。
+
 ## 1. 功能概述
 
 ### 业务价值
@@ -239,3 +241,4 @@
 | 日期 | 版本 | 变更内容 | 变更人 |
 |------|------|---------|--------|
 | 2026-04-28 | v1.0 | 初始版本，整合 Marketplace 列表详情与 Sell Similar 规则 | QA Agent |
+| 2026-05-11 | v1.1 | 归档同步 `sell_similar_test_cases.md`：补充知识库依据、`case_id_*` 与 UI 自动化说明 | knowledge-base-manager |

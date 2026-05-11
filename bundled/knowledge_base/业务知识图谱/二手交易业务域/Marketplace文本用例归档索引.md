@@ -1,7 +1,7 @@
 # 二手交易业务域 - Marketplace 文本用例归档索引
 
 > **索引目的**：快速定位 Marketplace 列表详情页与 Sell Similar 功能的所有文本用例，方便测试执行、自动化脚本生成和知识库维护  
-> **最后更新**：2026-05-09  
+> **最后更新**：2026-05-11  
 > **用例总数**：7 个文件（`marketplace/` 列表详情与 Sell Similar + `marketplace_post/` Marketplace 发布全链路）
 
 ---
@@ -91,7 +91,7 @@
 
 | 文件名 | 站点 | 用例数 | 核心场景 | 自动化状态 |
 |--------|------|--------|---------|-----------|
-| [sell_similar_test_cases.md](../../文本用例/marketplace/sell_similar_test_cases.md) | AE（阿联酋） | 10 | Sell Similar 按钮展示、点击跳转、数据预加载、登录态验证、多语言、非 Marketplace 商品 | ✅ 100% |
+| [sell_similar_test_cases.md](../../文本用例/marketplace/sell_similar_test_cases.md) | AE（阿联酋） | 9（TC001–005/007–010，无 TC006） | Sell Similar 按钮展示、点击跳转、数据预加载、登录态验证、多语言、非 Marketplace 商品；与 `test_ae_marketplace_sell_similar_v2.py` 对齐；每条含 `case_id_sell_similar_tc*` 与 **✅ 可自动化** | ✅ 100% |
 | [SELL_SIMILAR_TEST_CASES_SUMMARY.md](../../文本用例/marketplace/SELL_SIMILAR_TEST_CASES_SUMMARY.md) | AE（阿联酋） | 8 | Sell Similar 功能总结（与 `test_ae_marketplace_sell_similar.py` 一一对应） | ✅ 100% |
 
 **核心流程**：
@@ -152,7 +152,7 @@
 
 | 文件名 | 站点 | 用例数 | 核心场景 | 自动化状态 |
 |--------|------|--------|---------|-----------|
-| [OK-AE-Marketplace-Post-草稿体验优化-测试用例-PC-20260407.md](../../文本用例/marketplace_post/OK-AE-Marketplace-Post-草稿体验优化-测试用例-PC-20260407.md) | AE | 67 | Draft Box、Save the draft、Toast 与按钮态、退出拦截、加载 `?id=` | ✅ 见文档（与 `test_ok_ae_marketplace_post_draft_experience_20260407.py` 对齐） |
+| [OK-AE-Marketplace-Post-草稿体验优化-测试用例-PC-20260407.md](../../文本用例/marketplace_post/OK-AE-Marketplace-Post-草稿体验优化-测试用例-PC-20260407.md) | AE | 67 | Draft Box、Save the draft、Toast 与按钮态、退出拦截、加载 `?id=`；每条含 `case_id_ae_marketplace_post_draft_pc_XXX` | ✅ / ⚠️ 混合：TC020/050/058/064 等为 **⚠️ 半自动化**（专项数据、系统原生关闭、多浏览器矩阵、越权造数）；其余多为 **✅ 可自动化** |
 
 **关联规则**：[Marketplace Post草稿与体验扩展规则](../../业务规则库/二手交易模块/Marketplace Post草稿与体验扩展规则.md)
 
@@ -253,3 +253,4 @@
 | 2026-04-28 | v1.0 | 初始版本，整合 Marketplace 列表详情与 Sell Similar 功能的 4 个文本用例文件 | QA Agent |
 | 2026-05-09 | v1.1 | 纳入 `文本用例/marketplace_post/` 下 3 个发布页文本用例；补充规则链接与统计 | QA Agent |
 | 2026-05-09 | v1.2 | 关联文档新增 Marketplace Post 发布业务流程文档链接 | QA Agent |
+| 2026-05-11 | v1.3 | 同步 `sell_similar_test_cases`、`OK-AE-Marketplace-Post-草稿体验优化-PC`：`case_id_*`、UI 自动化分级；修正 Sell Similar 用例数说明 | QA Agent |

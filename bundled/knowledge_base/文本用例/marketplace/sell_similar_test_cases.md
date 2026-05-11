@@ -1,20 +1,20 @@
 # AE站 - 二手想卖同款功能测试用例
 
-本文档与 `test_ae_marketplace_sell_similar_v2.py` 实现一一对应；用例编号 **TC001～TC010**（脚本中无 TC006）。
+本文档与 `test_ae_marketplace_sell_similar_v2.py` 实现一一对应；用例编号 **TC001～TC010**（脚本中无 TC006）。自动化标识遵循 `ok_autotest_ui_skill` 的 `case_id_*` 规则，与脚本中 `@pytest.mark.case_id_*` 一致。
 
 ## 脚本与用例映射
 
-| 用例 ID | pytest 函数 | 标记 |
-|---------|-------------|------|
-| TC001 | `test_tc001_non_own_post_shows_sell_similar_button` | smoke, p0 |
-| TC002 | `test_tc002_click_sell_similar_navigates_to_publish_page` | smoke, p1 |
-| TC003 | `test_tc003_own_post_does_not_show_sell_similar_button` | smoke, p0 |
-| TC004 | `test_tc004_publish_page_preloads_original_post_data` | smoke, p1 |
-| TC005 | `test_tc005_not_logged_in_user_shows_login_popup` | smoke, p1 |
-| TC007 | `test_tc007_non_marketplace_posts_do_not_show_sell_similar` | p1 |
-| TC008 | `test_tc008_sell_similar_button_in_spanish_language` | p2 |
-| TC009 | `test_tc009_publish_page_inherits_product_attributes` | p2 |
-| TC010 | `test_tc010_publish_page_inherits_description` | p2 |
+| 用例 ID | 自动化标识（pytest） | pytest 函数 | 标记 |
+|---------|----------------------|-------------|------|
+| TC001 | `case_id_sell_similar_tc001` | `test_tc001_non_own_post_shows_sell_similar_button` | smoke, p0 |
+| TC002 | `case_id_sell_similar_tc002` | `test_tc002_click_sell_similar_navigates_to_publish_page` | smoke, p1 |
+| TC003 | `case_id_sell_similar_tc003` | `test_tc003_own_post_does_not_show_sell_similar_button` | smoke, p0 |
+| TC004 | `case_id_sell_similar_tc004` | `test_tc004_publish_page_preloads_original_post_data` | smoke, p1 |
+| TC005 | `case_id_sell_similar_tc005` | `test_tc005_not_logged_in_user_shows_login_popup` | smoke, p1 |
+| TC007 | `case_id_sell_similar_tc007` | `test_tc007_non_marketplace_posts_do_not_show_sell_similar` | p1 |
+| TC008 | `case_id_sell_similar_tc008` | `test_tc008_sell_similar_button_in_spanish_language` | p2 |
+| TC009 | `case_id_sell_similar_tc009` | `test_tc009_publish_page_inherits_product_attributes` | p2 |
+| TC010 | `case_id_sell_similar_tc010` | `test_tc010_publish_page_inherits_description` | p2 |
 
 ---
 
@@ -52,6 +52,8 @@
 
 ## TC001: 非本人帖详情页展示 Sell Similar 按钮
 
+**自动化标识**：`case_id_sell_similar_tc001`
+
 **测试目标**: 在非本人发布的二手帖子详情页，正确展示「Sell Similar」，且不展示本人帖操作按钮。
 
 **前置条件**:
@@ -75,9 +77,13 @@
 
 **测试类型**: 正向场景
 
+**UI自动化**：✅ 可自动化
+
 ---
 
 ## TC002: 点击 Sell Similar 跳转发布页
+
+**自动化标识**：`case_id_sell_similar_tc002`
 
 **测试目标**: 点击 Sell Similar 后进入发布流程页面。
 
@@ -100,9 +106,13 @@
 
 **测试类型**: 正向场景
 
+**UI自动化**：✅ 可自动化
+
 ---
 
 ## TC003: 本人帖详情页不展示 Sell Similar 按钮
+
+**自动化标识**：`case_id_sell_similar_tc003`
 
 **测试目标**: 本人发布的二手帖详情页不展示 Sell Similar，展示本人操作入口。
 
@@ -122,9 +132,13 @@
 
 **测试类型**: 正向场景
 
+**UI自动化**：✅ 可自动化
+
 ---
 
 ## TC004: 发布页预加载原帖数据（价格/标题/图片数量）
+
+**自动化标识**：`case_id_sell_similar_tc004`
 
 **测试目标**: 进入发布页后 URL 正确；在条件允许时校验价格、标题预填；记录图片数量（脚本对「图片清空」为日志级，强断言可能随页面调整）。
 
@@ -148,9 +162,13 @@
 
 **测试类型**: 正向场景 / 数据继承
 
+**UI自动化**：✅ 可自动化
+
 ---
 
 ## TC005: 未登录点击 Sell Similar 调起登录
+
+**自动化标识**：`case_id_sell_similar_tc005`
 
 **测试目标**: 未登录用户点击 Sell Similar 应出现登录能力（弹窗/对话框/登录页），不应直接进入发布页。
 
@@ -175,9 +193,13 @@
 
 **测试类型**: 会话 / 安全入口
 
+**UI自动化**：✅ 可自动化
+
 ---
 
 ## TC007: 非 Marketplace 分类帖不展示 Sell Similar
+
+**自动化标识**：`case_id_sell_similar_tc007`
 
 **测试目标**: Jobs、Services 等非二手分类详情页不展示 Sell Similar。
 
@@ -196,9 +218,13 @@
 
 **测试类型**: 负向 / 范围限定
 
+**UI自动化**：✅ 可自动化
+
 ---
 
 ## TC008: 西班牙语环境 Sell Similar 展示
+
+**自动化标识**：`case_id_sell_similar_tc008`
 
 **测试目标**: 使用 `language='es'` 的列表路径查找商品后，详情页仍应能识别 Sell Similar（英文或西语文案）。
 
@@ -217,9 +243,13 @@
 
 **测试类型**: 国际化
 
+**UI自动化**：✅ 可自动化
+
 ---
 
 ## TC009: 发布页继承商品属性
+
+**自动化标识**：`case_id_sell_similar_tc009`
 
 **测试目标**: 进入发布页后 URL 正确；尝试发现 brand/model/condition 等属性控件并打日志；校验标题、价格预填（与 TC004 部分重叠，更侧重属性区域）。
 
@@ -240,9 +270,13 @@
 
 **测试类型**: 数据继承
 
+**UI自动化**：✅ 可自动化
+
 ---
 
 ## TC010: 发布页继承商品描述
+
+**自动化标识**：`case_id_sell_similar_tc010`
 
 **测试目标**: 进入发布页后校验描述区域预填；可与原帖描述做简单词交集统计（共同词 > 3 记为相似度较高）。
 
@@ -262,6 +296,8 @@
 **优先级**: P2
 
 **测试类型**: 数据继承
+
+**UI自动化**：✅ 可自动化
 
 ---
 

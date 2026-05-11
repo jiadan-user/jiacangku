@@ -343,3 +343,4 @@ graph TD
 | 日期 | 版本 | 变更内容 | 变更人 |
 |------|------|---------|--------|
 | 2026-04-28 | v1.0 | 初始版本，整合 Marketplace 列表详情与 Sell Similar 业务流程 | QA Agent |
+| 2026-05-11 | v1.1 | 文本用例 `sell_similar_test_cases.md` 同步：`case_id_sell_similar_tc*`、UI 自动化说明；关联规则与归档索引 | knowledge-base-manager |
