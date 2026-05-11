@@ -81,6 +81,9 @@ brew install allure
 | `--dry-run`  | 否    | 只预览，不真实执行                             | `--dry-run`                                                                 |
 | `--workers`  | 否    | 真实执行并发 worker，支持 `1`、正整数或 `auto`；默认 `1`，有前置映射时强制串行 | `--workers auto`                                                            |
 | `--max-workers` | 否 | `auto` 或显式并发的安全上限，默认 `4` | `--max-workers 4` |
+| `--case-timeout` | 否 | 单条 pytest 用例超时秒数，默认 `300`，`0` 表示关闭；依赖 `pytest-timeout`，缺失时自动降级到 runner watchdog | `--case-timeout 300` |
+| `--idle-timeout` | 否 | pytest 阶段无 stdout/stderr 或 Allure 产物进展的超时秒数，默认 `900`，`0` 表示关闭 | `--idle-timeout 900` |
+| `--phase-timeout` | 否 | pytest 阶段总时长硬上限秒数，默认 `0` 关闭 | `--phase-timeout 3600` |
 | `--artifact-retention` | 否 | 产物保留策略，`lean` 仅在真实执行通过后清理重复中间件，失败/阻塞不清理 | `--artifact-retention lean` |
 
 ### `ops catalog-build`

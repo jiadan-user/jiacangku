@@ -55,8 +55,12 @@ def test_tc001_list_cards_have_avatar_area(page, config):
     avatar_count = plp.get_agent_avatar_count()
     assert card_count > 0, "列表页应至少有一条卡片"
     assert avatar_count > 0, "列表页应至少有一个经纪人头像"
-    assert avatar_count >= card_count or card_count <= avatar_count + 2, (
-        f"卡片数 {card_count} 与头像数 {avatar_count} 应大致对应"
+    # 卡片为 a[href*=cate-property-for-sale-] 计数；头像为 img[alt=agent-avatar]。
+    # 二者可能短期不一致：懒加载未就绪、部分卡片无经纪人头像或非该 img 展示等。
+    gap = abs(card_count - avatar_count)
+    allowed = max(5, card_count // 10 + 2)
+    assert gap <= allowed, (
+        f"卡片数 {card_count} 与头像数 {avatar_count} 应大致对应（当前差额 {gap}，允许≤{allowed}）"
     )
     logger.info(f"✓ 列表卡片数: {card_count}, 头像数: {avatar_count}")
 

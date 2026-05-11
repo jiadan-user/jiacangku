@@ -813,6 +813,62 @@ def _order_list_has_items(page) -> bool:
         return False
 
 
+def _find_valid_pending_order_index(page, of_page, max_check: int = 5) -> int:
+    """
+    在 Pending Tab 的订单列表中查找有效订单（有 Pay 按钮的订单）。
+    
+    Args:
+        page: Playwright Page 对象
+        of_page: OrderFlowPage 对象
+        max_check: 最多检查前几条订单
+    
+    Returns:
+        有效订单的索引（0-based），如果没找到返回 -1
+    """
+    try:
+        order_items = page.locator('[class*="order_list_item"]')
+        total_count = order_items.count()
+        check_count = min(total_count, max_check)
+        
+        logger.info(f"开始检查 Pending 订单有效性（共 {total_count} 条，检查前 {check_count} 条）")
+        
+        for i in range(check_count):
+            try:
+                # 点击第 i 条订单
+                order_items.nth(i).click()
+                page.wait_for_timeout(2000)
+                
+                # 检查是否成功导航到订单详情页
+                if "/pay/order" not in page.url:
+                    logger.warning(f"第 {i+1} 条订单点击后未进入详情页，跳过")
+                    continue
+                
+                # 检查是否有 Pay 按钮（订单有效标志）
+                has_pay_button = False
+                try:
+                    has_pay_button = page.locator("button:has-text('Pay')").first.is_visible(timeout=3000)
+                except Exception:
+                    pass
+                
+                if has_pay_button:
+                    logger.info(f"✅ 找到有效 Pending 订单（第 {i+1} 条，索引 {i}）")
+                    return i
+                else:
+                    logger.warning(f"第 {i+1} 条订单已过期（无 Pay 按钮），继续检查下一条")
+                    # 返回订单列表继续检查
+                    page.go_back()
+                    page.wait_for_timeout(1500)
+            except Exception as e:
+                logger.warning(f"检查第 {i+1} 条订单时出错：{e}，跳过")
+                continue
+        
+        logger.warning(f"未找到有效的 Pending 订单（已检查 {check_count} 条）")
+        return -1
+    except Exception as e:
+        logger.error(f"查找有效订单时出错：{e}")
+        return -1
+
+
 def _wait_for_order_detail(page, timeout: int = 5000):
     """智能等待订单详情页加载（替代 wait_for_timeout(2000)）"""
     try:
@@ -847,14 +903,64 @@ def _ensure_checkout_page(page, config):
 
 def _create_pending_order(page, config):
     """
-    构造 Pending（未支付）订单：Buy Now → Pay → 关闭支付弹窗
+    构造 Pending（未支付）订单：Buy Now → Pay → 等待跳转到订单详情页 → 关闭支付弹窗
+    返回订单详情页 URL（如果成功）
     """
     _ensure_buyer_login(page, config)
     product_page, _ = _open_product_with_buy_now(page, config)
     product_page.wait_for_load_state("domcontentloaded")
     product_page.wait_for_timeout(3000)
     product_page.locator("button:has-text('Pay')").first.click()
-    product_page.wait_for_timeout(8000)
+    
+    # 等待支付iframe加载（与TC007保持一致）
+    try:
+        product_page.wait_for_selector(
+            'iframe[src*="airwallex"], iframe[src*="checkout-demo"]',
+            timeout=20000
+        )
+        product_page.wait_for_timeout(3000)
+        logger.info("_create_pending_order: ✅ 支付iframe已加载")
+    except Exception as e:
+        logger.warning(f"_create_pending_order: 支付iframe加载超时，错误：{e}")
+        product_page.wait_for_timeout(5000)
+    
+    # 关键修复：填写CVC以触发订单创建（不完成支付）
+    try:
+        of_page_pay = OrderFlowPage(product_page)
+        ok, _, frame = of_page_pay.input_cvc_in_iframe(cvc_value="123")
+        if ok:
+            logger.info("_create_pending_order: ✅ CVC已填写，订单创建已触发")
+            product_page.wait_for_timeout(2000)
+        else:
+            logger.warning("_create_pending_order: ⚠️ 未找到CVC输入框，尝试继续...")
+    except Exception as e:
+        logger.warning(f"_create_pending_order: CVC填写失败: {e}")
+    
+    # 关键：等待页面从 /pay/createOrder 跳转到 /pay/order（订单创建完成）
+    order_url = None
+    try:
+        current_url = product_page.url
+        logger.info(f"_create_pending_order: 当前URL: {current_url}")
+        
+        # 等待跳转（最多30秒）
+        if "/pay/createOrder" in current_url or "/pay/order" not in current_url:
+            logger.info("_create_pending_order: 等待页面跳转到订单详情页...")
+            for attempt in range(15):  # 最多等待30秒
+                product_page.wait_for_timeout(2000)
+                current_url = product_page.url
+                if "/pay/order" in current_url:
+                    order_url = current_url
+                    logger.info(f"_create_pending_order: ✅ 订单已创建，跳转成功，URL={order_url}")
+                    break
+            if not order_url:
+                logger.warning(f"_create_pending_order: ⚠️ 等待30秒后页面仍未跳转到/pay/order，最终URL: {current_url}")
+        elif "/pay/order" in current_url:
+            order_url = current_url
+            logger.info(f"_create_pending_order: ✅ 订单已创建，URL={order_url}")
+    except Exception as e:
+        logger.error(f"_create_pending_order: 捕获订单URL时出错：{e}")
+    
+    # 关闭支付弹窗（不完成支付，保持Pending状态）
     close_selectors = [
         '[role="dialog"] button[aria-label*="close"]',
         '[role="dialog"] button[aria-label*="Close"]',
@@ -872,19 +978,24 @@ def _create_pending_order(page, config):
                 close_btn.click()
                 product_page.wait_for_timeout(2000)
                 closed = True
+                logger.info(f"_create_pending_order: ✅ 使用选择器关闭支付弹窗：{selector}")
                 break
         except Exception:
             continue
     if not closed:
         product_page.keyboard.press("Escape")
         product_page.wait_for_timeout(2000)
+        logger.info("_create_pending_order: ✅ 使用Escape键关闭支付弹窗")
+    
     try:
         page.bring_to_front()
     except Exception:
         pass
-    page.goto(f"{config['base_url']}/en/city-abu-dhabi/")
+    page.goto(f"{config['base_url']}/en/city-abu-dhabi/", wait_until="domcontentloaded", timeout=60000)
     page.wait_for_load_state("domcontentloaded")
     page.wait_for_timeout(3000)
+    
+    return order_url
 
 
 def _create_unshipped_order(page, config):
@@ -998,10 +1109,13 @@ def _nav_to_order_detail(page, config, of_page, role: str, tab: str, create_fn=N
 
     # ── 买家 Pending：显式判断右侧是否有数据，无则构造后再点第一条 ──
     if role == "buyer" and tab == "pending":
+        # 检查是否有订单
         if not _order_list_has_items(page):
+            # Tab为空，创建新订单
             assert create_fn is not None, (
                 "Pending Tab 无订单，且未提供 create_fn，无法构造测试数据"
             )
+            logger.info("Pending Tab 为空，开始创建新订单...")
             create_fn(page, config)
             _ensure_buyer_login(page, config)
             _nav_to_order_management_via_ui(page, config, role)
@@ -1010,8 +1124,35 @@ def _nav_to_order_detail(page, config, of_page, role: str, tab: str, create_fn=N
             _wait_for_tab_content(page)
             if not _order_list_has_items(page):
                 raise AssertionError("构造 Pending 订单后，Pending Tab 右侧列表仍为空")
-        of_page.click_first_order_in_list()
-        _wait_for_order_detail(page)
+            # 创建后直接点击第一条（新创建的订单）
+            of_page.click_first_order_in_list()
+            _wait_for_order_detail(page)
+        else:
+            # Tab有订单，查找有效订单（有 Pay 按钮的订单）
+            logger.info("Pending Tab 有订单，开始查找有效订单...")
+            valid_order_index = _find_valid_pending_order_index(page, of_page, max_check=5)
+            
+            if valid_order_index >= 0:
+                # 找到有效订单，已经在详情页，直接返回
+                logger.info(f"✅ 使用有效 Pending 订单（索引 {valid_order_index}）")
+                _wait_for_order_detail(page)
+            else:
+                # 没有找到有效订单，创建新订单
+                logger.warning("未找到有效 Pending 订单，开始创建新订单...")
+                assert create_fn is not None, (
+                    "Pending Tab 无有效订单，且未提供 create_fn，无法构造测试数据"
+                )
+                create_fn(page, config)
+                _ensure_buyer_login(page, config)
+                _nav_to_order_management_via_ui(page, config, role)
+                _close_any_modal(page)
+                tab_map[tab]()
+                _wait_for_tab_content(page)
+                if not _order_list_has_items(page):
+                    raise AssertionError("构造 Pending 订单后，Pending Tab 右侧列表仍为空")
+                # 创建后直接点击第一条（新创建的订单）
+                of_page.click_first_order_in_list()
+                _wait_for_order_detail(page)
         return
 
     # ── Step 4/5：其他 Tab / 卖家 —─
@@ -1627,37 +1768,15 @@ class TestOrderFlowV2:
     @allure.title("TC010: 买家 Pending 订单详情页 - 核心元素展示")
     @allure.severity(allure.severity_level.CRITICAL)
     def test_tc010_buyer_pending_detail_core_elements(self, page, config):
-        """TC010: 重新进入 Pending Tab 获取最新列表，有数据则用第一条；无则构造后再验详情页元素。"""
+        """TC010: 买家 Pending 详情页核心元素验证（使用和TC011相同的导航逻辑）"""
         of_page = OrderFlowPage(page)
         
-        # 重新登录并进入 Purchase Orders（强制刷新，不复用缓存）
-        _ensure_buyer_login(page, config)
-        _nav_to_order_management_via_ui(page, config, role="buyer")
-        _close_any_modal(page)
-        
-        # 点击 Pending Tab，获取最新订单列表
-        of_page.click_pending_tab()
-        _wait_for_tab_content(page)
-        
-        # 判断右侧是否有订单数据
-        if not _order_list_has_items(page):
-            # 无数据，构造 Pending 订单
-            _create_pending_order(page, config)
-            # 构造后重新进入 Pending Tab
-            _ensure_buyer_login(page, config)
-            _nav_to_order_management_via_ui(page, config, role="buyer")
-            _close_any_modal(page)
-            of_page.click_pending_tab()
-            _wait_for_tab_content(page)
-            if not _order_list_has_items(page):
-                raise AssertionError("构造 Pending 订单后，Pending Tab 右侧列表仍为空")
-        
-        # 点击第一条订单
-        of_page.click_first_order_in_list()
-        _wait_for_order_detail(page)
+        # 使用和TC011相同的逻辑：优先使用 Pending Tab 中已有的第一条订单；Tab 为空时才构造新数据
+        _nav_to_pending_detail(page, config, of_page)
         
         # 验证已进入 Pending 订单详情页（URL 含 /pay/order）
         assert "/pay/order" in page.url, f"应在订单详情页，实际：{page.url}"
+        
         # 状态文案兼容多种变体（Processing payment / Buyer paying / Awaiting payment 等）
         status_visible = (
             page.get_by_text("Processing payment", exact=False).is_visible(timeout=3000)

@@ -615,7 +615,8 @@ def test_submit_with_double_click_continue_should_only_submit_once(page, config)
 
     # ========== Assert：验证最终落地到 cate-jobs 页（只跳转一次）==========
     with allure.step("验证最终跳转到Jobs列表页（系统只执行一次提交）"):
-        assert pref_page.is_submit_success(timeout=15000), \
+        # 在无头模式下，页面跳转可能需要更长时间
+        assert pref_page.is_submit_success(timeout=20000), \
             f"双击Continue后未跳转到招聘大类页，当前URL: {pref_page.get_current_url()}"
         current_url = pref_page.get_current_url()
         assert "cate-jobs" in current_url, \
@@ -671,7 +672,8 @@ def test_skip_job_preference_should_navigate_to_jobs_list(page, config):
 
     # ========== Assert：验证跳转到 Jobs 列表页 ==========
     with allure.step("验证页面跳转到Jobs列表页（cate-jobs）"):
-        assert pref_page.is_submit_success(timeout=15000), \
+        # 在无头模式下，增加等待时间
+        assert pref_page.is_submit_success(timeout=20000), \
             f"点击Skip后未跳转到Jobs列表页（cate-jobs），当前URL: {pref_page.get_current_url()}"
         current_url = pref_page.get_current_url()
         assert "cate-jobs" in current_url, \

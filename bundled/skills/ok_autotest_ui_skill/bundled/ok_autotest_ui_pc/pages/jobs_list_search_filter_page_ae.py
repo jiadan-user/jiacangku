@@ -32,6 +32,8 @@ MCP实测确认的真实选择器：
 from pages.base_page import BasePage
 from utils.logger import setup_logger
 
+import re
+
 
 class JobsListSearchFilterPageAE(BasePage):
     """
@@ -50,7 +52,20 @@ class JobsListSearchFilterPageAE(BasePage):
         return self.page.locator(self.FILTER_AREA_SELECTOR)
 
     def _job_type_filter_trigger(self):
-        return self._filter_area().get_by_text("Job Type", exact=True)
+        # 部分环境文案可能大小写变化（Job type / JOB TYPE），用正则更稳
+        return self._filter_area().locator("text=/^Job\\s+Type$/i").first
+
+    def _wait_filters_ready(self, timeout_ms: int = 30000) -> None:
+        """等待筛选条容器与核心筛选项可用，规避偶发渲染慢/骨架态导致的超时。"""
+        # 先确保筛选容器出现
+        self._filter_area().wait_for(state="attached", timeout=timeout_ms)
+        # 再确保 Job Type 入口可见
+        jt = self._job_type_filter_trigger()
+        try:
+            jt.scroll_into_view_if_needed(timeout=5000)
+        except Exception:
+            pass
+        jt.wait_for(state="visible", timeout=timeout_ms)
 
     # ========== 导航方法 ==========
 
@@ -59,11 +74,20 @@ class JobsListSearchFilterPageAE(BasePage):
         try:
             target_url = f"{base_url}/en/city/cate-jobs/?iconSource=jobs"
             self.page.goto(target_url, wait_until="domcontentloaded", timeout=60000)
+            # 回到顶部，避免滚动位置导致筛选条不可见/不可点
             try:
-                self.page.wait_for_load_state("networkidle", timeout=8000)
+                self.page.evaluate("window.scrollTo(0, 0)")
             except Exception:
                 pass
-            self._job_type_filter_trigger().wait_for(state="visible", timeout=30000)
+            # networkidle 在部分页面可能不稳定，作为 soft wait
+            for _ in range(2):
+                try:
+                    self.page.wait_for_load_state("networkidle", timeout=8000)
+                    break
+                except Exception:
+                    self.page.wait_for_timeout(800)
+            # 关键：等待筛选条 ready（含 Job Type）
+            self._wait_filters_ready(timeout_ms=30000)
         except Exception as e:
             self.logger.error(f"导航到Jobs列表页失败: {e}")
             raise
@@ -207,7 +231,30 @@ class JobsListSearchFilterPageAE(BasePage):
     def click_job_type_filter(self):
         """点击Job Type筛选器打开面板"""
         try:
-            self._job_type_filter_trigger().click()
+            # 并发/弱网下偶发筛选条未 ready，先 wait
+            self._wait_filters_ready(timeout_ms=30000)
+            trigger = self._job_type_filter_trigger()
+            try:
+                trigger.scroll_into_view_if_needed(timeout=5000)
+            except Exception:
+                pass
+            # Click 可能被遮罩拦截，允许重试
+            last_err: Exception | None = None
+            for _ in range(3):
+                try:
+                    trigger.click(timeout=15000)
+                    last_err = None
+                    break
+                except Exception as e:
+                    last_err = e
+                    try:
+                        self.page.evaluate("window.scrollTo(0, 0)")
+                    except Exception:
+                        pass
+                    self.page.wait_for_timeout(1200)
+                    self._wait_filters_ready(timeout_ms=30000)
+            if last_err:
+                raise last_err
             self.page.wait_for_timeout(800)
         except Exception as e:
             self.logger.error(f"点击Job Type筛选器失败: {e}")
@@ -504,8 +551,33 @@ class JobsListSearchFilterPageAE(BasePage):
     def scroll_to_bottom(self):
         """滚动到页面底部"""
         try:
-            self.page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-            self.page.wait_for_timeout(2000)
+            # 兼容 IntersectionObserver 触底加载：多段滚动 + 等待高度变化/到底提示
+            max_rounds = 8
+            last_h = self.page.evaluate(
+                "Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)"
+            )
+            for _ in range(max_rounds):
+                self.page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+                try:
+                    self.page.wait_for_load_state("networkidle", timeout=6000)
+                except Exception:
+                    pass
+                self.page.wait_for_timeout(1200)
+                if self.is_end_of_list_visible():
+                    break
+                h = self.page.evaluate(
+                    "Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)"
+                )
+                # 高度没变，再给一次机会（有些页面会先加载骨架再扩高）
+                if h <= last_h + 10:
+                    self.page.wait_for_timeout(1200)
+                    h2 = self.page.evaluate(
+                        "Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)"
+                    )
+                    if h2 <= last_h + 10:
+                        break
+                    h = h2
+                last_h = h
         except Exception as e:
             self.logger.error(f"滚动到底部失败: {e}")
             raise

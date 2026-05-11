@@ -33,9 +33,13 @@ SUMMARY_TOTAL_RE = re.compile(r"总用例数[^0-9]*(\d+)\s*条")
 SUMMARY_AUTOMATED_RE = re.compile(r"可自动化[^0-9]*(\d+)\s*条")
 TITLE_RE = re.compile(r"^#\s+(.+)$", re.MULTILINE)
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+)$", re.MULTILINE)
-SCENARIO_HEADING_RE = re.compile(r"^###\s*(TC[0-9A-Za-z_-]+)(?:\s*[:：]\s*|\s+)?(.+)$", re.MULTILINE)
+SCENARIO_HEADING_RE = re.compile(r"^#{2,6}\s*(TC[0-9A-Za-z_-]+)(?:\s*[:：]\s*|\s+)?(.+)$", re.MULTILINE)
 PRIORITY_RE = re.compile(r"优先级\*?\*?\s*[:：]\s*(P[0-3])", re.IGNORECASE)
-UI_AUTOMATION_RE = re.compile(r"UI自动化\*?\*?\s*[:：]\s*([^\n\r]+)")
+UI_AUTOMATION_RE = re.compile(
+    r"(?:^|[|｜])\s*(?:[-*]\s*)?\*{0,2}(?:UI\s*自动化|自动化可行性|是否自动化|自动化)\*{0,2}\s*[:：]\s*([^\n\r|]+)",
+    re.IGNORECASE | re.MULTILINE,
+)
+TABLE_SEPARATOR_RE = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$")
 UNSPECIFIED_PRIORITY = "未标注"
 PRIORITY_ORDER = ("P0", "P1", "P2", "P3")
 PRIORITY_DESCRIPTIONS = {
@@ -61,6 +65,23 @@ TEXT_CASE_MODULE_MAP = {
 }
 STATUS_ORDER = {"未开始": 0, "部分覆盖": 1, "已完成": 2}
 FOCUSED_MODULES = ("car", "wallet", "zhaopin")
+EXCLUDED_TEXT_CASE_DOC_TOKENS = (
+    "README",
+    "归档记录",
+    "更新记录",
+    "问题原因",
+    "修改方案",
+    "调试报告",
+    "运行与调试报告",
+    "明确化",
+    "CLARIFICATION_REPORT",
+    "FINAL_DEBUG_GUIDE",
+    "DEBUG_SUMMARY",
+    "TEST_REPORT",
+    "FINAL_REPORT",
+    "ADD_FINAL",
+    "RESUME_DEBUG",
+)
 
 
 @dataclass
@@ -106,6 +127,8 @@ class TextCaseDocument:
 
 def _is_candidate_doc(path: Path, text: str) -> bool:
     if path.suffix.lower() != ".md":
+        return False
+    if any(token in path.name for token in EXCLUDED_TEXT_CASE_DOC_TOKENS):
         return False
     return bool(SCENARIO_HEADING_RE.search(text))
 
@@ -161,11 +184,101 @@ def _parse_automation(block: str) -> bool | None:
     if not automation_match:
         return None
     value = automation_match.group(1).strip()
-    if "不可自动化" in value or value.startswith("❌"):
+    compact = re.sub(r"\s+", "", value)
+    if "不可自动化" in compact or "未自动化" in compact or "不适合自动化" in compact or compact.startswith("❌"):
         return False
-    if "可自动化" in value or value.startswith("✅") or value.startswith("⚠"):
+    if "可自动化" in compact or "已自动化" in compact or compact.startswith("✅") or compact.startswith("⚠"):
         return True
     return None
+
+
+def _split_table_row(line: str) -> list[str]:
+    return [cell.strip() for cell in line.strip().strip("|").split("|")]
+
+
+def _is_table_separator(line: str) -> bool:
+    return bool(TABLE_SEPARATOR_RE.match(line.strip()))
+
+
+def _parse_table_scenarios(
+    block: str,
+    *,
+    default_priority: str | None,
+    default_automation: bool | None,
+    group_name: str,
+) -> list[TextCaseScenario]:
+    lines = block.splitlines()
+    scenarios: list[TextCaseScenario] = []
+    index = 0
+    while index < len(lines):
+        if not (lines[index].strip().startswith("|") and lines[index].strip().endswith("|")):
+            index += 1
+            continue
+        table: list[str] = []
+        while index < len(lines) and lines[index].strip().startswith("|") and lines[index].strip().endswith("|"):
+            table.append(lines[index])
+            index += 1
+        if len(table) < 3:
+            continue
+
+        rows = [_split_table_row(row) for row in table]
+        header = [cell.replace("*", "").strip() for cell in rows[0]]
+        data_rows = rows[2:] if len(rows) > 1 and _is_table_separator(table[1]) else rows[1:]
+        tc_idx = next((i for i, cell in enumerate(header) if cell in {"编号", "TC", "用例编号", "TC编号"}), 0)
+        if not any(tc_idx < len(row) and re.search(r"\bTC[0-9A-Za-z_-]+\b", row[tc_idx], re.IGNORECASE) for row in data_rows):
+            continue
+        priority_idx = next((i for i, cell in enumerate(header) if "优先级" in cell), None)
+        automation_idx = next(
+            (
+                i
+                for i, cell in enumerate(header)
+                if ("UI自动化" in cell.replace(" ", "") or cell == "自动化" or "自动化可行性" in cell)
+                and "不可自动化" not in cell
+                and "未自动化" not in cell
+                and "率" not in cell
+            ),
+            None,
+        )
+
+        for row in data_rows:
+            if tc_idx >= len(row):
+                continue
+            tc_match = re.search(r"\bTC[0-9A-Za-z_-]+\b", row[tc_idx], re.IGNORECASE)
+            if not tc_match:
+                continue
+            priority = default_priority
+            if priority_idx is not None and priority_idx < len(row):
+                priority_match = re.search(r"P[0-3]", row[priority_idx], re.IGNORECASE)
+                if priority_match:
+                    priority = priority_match.group(0).upper()
+            automation = default_automation
+            if automation_idx is not None and automation_idx < len(row):
+                automation = _parse_automation(f"UI自动化: {row[automation_idx]}")
+
+            title = ""
+            for cell_index, cell in enumerate(row):
+                if cell_index in {tc_idx, priority_idx, automation_idx}:
+                    continue
+                if cell:
+                    title = cell
+                    break
+            missing_fields: list[str] = []
+            if not priority:
+                missing_fields.append("优先级")
+            if automation is None:
+                missing_fields.append("UI自动化")
+            scenarios.append(
+                TextCaseScenario(
+                    tc_id=tc_match.group(0).strip(),
+                    title=title or tc_match.group(0).strip(),
+                    priority=priority or UNSPECIFIED_PRIORITY,
+                    automated=bool(automation),
+                    group_name=group_name or "未分组",
+                    needs_normalization=bool(missing_fields),
+                    missing_fields=missing_fields,
+                )
+            )
+    return scenarios
 
 
 def _parse_scenarios(text: str) -> list[TextCaseScenario]:
@@ -176,13 +289,13 @@ def _parse_scenarios(text: str) -> list[TextCaseScenario]:
     for index, heading in enumerate(headings):
         level = len(heading.group(1))
         heading_text = heading.group(2).strip()
-        if level == 2:
+        scenario_heading = SCENARIO_HEADING_RE.match(heading.group(0))
+        if level == 2 and not scenario_heading:
             current_group = heading_text
             continue
-        if level != 3:
+        if level < 3:
             continue
 
-        scenario_heading = SCENARIO_HEADING_RE.match(heading.group(0))
         if not scenario_heading:
             continue
 
@@ -195,6 +308,16 @@ def _parse_scenarios(text: str) -> list[TextCaseScenario]:
         block = text[start:end]
         priority_match = PRIORITY_RE.search(block)
         automation = _parse_automation(block)
+        if "~" in heading_text or "～" in heading_text:
+            table_scenarios = _parse_table_scenarios(
+                block,
+                default_priority=priority_match.group(1).upper() if priority_match else None,
+                default_automation=automation,
+                group_name=current_group,
+            )
+            if table_scenarios:
+                scenarios.extend(table_scenarios)
+                continue
         missing_fields: list[str] = []
         if not priority_match:
             missing_fields.append("优先级")
@@ -266,8 +389,8 @@ def _scan_text_case_documents(root: Path = DEFAULT_KNOWLEDGE_BASE) -> tuple[list
         text = path.read_text(encoding="utf-8", errors="ignore")
         relative_path = path.relative_to(root).as_posix()
         heading_count = len(SCENARIO_HEADING_RE.findall(text))
-        if not heading_count:
-            excluded_files.append({"path": relative_path, "reason": "no_tc_heading"})
+        if not _is_candidate_doc(path, text):
+            excluded_files.append({"path": relative_path, "reason": "excluded_doc" if heading_count else "no_tc_heading"})
             continue
         files_with_tc_headings += 1
         tc_headings_total += heading_count

@@ -168,6 +168,7 @@ python -m qa_agent.cli memory export --target qa-agent --query "QA Agent 旧脚�
    AI 会先停在分析报告，等你确认后再继续生成文本用例。
 2. `playwright-test-generator`
    AI 会先执行阶段2A，产出逐条 recording outcome、proof 和 bug list；你确认录制报告后，再进入阶段2B生成 Python 脚本并自测。
+   阶段2A不再使用 `manual_review`：不符合预期或阻塞验证都进入 bug list；如果没有录制通过的用例，阶段2B会自动跳过脚本生成。
 3. `影响回归与变更归因`
    AI 会先跑受影响用例，再给你一份简洁归因报告，等你确认后才允许改旧脚本或 promotion 新脚本。
 4. `旧脚本更新执行`
@@ -183,7 +184,7 @@ python -m qa_agent.cli memory export --target qa-agent --query "QA Agent 旧脚�
 如果你用 CLI 或要求 AI 手动 `complete` 某个阶段，常见产物是：
 
 - 阶段1：`analysis_report=<path>`、`textcases=<path>`
-- 阶段2A：`playwright_recording_outcomes=<path>`、`playwright_recording_report=<path>`，如有 bug 再加 `playwright_bug_report=<path>`
+- 阶段2A：`playwright_recording_outcomes=<path>`、`playwright_recording_report=<path>`、`playwright_bug_report=<path>`；建议额外提交 `stage2a_execution_plan=<path>`
 - 阶段2B：`playwright_case_outcomes=<path>`
 - 阶段3：`ok_ui_dry_run_preview=<path>`、`ok_ui_execution_report=<path>`、`release_recommendation=<path>`
 - 知识库阶段：`knowledge_base_update_preview=<path>`、`knowledge_base_update_result=<path>`
@@ -193,7 +194,7 @@ python -m qa_agent.cli memory export --target qa-agent --query "QA Agent 旧脚�
 | 阶段 | artifact key |
 | --- | --- |
 | 阶段1 | `analysis_report`, `textcases`, `text_case_manifest`, `kb_text_case_draft_path` |
-| 阶段2 | `playwright_recording_outcomes`, `playwright_recording_report`, `playwright_bug_report`, `proof_artifacts_manifest`, `playwright_case_outcomes`, `generated_scripts_manifest` |
+| 阶段2 | `stage2a_execution_plan`, `playwright_recording_outcomes`, `playwright_recording_report`, `playwright_bug_report`, `proof_artifacts_manifest`, `playwright_case_outcomes`, `generated_scripts_manifest` |
 | 影响分析 | `impact_candidates`, `overlap_report` |
 | 影响归因 | `impact_run_selector_plan`, `impact_run_results`, `change_attribution_report` |
 | 更新循环 | `legacy_update_tasks`, `legacy_update_gate`, `legacy_rerecord_request`, `legacy_rerecord_instruction`, `legacy_update_candidate_manifest`, `catalog_refresh_after_script_changes_round_XX`, `regression_selector_plan` |
@@ -223,6 +224,7 @@ python -m qa_agent.cli memory export --target qa-agent --query "QA Agent 旧脚�
 - `run_state.json`
 - `analysis_report.*`
 - `text_case_manifest.json`
+- `stage2a_execution_plan.json`
 - `playwright_recording_outcomes.json`
 - `playwright_recording_report.md`
 - `playwright_bug_report.md`
@@ -265,6 +267,8 @@ python -m qa_agent.cli dashboard run-ok-ui \
   --workers 1 \
   --project-key OK
 ```
+
+这个入口会把 OK UI runner 的超时保护一并透传：`--case-timeout` 默认 300 秒，`--idle-timeout` 默认 900 秒，`--phase-timeout` 默认关闭。外层 `--outer-timeout` 默认关闭，只作为最终兜底；如果触发且拿不到 OK UI `run_id`，会跳过发布并提示原因。
 
 如果已经单独跑过 `ok_autotest_ui_skill`，也可以用 OK UI 自己输出的 `run_id` 补发到平台：
 

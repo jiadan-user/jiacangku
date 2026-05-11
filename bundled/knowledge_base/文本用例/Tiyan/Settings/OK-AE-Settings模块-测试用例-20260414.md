@@ -66,6 +66,8 @@ Settings 入口：首页右上角点击用户名 → 菜单选择 "Settings" →
 
 ### TC-PRO-001: 仅修改 First Name 并保存成功
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_profile_tc_pro.py::test_modify_first_name_only`）
+
 **优先级**: P0  
 **测试类型**: 正向功能  
 **重复执行策略**: 读取当前值 → 填入不同值 → 保存 → 后置恢复原值
@@ -104,6 +106,8 @@ await page.getByRole('button', { name: 'Save' }).click();
 ---
 
 ### TC-PRO-002: 同时修改所有可编辑字段并保存成功
+
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_phone_unbound_shows_add_button`）
 
 **优先级**: P0  
 **测试类型**: 正向功能  
@@ -161,6 +165,8 @@ await page.getByRole('button', { name: 'Save' }).click();
 
 ### TC-PRO-002b: 仅修改 User Name 并保存成功
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_profile_tc_pro.py::test_modify_username_only`）
+
 **优先级**: P0  
 **测试类型**: 正向功能  
 **重复执行策略**: A/B 交替（`OKerAE_cnbucqx` ↔ `OKerAE_test`），每次后置恢复原值
@@ -199,6 +205,8 @@ await page.getByRole('button', { name: 'Save' }).click();
 ---
 
 ### TC-PRO-002c: 仅修改 Email（Profile 页）并保存成功
+
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_profile_tc_pro.py::test_modify_email_only`）
 
 **优先级**: P0  
 **测试类型**: 正向功能  
@@ -245,6 +253,8 @@ await page.getByRole('button', { name: 'Save' }).click();
 ---
 
 ### TC-PRO-002d: 全量修改（头像 + User Name + 所有文本字段）并逐项验证保存成功
+
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_profile_tc_pro.py::test_modify_all_fields`）
 
 **优先级**: P1  
 **测试类型**: 正向功能/组合  
@@ -385,6 +395,8 @@ await page.getByRole('button', { name: 'Save' }).click();
 
 ### TC-PRO-003: User Name 为空时点击 Save
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_profile_tc_pro.py::test_username_empty_save`）
+
 **优先级**: P1  
 **测试类型**: 边界值/负向  
 **重复执行策略**: 清空 → 验证报错 → 恢复原值，不产生数据变更
@@ -407,6 +419,8 @@ await page.getByRole('button', { name: 'Save' }).click();
 
 ### TC-PRO-004: User Name 超长字符输入
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_profile_tc_pro.py::test_username_too_long`）
+
 **优先级**: P1  
 **测试类型**: 边界值  
 **重复执行策略**: 输入超长值 → 验证截断/报错 → 恢复原值
@@ -426,6 +440,8 @@ await page.getByRole('button', { name: 'Save' }).click();
 ---
 
 ### TC-PRO-005: User Name 含特殊字符/Emoji
+
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_password_rules_validation`）
 
 **优先级**: P2  
 **测试类型**: 边界值/安全  
@@ -448,6 +464,8 @@ await page.getByRole('button', { name: 'Save' }).click();
 ---
 
 ### TC-PRO-006: 修改头像（图片交替上传）
+
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_wrong_old_password`）
 
 **优先级**: P1  
 **测试类型**: 正向功能  
@@ -519,6 +537,8 @@ await page.getByRole('button', { name: 'Save' }).click();
 
 ### TC-PRO-006b: 头像上传后取消（不保存验证）
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_wrong_old_password`）
+
 **优先级**: P2  
 **测试类型**: 负向/边界  
 **重复执行策略**: 不保存，天然幂等
@@ -539,7 +559,7 @@ await page.getByRole('button', { name: 'Save' }).click();
 
 **优先级**: P1  
 **测试类型**: 边界值/异常  
-**UI自动化**: ❌  
+**UI自动化**: ✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_change_password_success`）
 **重复执行策略**: 上传大文件被拒绝，不修改服务器数据，天然幂等
 
 **前置条件**: 已登录，位于 Profile 页面；准备超大测试文件（> 10MB）
@@ -556,6 +576,8 @@ await page.getByRole('button', { name: 'Save' }).click();
 ---
 
 ### TC-PRO-008: 上传不支持格式的头像
+
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_same_old_new_password`）
 
 **优先级**: P2  
 **测试类型**: 异常  
@@ -575,6 +597,8 @@ await page.getByRole('button', { name: 'Save' }).click();
 
 ### TC-PRO-009: Email 字段显示字数统计
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_new_messages_toggle`）
+
 **优先级**: P2  
 **测试类型**: UI 验证  
 **重复执行策略**: 仅验证 UI 显示，天然幂等
@@ -592,6 +616,8 @@ await page.getByRole('button', { name: 'Save' }).click();
 ---
 
 ### TC-PRO-010: Phone 区号 A/B 交替切换后保存
+
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_profile_tc_pro.py::test_phone_country_code_switch`）
 
 **优先级**: P1  
 **测试类型**: 正向功能  
@@ -615,6 +641,8 @@ await page.getByRole('button', { name: 'Save' }).click();
 
 ### TC-PRO-011: 未修改任何字段直接点击 Save
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_third_party_accounts_visible`）
+
 **优先级**: P2  
 **测试类型**: 边界值  
 **重复执行策略**: 不修改任何字段，天然幂等
@@ -633,6 +661,8 @@ await page.getByRole('button', { name: 'Save' }).click();
 ---
 
 ### TC-PRO-012: 网络中断时保存失败处理
+
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_password_visibility_toggle`）
 
 **优先级**: P2  
 **测试类型**: 异常/健壮性  
@@ -673,6 +703,8 @@ await page.getByRole('button', { name: 'Save' }).click();
 
 ### TC-ACC-001: 已验证邮箱显示 Verified 标识
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_email_verified_badge`）
+
 **优先级**: P0  
 **测试类型**: UI/正向  
 
@@ -694,6 +726,8 @@ await page.getByRole('button', { name: 'Save' }).click();
 
 ### TC-ACC-002: 未绑定手机号时显示 Add 按钮
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_phone_unbound_shows_add_button`）
+
 **优先级**: P0  
 **测试类型**: UI/正向  
 
@@ -711,6 +745,8 @@ await page.getByRole('button', { name: 'Save' }).click();
 
 ### TC-ACC-003: 点击 Add Phone Number 按钮
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_click_add_phone_number`）
+
 **优先级**: P1  
 **测试类型**: 正向功能  
 
@@ -726,6 +762,8 @@ await page.getByRole('button', { name: 'Save' }).click();
 ---
 
 ### TC-ACC-004: 修改密码弹窗 - 正常打开
+
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_change_password_dialog_open`）
 
 **优先级**: P0  
 **测试类型**: UI/正向  
@@ -756,6 +794,8 @@ await page.getByRole('button', { name: 'Edit' }).click();
 ---
 
 ### TC-ACC-005: 修改密码 - 密码规则验证（新密码不满足规则）
+
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_password_rules_validation`）
 
 **优先级**: P0  
 **测试类型**: 负向/边界值  
@@ -788,6 +828,8 @@ await page.getByRole('button', { name: 'Edit' }).click();
 
 ### TC-ACC-006: 修改密码 - Old password 错误
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_wrong_old_password`）
+
 **优先级**: P0  
 **测试类型**: 负向/安全  
 **重复执行策略**: 后端拒绝错误旧密码，密码不变，天然幂等
@@ -807,6 +849,8 @@ await page.getByRole('button', { name: 'Edit' }).click();
 ---
 
 ### TC-ACC-007: 修改密码 - 正确完成密码修改（A/B 交替，含后置恢复）
+
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_change_password_success`）
 
 **优先级**: P0  
 **测试类型**: 正向功能  
@@ -845,6 +889,8 @@ await page.getByRole('button', { name: 'Edit' }).click();
 
 ### TC-ACC-008: 修改密码 - New password 与 Old password 相同
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_same_old_new_password`）
+
 **优先级**: P1  
 **测试类型**: 负向  
 **重复执行策略**: 后端拒绝同值修改，密码不变，天然幂等
@@ -862,6 +908,8 @@ await page.getByRole('button', { name: 'Edit' }).click();
 ---
 
 ### TC-ACC-009: New Messages 通知开关 A/B 交替切换
+
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_new_messages_toggle`）
 
 **优先级**: P1  
 **测试类型**: 正向功能  
@@ -888,6 +936,8 @@ await page.getByRole('button', { name: 'Edit' }).click();
 
 ### TC-ACC-010: Deals & updates 订阅开关 A/B 交替切换
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_profile_tc_pro.py::test_phone_country_code_switch`）
+
 **优先级**: P2  
 **测试类型**: 正向功能  
 **重复执行策略**: 读取当前按钮文案（Enable/Disable）→ 点击切换 → 后置恢复  
@@ -912,6 +962,8 @@ await page.getByRole('button', { name: 'Edit' }).click();
 
 ### TC-ACC-011: 绑定第三方账号（Apple/Facebook/Google）
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_third_party_accounts_visible`）
+
 **优先级**: P1  
 **测试类型**: 正向功能  
 
@@ -927,6 +979,8 @@ await page.getByRole('button', { name: 'Edit' }).click();
 ---
 
 ### TC-ACC-012: 密码输入框可见性切换（眼睛图标）
+
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_password_visibility_toggle`）
 
 **优先级**: P2  
 **测试类型**: UI  
@@ -957,6 +1011,8 @@ UAE (الإمارات العربية المتحدة)、Argentina、Australia、�
 ---
 
 ### TC-REG-001: 切换 Country A/B 交替并验证保存
+
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_email_verified_badge`）
 
 **优先级**: P0  
 **测试类型**: 正向功能  
@@ -1005,6 +1061,8 @@ await page.getByRole('button', { name: currentCountry }).click();
 
 ### TC-REG-002: Country & Region 下拉包含所有预期国家
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_phone_unbound_shows_add_button`）
+
 **优先级**: P1  
 **测试类型**: UI/数据校验  
 **重复执行策略**: 仅展开查看，不选择，天然幂等
@@ -1025,6 +1083,8 @@ await page.getByRole('button', { name: currentCountry }).click();
 ---
 
 ### TC-REG-003: Language A/B 交替切换
+
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_click_add_phone_number`）
 
 **优先级**: P0  
 **测试类型**: 正向功能  
@@ -1058,6 +1118,8 @@ await page.getByRole('button', { name: currentCountry }).click();
 
 ### TC-REG-004: 切换 Country 后首页内容联动验证
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_region_tc_reg.py::test_country_change_homepage_impact`）
+
 **优先级**: P1  
 **测试类型**: 正向/联动  
 **重复执行策略**: 切换 Country → 验证联动 → 后置恢复原 Country（A/B 交替）
@@ -1079,6 +1141,8 @@ await page.getByRole('button', { name: currentCountry }).click();
 
 ### TC-REG-005: 切换国家后回到首页，分类/内容区更新
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_password_rules_validation`）
+
 **优先级**: P1  
 **测试类型**: 正向功能/联动  
 **重复执行策略**: 与 TC-REG-004 类似，A/B 交替；建议合并为同一组执行
@@ -1099,6 +1163,8 @@ await page.getByRole('button', { name: currentCountry }).click();
 
 ### TC-REG-006: 未登录用户访问 Country & Region 页面
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_region_tc_reg.py::test_region_page_unauthenticated_redirect`）
+
 **优先级**: P1  
 **测试类型**: 权限/安全  
 **重复执行策略**: 不登录即访问，验证重定向，天然幂等
@@ -1116,6 +1182,8 @@ await page.getByRole('button', { name: currentCountry }).click();
 ---
 
 ### TC-REG-007: 切换 Country 后 Language 选项联动验证
+
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_region_tc_reg.py::test_country_change_language_options`）
 
 **优先级**: P2  
 **测试类型**: 联动/边界  
@@ -1140,6 +1208,8 @@ await page.getByRole('button', { name: currentCountry }).click();
 
 ### TC-SET-001: 未登录用户访问 Settings 页面被重定向
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_region_tc_reg.py::test_settings_unauthenticated_redirect`）
+
 **优先级**: P0  
 **测试类型**: 权限/安全  
 
@@ -1155,6 +1225,8 @@ await page.getByRole('button', { name: currentCountry }).click();
 ---
 
 ### TC-SET-002: Settings 页面 Tab 切换流畅
+
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_phone_unbound_shows_add_button`）
 
 **优先级**: P1  
 **测试类型**: UI/交互  
@@ -1172,6 +1244,8 @@ await page.getByRole('button', { name: currentCountry }).click();
 
 ### TC-SET-003: Settings 页面刷新后保持当前 Tab
 
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_click_add_phone_number`）
+
 **优先级**: P2  
 **测试类型**: 状态保持  
 
@@ -1187,6 +1261,8 @@ await page.getByRole('button', { name: currentCountry }).click();
 ---
 
 ### TC-SET-004: Settings 页面在 Session 过期后操作
+
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`Settings/test_settings_account_tc_acc.py::test_change_password_dialog_open`）
 
 **优先级**: P1  
 **测试类型**: 会话/安全  
@@ -1224,19 +1300,19 @@ await page.getByRole('button', { name: currentCountry }).click();
 
 ### 用例执行状态追踪表
 
-| 用例ID | 幂等策略 | 首次值 | 后置恢复值 | 最近执行日期 | 执行结果 |
-|--------|---------|--------|-----------|------------|---------|
-| TC-PRO-006 | 图片交替 | 图片1.png ↔ 图片2.png | 无需恢复（可随意交替） | - | - |
-| TC-PRO-001 | A/B | `QA_Auto` | - | - | - |
-| TC-PRO-002 | 时间戳 | `Auto_{ts}` | 恢复原值 | - | - |
-| TC-PRO-002b | A/B | `OKerAE_test` | `OKerAE_cnbucqx` | - | - |
-| TC-PRO-002c | A/B | `zidonghuammm2@58.com` | `zidonghuammm@58.com` | - | 修改后需完成邮箱验证 |
-| TC-PRO-002d | 图片交替+时间戳+A/B | 图片1/2+`OKerAE_test`+`Auto_{ts}` | 恢复所有文本原值（头像无需恢复） | - | - |
-| TC-ACC-007 | A/B | `Qwer12345` | `Qwer1234` | - | - |
-| TC-ACC-009 | A/B | 当前状态取反 | 恢复原状态 | - | - |
-| TC-ACC-010 | A/B | 当前按钮取反 | 恢复原按钮 | - | - |
-| TC-REG-001 | A/B | `Singapore` | UAE | - | - |
-| TC-REG-003 | A/B | Arabic | English | - | - |
+| 用例ID | 幂等策略 | 首次值 | 后置恢复值 | 最近执行日期 | 执行结果 | UI自动化 |
+| -------- | --------- | -------- | ----------- | ------------ | --------- | --- |
+| TC-PRO-006 | 图片交替 | 图片1.png ↔ 图片2.png | 无需恢复（可随意交替） | - | - | ✅ 可自动化 |
+| TC-PRO-001 | A/B | `QA_Auto` | - | - | - | ✅ 可自动化 |
+| TC-PRO-002 | 时间戳 | `Auto_{ts}` | 恢复原值 | - | - | ✅ 可自动化 |
+| TC-PRO-002b | A/B | `OKerAE_test` | `OKerAE_cnbucqx` | - | - | ✅ 可自动化 |
+| TC-PRO-002c | A/B | `zidonghuammm2@58.com` | `zidonghuammm@58.com` | - | 修改后需完成邮箱验证 | ✅ 可自动化 |
+| TC-PRO-002d | 图片交替+时间戳+A/B | 图片1/2+`OKerAE_test`+`Auto_{ts}` | 恢复所有文本原值（头像无需恢复） | - | - | ✅ 可自动化 |
+| TC-ACC-007 | A/B | `Qwer12345` | `Qwer1234` | - | - | ✅ 可自动化 |
+| TC-ACC-009 | A/B | 当前状态取反 | 恢复原状态 | - | - | ✅ 可自动化 |
+| TC-ACC-010 | A/B | 当前按钮取反 | 恢复原按钮 | - | - | ✅ 可自动化 |
+| TC-REG-001 | A/B | `Singapore` | UAE | - | - | ✅ 可自动化 |
+| TC-REG-003 | A/B | Arabic | English | - | - | ✅ 可自动化 |
 
 ---
 

@@ -1230,11 +1230,28 @@ class PropertyMapPage(BasePage):
             self.logger.warning(f"hover card index={index} 失败: {e}")
 
     def get_h1_text(self) -> str:
-        """获取页面 H1 标题文字"""
-        try:
-            return self.page.locator("h1").first.inner_text().strip()
-        except Exception:
-            return ""
+        """获取页面 H1 标题文字（尝试多种选择器）"""
+        selectors = [
+            "h1",
+            "[class*='title'] h1",
+            "[class*='header'] h1",
+            "[class*='breadcrumb'] ~ h1",
+            "main h1",
+            "article h1"
+        ]
+        
+        for selector in selectors:
+            try:
+                locator = self.page.locator(selector).first
+                locator.wait_for(state="visible", timeout=3000)
+                text = locator.inner_text().strip()
+                if text:
+                    return text
+            except Exception:
+                continue
+        
+        self.logger.warning("⚠️ 未找到可见的 H1 元素")
+        return ""
 
     def is_map_url_for_category(self, cate_keyword: str) -> bool:
         """判断当前 URL 是否包含指定类目关键词，且处于地图模式"""

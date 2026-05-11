@@ -67,7 +67,11 @@ SKILL_PATHS = {
 
 PHASE_REQUIRED_ARTIFACTS = {
     Phase.SENIOR_QA_BRAIN: ["analysis_report", "textcases"],
-    Phase.PLAYWRIGHT_GENERATOR: ["playwright_recording_outcomes", "playwright_recording_report"],
+    Phase.PLAYWRIGHT_GENERATOR: [
+        "playwright_recording_outcomes",
+        "playwright_recording_report",
+        "playwright_bug_report",
+    ],
     Phase.IMPACT_VERIFICATION: [],
     Phase.OK_UI_REGRESSION: ["ok_ui_dry_run_preview", "ok_ui_execution_report", "release_recommendation"],
     Phase.KNOWLEDGE_BASE_UPDATE: ["knowledge_base_update_preview", "knowledge_base_update_result"],
@@ -854,6 +858,15 @@ class QAConductor:
         progress = self._playwright_progress(state)
         stage = progress.get("stage", PLAYWRIGHT_STAGE_RECORDING)
         if stage == PLAYWRIGHT_STAGE_RECORDING_COMPLETED:
+            recording_payload = read_json(
+                self._artifact_value(state, "playwright_recording_outcomes", "recording_outcomes"),
+                default=[],
+            ) or []
+            recording_passed_count = sum(
+                1
+                for item in recording_payload
+                if isinstance(item, dict) and item.get("outcome") == PlaywrightRecordingOutcomeType.RECORDING_PASSED.value
+            )
             self._append_confirmation(
                 state,
                 UserConfirmationRecord(
@@ -866,6 +879,37 @@ class QAConductor:
                     },
                 ),
             )
+            if recording_passed_count == 0:
+                case_outcomes_path = self.store.artifact_path(state.run_id, "playwright_case_outcomes.json")
+                generated_manifest_path = self.store.artifact_path(state.run_id, "generated_scripts_manifest.json")
+                write_json(case_outcomes_path, [])
+                write_json(generated_manifest_path, [])
+                state.artifacts["playwright_case_outcomes"] = str(case_outcomes_path)
+                state.artifacts["generated_scripts_manifest"] = str(generated_manifest_path)
+                self._store_gate_result(
+                    state,
+                    "phase2_gate_result",
+                    PhaseGateResult(
+                        phase=Phase.PLAYWRIGHT_GENERATOR.value,
+                        ok=True,
+                        summary="阶段2A没有 recording_passed 用例，阶段2B脚本生成自动跳过。",
+                        details={
+                            "playwright_recording_outcomes": state.artifacts.get("playwright_recording_outcomes", ""),
+                            "playwright_case_outcomes": str(case_outcomes_path),
+                            "generated_scripts_manifest": str(generated_manifest_path),
+                            "recording_passed_count": 0,
+                        },
+                    ),
+                )
+                self._write_playwright_progress(
+                    state,
+                    stage=PLAYWRIGHT_STAGE_SCRIPT_COMPLETED,
+                    recording_confirmed=True,
+                    script_completed_at=utc_now_iso(),
+                    script_skipped_reason="no_recording_passed_cases",
+                )
+                state.blocked_reason = ""
+                return state
             self._write_playwright_progress(
                 state,
                 stage=PLAYWRIGHT_STAGE_SCRIPT_PENDING,
@@ -1015,6 +1059,20 @@ class QAConductor:
         if not textcases_text:
             reasons.append("缺少 textcases，或测试用例文档内容为空。")
 
+        rule_paths, invalid_rule_routes = self._knowledge_base_rule_paths(packet)
+        if invalid_rule_routes:
+            reasons.extend(invalid_rule_routes)
+        if report_text:
+            if rule_paths and "知识库依据" not in report_text:
+                reasons.append("分析报告缺少“知识库依据”章节，无法确认已读取业务规则库。")
+            if not rule_paths and not self._mentions_kb_miss(report_text):
+                reasons.append("业务规则库未命中时，分析报告必须明确写出“规则库未命中”或“知识库未命中”。")
+        if textcases_text:
+            if "业务属性" not in textcases_text:
+                reasons.append("测试用例文档缺少“业务属性”说明。")
+            if "测试范围" not in textcases_text:
+                reasons.append("测试用例文档缺少“测试范围”说明。")
+
         document = parse_markdown_document(textcases_path) if textcases_text else None
         environment = document.environment if document else {}
         if not environment:
@@ -1056,6 +1114,10 @@ class QAConductor:
                 missing.append("UI自动化")
             if missing:
                 reasons.append(f"{case.tc_id or case.title or '未命名用例'} 缺少字段: {', '.join(missing)}。")
+            if case.ui_automatable:
+                precondition_reason = self._executable_precondition_issue(case)
+                if precondition_reason:
+                    reasons.append(f"{case.tc_id or case.title or '未命名用例'} 前置条件不可执行: {precondition_reason}")
 
         bucket = self._knowledge_base_bucket(packet)
         if not bucket:
@@ -1063,6 +1125,8 @@ class QAConductor:
                 f"模块 `{(packet.get('candidate_modules') or [''])[0]}` 缺少知识库文本用例路由，"
                 "请先在 config/knowledge_base_routing.yaml 中补齐。"
             )
+        elif not self._is_safe_relative_fragment(bucket):
+            reasons.append(f"知识库文本用例 bucket 必须是相对路径片段，不能是绝对路径或包含 `..`: {bucket}")
 
         kb_path = ""
         if not reasons:
@@ -1076,6 +1140,9 @@ class QAConductor:
                 kb_text_case_draft_path=str(target_path),
                 environment=environment,
                 cases=cases,
+                business_attributes=self._extract_document_section_lines(textcases_text, "业务属性"),
+                test_scope=self._extract_document_section_lines(textcases_text, "测试范围"),
+                rule_library_paths=[str(path) for path in rule_paths],
             )
             manifest_path = self.store.artifact_path(state.run_id, "text_case_manifest.json")
             write_json(manifest_path, to_data(manifest))
@@ -1102,6 +1169,7 @@ class QAConductor:
                 "ui_automatable_count": sum(case.ui_automatable for case in cases),
                 "environment_keys": sorted(environment.keys()),
                 "kb_text_case_draft_path": kb_path,
+                "rule_library_paths": [str(path) for path in rule_paths],
             },
         )
 
@@ -1113,59 +1181,102 @@ class QAConductor:
             reasons.append("缺少 text_case_manifest.json，无法校验阶段2A录制闭环。")
 
         report_path = self._artifact_value(state, "playwright_recording_report", "recording_report")
-        if not read_text(report_path):
+        report_text = read_text(report_path)
+        if not report_text:
             reasons.append("缺少 playwright_recording_report.md，或录制执行报告为空。")
+        elif len(report_text) > 20000:
+            warnings.append("playwright_recording_report.md 内容偏长；建议只保留同事可读的执行进度摘要。")
+
+        bug_report_path = self._artifact_value(state, "playwright_bug_report", "bug_report")
+        bug_report_text = read_text(bug_report_path)
+        if not bug_report_text:
+            reasons.append("缺少 playwright_bug_report.md，或 bug list 为空；即使无 bug 也必须写明本轮未发现 bug。")
+
+        execution_plan_path = self._artifact_value(state, "stage2a_execution_plan", "playwright_stage2a_execution_plan")
+        if not read_text(execution_plan_path):
+            warnings.append("缺少 stage2a_execution_plan.json；不阻塞阶段2A交付，但建议补充批次计划用于追溯。")
 
         outcomes_path = self._artifact_value(state, "playwright_recording_outcomes", "recording_outcomes")
         outcome_payload = read_json(outcomes_path, default=[]) or []
         if not outcome_payload:
             reasons.append("缺少 playwright_recording_outcomes.json，无法确认每条可自动化用例的录制结局。")
+        if outcome_payload and not isinstance(outcome_payload, list):
+            reasons.append("playwright_recording_outcomes.json 必须是数组。")
+            outcome_payload = []
 
         automatable_cases = [
             item["tc_id"]
             for item in manifest_payload.get("cases", [])
             if item.get("ui_automatable")
         ]
-        outcomes = [PlaywrightRecordingOutcome(**item) for item in outcome_payload] if outcome_payload else []
+        outcomes: list[PlaywrightRecordingOutcome] = []
+        for index, item in enumerate(outcome_payload):
+            if not isinstance(item, dict):
+                reasons.append(f"playwright_recording_outcomes.json 第 {index + 1} 项不是对象。")
+                continue
+            try:
+                outcomes.append(PlaywrightRecordingOutcome(**item))
+            except TypeError as exc:
+                reasons.append(f"playwright_recording_outcomes.json 第 {index + 1} 项格式错误: {exc}")
         grouped: dict[str, list[PlaywrightRecordingOutcome]] = {}
+        invalid_outcome_case_ids: set[str] = set()
+        allowed_outcomes = {item.value for item in PlaywrightRecordingOutcomeType}
         for outcome in outcomes:
             grouped.setdefault(outcome.tc_id, []).append(outcome)
+            if outcome.outcome == "manual_review":
+                invalid_outcome_case_ids.add(outcome.tc_id)
+                reasons.append(
+                    f"{outcome.tc_id} 标记为 manual_review；阶段2A不再允许该状态，"
+                    "不符合预期或阻塞验证请记录为 bug_recorded。"
+                )
+            elif outcome.outcome not in allowed_outcomes:
+                invalid_outcome_case_ids.add(outcome.tc_id)
+                reasons.append(f"{outcome.tc_id} 的 recording outcome `{outcome.outcome}` 不在允许集合内。")
 
         proof_manifest: list[dict[str, Any]] = []
         bug_count = 0
+        missing_case_ids: list[str] = []
+        duplicate_case_ids: list[str] = []
         for tc_id in automatable_cases:
             case_outcomes = grouped.get(tc_id, [])
             if len(case_outcomes) != 1:
+                if not case_outcomes:
+                    missing_case_ids.append(tc_id)
+                else:
+                    duplicate_case_ids.append(tc_id)
                 reasons.append(f"{tc_id} 需要且只能有 1 个唯一 recording outcome，当前为 {len(case_outcomes)} 个。")
                 continue
             outcome = case_outcomes[0]
-            if outcome.outcome not in {item.value for item in PlaywrightRecordingOutcomeType}:
-                reasons.append(f"{tc_id} 的 recording outcome `{outcome.outcome}` 不在允许集合内。")
+            if tc_id in invalid_outcome_case_ids:
                 continue
             if outcome.outcome == PlaywrightRecordingOutcomeType.RECORDING_PASSED.value:
                 if not outcome.proof_artifact_path or not Path(outcome.proof_artifact_path).exists():
                     reasons.append(f"{tc_id} 标记为 recording_passed，但 proof_artifact_path 不存在。")
                 else:
+                    trace_path = outcome.details.get("recording_trace_path", "")
                     proof_manifest.append(
                         {
                             "tc_id": tc_id,
                             "proof_artifact_path": outcome.proof_artifact_path,
-                            "recording_trace_path": outcome.details.get("recording_trace_path", ""),
+                            "recording_trace_path": trace_path,
                         }
                     )
-                    trace_path = outcome.details.get("recording_trace_path", "")
-                    if trace_path and not Path(trace_path).exists():
+                    if not trace_path:
+                        warnings.append(f"{tc_id} 缺少 recording_trace_path；阶段2A不阻塞，但阶段2B不能凭空生成脚本。")
+                    elif not Path(trace_path).exists():
                         warnings.append(f"{tc_id} 提供了 recording_trace_path，但文件不存在: {trace_path}")
             elif outcome.outcome == PlaywrightRecordingOutcomeType.BUG_RECORDED.value:
                 bug_count += 1
-                if not outcome.bug_report_path or not Path(outcome.bug_report_path).exists():
-                    reasons.append(f"{tc_id} 标记为 bug_recorded，但 bug_report_path 不存在。")
-            elif not outcome.manual_review_reason:
-                reasons.append(f"{tc_id} 标记为 manual_review，但缺少 manual_review_reason。")
-
-        bug_report_path = self._artifact_value(state, "playwright_bug_report", "bug_report")
-        if bug_count and not read_text(bug_report_path):
-            reasons.append("存在 bug_recorded 用例，但缺少 playwright_bug_report.md 或内容为空。")
+                bug_id = str(outcome.details.get("bug_id", ""))
+                has_global_record = bool(
+                    bug_report_text
+                    and (
+                        tc_id in bug_report_text
+                        or (bug_id and bug_id in bug_report_text)
+                    )
+                )
+                if not has_global_record:
+                    reasons.append(f"{tc_id} 标记为 bug_recorded，但 playwright_bug_report.md 中缺少可追溯的 bug 记录。")
 
         unexpected_cases = sorted(set(grouped) - set(automatable_cases))
         if unexpected_cases:
@@ -1196,10 +1307,14 @@ class QAConductor:
                 "playwright_recording_outcomes": outcomes_path,
                 "playwright_recording_report": report_path,
                 "playwright_bug_report": bug_report_path,
+                "stage2a_execution_plan": execution_plan_path,
                 "proof_artifacts_manifest": proof_manifest_path,
                 "automatable_case_count": len(automatable_cases),
                 "recording_passed_count": len(proof_manifest),
                 "bug_recorded_count": bug_count,
+                "missing_case_ids": missing_case_ids,
+                "duplicate_case_ids": duplicate_case_ids,
+                "unexpected_case_ids": unexpected_cases,
             },
         )
 
@@ -1455,6 +1570,91 @@ class QAConductor:
                 lines.append(stripped)
         return lines
 
+    def _mentions_kb_miss(self, text: str) -> bool:
+        return any(token in text for token in ("规则库未命中", "知识库未命中", "未命中业务规则库"))
+
+    def _extract_document_section_lines(self, text: str, section_name: str) -> list[str]:
+        pattern = re.compile(
+            rf"^#{{1,6}}\s*.*?{re.escape(section_name)}.*?\n(.*?)(?=^#{{1,6}}\s+|\Z)",
+            flags=re.S | re.M,
+        )
+        match = pattern.search(text or "")
+        if not match:
+            return []
+        lines: list[str] = []
+        for line in match.group(1).splitlines():
+            stripped = line.strip()
+            if not stripped or stripped in {"---"}:
+                continue
+            stripped = re.sub(r"^\d+\.\s*", "", stripped)
+            stripped = re.sub(r"^-\s*", "", stripped)
+            if stripped:
+                lines.append(stripped)
+        return lines
+
+    def _is_safe_relative_fragment(self, value: str) -> bool:
+        if not value or Path(value).is_absolute():
+            return False
+        return ".." not in Path(value).parts
+
+    def _rule_route_values(self, packet: dict[str, Any]) -> list[str]:
+        module = normalize_text((packet.get("candidate_modules") or [""])[0]).replace(" ", "")
+        route_map = self.config.knowledge_base_routing.get("rule_library_routes", {})
+        route = route_map.get(module, [])
+        if isinstance(route, str):
+            return [route]
+        if isinstance(route, list):
+            return [str(item) for item in route if str(item).strip()]
+        if isinstance(route, dict):
+            for key in ("routes", "paths", "rules"):
+                value = route.get(key)
+                if isinstance(value, str):
+                    return [value]
+                if isinstance(value, list):
+                    return [str(item) for item in value if str(item).strip()]
+        return []
+
+    def _knowledge_base_rule_paths(self, packet: dict[str, Any]) -> tuple[list[Path], list[str]]:
+        knowledge_base_root = Path(self.config.skills.get("paths", {}).get("knowledge_base_root", ""))
+        rule_root = knowledge_base_root / "业务规则库"
+        paths: list[Path] = []
+        errors: list[str] = []
+        for route in self._rule_route_values(packet):
+            if not self._is_safe_relative_fragment(route):
+                errors.append(f"业务规则库 route 必须是相对路径片段，不能是绝对路径或包含 `..`: {route}")
+                continue
+            target = rule_root / route
+            if not target.exists():
+                errors.append(f"业务规则库 route 不存在: {target}")
+                continue
+            paths.append(target)
+        return paths, errors
+
+    def _executable_precondition_issue(self, case: TextCaseManifestEntry) -> str:
+        text = " ".join(case.preconditions)
+        normalized = normalize_text(text)
+        checks = {
+            "角色/登录态": any(
+                token in text
+                for token in ("访客", "游客", "未登录", "已登录", "登录态", "角色", "买家", "卖家", "buyer", "seller")
+            ),
+            "入口URL或导航路径": bool(re.search(r"https?://|/\w|URL|路径|打开|访问|进入|导航|首页|Browse", text, flags=re.I)),
+            "账号或测试数据": any(
+                token in text
+                for token in ("账号", "测试数据", "无需登录", "无", "邮箱", "手机", "商品", "车辆", "帖子", "数据", "ID", "@")
+            ),
+            "准备动作": any(token in text for token in ("打开", "访问", "进入", "点击", "登录", "清空", "选择", "创建", "准备")),
+            "就绪验证点": any(token in text for token in ("确认", "可见", "显示", "加载完成", "存在", "标题", "URL", "按钮", "输入框")),
+        }
+        missing = [name for name, ok in checks.items() if not ok]
+        vague_tokens = ("系统准备好", "数据准备好", "已准备好", "账号正常", "页面已加载", "已进入页面", "已进入")
+        vague = any(normalize_text(token) in normalized for token in vague_tokens)
+        if vague and missing:
+            return f"包含含糊表达，且缺少 {', '.join(missing)}。"
+        if missing:
+            return f"缺少 {', '.join(missing)}。"
+        return ""
+
     def _knowledge_base_bucket(self, packet: dict[str, Any]) -> str:
         module = normalize_text((packet.get("candidate_modules") or [""])[0]).replace(" ", "")
         bucket_map = self.config.knowledge_base_routing.get("text_case_buckets", {})
@@ -1464,6 +1664,8 @@ class QAConductor:
         return route.get("bucket", "")
 
     def _knowledge_base_draft_path(self, packet: dict[str, Any], textcases_path: str, bucket: str) -> Path:
+        if not self._is_safe_relative_fragment(bucket):
+            raise ValueError(f"知识库文本用例 bucket 必须是相对路径片段: {bucket}")
         knowledge_base_root = Path(self.config.skills.get("paths", {}).get("knowledge_base_root", ""))
         source_name = Path(textcases_path).name
         generic_names = {"testcases.md", "textcases.md", "cases.md"}
@@ -1873,6 +2075,8 @@ class QAConductor:
         packet = self._requirement_packet(state)
 
         if phase == Phase.SENIOR_QA_BRAIN:
+            rule_paths, rule_route_errors = self._knowledge_base_rule_paths(packet)
+            knowledge_base_root = Path(self.config.skills.get("paths", {}).get("knowledge_base_root", ""))
             parts = [
                 f"# 阶段: {phase.value}",
                 "",
@@ -1886,13 +2090,33 @@ class QAConductor:
                 parts.append(f"- 需求文档: {ref}")
             parts.extend(
                 [
+                    f"- 业务规则库根目录: {knowledge_base_root / '业务规则库'}",
+                    "",
+                    "## 业务规则库读取要求",
+                ]
+            )
+            if rule_paths:
+                parts.append("- 必须先读取以下业务规则库路径，再生成分析报告和文本用例：")
+                parts.extend(f"  - {path}" for path in rule_paths)
+            else:
+                parts.append("- 规则库未命中：当前 module 未配置可用业务规则库路径。")
+                parts.append("- 不要编造业务规则；请在分析报告中写明“规则库未命中”，并把缺失规则列为待确认问题。")
+            if rule_route_errors:
+                parts.append("- 规则库路由配置异常：")
+                parts.extend(f"  - {item}" for item in rule_route_errors)
+            parts.extend(
+                [
                     "",
                     "## 要求",
                     "- 按 SKILL.md 流程逐步执行，不要跳步",
+                    "- 分析报告必须包含“知识库依据”章节，列出实际读取的业务规则库文件路径；若规则库未命中，必须明确写“规则库未命中”或“知识库未命中”",
                     "- 生成分析报告后等待用户确认",
                     "- 确认后生成 Markdown 测试用例",
                     "- complete 当前阶段时必须回传 analysis_report 和 textcases 两个产物路径",
                     "- 文本用例必须包含测试环境配置表格、TC编号、前置条件、步骤、预期、优先级、测试类型、UI自动化",
+                    "- 文本用例必须包含“业务属性”和“测试范围”",
+                    "- 每条 UI自动化=✅ 的用例，前置条件必须写成可执行准备：角色/登录态、入口 URL 或导航路径、账号/测试数据、准备动作、就绪验证点",
+                    "- 不要只写“系统准备好”“已进入页面”“数据已准备好”“账号正常”等含糊前置条件",
                 ]
             )
             self._append_memory_instruction(parts, state)
@@ -1942,10 +2166,14 @@ class QAConductor:
                 "- 每个阶段开始前先读取 SKILL.md 指定的 references 文件",
                 "- 每批最多 5 条用例",
                 "- 本轮只生成 proof、截图、录制执行报告和 bug list，不生成 Python 脚本",
-                "- complete 当前阶段时必须回传 playwright_recording_outcomes.json 和 playwright_recording_report.md",
-                "- 若存在 bug_recorded，用 artifact 额外回传 playwright_bug_report=<path>",
-                "- 对每条 UI自动化=✅ 的用例，必须给出唯一 recording outcome: recording_passed / bug_recorded / manual_review",
-                "- recording_passed 必须附带 proof_artifact_path；bug_recorded 必须附带 bug_report_path；manual_review 必须附带 manual_review_reason",
+                "- complete 当前阶段时必须回传 playwright_recording_outcomes.json、playwright_recording_report.md 和 playwright_bug_report.md",
+                "- 建议额外回传 stage2a_execution_plan=<path>；缺失只记 warning，但执行计划仍应生成用于追溯",
+                "- 对每条 UI自动化=✅ 的用例，必须给出唯一 recording outcome: recording_passed / bug_recorded",
+                "- 阶段2A不允许 manual_review；实际结果不符合预期、页面缺失、流程阻塞、配置异常、接口异常都记录为 bug_recorded",
+                "- 报告里可以展示失败/阻塞；JSON 中统一用 bug_recorded，并可用 details.progress_status=failed|blocked 区分",
+                "- recording_passed 必须附带 proof_artifact_path；bug_recorded 必须能在 bug report 中通过 TC编号或 BUG编号追溯",
+                "- playwright_bug_report.md 必须始终生成；没有 bug 时写明本轮未发现 bug",
+                "- recording_trace_path 缺失不会阻塞阶段2A，但阶段2B不能凭空生成脚本",
             ]
             self._append_memory_instruction(parts, state)
             return "\n".join(parts)

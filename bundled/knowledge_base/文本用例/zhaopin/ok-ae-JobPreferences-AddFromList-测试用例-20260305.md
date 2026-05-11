@@ -196,6 +196,9 @@
 
 ### 主流程录制（TC003）证明
 
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`zhaopin/test_ae_job_preferences_add_from_list.py::test_ae_add_pref_login_via_banner_should_redirect_to_edit_page`）
+
 **【MCP JavaScript 代码】**（来自 `### Ran Playwright code` 真实输出）
 
 ```js

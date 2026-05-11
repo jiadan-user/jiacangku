@@ -46,7 +46,6 @@ def load_config(project_root: str | Path) -> AppConfig:
     thresholds = read_yaml(root / "config" / "thresholds.yaml", default={}) or {}
     knowledge_base_routing = read_yaml(root / "config" / "knowledge_base_routing.yaml", default={}) or {}
     skills = _resolve_nested_paths(skills, root)
-    knowledge_base_routing = _resolve_nested_paths(knowledge_base_routing, root)
     return AppConfig(
         project_root=root,
         skills=skills,

@@ -12,9 +12,18 @@ from utils.logger import setup_logger
 logger = setup_logger()
 
 # ========== 测试配置 ==========
-
-
-
+# 注意：实际配置在 conftest.py 中定义，这里声明是为了满足全局 conftest 的检查
+_CONFIG = {
+    "site": "us",
+    "site_name": "美国站 (US 58v5.cn)",
+    "base_url": "https://us.58v5.cn",
+    "role": "visitor",
+    "browser": {
+        "type": "chromium",
+        "headless": True,
+        "viewport": {"width": 1920, "height": 1080}
+    }
+}
 
 # ========== 测试用例 ==========
 

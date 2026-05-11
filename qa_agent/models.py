@@ -85,7 +85,6 @@ class PlaywrightOutcomeType(str, Enum):
 class PlaywrightRecordingOutcomeType(str, Enum):
     RECORDING_PASSED = "recording_passed"
     BUG_RECORDED = "bug_recorded"
-    MANUAL_REVIEW = "manual_review"
 
 
 class NextActionKind(str, Enum):
@@ -201,6 +200,9 @@ class TextCaseManifest:
     kb_text_case_draft_path: str
     environment: dict[str, str] = field(default_factory=dict)
     cases: list[TextCaseManifestEntry] = field(default_factory=list)
+    business_attributes: list[str] = field(default_factory=list)
+    test_scope: list[str] = field(default_factory=list)
+    rule_library_paths: list[str] = field(default_factory=list)
 
 
 @dataclass

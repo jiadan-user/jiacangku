@@ -2610,11 +2610,35 @@ class PropertyPage(BasePage):
     # ========== 入口断言辅助方法 ==========
 
     def get_page_h1(self) -> str:
-        """获取页面 H1 标题文本"""
+        """获取页面 H1 标题文本（尝试多种选择器）"""
+        selectors = [
+            "h1",
+            "[class*='title'] h1",
+            "[class*='header'] h1",
+            "[class*='breadcrumb'] ~ h1",
+            "main h1",
+            "article h1"
+        ]
+        
+        for selector in selectors:
+            try:
+                locator = self.page.locator(selector).first
+                locator.wait_for(state="visible", timeout=5000)
+                text = locator.inner_text().strip()
+                if text:
+                    return text
+            except Exception:
+                continue
+        
+        self.logger.warning("⚠️ 未找到可见的 H1 元素，尝试获取所有 h1")
         try:
-            return self.page.locator("h1").first.inner_text().strip()
-        except Exception:
-            return ""
+            all_h1_text = self.page.locator("h1").all_inner_texts()
+            if all_h1_text:
+                return " | ".join([t.strip() for t in all_h1_text if t.strip()])
+        except Exception as e:
+            self.logger.error(f"❌ 获取 H1 完全失败: {e}")
+        
+        return ""
 
     def is_browse_dropdown_visible(self) -> bool:
         """检查 Browse 下拉菜单是否已展开（通过 Property 一级链接可见性判断）"""

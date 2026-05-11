@@ -10,6 +10,9 @@ AE站（沙特）- Jobs详情页 Contact会话发送消息 测试脚本
 测试目标：验证从 Jobs 详情页点击 Contact 按钮进入会话页后，
          能够发送文本消息、简历、形象照片、护照图片，
          并触发 AI Auto Reply 自动回复功能
+         
+业务前置：当B端雇主账号在线（状态显示 "Active now"）时，
+         系统不会触发 AI 代聊逻辑，此时测试用例会自动跳过
 
 录制发现：
 - 聊天页 URL 域名：aepub.58v5.cn（ae 站）
@@ -85,7 +88,7 @@ def page(config):
     3. Session 无效 → 点击 Contact 触发登录弹窗 → 输入邮箱/密码 → 登录后直接跳转至聊天页
     
     类前置检查（在登录前执行）：
-    1. 检查雇主状态是否为 Active now → 如果是则跳过所有用例
+    1. 检查雇主状态是否为 Active now → 如果是则跳过所有用例（B端在线不触发AI代聊）
     2. 检查当前登录用户是否为 OKerAE_569ervr → 如果不是则重新登录
     """
     from utils.browser_manager import BrowserManager
@@ -136,7 +139,7 @@ def page(config):
         logger.info(f"✓ 已加载 Jobs 详情页: {config['job_detail_url']}")
 
     # Step 1: 检查雇主状态
-    # 只有雇主状态为 "Active now" 时才跳过测试
+    # 业务逻辑：B端账号在线（"Active now"）时不触发AI代聊，因此跳过测试
     try:
         # 使用类名定位雇主状态容器
         employer_status_elem = _page.locator("[class*='AgentCard_detailsCardUserCompany']").first
@@ -146,9 +149,9 @@ def page(config):
             
             # 只有 "Active now" 才跳过测试
             if status_text == "Active now":
-                logger.warning(f"⚠️ 雇主状态为 'Active now'，跳过所有用例")
+                logger.warning(f"⚠️ B端账号在线（状态: Active now），不触发AI代聊逻辑，跳过所有用例")
                 browser_manager.close_browser()
-                pytest.skip("雇主状态为 'Active now'，跳过测试")
+                pytest.skip("B端账号在线，不触发AI代聊逻辑")
             else:
                 logger.info(f"✓ 雇主状态为 '{status_text}'，继续执行")
         else:
@@ -318,7 +321,122 @@ def reset_to_chat_page(page, config):
 # ============================================================
 
 class TestJobDetailSendMessage:
-    """Jobs详情页 Contact会话发送消息测试"""
+    """Jobs详情页 Contact会话发送消息测试
+    
+    验证逻辑优化（参考 test_ai_chat_send_message_优化总结.md）:
+    - 提取公共验证方法 _verify_file_upload_and_ai_reply()
+    - 统一截图逻辑 _take_screenshot_with_allure()
+    - 减少重复代码，提高可维护性
+    """
+
+    @staticmethod
+    def _verify_file_upload_and_ai_reply(page, chat_page, initial_count: int, file_type: str, timeout: int = 30000):
+        """
+        验证文件上传和 AI 自动回复的通用方法（采用M端验证方式：基于消息数量统计）
+        
+        Args:
+            page: Playwright Page 对象
+            chat_page: AiChatJobPage 对象
+            initial_count: 上传前的初始消息数量
+            file_type: 文件类型（用于日志）
+            timeout: AI 回复等待超时时间（毫秒，默认 30 秒）
+        
+        Returns:
+            dict: 验证结果 {
+                'file_uploaded': bool,      # 文件是否上传成功
+                'ai_replied': bool,         # AI 是否回复
+                'new_message_count': int,   # 新增消息数量
+                'final_count': int,         # 最终消息总数
+                'timeout_occurred': bool,   # 是否发生超时
+                'failure_reason': str       # 失败原因
+            }
+        """
+        result = {
+            'file_uploaded': False,
+            'ai_replied': False,
+            'new_message_count': 0,
+            'final_count': 0,
+            'timeout_occurred': False,
+            'failure_reason': ''
+        }
+        
+        # 1. 验证文件消息出现
+        page.wait_for_timeout(3000)  # 等待上传处理
+        
+        if chat_page.is_file_message_visible(timeout=15000):
+            result['file_uploaded'] = True
+            logger.info(f"✓ {file_type}消息已显示在聊天区域")
+        else:
+            result['failure_reason'] = f"{file_type}消息未显示在聊天区域"
+            logger.error(f"❌ {result['failure_reason']}")
+            # 失败时输出HTML片段用于调试
+            try:
+                chat_html = page.locator("[class*='chat'], [class*='message']").first.inner_html()
+                logger.error(f"聊天区域HTML（前500字符）: {chat_html[:500]}")
+            except Exception:
+                pass
+            return result
+        
+        # 2. 验证 AI 自动回复（采用M端方式：消息数量变化 + AI标识）
+        try:
+            # 使用M端的验证方法：基于消息数量增加 + AI标识判断
+            ai_replied = chat_page.verify_ai_replied_by_count(
+                initial_message_count=initial_count,
+                timeout=timeout
+            )
+            
+            if ai_replied:
+                result['ai_replied'] = True
+                logger.info("✓ AI Auto Reply 已显示（M端验证方式）")
+            else:
+                result['timeout_occurred'] = True
+                result['failure_reason'] = f"超时 {timeout/1000}秒 内未检测到AI回复（AI自动回复在沙箱环境响应慢，易超时）"
+                logger.warning(f"⚠️ {result['failure_reason']}")
+                return result
+                
+        except Exception as e:
+            result['failure_reason'] = f"验证 AI 回复时发生异常: {e}"
+            logger.error(f"❌ {result['failure_reason']}")
+            return result
+        
+        # 3. 统计新增消息数量（M端验证方式）
+        final_count = chat_page.count_messages()
+        new_message_count = final_count - initial_count
+        result['new_message_count'] = new_message_count
+        result['final_count'] = final_count
+        
+        logger.info(f"✓ 消息统计: 初始={initial_count}, 最终={final_count}, 新增={new_message_count}")
+        
+        return result
+    
+    @staticmethod
+    def _take_screenshot_with_allure(page, filename: str, allure_name: str = None):
+        """
+        截图并附加到 Allure 报告的通用方法
+        
+        Args:
+            page: Playwright Page 对象
+            filename: 截图文件名
+            allure_name: Allure 报告中显示的名称（可选，默认使用 filename）
+        """
+        try:
+            from pathlib import Path
+            screenshot_dir = Path("reports/screenshots")
+            screenshot_dir.mkdir(parents=True, exist_ok=True)
+            screenshot_path = screenshot_dir / filename
+            
+            page.screenshot(path=str(screenshot_path), timeout=60000, full_page=True)
+            logger.info(f"📸 已截图保存到: {screenshot_path}")
+            
+            # 附加到 Allure 报告
+            with open(screenshot_path, 'rb') as f:
+                allure.attach(
+                    f.read(),
+                    name=allure_name or filename,
+                    attachment_type=allure.attachment_type.PNG
+                )
+        except Exception as e:
+            logger.warning(f"截图失败: {e}")
 
     # ----------------------------------------------------------
     # TC001：从 Jobs 详情页点击 Contact 按钮进入会话页并发送文本消息
@@ -427,54 +545,42 @@ class TestJobDetailSendMessage:
         logger.info("=" * 80)
         logger.info(f"简历路径: {resume_path}")
 
-        assert os.path.exists(resume_path), \
-            f"简历文件不存在: {resume_path}"
+        assert os.path.exists(resume_path), f"简历文件不存在: {resume_path}"
 
         # ========== Act：上传简历 ==========
         with allure.step("确认聊天页输入框可见"):
             chat_page.wait_for_chat_loaded()
             logger.info("✓ 聊天页已就绪")
+        
+        # 记录初始消息数量（M端验证方式）
+        initial_count = chat_page.count_messages()
+        logger.info(f"✓ 上传前消息数量: {initial_count}")
 
         with allure.step(f"上传简历文件: {config['test_data']['resume']}"):
             chat_page.upload_image_file(resume_path)
             logger.info(f"✓ 已触发简历上传: {resume_path}")
 
-        # ========== Assert：验证文件消息和 AI 回复 ==========
-        with allure.step("验证文件消息出现在聊天区域"):
-            # 等待文件上传处理（给服务端时间）
-            page.wait_for_timeout(3000)
+        # ========== Assert：验证文件消息和 AI 回复（M端验证方式）==========
+        with allure.step("验证简历上传和 AI 自动回复（M端验证方式）"):
+            result = self._verify_file_upload_and_ai_reply(page, chat_page, initial_count, "简历")
             
-            # 截图用于调试
-            try:
-                screenshot_path = "reports/chat_after_upload_resume.png"
-                page.screenshot(path=screenshot_path, timeout=60000)
-                logger.info(f"📸 已截图保存到: {screenshot_path}")
-            except Exception as e:
-                logger.warning(f"截图失败: {e}")
+            # 截图
+            self._take_screenshot_with_allure(page, "chat_after_upload_resume.png", "简历上传后截图")
             
-            # 检查文件消息是否出现
-            if not chat_page.is_file_message_visible(timeout=15000):
-                # 失败时输出页面HTML片段用于调试
-                try:
-                    chat_html = page.locator("[class*='chat'], [class*='message']").first.inner_html()
-                    logger.error(f"聊天区域HTML（前500字符）: {chat_html[:500]}")
-                except Exception:
-                    pass
-                
-                assert False, "上传简历后，文件消息未显示在聊天区域"
+            # 断言验证（M端方式：上传成功 + AI回复 + 消息数量增加）
+            assert result['file_uploaded'], f"简历上传失败：{result.get('failure_reason', '文件消息未显示在聊天区域')}"
             
-            logger.info("✓ 文件消息已显示在聊天区域")
-
-        with allure.step("等待并验证 AI Auto Reply 出现"):
-            chat_page.wait_for_ai_auto_reply(timeout=100000)
-            assert chat_page.is_ai_auto_reply_visible(), \
-                "AI Auto Reply 标签未在聊天区域出现"
-            logger.info("✓ AI Auto Reply 出现")
-        
-        with allure.step("验证 AI Auto Reply 时间在发送时间之后"):
-            assert chat_page.verify_ai_reply_after_send(), \
-                "AI Auto Reply 时间未在发送消息时间之后"
-            logger.info("✓ AI Auto Reply 时间验证通过")
+            # AI回复断言：如果是超时，给出明确的超时原因
+            if not result['ai_replied']:
+                failure_msg = result.get('failure_reason', 'AI Auto Reply 未出现')
+                if result.get('timeout_occurred'):
+                    pytest.fail(f"❌ {failure_msg}")
+                else:
+                    assert False, failure_msg
+            
+            assert result['new_message_count'] >= 2, f"新消息数量异常: {result['new_message_count']}（期望 >= 2）"
+            
+            logger.info(f"✅ 验证完成（M端方式）：上传成功={result['file_uploaded']}, AI回复={result['ai_replied']}, 新增消息={result['new_message_count']}")
 
         logger.info("✅ TC002 通过：简历发送成功，AI Auto Reply 响应")
 
@@ -508,54 +614,42 @@ class TestJobDetailSendMessage:
         logger.info("=" * 80)
         logger.info(f"照片路径: {photo_path}")
 
-        assert os.path.exists(photo_path), \
-            f"形象照片文件不存在: {photo_path}"
+        assert os.path.exists(photo_path), f"形象照片文件不存在: {photo_path}"
 
         # ========== Act：上传图片 ==========
         with allure.step("确认聊天页输入框可见"):
             chat_page.wait_for_chat_loaded()
             logger.info("✓ 聊天页已就绪")
+        
+        # 记录初始消息数量（M端验证方式）
+        initial_count = chat_page.count_messages()
+        logger.info(f"✓ 上传前消息数量: {initial_count}")
 
         with allure.step(f"上传形象照片: {config['test_data']['profile_photo']}"):
             chat_page.upload_image_file(photo_path)
             logger.info(f"✓ 已触发图片上传: {photo_path}")
 
-        # ========== Assert：验证图片消息和 AI 回复 ==========
-        with allure.step("验证图片消息出现在聊天区域"):
-            # 等待图片上传处理
-            page.wait_for_timeout(3000)
+        # ========== Assert：验证图片消息和 AI 回复（M端验证方式）==========
+        with allure.step("验证形象照片上传和 AI 自动回复（M端验证方式）"):
+            result = self._verify_file_upload_and_ai_reply(page, chat_page, initial_count, "形象照片")
             
-            # 截图用于调试
-            try:
-                screenshot_path = "reports/chat_after_upload_photo.png"
-                page.screenshot(path=screenshot_path, timeout=60000)
-                logger.info(f"📸 已截图保存到: {screenshot_path}")
-            except Exception as e:
-                logger.warning(f"截图失败: {e}")
+            # 截图
+            self._take_screenshot_with_allure(page, "chat_after_upload_photo.png", "形象照片上传后截图")
             
-            # 检查图片消息是否出现
-            if not chat_page.is_file_message_visible(timeout=15000):
-                # 失败时输出页面HTML片段
-                try:
-                    chat_html = page.locator("[class*='chat'], [class*='message']").first.inner_html()
-                    logger.error(f"聊天区域HTML（前500字符）: {chat_html[:500]}")
-                except Exception:
-                    pass
-                
-                assert False, "上传形象照片后，图片消息未显示在聊天区域"
+            # 断言验证（M端方式：上传成功 + AI回复 + 消息数量增加）
+            assert result['file_uploaded'], f"形象照片上传失败：{result.get('failure_reason', '图片消息未显示在聊天区域')}"
             
-            logger.info("✓ 图片消息已显示在聊天区域")
-
-        with allure.step("等待并验证 AI Auto Reply 出现"):
-            chat_page.wait_for_ai_auto_reply(timeout=100000)
-            assert chat_page.is_ai_auto_reply_visible(), \
-                "AI Auto Reply 标签未在聊天区域出现"
-            logger.info("✓ AI Auto Reply 出现")
-        
-        with allure.step("验证 AI Auto Reply 时间在发送时间之后"):
-            assert chat_page.verify_ai_reply_after_send(), \
-                "AI Auto Reply 时间未在发送消息时间之后"
-            logger.info("✓ AI Auto Reply 时间验证通过")
+            # AI回复断言：如果是超时，给出明确的超时原因
+            if not result['ai_replied']:
+                failure_msg = result.get('failure_reason', 'AI Auto Reply 未出现')
+                if result.get('timeout_occurred'):
+                    pytest.fail(f"❌ {failure_msg}")
+                else:
+                    assert False, failure_msg
+            
+            assert result['new_message_count'] >= 2, f"新消息数量异常: {result['new_message_count']}（期望 >= 2）"
+            
+            logger.info(f"✅ 验证完成（M端方式）：上传成功={result['file_uploaded']}, AI回复={result['ai_replied']}, 新增消息={result['new_message_count']}")
 
         logger.info("✅ TC003 通过：形象照片发送成功，AI Auto Reply 响应")
 
@@ -589,53 +683,41 @@ class TestJobDetailSendMessage:
         logger.info("=" * 80)
         logger.info(f"护照图片路径: {passport_path}")
 
-        assert os.path.exists(passport_path), \
-            f"护照图片文件不存在: {passport_path}"
+        assert os.path.exists(passport_path), f"护照图片文件不存在: {passport_path}"
 
         # ========== Act：上传护照图片 ==========
         with allure.step("确认聊天页输入框可见"):
             chat_page.wait_for_chat_loaded()
             logger.info("✓ 聊天页已就绪")
+        
+        # 记录初始消息数量（M端验证方式）
+        initial_count = chat_page.count_messages()
+        logger.info(f"✓ 上传前消息数量: {initial_count}")
 
         with allure.step(f"上传护照图片: {config['test_data']['passport']}"):
             chat_page.upload_image_file(passport_path)
             logger.info(f"✓ 已触发护照图片上传: {passport_path}")
 
-        # ========== Assert：验证图片消息和 AI 回复 ==========
-        with allure.step("验证图片消息出现在聊天区域"):
-            # 等待图片上传处理
-            page.wait_for_timeout(3000)
+        # ========== Assert：验证图片消息和 AI 回复（M端验证方式）==========
+        with allure.step("验证护照图片上传和 AI 自动回复（M端验证方式）"):
+            result = self._verify_file_upload_and_ai_reply(page, chat_page, initial_count, "护照图片")
             
-            # 截图用于调试
-            try:
-                screenshot_path = "reports/chat_after_upload_passport.png"
-                page.screenshot(path=screenshot_path, timeout=60000)
-                logger.info(f"📸 已截图保存到: {screenshot_path}")
-            except Exception as e:
-                logger.warning(f"截图失败: {e}")
+            # 截图
+            self._take_screenshot_with_allure(page, "chat_after_upload_passport.png", "护照图片上传后截图")
             
-            # 检查图片消息是否出现
-            if not chat_page.is_file_message_visible(timeout=15000):
-                # 失败时输出页面HTML片段
-                try:
-                    chat_html = page.locator("[class*='chat'], [class*='message']").first.inner_html()
-                    logger.error(f"聊天区域HTML（前500字符）: {chat_html[:500]}")
-                except Exception:
-                    pass
-                
-                assert False, "上传护照图片后，图片消息未显示在聊天区域"
+            # 断言验证（M端方式：上传成功 + AI回复 + 消息数量增加）
+            assert result['file_uploaded'], f"护照图片上传失败：{result.get('failure_reason', '图片消息未显示在聊天区域')}"
             
-            logger.info("✓ 图片消息已显示在聊天区域")
-
-        with allure.step("等待并验证 AI Auto Reply 出现"):
-            chat_page.wait_for_ai_auto_reply(timeout=100000)
-            assert chat_page.is_ai_auto_reply_visible(), \
-                "AI Auto Reply 标签未在聊天区域出现"
-            logger.info("✓ AI Auto Reply 出现")
-        
-        with allure.step("验证 AI Auto Reply 时间在发送时间之后"):
-            assert chat_page.verify_ai_reply_after_send(), \
-                "AI Auto Reply 时间未在发送消息时间之后"
-            logger.info("✓ AI Auto Reply 时间验证通过")
+            # AI回复断言：如果是超时，给出明确的超时原因
+            if not result['ai_replied']:
+                failure_msg = result.get('failure_reason', 'AI Auto Reply 未出现')
+                if result.get('timeout_occurred'):
+                    pytest.fail(f"❌ {failure_msg}")
+                else:
+                    assert False, failure_msg
+            
+            assert result['new_message_count'] >= 2, f"新消息数量异常: {result['new_message_count']}（期望 >= 2）"
+            
+            logger.info(f"✅ 验证完成（M端方式）：上传成功={result['file_uploaded']}, AI回复={result['ai_replied']}, 新增消息={result['new_message_count']}")
 
         logger.info("✅ TC004 通过：护照图片发送成功，AI Auto Reply 响应")

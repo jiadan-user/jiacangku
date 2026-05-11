@@ -225,36 +225,53 @@ def published_success_url(page, config):
             page.screenshot(path="debug_salary_failed.png")
             raise
 
-    with allure.step("填写 Job Description 并 Continue"):
+    with allure.step("填写 Job Description"):
         try:
             # 增加更长的等待让页面完全加载
             page.wait_for_timeout(3000)
             
-            # 不等待元素可见，直接强制填写（元素存在但hidden）
+            # 等待 Job Description 文本框可见
+            page.locator("#content").wait_for(state="visible", timeout=20000)
+            
+            # 填写 Job Description
             page.locator("#content").fill(
                 "We are looking for an experienced Software Architect to design "
-                "and implement scalable software solutions.",
-                force=True
+                "and implement scalable software solutions."
             )
             page.wait_for_timeout(500)
             logger.info("✓ Job Description 填写完成")
-            
-            # 强制点击 Continue（可能被级联菜单遮挡）
-            page.get_by_role("button", name="Continue").click(force=True)
-            page.wait_for_load_state("domcontentloaded", timeout=15000)
-            page.wait_for_timeout(1000)
-            logger.info("✓ Job Description 步骤完成")
         except Exception as e:
             logger.error(f"填写 Job Description 失败: {e}")
             page.screenshot(path="debug_job_description_failed.png")
             raise
 
-    with allure.step("点击 Post 发布，等待跳转成功页"):
-        success_page.click_post_button()
-        current_url = page.url
-        assert "/publish/success" in current_url, f"未跳转到发布成功页，当前 URL: {current_url}"
-        _SHARED["success_url"] = current_url
-        logger.info(f"✅ 发布成功，URL: {current_url}")
+    with allure.step("滚动到底部并点击 Post 发布按钮"):
+        try:
+            # 滚动到页面底部，确保 Post 按钮可见
+            page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+            page.wait_for_timeout(500)
+            
+            # 等待 Post 按钮可见
+            post_button = page.get_by_role("button", name="Post")
+            post_button.wait_for(state="visible", timeout=10000)
+            
+            # 点击 Post 按钮
+            post_button.click()
+            logger.info("✓ 已点击 Post 按钮")
+            
+            # 等待跳转到发布成功页
+            page.wait_for_url("**/publish/success**", timeout=30000)
+            page.wait_for_load_state("domcontentloaded", timeout=15000)
+            page.wait_for_timeout(2000)
+            
+            current_url = page.url
+            assert "/publish/success" in current_url, f"未跳转到发布成功页，当前 URL: {current_url}"
+            _SHARED["success_url"] = current_url
+            logger.info(f"✅ 发布成功，URL: {current_url}")
+        except Exception as e:
+            logger.error(f"点击 Post 按钮失败: {e}")
+            page.screenshot(path="debug_post_button_failed.png")
+            raise
 
     yield current_url
 

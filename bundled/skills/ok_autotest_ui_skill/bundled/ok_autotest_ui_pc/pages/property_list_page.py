@@ -8,30 +8,8 @@ from pages.base_page import BasePage
 class PropertyListPage(BasePage):
     """房产列表页（支持 AE/AU 等站点列表卡片）"""
 
-    # 买房列表 href 含 cate-buy-，与 for-sale / rent 不同；须与价格等取卡逻辑一致
-    _LIST_CARD_ANCHOR_SELECTOR = (
-        'a[href*="cate-rent-"], '
-        'a[href*="cate-property-for-sale-"], '
-        'a[href*="residential-"], '
-        'a[href*="cate-buy-"], '
-        'a[href*="cate-commercial-"]'
-    )
-
-    _AREA_IN_CARD_RE = re.compile(
-        r'[\d,]+\.?\d*\s*(?:sqm|m²|㎡|m2|sq\.?\s*m|sq\s*ft|sqft|square\s*metres?)'
-        r'|[\d,]+\.?\d*(?:m²|㎡|m2)\b'
-        r'|[\d,]+\.?\d*sqm\b',
-        re.IGNORECASE,
-    )
-
     def __init__(self, page: Page):
         super().__init__(page)
-
-    def _extract_area_from_card_text(self, card_text: str) -> str:
-        if not card_text:
-            return ""
-        m = self._AREA_IN_CARD_RE.search(card_text)
-        return m.group().strip() if m else ""
 
     def navigate_to_list(self, list_url: str, timeout: int = 30000):
         """打开列表页"""
@@ -783,7 +761,9 @@ class PropertyListPage(BasePage):
     def click_first_card_price(self):
         """点击第一张卡片的价格区域（如果价格可点击）"""
         try:
-            first_card = self.page.locator('a[href*="cate-rent-"], a[href*="cate-property-for-sale-"], a[href*="residential-"]').first
+            first_card = self.page.locator(
+                'a[href*="cate-property-for-rent-"], a[href*="cate-property-for-sale-"], a[href*="residential-"]'
+            ).first
             # 通常整个卡片都是链接，点击卡片即可
             first_card.click()
             self.page.wait_for_timeout(1000)
@@ -793,46 +773,88 @@ class PropertyListPage(BasePage):
     # ========== 面积相关方法 ==========
 
     def get_first_card_area_text(self):
-        """获取第一张卡片的面积文本（如 XX sqm、XX m²、XX sq ft）
-
-        买房列表 URL 为 cate-buy，但卡片 href 常为 cate-property-for-sale-；且页眉/侧栏
-        可能先出现 cate-rent 等链接。不能对 OR 选择器仅用 .first，需跳过无面积文案的节点。
-        """
+        """获取第一张卡片的面积文本（如 XX sqm、XX m²、XX sq ft）"""
         try:
-            cards = self.page.locator(self._LIST_CARD_ANCHOR_SELECTOR)
-            cards.first.wait_for(state="visible", timeout=5000)
-            n = min(30, cards.count())
-            for i in range(n):
-                try:
-                    card_text = cards.nth(i).inner_text()
-                    area = self._extract_area_from_card_text(card_text)
-                    if area:
-                        return area
-                except Exception:
-                    continue
+            first_card = self.page.locator('a[href*="cate-rent-"], a[href*="cate-property-for-sale-"], a[href*="residential-"]').first
+            first_card.wait_for(state="visible", timeout=5000)
+            card_text = first_card.inner_text()
+            area_match = re.search(
+                r'[\d,]+\.?\d*\s*(?:sqm|m²|sq\.?\s*m|sq\s*ft|sqft|square\s*metres?)',
+                card_text, re.IGNORECASE
+            )
+            if area_match:
+                return area_match.group()
             return ""
         except Exception:
             return ""
 
     def get_card_areas(self, max_cards: int = 5):
         """获取前 N 张卡片的面积列表"""
-        cards = self.page.locator(self._LIST_CARD_ANCHOR_SELECTOR)
+        cards = self.page.locator(
+            'a[href*="cate-property-for-rent-"], a[href*="cate-property-for-sale-"], a[href*="residential-"]'
+        )
         count = min(max_cards, cards.count())
         areas = []
         for i in range(count):
             try:
                 card = cards.nth(i)
                 card_text = card.inner_text()
-                areas.append(self._extract_area_from_card_text(card_text))
+                area_match = re.search(
+                    r'[\d,]+\.?\d*\s*(?:sqm|m²|sq\.?\s*m|sq\s*ft|sqft|square\s*metres?)',
+                    card_text, re.IGNORECASE
+                )
+                if area_match:
+                    areas.append(area_match.group())
+                else:
+                    areas.append("")
             except Exception:
                 areas.append("")
         return areas
 
     def is_area_format_valid(self, area_text: str):
         """验证面积格式是否正确（包含数字和单位）"""
-        return bool(self._AREA_IN_CARD_RE.search(area_text or ""))
+        return bool(re.search(
+            r'[\d,]+\.?\d*\s*(?:sqm|m²|sq\.?\s*m|sq\s*ft|sqft|square\s*metres?)',
+            area_text, re.IGNORECASE
+        ))
 
     # ========== 位置/邮编相关方法 ==========
+
+    def _extract_location_from_card_text(self, card_text: str) -> str:
+        """从单张卡片 inner_text 解析位置/邮编（与首卡逻辑一致，供批量 TC005 使用）。
+
+        卡片常仅展示 suburb、无 4 位邮编或与标题同行；此前 ``get_card_locations`` 只有邮编/州正则，
+        无前几张卡的「逐行 suburb」回退，会得到全空串导致 ``assert valid_count > 0`` 误报。
+        """
+        if not card_text or not card_text.strip():
+            return ""
+        postcode_match = re.search(r"\b(\d{4})\b", card_text)
+        if postcode_match:
+            return postcode_match.group(1)
+        loc_match = re.search(
+            r"([A-Za-z\s\-]+(?:ACT|NSW|VIC|QLD|SA|WA|TAS|NT)\s*\d{4}?)",
+            card_text,
+        )
+        if loc_match:
+            return loc_match.group(1).strip()
+        lines = [ln.strip() for ln in card_text.split("\n") if ln.strip()]
+        skip_exact = {"list", "map", "filter", "free"}
+        for ln in lines:
+            if re.match(r"^A\$[\d,+-]+", ln) or ln.lower() in skip_exact:
+                continue
+            if "contact for price" in ln.lower():
+                continue
+            if re.match(r"^\d+\s*/\s*\d+$", ln):
+                continue
+            if re.match(r"^OKer[A-Za-z]{2}_", ln) or "agent-avatar" in ln:
+                continue
+            if "sqm" in ln.lower() or "m²" in ln:
+                continue
+            if re.match(r"^(house|unit|apartment|townhouse|townhomes|villa|studio|land)\b", ln, re.I):
+                continue
+            if len(ln) >= 2 and len(ln) <= 80:
+                return ln
+        return ""
 
     def get_first_card_location_text(self):
         """获取第一张卡片的位置/邮编文本（如 suburb、postcode、ACT 2600）"""
@@ -840,26 +862,7 @@ class PropertyListPage(BasePage):
             first_card = self.page.locator('a[href*="cate-rent-"], a[href*="cate-property-for-sale-"], a[href*="residential-"]').first
             first_card.wait_for(state="visible", timeout=5000)
             card_text = first_card.inner_text()
-            # AU 邮编 4 位数字
-            postcode_match = re.search(r'\b(\d{4})\b', card_text)
-            if postcode_match:
-                return postcode_match.group(1)
-            # 或 suburb, State 格式（如 Canberra ACT）
-            loc_match = re.search(r'([A-Za-z\s\-]+(?:ACT|NSW|VIC|QLD|SA|WA|TAS|NT)\s*\d{4}?)', card_text)
-            if loc_match:
-                return loc_match.group(1).strip()
-            # 或纯 suburb 名称
-            lines = [ln.strip() for ln in card_text.split("\n") if ln.strip()]
-            for ln in lines:
-                if re.match(r"^A\$[\d,]+", ln) or ln == "Free":
-                    continue
-                if re.match(r"^\d+\s*/\s*\d+$", ln):
-                    continue
-                if "OKerAU_" in ln or "sqm" in ln or "m²" in ln:
-                    continue
-                if len(ln) >= 2 and len(ln) <= 80:
-                    return ln
-            return ""
+            return self._extract_location_from_card_text(card_text)
         except Exception:
             return ""
 
@@ -872,15 +875,7 @@ class PropertyListPage(BasePage):
             try:
                 card = cards.nth(i)
                 card_text = card.inner_text()
-                postcode_match = re.search(r'\b(\d{4})\b', card_text)
-                if postcode_match:
-                    locations.append(postcode_match.group(1))
-                else:
-                    loc_match = re.search(r'([A-Za-z\s\-]+(?:ACT|NSW|VIC|QLD|SA|WA|TAS|NT)\s*\d{4}?)', card_text)
-                    if loc_match:
-                        locations.append(loc_match.group(1).strip())
-                    else:
-                        locations.append("")
+                locations.append(self._extract_location_from_card_text(card_text))
             except Exception:
                 locations.append("")
         return locations
@@ -1030,7 +1025,8 @@ class PropertyListPage(BasePage):
                 continue
             if re.match(r"^\d+\s*/\s*\d+$", ln):
                 continue
-            if "OKerAU_" in ln or "agent-avatar" in ln or "fav-icon" in ln:
+            # 卖家昵称：OKerAU_ / OKerNZ_ 等，勿与房产标题混淆
+            if re.match(r"^OKer[A-Za-z]{2}_", ln) or "agent-avatar" in ln or "fav-icon" in ln:
                 continue
             if ln in ("List", "Map", "Filter"):
                 continue
@@ -1057,7 +1053,7 @@ class PropertyListPage(BasePage):
                     continue
                 if re.match(r"^\d+\s*/\s*\d+$", ln):
                     continue
-                if "OKerAU_" in ln:
+                if re.match(r"^OKer[A-Za-z]{2}_", ln):
                     continue
                 if ln in ("List", "Map", "Filter"):
                     continue

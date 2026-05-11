@@ -1,21 +1,20 @@
 from __future__ import annotations
 
 import argparse
-import io
+import importlib.util
 import os
+import signal
 import shutil
 import socket
 import subprocess
 import sys
+import threading
 import time
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
-from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from typing import Any
-
-import pytest
 
 from .common import (
     ALLURE_SERVER_INFO_PATH,
@@ -45,43 +44,6 @@ FAILED_OUTCOMES = {"failed", "error"}
 ALLURE_REPORT_DIR = ROOT_REPORTS_DIR / "allure-report"
 ALLURE_RESULTS_DIR = ROOT_REPORTS_DIR / "allure-results"
 ALLURE_HOST = "127.0.0.1"
-
-
-def _report_reason(report: pytest.TestReport) -> str | None:
-    text = (getattr(report, "longreprtext", "") or "").strip()
-    if not text:
-        return None
-    lines = [line.strip() for line in text.splitlines() if line.strip()]
-    return lines[-1] if lines else text
-
-
-class _RunPlugin:
-    def __init__(self) -> None:
-        self.case_results: dict[str, dict[str, Any]] = {}
-
-    def pytest_runtest_logreport(self, report: pytest.TestReport) -> None:
-        if report.when != "call":
-            if report.skipped and report.nodeid not in self.case_results:
-                self.case_results[report.nodeid] = {
-                    "nodeid": report.nodeid,
-                    "outcome": "skipped",
-                    "duration": report.duration,
-                    "reason": _report_reason(report),
-                }
-            if report.failed and report.nodeid not in self.case_results:
-                self.case_results[report.nodeid] = {
-                    "nodeid": report.nodeid,
-                    "outcome": report.outcome,
-                    "duration": report.duration,
-                    "reason": _report_reason(report),
-                }
-            return
-        self.case_results[report.nodeid] = {
-            "nodeid": report.nodeid,
-            "outcome": report.outcome,
-            "duration": report.duration,
-            "reason": _report_reason(report),
-        }
 
 
 def _default_case_result(nodeid: str) -> dict[str, Any]:
@@ -133,8 +95,14 @@ def _sync_latest_report_assets(run_id: str, junit_path: Path, allure_dir: Path) 
     ensure_dir(ROOT_REPORTS_DIR)
     if latest_allure_dir.exists():
         shutil.rmtree(latest_allure_dir)
-    shutil.copytree(allure_dir, latest_allure_dir)
-    shutil.copy2(junit_path, latest_junit_path)
+    if allure_dir.exists():
+        shutil.copytree(allure_dir, latest_allure_dir)
+    else:
+        latest_allure_dir.mkdir(parents=True, exist_ok=True)
+    if junit_path.exists():
+        shutil.copy2(junit_path, latest_junit_path)
+    else:
+        latest_junit_path.write_text('<testsuite name="ok-ui-timeout" tests="0" />\n', encoding="utf-8")
     (ROOT_REPORTS_DIR / "ok_test_latest_run.txt").write_text(run_id + "\n", encoding="utf-8")
 
 
@@ -385,7 +353,42 @@ def _execution_targets(
     return targets, "nodeid"
 
 
-def _build_pytest_args(targets: list[str], junit_path: Path, allure_dir: Path, workers: int = 1) -> list[str]:
+def _pytest_timeout_available() -> bool:
+    return importlib.util.find_spec("pytest_timeout") is not None
+
+
+def _timeout_value(args: argparse.Namespace, attr: str, env_name: str, default: int) -> int:
+    raw = getattr(args, attr, None)
+    if raw is None:
+        raw = os.getenv(env_name, str(default))
+    try:
+        value = int(raw)
+    except (TypeError, ValueError):
+        value = default
+    return max(0, value)
+
+
+def _case_timeout(args: argparse.Namespace) -> int:
+    return _timeout_value(args, "case_timeout", "OK_TEST_CASE_TIMEOUT", 300)
+
+
+def _idle_timeout(args: argparse.Namespace) -> int:
+    return _timeout_value(args, "idle_timeout", "OK_TEST_IDLE_TIMEOUT", 900)
+
+
+def _phase_timeout(args: argparse.Namespace) -> int:
+    return _timeout_value(args, "phase_timeout", "OK_TEST_PHASE_TIMEOUT", 0)
+
+
+def _build_pytest_args(
+    targets: list[str],
+    junit_path: Path,
+    allure_dir: Path,
+    workers: int = 1,
+    *,
+    case_timeout: int | None = None,
+    pytest_timeout_available: bool | None = None,
+) -> list[str]:
     args = targets + [
         "-p",
         "no:rerunfailures",
@@ -398,6 +401,8 @@ def _build_pytest_args(targets: list[str], junit_path: Path, allure_dir: Path, w
     ]
     if workers > 1:
         args.extend(["-n", str(workers), "--dist", "loadfile"])
+    if case_timeout and case_timeout > 0 and (pytest_timeout_available if pytest_timeout_available is not None else _pytest_timeout_available()):
+        args.extend(["--timeout", str(case_timeout), "--timeout-method", "thread"])
     return args
 
 
@@ -503,10 +508,6 @@ def _resolve_workers(args: argparse.Namespace, selected_count: int, has_prerequi
         ),
         "max_workers": max_workers,
     }
-
-
-def _collect_phase_results(cases: list[CatalogCase], plugin: _RunPlugin) -> list[dict[str, Any]]:
-    return [plugin.case_results.get(case.nodeid, _default_case_result(case.nodeid)) for case in cases]
 
 
 def _junit_reason(testcase: ET.Element) -> str | None:
@@ -618,7 +619,7 @@ def _merge_phase_results(
     junit_results: dict[str, dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], list[str], str]:
     warnings: list[str] = []
-    source = "junit" if junit_results else "plugin"
+    source = "junit" if junit_results else ("plugin" if plugin_results else "default")
     results: list[dict[str, Any]] = []
     for case in cases:
         junit_result = junit_results.get(case.nodeid)
@@ -710,6 +711,130 @@ def _resolve_prerequisite_cases(selected_cases: list[CatalogCase], catalog: list
     return sorted(prerequisite_map.values(), key=lambda item: item.nodeid), selector_payloads
 
 
+def _latest_artifact_mtime(path: Path) -> float:
+    if not path.exists():
+        return 0.0
+    latest = 0.0
+    for item in path.rglob("*"):
+        if not item.is_file():
+            continue
+        try:
+            latest = max(latest, item.stat().st_mtime)
+        except OSError:
+            continue
+    return latest
+
+
+def _terminate_process_group(process: subprocess.Popen, *, grace_seconds: float = 3.0) -> None:
+    try:
+        pgid = os.getpgid(process.pid)
+    except OSError:
+        pgid = None
+    for sig in (signal.SIGTERM, signal.SIGKILL):
+        if pgid is not None:
+            try:
+                os.killpg(pgid, sig)
+            except OSError:
+                pass
+        else:
+            try:
+                process.send_signal(sig)
+            except OSError:
+                pass
+        try:
+            process.wait(timeout=grace_seconds if sig == signal.SIGTERM else 1.0)
+            return
+        except subprocess.TimeoutExpired:
+            continue
+
+
+def _run_pytest_process(
+    command: list[str],
+    *,
+    output_path: Path,
+    allure_dir: Path,
+    idle_timeout: int,
+    phase_timeout: int,
+) -> dict[str, Any]:
+    ensure_dir(output_path.parent)
+    ensure_dir(allure_dir)
+    started_at = time.monotonic()
+    last_artifact_mtime = _latest_artifact_mtime(allure_dir)
+    next_artifact_check = started_at
+    progress = {"last_at": started_at}
+    progress_lock = threading.Lock()
+    timed_out = False
+    timeout_type: str | None = None
+    timeout_elapsed_seconds = 0.0
+
+    process = subprocess.Popen(
+        command,
+        cwd=ROOT_DIR,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
+        start_new_session=True,
+    )
+
+    def _mark_progress() -> None:
+        with progress_lock:
+            progress["last_at"] = time.monotonic()
+
+    with output_path.open("w", encoding="utf-8") as output:
+        def _reader() -> None:
+            assert process.stdout is not None
+            for line in process.stdout:
+                output.write(line)
+                output.flush()
+                _mark_progress()
+
+        reader = threading.Thread(target=_reader, daemon=True)
+        reader.start()
+        while process.poll() is None:
+            now = time.monotonic()
+            if now >= next_artifact_check:
+                current_artifact_mtime = _latest_artifact_mtime(allure_dir)
+                if current_artifact_mtime > last_artifact_mtime:
+                    last_artifact_mtime = current_artifact_mtime
+                    _mark_progress()
+                next_artifact_check = now + 2.0
+            with progress_lock:
+                idle_seconds = now - progress["last_at"]
+            elapsed_seconds = now - started_at
+            if phase_timeout > 0 and elapsed_seconds >= phase_timeout:
+                timed_out = True
+                timeout_type = "phase_timeout"
+                timeout_elapsed_seconds = elapsed_seconds
+                output.write(f"\n[ok-test-watchdog] phase timeout after {elapsed_seconds:.1f}s; terminating pytest process group.\n")
+                output.flush()
+                _terminate_process_group(process)
+                break
+            if idle_timeout > 0 and idle_seconds >= idle_timeout:
+                timed_out = True
+                timeout_type = "idle_timeout"
+                timeout_elapsed_seconds = elapsed_seconds
+                output.write(f"\n[ok-test-watchdog] idle timeout after {idle_seconds:.1f}s without output or allure progress; terminating pytest process group.\n")
+                output.flush()
+                _terminate_process_group(process)
+                break
+            time.sleep(0.2)
+        try:
+            process.wait(timeout=2)
+        except subprocess.TimeoutExpired:
+            _terminate_process_group(process, grace_seconds=0.5)
+        reader.join(timeout=2)
+        if process.stdout is not None:
+            process.stdout.close()
+
+    return {
+        "returncode": process.returncode if process.returncode is not None else -9,
+        "timed_out": timed_out,
+        "timeout_type": timeout_type,
+        "timeout_elapsed_seconds": timeout_elapsed_seconds,
+    }
+
+
 def _run_phase(
     phase_name: str,
     cases: list[CatalogCase],
@@ -719,6 +844,11 @@ def _run_phase(
     allure_dir: Path,
     pytest_cmd: list[str],
     workers: int = 1,
+    *,
+    case_timeout: int = 300,
+    idle_timeout: int = 900,
+    phase_timeout: int = 0,
+    pytest_timeout_available: bool = True,
 ) -> dict[str, Any]:
     junit_path = _phase_junit_path(run_dir, phase_name)
     nodeids = [case.nodeid for case in cases]
@@ -741,24 +871,41 @@ def _run_phase(
             "empty_marker_path": str(empty_marker),
         }
 
-    plugin = _RunPlugin()
-    pytest_args = _build_pytest_args(targets, junit_path, allure_dir, workers=workers)
-    stdout_buffer = io.StringIO()
-    stderr_buffer = io.StringIO()
+    timeout_warning = []
+    if case_timeout > 0 and not pytest_timeout_available:
+        timeout_warning.append("pytest-timeout is not installed; per-case timeout disabled, runner watchdog still active")
+    pytest_args = _build_pytest_args(
+        targets,
+        junit_path,
+        allure_dir,
+        workers=workers,
+        case_timeout=case_timeout,
+        pytest_timeout_available=pytest_timeout_available,
+    )
     output_path = _phase_output_path(run_dir, phase_name)
-    if workers > 1:
-        command = pytest_cmd + pytest_args
-        result = subprocess.run(command, cwd=ROOT_DIR, capture_output=True, text=True)
-        exit_code = result.returncode
-        output_path.write_text((result.stdout or "") + "\n" + (result.stderr or ""), encoding="utf-8")
-        plugin_results: dict[str, dict[str, Any]] = {}
-    else:
-        with redirect_stdout(stdout_buffer), redirect_stderr(stderr_buffer):
-            exit_code = pytest.main(pytest_args, plugins=[plugin])
-        output_path.write_text(stdout_buffer.getvalue() + "\n" + stderr_buffer.getvalue(), encoding="utf-8")
-        plugin_results = plugin.case_results
+    command = pytest_cmd + pytest_args
+    process_result = _run_pytest_process(
+        command,
+        output_path=output_path,
+        allure_dir=allure_dir,
+        idle_timeout=idle_timeout,
+        phase_timeout=phase_timeout,
+    )
+    exit_code = -9 if process_result.get("timed_out") else int(process_result["returncode"])
+    plugin_results: dict[str, dict[str, Any]] = {}
     junit_results, junit_warnings = _parse_junit_results(junit_path, nodeids)
     case_results, merge_warnings, result_source = _merge_phase_results(cases, plugin_results, junit_results)
+    timed_out = bool(process_result.get("timed_out"))
+    timeout_type = process_result.get("timeout_type")
+    timeout_elapsed_seconds = float(process_result.get("timeout_elapsed_seconds") or 0)
+    timeout_warnings = []
+    block_reason = None
+    if timed_out:
+        block_reason = (
+            f"{phase_name} {timeout_type} after {timeout_elapsed_seconds:.0f}s; "
+            "pytest process group was terminated by OK UI watchdog"
+        )
+        timeout_warnings.append(block_reason)
     return {
         "phase": phase_name,
         "pytest_exit_code": exit_code,
@@ -772,7 +919,11 @@ def _run_phase(
         "execution_target_mode": target_mode,
         "pytest_target_count": len(targets),
         "result_source": result_source,
-        "result_warnings": junit_warnings + merge_warnings,
+        "result_warnings": timeout_warning + timeout_warnings + junit_warnings + merge_warnings,
+        "timed_out": timed_out,
+        "timeout_type": timeout_type,
+        "timeout_elapsed_seconds": timeout_elapsed_seconds,
+        "block_reason": block_reason,
     }
 
 
@@ -836,6 +987,10 @@ def handle_run(args: argparse.Namespace) -> int:
     run_dir = ensure_dir(REPORTS_DIR / run_id)
     pytest_cmd, pytest_display = resolve_pytest_command()
     allure_dir = ensure_dir(run_dir / "allure-results")
+    case_timeout = _case_timeout(args)
+    idle_timeout = _idle_timeout(args)
+    phase_timeout = _phase_timeout(args)
+    has_pytest_timeout = _pytest_timeout_available()
 
     save_json(run_dir / "selection.json", {"cases": [case.to_dict() for case in selected_cases]})
     scoped_cases, recommended_cases, baseline_cases = recommend_cases(catalog, criteria, selected_cases)
@@ -849,6 +1004,8 @@ def handle_run(args: argparse.Namespace) -> int:
         _phase_junit_path(run_dir, "target_initial"),
         allure_dir,
         workers=resolved_workers,
+        case_timeout=case_timeout,
+        pytest_timeout_available=has_pytest_timeout,
     )
     (run_dir / "pytest_command.txt").write_text(shell_join(command_hint), encoding="utf-8")
 
@@ -857,6 +1014,10 @@ def handle_run(args: argparse.Namespace) -> int:
         summary = _build_summary(run_id, args, selected_cases, case_results, dry_run=True)
         summary.update(worker_resolution)
         summary["pytest_command"] = shell_join(command_hint)
+        summary["case_timeout_seconds"] = case_timeout
+        summary["idle_timeout_seconds"] = idle_timeout
+        summary["phase_timeout_seconds"] = phase_timeout
+        summary["pytest_timeout_available"] = has_pytest_timeout
         summary["execution_target_mode"] = target_initial_mode
         summary["pytest_target_count"] = len(target_initial_targets)
         summary["parallel_granularity"] = "file" if resolved_workers > 1 else "serial"
@@ -880,10 +1041,15 @@ def handle_run(args: argparse.Namespace) -> int:
         print(f"parallel_granularity={summary['parallel_granularity']}")
         print(f"execution_target_mode={summary['execution_target_mode']}")
         print(f"pytest_target_count={summary['pytest_target_count']}")
+        print(f"case_timeout_seconds={summary['case_timeout_seconds']}")
+        print(f"idle_timeout_seconds={summary['idle_timeout_seconds']}")
+        print(f"phase_timeout_seconds={summary['phase_timeout_seconds']}")
+        print(f"pytest_timeout_available={str(summary['pytest_timeout_available']).lower()}")
         print(f"pytest={pytest_display}")
         _print_selected_cases(selected_cases)
         return 0
 
+    print(f"run_id={run_id}", flush=True)
     initial_phase = _run_phase(
         "target_initial",
         selected_cases,
@@ -893,16 +1059,21 @@ def handle_run(args: argparse.Namespace) -> int:
         allure_dir,
         pytest_cmd,
         workers=resolved_workers,
+        case_timeout=case_timeout,
+        idle_timeout=idle_timeout,
+        phase_timeout=phase_timeout,
+        pytest_timeout_available=has_pytest_timeout,
     )
     initial_results = initial_phase["case_results"]
-    initial_counts = _result_counts(initial_results)
 
-    prerequisite_attempted = bool(prerequisite_cases) and any(
-        item["outcome"] in {"skipped", "not_run"} for item in initial_results
-    )
+    block_reason: str | None = initial_phase.get("block_reason")
+    prerequisite_attempted = False
+    if block_reason is None:
+        prerequisite_attempted = bool(prerequisite_cases) and any(
+            item["outcome"] in {"skipped", "not_run"} for item in initial_results
+        )
     prerequisite_phase: dict[str, Any] | None = None
     final_phase = initial_phase
-    block_reason: str | None = None
 
     if prerequisite_attempted:
         prerequisite_phase = _run_phase(
@@ -914,9 +1085,15 @@ def handle_run(args: argparse.Namespace) -> int:
             allure_dir,
             pytest_cmd,
             workers=1,
+            case_timeout=case_timeout,
+            idle_timeout=idle_timeout,
+            phase_timeout=phase_timeout,
+            pytest_timeout_available=has_pytest_timeout,
         )
         prerequisite_counts = _result_counts(prerequisite_phase["case_results"])
-        if prerequisite_counts["failed"] > 0:
+        if prerequisite_phase.get("block_reason"):
+            block_reason = prerequisite_phase["block_reason"]
+        elif prerequisite_counts["failed"] > 0:
             block_reason = "已自动补跑前置，但前置用例存在失败，请先处理前置问题后再重跑目标场景。"
         elif prerequisite_counts["executed"] == 0:
             block_reason = "已尝试自动补跑前置，但前置用例未真正执行，请先检查环境、账号或前置数据。"
@@ -930,7 +1107,13 @@ def handle_run(args: argparse.Namespace) -> int:
                 allure_dir,
                 pytest_cmd,
                 workers=resolved_workers,
+                case_timeout=case_timeout,
+                idle_timeout=idle_timeout,
+                phase_timeout=phase_timeout,
+                pytest_timeout_available=has_pytest_timeout,
             )
+            if final_phase.get("block_reason"):
+                block_reason = final_phase["block_reason"]
     else:
         prerequisite_counts = _result_counts([])
 
@@ -945,6 +1128,10 @@ def handle_run(args: argparse.Namespace) -> int:
     summary = _build_summary(run_id, args, selected_cases, final_results, dry_run=False)
     summary.update(worker_resolution)
     summary["pytest_command"] = shell_join(command_hint)
+    summary["case_timeout_seconds"] = case_timeout
+    summary["idle_timeout_seconds"] = idle_timeout
+    summary["phase_timeout_seconds"] = phase_timeout
+    summary["pytest_timeout_available"] = has_pytest_timeout
     summary["execution_target_mode"] = target_initial_mode
     summary["pytest_target_count"] = len(target_initial_targets)
     summary["parallel_granularity"] = "file" if resolved_workers > 1 else "serial"
@@ -995,6 +1182,10 @@ def handle_run(args: argparse.Namespace) -> int:
     print(f"parallel_granularity={summary['parallel_granularity']}")
     print(f"execution_target_mode={summary['execution_target_mode']}")
     print(f"pytest_target_count={summary['pytest_target_count']}")
+    print(f"case_timeout_seconds={summary['case_timeout_seconds']}")
+    print(f"idle_timeout_seconds={summary['idle_timeout_seconds']}")
+    print(f"phase_timeout_seconds={summary['phase_timeout_seconds']}")
+    print(f"pytest_timeout_available={str(summary['pytest_timeout_available']).lower()}")
     print(f"artifact_retention={summary['artifact_retention']}")
     if summary.get("lean_cleanup", {}).get("enabled"):
         print(f"lean_cleanup_deleted={len(summary['lean_cleanup'].get('deleted', []))}")

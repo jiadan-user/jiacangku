@@ -49,6 +49,34 @@ class OkTestRunnerTests(unittest.TestCase):
         self.assertIn("loadfile", args)
         self.assertNotIn("loadscope", args)
 
+    def test_pytest_args_include_case_timeout_when_plugin_available(self) -> None:
+        args = runner._build_pytest_args(
+            ["test_cases/zhaopin/test_demo.py"],
+            Path("junit.xml"),
+            Path("allure-results"),
+            workers=1,
+            case_timeout=300,
+            pytest_timeout_available=True,
+        )
+
+        self.assertIn("--timeout", args)
+        self.assertIn("300", args)
+        self.assertIn("--timeout-method", args)
+        self.assertIn("thread", args)
+
+    def test_pytest_args_skip_case_timeout_when_plugin_missing(self) -> None:
+        args = runner._build_pytest_args(
+            ["test_cases/zhaopin/test_demo.py"],
+            Path("junit.xml"),
+            Path("allure-results"),
+            workers=1,
+            case_timeout=300,
+            pytest_timeout_available=False,
+        )
+
+        self.assertNotIn("--timeout", args)
+        self.assertNotIn("--timeout-method", args)
+
     def test_path_only_selection_prefers_file_targets(self) -> None:
         case = runner.CatalogCase(
             nodeid="test_cases/zhaopin/test_demo.py::test_a",
@@ -151,6 +179,93 @@ class OkTestRunnerTests(unittest.TestCase):
 
             self.assertFalse(cleanup["enabled"])
             self.assertTrue(debug_path.exists())
+
+    def test_watchdog_kills_idle_subprocess_group(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            output_path = root / "pytest_output.txt"
+            result = runner._run_pytest_process(
+                [sys.executable, "-c", "import time; time.sleep(5)"],
+                output_path=output_path,
+                allure_dir=root / "allure-results",
+                idle_timeout=1,
+                phase_timeout=0,
+            )
+
+            self.assertTrue(result["timed_out"])
+            self.assertEqual(result["timeout_type"], "idle_timeout")
+            self.assertNotEqual(result["returncode"], 0)
+            self.assertIn("idle timeout", output_path.read_text(encoding="utf-8"))
+
+    def test_run_phase_returns_blocked_report_on_timeout(self) -> None:
+        case = runner.CatalogCase(
+            nodeid="test_cases/demo/test_sleep.py::test_sleep",
+            file_path="test_cases/demo/test_sleep.py",
+            test_name="test_sleep",
+            case_id=None,
+            priority=None,
+            site=None,
+            markers=[],
+            allure_feature=None,
+            allure_story=None,
+            allure_title=None,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp)
+            phase = runner._run_phase(
+                "target_initial",
+                [case],
+                [case],
+                runner.SelectionCriteria(path="test_cases/demo/"),
+                run_dir,
+                run_dir / "allure-results",
+                [sys.executable, "-c", "import time; time.sleep(5)"],
+                workers=1,
+                case_timeout=0,
+                idle_timeout=1,
+                phase_timeout=0,
+                pytest_timeout_available=False,
+            )
+
+            self.assertTrue(phase["timed_out"])
+            self.assertEqual(phase["timeout_type"], "idle_timeout")
+            self.assertEqual(phase["case_results"][0]["outcome"], "not_run")
+            self.assertIn("block_reason", phase)
+            self.assertTrue(Path(phase["output_path"]).exists())
+
+    def test_serial_subprocess_output_written_to_phase_output(self) -> None:
+        case = runner.CatalogCase(
+            nodeid="test_cases/demo/test_output.py::test_output",
+            file_path="test_cases/demo/test_output.py",
+            test_name="test_output",
+            case_id=None,
+            priority=None,
+            site=None,
+            markers=[],
+            allure_feature=None,
+            allure_story=None,
+            allure_title=None,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp)
+            phase = runner._run_phase(
+                "target_initial",
+                [case],
+                [case],
+                runner.SelectionCriteria(path="test_cases/demo/"),
+                run_dir,
+                run_dir / "allure-results",
+                [sys.executable, "-c", "import sys; print('hello stdout'); sys.stderr.write('hello stderr\\n')"],
+                workers=1,
+                case_timeout=0,
+                idle_timeout=5,
+                phase_timeout=0,
+                pytest_timeout_available=False,
+            )
+
+            output = Path(phase["output_path"]).read_text(encoding="utf-8")
+            self.assertIn("hello stdout", output)
+            self.assertIn("hello stderr", output)
 
     def test_generate_allure_report_uses_run_scoped_report_dir(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

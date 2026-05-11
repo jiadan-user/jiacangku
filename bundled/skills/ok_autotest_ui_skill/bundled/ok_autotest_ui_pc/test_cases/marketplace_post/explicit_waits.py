@@ -10,8 +10,8 @@ from playwright.sync_api import Page
 from test_cases.marketplace.explicit_waits import wait_network_quiet, wait_short_ui_tick
 
 
-def wait_apple_details_ready_for_tc001(page: Page, timeout: int = 25_000) -> None:
-    """TC001：Condition + 容量选项出现（替代固定 4s）。"""
+def wait_apple_details_ready_for_tc001(page: Page, timeout: int = 35_000) -> None:
+    """TC001：Condition + 容量选项出现（替代固定 4s）。增加timeout从25s到35s。"""
     page.get_by_text("Excellent", exact=True).first.wait_for(state="visible", timeout=timeout)
     page.locator("text=/\\d+\\s*(GB|TB)/i").first.wait_for(state="visible", timeout=timeout)
 

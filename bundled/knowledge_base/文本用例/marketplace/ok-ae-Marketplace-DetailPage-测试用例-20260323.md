@@ -992,6 +992,9 @@ await page.goto('https://ae.58v5.cn/en/city-abu-dhabi/cate-bedroom-furniture/bed
 
 ### 按优先级分布（TC001–TC044）
 
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`marketplace/test_ae_marketplace_detail_online_offline.py::test_tc001_marketplace_list_url_and_filter_layout`）
+
 | 优先级 | 总数 | 说明 |
 |--------|------|------|
 | P0 | 17 | 列表/筛选/导航/核心详情字段/权限主操作/差异对照关键项 |

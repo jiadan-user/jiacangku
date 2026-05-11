@@ -31,6 +31,9 @@
 
 ### TC001 列表卡片停车位图标和数量正常展示
 
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_parking_buy.py::test_tc001_parking_icon_and_count_displayed`）
+
 **步骤**：打开买房列表页，等待卡片加载完成，检查前 N 张卡片是否有停车位信息。  
 **预期**：至少有一张卡片展示停车位图标和数量。  
 **验证**：img[src*="Parking"] 可见，同级标签文案非空。
@@ -38,6 +41,9 @@
 ---
 
 ### TC002 停车位数量取值合理
+
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_parking_buy.py::test_tc002_parking_count_value_valid`）
 
 **步骤**：获取列表中所有卡片的停车位数量文本。  
 **预期**：数量值为合理格式，包括：
@@ -51,6 +57,9 @@
 
 ### TC003 停车位图标尺寸和可见性正常
 
+**优先级**：P1
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_parking_buy.py::test_tc003_parking_icon_size_and_visibility`）
+
 **步骤**：定位列表卡片中的停车位图标元素。  
 **预期**：图标尺寸合理（宽高 > 0），在视口内可见，无遮挡。  
 **验证**：图标 bounding box 宽高均 > 0，is_visible() = true。
@@ -59,6 +68,9 @@
 
 ### TC004 停车位数量与详情页一致
 
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_parking_buy.py::test_tc004_parking_count_consistent_with_detail`）
+
 **步骤**：记录列表页第一张有停车位信息的卡片的停车位数量，点击进入详情页。  
 **预期**：详情页主信息区（MainInfo）展示的停车位数量与列表页一致。  
 **验证**：列表页数量 == 详情页 MainInfo 区停车位数量。
@@ -66,6 +78,9 @@
 ---
 
 ### TC005 无停车位信息的卡片正常展示（不崩溃）
+
+**优先级**：P1
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_parking_buy.py::test_tc005_card_without_parking_still_visible`）
 
 **步骤**：遍历前 N 张卡片，找到无停车位图标的卡片。  
 **预期**：无停车位信息的卡片仍正常可见，不因缺少数据而报错或布局异常。  

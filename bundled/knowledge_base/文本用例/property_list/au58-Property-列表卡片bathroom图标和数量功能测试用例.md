@@ -24,6 +24,9 @@ Bathroom 图标使用 `Bathrooms.png`，数量展示在 `.room-distance-type-ite
 
 ### TC001 列表卡片展示 Bathroom 图标和数量
 
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_bathroom_student_apartment.py::test_tc001_bathroom_icon_and_count_visible`）
+
 **步骤**：打开学生公寓列表页，查看列表卡片内容。  
 **预期**：每张卡片均展示 Bathroom 图标和数量信息（数量为正整数或合理描述）。  
 **验证**：Bathroom 数量元素可见，值为非空字符串。
@@ -31,6 +34,9 @@ Bathroom 图标使用 `Bathrooms.png`，数量展示在 `.room-distance-type-ite
 ---
 
 ### TC002 Bathroom 数量取值合理
+
+**优先级**：P1
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_bathroom_student_apartment.py::test_tc002_bathroom_count_value_reasonable`）
 
 **步骤**：在列表页获取多张卡片的 Bathroom 数量。  
 **预期**：Bathroom 数量为以下格式之一：
@@ -45,6 +51,9 @@ Bathroom 图标使用 `Bathrooms.png`，数量展示在 `.room-distance-type-ite
 
 ### TC003 Bathroom 图标可见性
 
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_bathroom_student_apartment.py::test_tc003_bathroom_icon_visible_with_size`）
+
 **步骤**：在列表页查看卡片 Bathroom 区域的图标展示。  
 **预期**：Bathroom 图标（img[src*="Bathrooms"]）可见，与数量紧挨排列，无遮挡。  
 **验证**：Bathroom 图标元素存在且 bounding_box 宽高大于 0（18×18px）。
@@ -53,6 +62,9 @@ Bathroom 图标使用 `Bathrooms.png`，数量展示在 `.room-distance-type-ite
 
 ### TC004 列表页 Bathroom 数量与详情页一致
 
+**优先级**：P1
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_bathroom_student_apartment.py::test_tc004_bathroom_count_consistent_with_detail_page`）
+
 **步骤**：记录列表页第一张有 Bathroom 信息的卡片数量，点击进入详情页，查看详情页 Bathroom 数量。  
 **预期**：列表页 Bathroom 数量与详情页主信息区展示一致。  
 **验证**：两处 Bathroom 数量相同（详情页取 MainInfo 区，非推荐卡片区）。
@@ -60,6 +72,9 @@ Bathroom 图标使用 `Bathrooms.png`，数量展示在 `.room-distance-type-ite
 ---
 
 ### TC005 Bathroom 数量为空或特殊情况处理
+
+**优先级**：P2
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_bathroom_student_apartment.py::test_tc005_bathroom_missing_cards_handled_gracefully`）
 
 **步骤**：查找 Bathroom 数量为空或无图标的卡片（如 Studio 型学生公寓）。  
 **预期**：特殊情况下有合理展示，不崩溃、不报错，页面正常。  

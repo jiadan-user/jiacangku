@@ -24,6 +24,9 @@
 
 ### TC001 列表页卡片展示房产类型
 
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_property_type.py::test_tc001_list_cards_show_property_type`）
+
 **步骤**：打开列表页，查看列表卡片内容。  
 **预期**：每条列表卡片均展示房产类型信息（如 House、Unit、Apartment 等文案可见）。  
 **验证**：每张卡片存在非空房产类型区域或类型文案。
@@ -31,6 +34,9 @@
 ---
 
 ### TC002 列表卡片房产类型取值合理
+
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_property_type.py::test_tc002_property_type_values_valid`）
 
 **步骤**：在列表页查看卡片房产类型展示。  
 **预期**：房产类型为系统支持的枚举值（如 House、Unit、Apartment、Townhouse、Villa、Studio 等）。  
@@ -40,6 +46,9 @@
 
 ### TC003 列表卡片房产类型可读性
 
+**优先级**：P1
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_property_type.py::test_tc003_property_type_readability`）
+
 **步骤**：在列表页查看卡片房产类型文案。  
 **预期**：类型文案清晰可读，字体大小适中，无遮挡。  
 **验证**：类型元素可见且文案长度合理（通常 1～2 个单词）。
@@ -48,6 +57,9 @@
 
 ### TC004 列表卡片房产类型与详情页一致
 
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_property_type.py::test_tc004_property_type_matches_detail_page`）
+
 **步骤**：记录列表页某张卡片的房产类型，点击进入详情页，查看详情页房产类型。  
 **预期**：列表页房产类型与详情页一致。  
 **验证**：两处类型文案相同或语义一致（如 Apartment / Unit 按业务约定可视为一致时需说明）。
@@ -55,6 +67,9 @@
 ---
 
 ### TC005 房产类型为空或特殊情况处理
+
+**优先级**：P1
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`property_list/test_au58_property_list_card_property_type.py::test_tc005_property_type_special_cases`）
 
 **步骤**：查找房产类型为空或显示特殊情况的卡片。  
 **预期**：特殊情况下有合理的展示（如 "Contact for details"、"-" 或默认类型）。  

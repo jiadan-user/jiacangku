@@ -452,6 +452,9 @@ MCP：browser_press_key("Escape") + browser_snapshot + browser_take_screenshot
 - **UI自动化**: ✅ 可自动化
 
 #### 🔗 串联执行（TC003→TC004）
+**优先级**：P0
+**UI自动化**：✅ 可自动化（已匹配自动化脚本：`kyc/test_kyc_identification_webqa.py::test_08_upload_valid_ocr_submit`）
+
 完整流程：Begin → Choose File → 选择 Australia_a_1.jpeg → Upload → 等待 OCR 弹窗 → 滚动弹窗 → 勾选 `.OptionalBox_iconWrapper__P3pkZ` → Submit → 执行 standalone_suspend_account.py
 
 #### 📝 探测记录（阶段三）

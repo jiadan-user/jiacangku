@@ -602,7 +602,7 @@ python test_cases/kyc/standalone_suspend_account.py --user-id 796559612064208640
 #### 📊 用例属性
 - **优先级**: P2
 - **测试类型**: UI
-- **UI自动化**: 实现参考
+- **UI自动化**: ✅ 可自动化（实现参考；协议复选框可通过文本 boundingBox 偏移点击）
 
 ---
 

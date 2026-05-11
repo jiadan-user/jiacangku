@@ -125,6 +125,8 @@ warning 不阻止 `run` 创建任务，但会写入本次 run 的 `doctor_result
 ### 强制要求
 
 - 必须先读 `bundled/skills/senior-qa-brain/SKILL.md`
+- 必须按 `config/knowledge_base_routing.yaml` 的 `rule_library_routes` 读取 `bundled/knowledge_base/业务规则库` 中命中的业务规则；只读取编排层指定的规则库路径，不默认扫描历史文本用例、业务知识图谱或产品全景
+- 分析报告必须包含“知识库依据”；如果规则库未命中，必须明确写“规则库未命中/知识库未命中”，并把缺失业务规则列为待确认问题，不允许编造
 - 必须先出分析报告，等待用户确认
 - 确认后再出 Markdown 文本用例
 
@@ -140,6 +142,8 @@ warning 不阻止 `run` 创建任务，但会写入本次 run 的 `doctor_result
 - 分析报告存在且非空
 - 文本用例存在且非空
 - 文本用例头部有 `测试环境配置` 表格
+- 文本用例包含 `业务属性` 和 `测试范围`
+- 如果 `UI自动化=✅`，前置条件必须包含角色/登录态、入口 URL 或导航路径、账号/测试数据、准备动作、就绪验证点；“系统准备好 / 已进入页面 / 数据已准备好 / 账号正常”等空泛前置不能单独通过
 - 每条用例都有：
   - `TC编号`
   - `前置条件`
@@ -181,7 +185,8 @@ warning 不阻止 `run` 创建任务，但会写入本次 run 的 `doctor_result
 
 - `playwright_recording_outcomes=<path>`
 - `playwright_recording_report=<path>`
-- 如存在 bug：`playwright_bug_report=<path>`
+- `playwright_bug_report=<path>`
+- 建议额外提交：`stage2a_execution_plan=<path>`（缺失只 warning，不阻塞）
 
 阶段2B：
 
@@ -193,13 +198,13 @@ warning 不阻止 `run` 创建任务，但会写入本次 run 的 `doctor_result
 
 - `recording_passed`
 - `bug_recorded`
-- `manual_review`
 
 其中：
 
 - `recording_passed` 必须附带 `proof_artifact_path`
-- `bug_recorded` 必须附带 `bug_report_path`
-- `manual_review` 必须附带 `manual_review_reason`
+- `bug_recorded` 必须能在 `playwright_bug_report.md` 中通过 TC 编号或 BUG 编号追溯
+- 阶段2A不允许 `manual_review`；不符合预期、页面缺失、流程阻塞、配置异常、接口异常都归为 `bug_recorded`
+- 报告里可以展示“失败 / 阻塞”，但 JSON outcome 统一使用 `bug_recorded`，可用 `details.progress_status=failed|blocked` 区分
 
 ### `playwright_case_outcomes.json` 契约
 
@@ -219,8 +224,11 @@ warning 不阻止 `run` 创建任务，但会写入本次 run 的 `doctor_result
 
 - `text_case_manifest.json` 存在
 - 阶段2A每条 `UI自动化=✅` 的用例都有唯一 recording outcome
+- 阶段2A不允许出现 `manual_review`
 - `recording_passed` 的 proof 存在
-- `bug_recorded` 的 bug report 存在
+- `bug_recorded` 的 bug 记录可追溯
+- `playwright_recording_report.md` 和 `playwright_bug_report.md` 都存在；没有 bug 也必须生成空 bug list
+- `stage2a_execution_plan.json` 缺失、`recording_trace_path` 缺失或不可访问、录制报告偏长只 warning，不阻塞阶段2A交付
 - 阶段2A通过后等待人工确认，不进入影响分析
 - 阶段2B每条 `recording_passed` 的用例都有唯一脚本 outcome
 - 不允许 silent drop
@@ -230,6 +238,8 @@ warning 不阻止 `run` 创建任务，但会写入本次 run 的 `doctor_result
 
 - `proof_artifacts_manifest.json`
 - `generated_scripts_manifest.json`
+
+如果阶段2A没有任何 `recording_passed` 用例，用户确认后阶段2B自动生成空的 `playwright_case_outcomes.json` 和 `generated_scripts_manifest.json` 并跳过脚本生成，继续进入影响分析。
 
 ## 影响分析与候选归并
 
@@ -488,6 +498,7 @@ warning 不阻止 `run` 创建任务，但会写入本次 run 的 `doctor_result
 - `impact_split.json`
 - `text_case_manifest.json`
 - `phase1_gate_result.json`
+- `stage2a_execution_plan.json`
 - `playwright_recording_outcomes.json`
 - `playwright_recording_report.md`
 - `playwright_bug_report.md`

@@ -9,6 +9,8 @@ AE站 - 简历编辑页面 Page Object
   - Education Background（学历背景弹窗：学历级别、院校、专业、日期）
   - Language（语言技能弹窗：多选下拉）
 """
+import re
+
 from pages.base_page import BasePage
 from utils.logger import setup_logger
 
@@ -195,12 +197,17 @@ class ResumeAddPageAe(BasePage):
             try:
                 self.page.wait_for_function(
                     "!document.body.classList.contains('modal-open')",
-                    timeout=5000
+                    timeout=8000
                 )
             except Exception:
                 pass
-            self.page.wait_for_timeout(500)
-            self.logger.info("✓ 点击 Save")
+            # 确保 modal-content 元素完全隐藏
+            try:
+                self.page.wait_for_selector(".modal-content", state="hidden", timeout=8000)
+            except Exception:
+                pass
+            self.page.wait_for_timeout(1000)
+            self.logger.info("✓ 点击 Save 并等待弹窗关闭完成")
         except Exception as e:
             self.logger.error(f"点击 Save 失败: {e}")
             raise
@@ -502,14 +509,33 @@ class ResumeAddPageAe(BasePage):
 
     def open_edit_education_modal(self):
         """点击编辑已有学历图标，打开 Edit Education Background 弹窗"""
-        try:
-            self._click_edit_icon_for_section("Education Background")
-            self.page.wait_for_selector(".modal-content", timeout=8000)
-            self.page.wait_for_timeout(500)
-            self.logger.info("Edit Education Background 弹窗已打开")
-        except Exception as e:
-            self.logger.error(f"打开 Education Background 弹窗失败: {e}")
-            raise
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                # 确保之前的弹窗已完全关闭
+                try:
+                    self.page.wait_for_selector(".modal-content", state="hidden", timeout=5000)
+                except Exception:
+                    pass
+                
+                # 等待页面稳定（Save后可能有局部刷新）
+                self.page.wait_for_load_state("domcontentloaded", timeout=10000)
+                self.page.wait_for_timeout(2000)
+                
+                self._click_edit_icon_for_section("Education Background")
+                
+                # 尝试等待弹窗出现
+                self.page.wait_for_selector(".modal-content", timeout=15000)
+                self.page.wait_for_timeout(500)
+                self.logger.info("Edit Education Background 弹窗已打开")
+                return
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    self.logger.warning(f"第{attempt + 1}次尝试打开弹窗失败，重试中: {e}")
+                    self.page.wait_for_timeout(2000)
+                else:
+                    self.logger.error(f"打开 Education Background 弹窗失败（已重试{max_retries}次）: {e}")
+                    raise
 
     def open_add_education_modal(self):
         """点击添加学历图标（+），打开 Add Education Background 弹窗"""
@@ -566,12 +592,22 @@ class ResumeAddPageAe(BasePage):
         """在 Education Background 弹窗中输入 Institute（Optional）
         
         Education 弹窗使用 CustomCounterInput 组件，input 无 placeholder 属性。
-        按顺序：index 0 = Institute (Optional), index 1 = Major (Optional)
+        优先按标签关联 Institute，避免弹窗内新增搜索框等导致 nth(0) 错位。
         """
         try:
             modal = self.page.locator(".modal-content").first
-            # Institute is the first text input in the Education modal
-            modal.locator("input[type='text']").nth(0).fill(institute)
+            labeled = modal.get_by_label(re.compile(r"Institute", re.I))
+            if labeled.count() > 0:
+                labeled.first.fill(institute)
+            else:
+                container = modal.locator("div, section, form").filter(
+                    has_text=re.compile(r"Institute", re.I)
+                ).first
+                inp = container.locator("input[type='text']").first
+                if inp.count() > 0:
+                    inp.fill(institute)
+                else:
+                    modal.locator("input[type='text']").nth(0).fill(institute)
             self.page.wait_for_timeout(300)
         except Exception as e:
             self.logger.error(f"输入 Institute 失败: {e}")
@@ -581,6 +617,15 @@ class ResumeAddPageAe(BasePage):
         """获取 Education Background 弹窗中 Institute 当前值"""
         try:
             modal = self.page.locator(".modal-content").first
+            labeled = modal.get_by_label(re.compile(r"Institute", re.I))
+            if labeled.count() > 0:
+                return labeled.first.input_value()
+            container = modal.locator("div, section, form").filter(
+                has_text=re.compile(r"Institute", re.I)
+            ).first
+            inp = container.locator("input[type='text']").first
+            if inp.count() > 0:
+                return inp.input_value()
             return modal.locator("input[type='text']").nth(0).input_value()
         except Exception as e:
             self.logger.error(f"获取 Institute 值失败: {e}")

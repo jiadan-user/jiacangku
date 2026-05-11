@@ -126,6 +126,7 @@ def handle_doctor(_: argparse.Namespace) -> int:
     print(f"pytest_command={pytest_display}")
     print(f"local_venv_exists={(ROOT_DIR / 'venv' / 'bin' / 'pytest').exists()}")
     print(f"dependency_pytest={_dependency_status('pytest')}")
+    print(f"dependency_pytest_timeout={_dependency_status('pytest_timeout')}")
     print(f"dependency_playwright={_dependency_status('playwright.sync_api')}")
     print(f"dependency_allure={_dependency_status('allure')}")
 

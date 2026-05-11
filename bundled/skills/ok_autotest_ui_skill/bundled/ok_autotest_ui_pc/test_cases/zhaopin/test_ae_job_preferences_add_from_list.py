@@ -11,6 +11,8 @@ AE 站（阿联酋站）- Job Preferences 未登录入口（Add Job Preference�
 用例范围：TC001 - TC005（共 5 条，全自动化）
 录制账号：wangyongli@58.com（已有 Job Preference 数据）
 """
+import re
+
 import pytest
 import allure
 from pages.login_page import LoginPage
@@ -51,6 +53,42 @@ _CONFIG = {
         "navigation": 30000
     }
 }
+
+
+def _expected_ae_jobs_list_url(config: dict) -> str:
+    """AE Jobs 列表规范 URL（与产品默认一致，见 config jobs_list_url）。"""
+    return config["jobs_list_url"].rstrip("/")
+
+
+def _wait_then_assert_on_ae_jobs_list(page, config, action_label: str) -> None:
+    """Back / Continue 后应落在 AE Jobs 列表页（与 jobs_list_url 完全一致）。"""
+    try:
+        page.wait_for_load_state("networkidle", timeout=30000)
+    except Exception:
+        pass
+    page.wait_for_timeout(2000)
+    expected = _expected_ae_jobs_list_url(config)
+    actual = page.url.rstrip("/")
+    assert actual == expected, (
+        f"{action_label}后应回到 {expected}，当前 URL: {page.url}"
+    )
+
+
+def _assert_jobs_list_pref_bar_visible(page, job_pref_page: JobPreferencePage) -> None:
+    """列表页动态区块渲染后再校验偏好栏 / Edit。"""
+    try:
+        page.wait_for_load_state("networkidle", timeout=25000)
+    except Exception:
+        pass
+    page.wait_for_timeout(2000)
+    edit_ok = job_pref_page.is_edit_link_visible()
+    if not edit_ok:
+        edit_ok = page.get_by_role("link", name="Edit").is_visible(timeout=12000)
+    if not edit_ok:
+        edit_ok = page.get_by_text("Edit").first.is_visible(timeout=5000)
+    assert edit_ok, (
+        "Jobs 列表页应显示 Job Preference 标签栏（含 Edit 链接）"
+    )
 
 
 # ============================================
@@ -175,11 +213,12 @@ def _prepare_unauthenticated_state(page, config):
     # 步骤3：先跳到空白页，再导航到目标，避免残留导航干扰
     page.goto("about:blank")
     dom_content_loaded_soft(page, 20000)
-    # 步骤4：重新访问 Jobs 列表页（带重试）
+    # 步骤4：重新访问 Jobs 列表页（带重试），使用 networkidle 确保动态内容加载完成
     for retry in range(3):
         try:
-            page.goto(config["jobs_list_url"], wait_until="domcontentloaded", timeout=20000)
-            dom_content_loaded_soft(page, 20000)
+            page.goto(config["jobs_list_url"], wait_until="networkidle", timeout=30000)
+            # 额外等待确保动态内容渲染完成
+            page.wait_for_timeout(2000)
             logger.info(f"✓ 已进入 Jobs 列表页（未登录）: {page.url}")
             return
         except Exception as e:
@@ -188,6 +227,23 @@ def _prepare_unauthenticated_state(page, config):
             logger.warning(f"导航 Jobs 列表页失败（第{retry+1}次），重试: {e}")
             page.goto("about:blank")
             dom_content_loaded_soft(page, 20000)
+
+
+def _ensure_ae_add_job_pref_banner_visible(page, timeout_ms: int = 25000) -> None:
+    """Jobs 列表懒加载 + 全目录并行时，卡片可能需滚动后才进入视口。"""
+    network_idle_soft(page, min(12000, timeout_ms))
+    try:
+        for y in (0, 280, 560, 900, 1300, 1800):
+            page.evaluate("(yy) => window.scrollTo(0, yy)", y)
+            page.wait_for_timeout(350)
+    except Exception:
+        pass
+    page.get_by_text(re.compile(r"Add\s+Job\s+Preference", re.I)).first.wait_for(
+        state="visible",
+        timeout=timeout_ms,
+    )
+
+
 def _login_via_add_job_pref_banner(page, config):
     """
     通过 Add Job Preference 卡片弹出登录弹窗并完成登录。
@@ -202,8 +258,7 @@ def _login_via_add_job_pref_banner(page, config):
     """
     login_page = LoginPage(page)
     # 验证前置条件：Add Job Preference 卡片可见
-    assert page.get_by_text("Add Job Preference").first.is_visible(timeout=5000), \
-        "调用 _login_via_add_job_pref_banner 前，Add Job Preference 卡片应可见（未登录状态）"
+    _ensure_ae_add_job_pref_banner_visible(page, timeout_ms=25000)
     # 点击 Add Job Preference 卡片，弹出登录弹窗
     page.get_by_text("Add Job PreferenceUnlock more").click()
     dom_content_loaded_soft(page, 20000)
@@ -415,21 +470,12 @@ def test_ae_add_pref_back_button_should_redirect_to_jobs_list(page, config):
         logger.info(f"✓ 点击 Back 后跳转至: {page.url}")
 
     # ========== Assert ==========
-    with allure.step("验证：跳转回 Jobs 列表页"):
-        current_url = page.url
-        assert "cate-jobs" in current_url or "ae.58v5.cn" in current_url, \
-            f"Back 后应回到 Jobs 列表页，当前 URL: {current_url}"
-        logger.info(f"✓ 已回到: {current_url}")
+    with allure.step("验证：跳转回 Jobs 列表页（默认 https://ae.58v5.cn/en/city/cate-jobs/?iconSource=jobs）"):
+        _wait_then_assert_on_ae_jobs_list(page, config, "Back")
+        logger.info(f"✓ 已回到: {page.url}")
 
     with allure.step("验证：列表页展示岗位偏好标签栏（已选类目可见）"):
-        # 登录后有数据，Back 后列表页应显示 Job Preference 标签（Edit 链接）
-        dom_content_loaded_soft(page, 20000)
-        has_edit_or_pref = (
-            page.get_by_role("link", name="Edit").is_visible() or
-            page.get_by_text("Edit").is_visible()
-        )
-        assert has_edit_or_pref, \
-            "Back 后 Jobs 列表页应显示 Job Preference 标签栏（含 Edit 链接）"
+        _assert_jobs_list_pref_bar_visible(page, job_pref_page)
         logger.info("✓ 列表页显示 Job Preference 标签栏，符合预期")
 
     logger.info("✅ TC004 通过：Add 入口 Back 按钮跳转验证成功")
@@ -474,20 +520,12 @@ def test_ae_add_pref_continue_should_submit_and_redirect_to_jobs_list(page, conf
         logger.info(f"✓ 点击 Continue 后跳转至: {page.url}")
 
     # ========== Assert ==========
-    with allure.step("验证：提交成功，跳转到 Jobs 列表页"):
-        current_url = page.url
-        assert "cate-jobs" in current_url or "ae.58v5.cn" in current_url, \
-            f"Continue 提交后应跳转到 Jobs 列表页，当前 URL: {current_url}"
-        logger.info(f"✓ 已跳转到: {current_url}")
+    with allure.step("验证：提交成功，跳转到 Jobs 列表页（与 Back 一致，见 jobs_list_url）"):
+        _wait_then_assert_on_ae_jobs_list(page, config, "Continue 提交")
+        logger.info(f"✓ 已跳转到: {page.url}")
 
     with allure.step("验证：Jobs 列表页展示岗位偏好类目（Job Preference 标签可见）"):
-        dom_content_loaded_soft(page, 20000)
-        has_pref_tags = (
-            page.get_by_role("link", name="Edit").is_visible() or
-            page.get_by_text("Edit").is_visible()
-        )
-        assert has_pref_tags, \
-            "提交后 Jobs 列表页应显示 Job Preference 标签栏（含 Edit 链接）"
+        _assert_jobs_list_pref_bar_visible(page, job_pref_page)
         logger.info("✓ Jobs 列表页显示 Job Preference 标签栏，提交成功")
 
     logger.info("✅ TC005 通过：Add 入口 Continue 提交并跳转验证成功")

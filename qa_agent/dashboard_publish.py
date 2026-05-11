@@ -112,7 +112,7 @@ def _build_coverage_dashboard(project_root: Path) -> dict[str, Any]:
     try:
         from tooling.ok_test.text_coverage import build_text_case_dashboard
 
-        return build_text_case_dashboard()
+        return _attach_coverage_audit(build_text_case_dashboard())
     except Exception as exc:
         return {"source": "qa_agent_publish", "error": str(exc)}
     finally:
@@ -120,6 +120,32 @@ def _build_coverage_dashboard(project_root: Path) -> dict[str, Any]:
             sys.path.remove(str(tooling_root))
         except ValueError:
             pass
+
+
+def _coverage_publish_blocker(coverage_dashboard: dict[str, Any]) -> dict[str, Any] | None:
+    if not isinstance(coverage_dashboard, dict):
+        return {"reason": "coverage dashboard payload is invalid"}
+    if coverage_dashboard.get("error"):
+        return {"reason": str(coverage_dashboard.get("error"))}
+    diagnostics = coverage_dashboard.get("parse_diagnostics") or {}
+    needs_normalization = int(diagnostics.get("needs_normalization_cases") or 0)
+    if needs_normalization:
+        return {
+            "reason": "coverage audit failed: text cases still need normalization",
+            "needs_normalization_cases": needs_normalization,
+            "needs_normalization_files": diagnostics.get("needs_normalization_files") or [],
+        }
+    return None
+
+
+def _attach_coverage_audit(coverage_dashboard: dict[str, Any]) -> dict[str, Any]:
+    blocker = _coverage_publish_blocker(coverage_dashboard)
+    coverage_dashboard["audit"] = {
+        "status": "blocked" if blocker else "passed",
+        "publish_allowed": blocker is None,
+        "blocker": blocker,
+    }
+    return coverage_dashboard
 
 
 def _allure_report_dir(summary: dict[str, Any]) -> Path | None:
@@ -232,6 +258,10 @@ def _compact_phase_report_for_publish(value: Any) -> dict[str, Any]:
         "pytest_target_count",
         "result_source",
         "result_warnings",
+        "timed_out",
+        "timeout_type",
+        "timeout_elapsed_seconds",
+        "block_reason",
     }
     compact = {key: value[key] for key in keep_keys if key in value}
     case_results = value.get("case_results")
@@ -256,6 +286,10 @@ def _compact_ok_ui_summary_for_publish(summary: dict[str, Any]) -> dict[str, Any
         "parallel_granularity",
         "pytest_command",
         "artifact_retention",
+        "case_timeout_seconds",
+        "idle_timeout_seconds",
+        "phase_timeout_seconds",
+        "pytest_timeout_available",
         "run_status",
         "block_reason",
         "pytest_exit_code",
@@ -546,13 +580,23 @@ def publish_coverage(project_root: Path, *, base_url: str | None = None, api_key
     base_url = _dashboard_url(base_url)
     if not base_url:
         return {"success": False, "skipped": True, "reason": "dashboard url unavailable"}
+    coverage_dashboard = _build_coverage_dashboard(project_root)
+    blocker = _coverage_publish_blocker(coverage_dashboard)
+    if blocker:
+        return {
+            "success": False,
+            "skipped": True,
+            "reason": blocker["reason"],
+            "coverage_audit": blocker,
+            "coverage": coverage_dashboard,
+        }
     payload = {
         "project_key": project_key or os.getenv("QA_AGENT_DASHBOARD_PROJECT_KEY", "OK"),
         "product": os.getenv("QA_AGENT_PRODUCT", ""),
         "operator": os.getenv("QA_AGENT_OPERATOR") or os.getenv("USER") or "匿名用户",
         "host": socket.gethostname(),
         "project_root": str(project_root),
-        "coverage": _build_coverage_dashboard(project_root),
+        "coverage": coverage_dashboard,
     }
     url = base_url.rstrip("/") + "/api/qa-agent/coverage/publish"
     data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -594,6 +638,17 @@ def publish_run(
             "success": False,
             "skipped": True,
             "reason": f"run is not completed: {status or 'unknown'}",
+        }
+        write_json(result_path, result)
+        return result
+    coverage_dashboard = payload.get("artifacts", {}).get("coverage_dashboard", {}) or {}
+    blocker = _coverage_publish_blocker(coverage_dashboard)
+    if blocker:
+        result = {
+            "success": False,
+            "skipped": True,
+            "reason": blocker["reason"],
+            "coverage_audit": blocker,
         }
         write_json(result_path, result)
         return result
@@ -645,6 +700,17 @@ def publish_ok_ui_run(
         site=site,
         change_mode=change_mode,
     )
+    coverage_dashboard = payload.get("artifacts", {}).get("coverage_dashboard", {}) or {}
+    blocker = _coverage_publish_blocker(coverage_dashboard)
+    if blocker:
+        result = {
+            "success": False,
+            "skipped": True,
+            "reason": blocker["reason"],
+            "coverage_audit": blocker,
+        }
+        write_json(result_path, result)
+        return result
     key = api_key or os.getenv("QA_AGENT_DASHBOARD_API_KEY", "")
     result = publish_payload(base_url, payload, key)
     if result.get("success") and result.get("run_uid"):

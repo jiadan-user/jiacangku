@@ -94,7 +94,7 @@ def detail_url(config):
     3. 返回第一个有效的URL
     """
     import re
-    from playwright.sync_api import sync_playwright
+    from utils.browser_manager import BrowserManager
     
     logger.info("="*80)
     logger.info("【智能URL查找】验证候选详情页URL...")
@@ -109,10 +109,13 @@ def detail_url(config):
         "https://us.58v5.cn/en/city-washington1/cate-electronics/gaming-laptop-6458646557837113/",
     ]
     
-    playwright = sync_playwright().start()
-    browser = playwright.chromium.launch(headless=True)
-    context = browser.new_context(viewport=config['browser']['viewport'])
-    temp_page = context.new_page()
+    # 使用 BrowserManager 创建临时浏览器实例
+    browser_manager = BrowserManager()
+    temp_page = browser_manager.start_browser(
+        browser_type=config['browser']['type'],
+        headless=True,
+        viewport=config['browser']['viewport']
+    )
     
     try:
         # 处理Cookie（只需一次）
@@ -177,10 +180,7 @@ def detail_url(config):
         pytest.skip(error_msg)
     finally:
         # 清理临时浏览器
-        temp_page.close()
-        context.close()
-        browser.close()
-        playwright.stop()
+        browser_manager.close_browser(temp_page)
 
 
 @pytest.fixture(scope="function")

@@ -43,18 +43,23 @@ _CONFIG = {
 
 # ==================== Fixtures ====================
 @pytest.fixture(scope="module")
-def page(browser):
+def page():
     """
     Module级别的page fixture，整个模块共享一个浏览器实例
     提升性能：避免每个测试都重新启动浏览器
     """
-    context = browser.new_context(
-        viewport=_CONFIG["browser"]["viewport"],
-        locale=_CONFIG["locale"],
+    from utils.browser_manager import BrowserManager
+    
+    browser_manager = BrowserManager()
+    _page = browser_manager.start_browser(
+        browser_type=_CONFIG["browser"]["type"],
+        headless=_CONFIG["browser"].get("headless", False),
+        viewport=_CONFIG["browser"]["viewport"]
     )
-    page = context.new_page()
-    yield page
-    context.close()
+    
+    yield _page
+    
+    browser_manager.close_browser(_page)
 
 
 @pytest.fixture(scope="module")
