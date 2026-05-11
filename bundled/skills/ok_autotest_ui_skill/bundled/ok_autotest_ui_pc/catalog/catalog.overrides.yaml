@@ -169,10 +169,10 @@ paths:
     feature_id: car_list_session_nav
     aliases: [explore_list, car_list, session]
     owner: qa-ui
-  test_cases/test_car/test_ae_car_publish.py:
+  test_cases/test_car/test_br_car_publish.py:
     module_id: car
     feature_id: car_publish
-    aliases: [car, car_publish, ae_car_publish]
+    aliases: [car, car_publish, br_car_publish, ae_car_publish]
     baseline_set: car_publish_core
     risk_level: high
     owner: qa-ui
