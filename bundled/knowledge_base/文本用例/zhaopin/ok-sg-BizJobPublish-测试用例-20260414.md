@@ -644,7 +644,7 @@
 1. 在 **Company Information** 中完成公司选择，使 **Company Logo** 区域出现
 2. **必须**通过以下任一方式将**真实本地文件**绑定到上传控件（不得省略本步）：
    - 手工：点击 **Choose File** 或点击 Logo 预览区，在系统文件选择器中选择一张 `PNG`/`JPG`/`SVG`
-   - 自动化：对 `input.upload-input` 使用 `setInputFiles(绝对路径)`（与 Playwright 规范一致；夹具路径见前置条件）
+   - 自动化脚本：对 `input.upload-input` 使用 `setInputFiles(绝对路径)`（与 Playwright 规范一致；夹具路径见前置条件）
 3. 观察 Logo 预览区 **src/预览图已更新**（与所选文件一致或经上传后返回的 URL）
 4. 填写 **First name**、**Last name** 等其余必填项后，点击 **Confirm** 保存（完成当前雇主信息表单允许的提交路径）
 
