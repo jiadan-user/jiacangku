@@ -129,11 +129,20 @@ def page(login_config):
 
 @pytest.fixture(autouse=True)
 def ensure_logged_out_before_test(page: Page, login_config):
-    """每个用例前尽量恢复访客态，避免串行污染（与登录模块其它脚本一致）。"""
+    """
+    每个用例前确保访客态。
+    conftest.py 的 smart_reset_for_login_tests 已处理弹窗关闭；
+    _navigate_xxx_page 辅助函数内会调用 ensure_logged_out 做真正的状态重置。
+    此处只做快速登录态检测（200ms），避免重复触发完整页面导航。
+    """
     login_page = LoginPage(page)
     try:
-        if login_page.is_login_button_text_changed(timeout=1000):
-            login_page.ensure_logged_out(login_config["base_url"])
+        if login_page.is_login_button_text_changed(timeout=200):
+            # 已登录：才做一次轻量 cookie 清理 + reload，不重复 goto
+            page.context.clear_cookies()
+            page.evaluate("() => { localStorage.clear(); sessionStorage.clear(); }")
+            page.reload(wait_until="domcontentloaded", timeout=15000)
+            page.wait_for_timeout(500)
     except Exception:
         pass
     yield

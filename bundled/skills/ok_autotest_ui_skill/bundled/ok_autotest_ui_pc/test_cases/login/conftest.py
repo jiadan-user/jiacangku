@@ -50,9 +50,12 @@ def login_config():
     import sys
     from pathlib import Path
     
-    # 从 login 目录的任一测试文件读取 _CONFIG
+    # 固定从 test_login_welcome_page_tc001_tc012 读取公共 _CONFIG，避免 glob 顺序不确定
     login_dir = Path(__file__).parent
-    test_file = next(login_dir.glob("test_*.py"))
+    test_file = login_dir / "test_login_welcome_page_tc001_tc012.py"
+    if not test_file.exists():
+        # 降级：取第一个字母序最小的文件，保证跨平台稳定
+        test_file = sorted(login_dir.glob("test_*.py"))[0]
     
     spec = importlib.util.spec_from_file_location("_temp_module", test_file)
     module = importlib.util.module_from_spec(spec)
@@ -132,9 +135,9 @@ def page(login_config):
     except Exception as e:
         logger.warning(f"[LOGIN] 资源拦截设置失败: {e}")
     
-    # 优化3：修改页面默认超时时间为 5 秒
-    page.set_default_timeout(5000)
-    logger.debug("[LOGIN] 已设置默认超时时间为 5 秒")
+    # 默认超时 15 秒：页面导航通常需要 8-20s，5s 在弱网下必然超时
+    page.set_default_timeout(15000)
+    logger.debug("[LOGIN] 已设置默认超时时间为 15 秒")
     
     # 标记为使用中，防止被 pytest hooks 清理
     browser_manager.mark_in_use()
@@ -186,7 +189,7 @@ def _close_login_dialog_if_open(page):
         # 1. 先检测弹窗是否存在
         modal_dialog = page.locator('[role="dialog"][class*="modal show"], [role="dialog"][class*="Modal"]')
         
-        if not modal_dialog.is_visible(timeout=500):
+        if not modal_dialog.is_visible(timeout=200):
             logger.debug("未检测到打开的登录弹窗，无需关闭")
             return False
         
