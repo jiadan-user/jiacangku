@@ -3,6 +3,7 @@
 OK.com - 发布职位核心流程测试
 测试用例: TC001-TC004
 生成时间: 2026-03-02
+修复时间: 2026-05-12 - 更新元素定位策略
 """
 
 import re
@@ -11,6 +12,12 @@ import pytest
 import allure
 from playwright.sync_api import Page, expect
 from test_cases.publish_job.login_helper import login_if_needed
+from test_cases.publish_job.publish_job_helpers import (
+    select_job_function,
+    select_salary,
+    fill_job_title,
+    fill_job_description
+)
 from utils.logger import setup_logger
 
 logger = setup_logger()
@@ -24,63 +31,25 @@ TEST_ACCOUNT = {
 }
 
 
-def select_job_function(page: Page, primary: str, secondary: str = None):
-    """
-    辅助函数：选择 Job Function
-    
-    Args:
-        page: Playwright Page 对象
-        primary: 一级分类名称
-        secondary: 二级分类名称（可选）
-    """
-    # 点击 Job Function 下拉
-    page.locator('div').filter(has_text='Select Job Functions').nth(4).click(force=True)
-    page.wait_for_timeout(1000)
-    logger.info("✓ 打开 Job Function 下拉")
-    
-    # 等待下拉菜单加载
-    page.wait_for_selector(f'text="{primary}"', state='visible', timeout=10000)
-    
-    # 点击一级分类
-    primary_option = page.locator(f'text="{primary}"').first
-    primary_option.scroll_into_view_if_needed()
-    page.wait_for_timeout(300)
-    primary_option.click(force=True)
-    page.wait_for_timeout(500)
-    logger.info(f"✓ 选择一级分类: {primary}")
-    
-    # 如果有二级分类，点击二级分类
-    if secondary:
-        page.wait_for_selector(f'text="{secondary}"', state='visible', timeout=10000)
-        secondary_option = page.locator(f'text="{secondary}"').first
-        secondary_option.scroll_into_view_if_needed()
-        page.wait_for_timeout(300)
-        secondary_option.click(force=True)
-        page.wait_for_timeout(500)
-        logger.info(f"✓ 选择二级分类: {secondary}")
-
-
 @pytest.mark.p0
 @pytest.mark.case_id_publish_job_publish_job_core_flow_001
 @allure.feature("发布职位")
 @allure.story("核心流程")
-@allure.title("TC001: 三步向导填写所有字段完整发布职位")
+@allure.title("TC001: 两步向导完整发布职位")
 @allure.severity(allure.severity_level.BLOCKER)
 @pytest.mark.smoke
 @pytest.mark.core_flow
 def test_tc001_complete_three_step_wizard(page: Page):
     """
-    TC001: 三步向导填写所有字段完整发布职位，成功跳转到发布成功页
+    TC001: 两步向导完整发布职位，成功跳转到发布成功页
     
     前置条件:
     - 已登录雇主账号
     - 访问发布职位页面
     
     执行步骤:
-    1. Step1：填写所有必填字段
-    2. Step2：填写 Job Description
-    3. Step3：选择 Experience 和 Education
-    4. 点击 Post 按钮
+    1. Step1：填写所有必填字段 (Job Title, Job Function, Salary)
+    2. Step2：填写 Job Description 并点击 Post
     
     预期结果:
     - 成功发布职位
@@ -96,29 +65,14 @@ def test_tc001_complete_three_step_wizard(page: Page):
         login_if_needed(page, TEST_ACCOUNT["username"], TEST_ACCOUNT["password"])
     
     with allure.step("Step1: 填写 Job Basics"):
-        # 填写 Job Title
-        page.locator('#title').fill('Senior Software Engineer')
-        logger.info("✓ 填写 Job Title: Senior Software Engineer")
+        # 填写 Job Title（使用辅助函数）
+        fill_job_title(page, 'Senior Software Engineer')
         
-        # 关闭autocomplete浮层
-        page.get_by_role('heading', name='Job Basics').click(force=True)
-        page.wait_for_timeout(500)
-        
-        # 选择 Job Function
+        # 选择 Job Function（使用修复后的辅助函数）
         select_job_function(page, 'Engineering', 'Systems Engineering')
-        logger.info("✓ 选择 Job Function: Engineering / Systems Engineering")
         
-        # 选择 Min Salary
-        page.locator('div').filter(has_text='Amount($)').nth(5).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('50000', exact=True).first.click(force=True)
-        logger.info("✓ 选择 Min Salary: $50,000")
-        
-        # 选择 Max Salary
-        page.locator('div').filter(has_text=re.compile(r"^Amount\(\$\)$")).nth(1).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('80000', exact=True).click(force=True)
-        logger.info("✓ 选择 Max Salary: $80,000")
+        # 选择薪资范围（使用修复后的辅助函数）
+        select_salary(page, min_amount='50000', max_amount='80000')
         
         # 点击 Continue
         page.get_by_role('button', name='Continue').first.click(force=True)
@@ -126,44 +80,20 @@ def test_tc001_complete_three_step_wizard(page: Page):
         page.wait_for_timeout(2000)
         logger.info("✓ 点击 Continue，进入 Step2")
     
-    with allure.step("Step2: 填写 Job Details"):
+    with allure.step("Step2: 填写 Job Details 并发布"):
         # 验证进入 Step2
         expect(page.get_by_role('heading', name='Job Details')).to_be_visible()
         logger.info("✓ 已进入 Step2: Job Details")
         
-        # 填写 Job Description
+        # 填写 Job Description（使用辅助函数）
         job_description = "We are seeking a talented Senior Software Engineer to join our dynamic team. The ideal candidate will have strong experience in software development, excellent problem-solving skills, and the ability to work collaboratively in a fast-paced environment."
-        page.locator('#content').fill(job_description)
-        logger.info("✓ 填写 Job Description")
+        fill_job_description(page, job_description)
         
-        # 点击 Continue
-        page.get_by_role('button', name='Continue').first.click(force=True)
-        page.wait_for_load_state("load")
-        page.wait_for_timeout(2000)
-        logger.info("✓ 点击 Continue，进入 Step3")
-    
-    with allure.step("Step3: 填写 Job Requirements"):
-        # 验证进入 Step3
-        expect(page.get_by_role('heading', name='Job Requirements')).to_be_visible()
-        logger.info("✓ 已进入 Step3: Job Requirements")
-        
-        # 选择 Experience
-        page.get_by_text('Select ExperienceNo').click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('to 10 years').click(force=True)
-        logger.info("✓ 选择 Experience: 6 to 10 years")
-        
-        # 选择 Education
-        page.get_by_text('Select EducationNo degree').click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text("Bachelor's Degree").click(force=True)
-        logger.info("✓ 选择 Education: Bachelor's Degree")
-        
-        # 点击 Post
-        page.get_by_role('button', name='Post').click(force=True)
+        # Step2 是最后一步，直接点击 Post 按钮发布
+        page.get_by_role('button', name='Post').first.click(force=True)
         page.wait_for_load_state("load")
         page.wait_for_timeout(3000)
-        logger.info("✓ 点击 Post 按钮")
+        logger.info("✓ 点击 Post 按钮发布职位")
     
     with allure.step("验证发布成功"):
         # 验证跳转到成功页面
@@ -218,21 +148,13 @@ def test_tc002_publish_with_default_values(page: Page):
         page.get_by_role('heading', name='Job Basics').click(force=True)
         page.wait_for_timeout(500)
         
-        # 选择 Job Function
+        # 选择 Job Function（使用修复后的辅助函数）
         select_job_function(page, 'Marketing & Communications', 'Management')
         logger.info("✓ 选择 Job Function: Marketing & Communications / Management")
         
-        # 选择 Min Salary
-        page.locator('div').filter(has_text='Amount($)').nth(5).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('60000', exact=True).click(force=True)
-        logger.info("✓ 选择 Min Salary: $60,000")
-        
-        # 选择 Max Salary
-        page.locator('div').filter(has_text=re.compile(r"^Amount\(\$\)$")).nth(1).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('100000').click(force=True)
-        logger.info("✓ 选择 Max Salary: $100,000")
+        # 选择 Salary（使用修复后的辅助函数）
+        select_salary(page, min_amount='60000', max_amount='100000')
+        logger.info("✓ 选择 Salary Range")
         
         # 点击 Continue
         page.get_by_role('button', name='Continue').first.click(force=True)
@@ -240,33 +162,16 @@ def test_tc002_publish_with_default_values(page: Page):
         page.wait_for_timeout(2000)
         logger.info("✓ 点击 Continue，进入 Step2")
     
-    with allure.step("Step2: 填写 Job Details"):
-        # 填写 Job Description
+    with allure.step("Step2: 填写 Job Details 并发布"):
+        # 填写 Job Description（使用辅助函数）
         job_description = "We are looking for an experienced Product Manager to lead our product development initiatives."
-        page.locator('#content').fill(job_description)
-        logger.info("✓ 填写 Job Description")
+        fill_job_description(page, job_description)
         
-        # 点击 Continue
-        page.get_by_role('button', name='Continue').first.click(force=True)
-        page.wait_for_load_state("load")
-        page.wait_for_timeout(2000)
-        logger.info("✓ 点击 Continue，进入 Step3")
-    
-    with allure.step("Step3: 使用默认值直接发布"):
-        # 验证进入 Step3
-        expect(page.get_by_role('heading', name='Job Requirements')).to_be_visible()
-        logger.info("✓ 已进入 Step3: Job Requirements")
-        
-        # 验证默认值存在
-        expect(page.get_by_text('No experience limit')).to_be_visible()
-        expect(page.get_by_text('No degree limit')).to_be_visible()
-        logger.info("✓ 验证默认值: No experience limit, No degree limit")
-        
-        # 直接点击 Post（不修改默认值）
-        page.get_by_role('button', name='Post').click(force=True)
+        # Step2 是最后一步，直接点击 Post 按钮发布
+        page.get_by_role('button', name='Post').first.click(force=True)
         page.wait_for_load_state("load")
         page.wait_for_timeout(3000)
-        logger.info("✓ 点击 Post 按钮（使用默认值）")
+        logger.info("✓ 点击 Post 按钮发布职位")
     
     with allure.step("验证发布成功"):
         # 验证跳转到成功页面
@@ -303,21 +208,10 @@ def test_tc003_make_another_post(page: Page):
         
         login_if_needed(page, TEST_ACCOUNT["username"], TEST_ACCOUNT["password"])
         
-        # Step1
-        page.locator('#title').fill('Test Job for TC003')
-        page.get_by_role('heading', name='Job Basics').click(force=True)
-        page.wait_for_timeout(500)
-        
-        # 使用 TC001 中已验证有效的组合
+        # Step1 - 使用辅助函数
+        fill_job_title(page, 'Test Job for TC003')
         select_job_function(page, 'Engineering', 'Systems Engineering')
-        
-        page.locator('div').filter(has_text='Amount($)').nth(5).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('40000', exact=True).click(force=True)
-        
-        page.locator('div').filter(has_text=re.compile(r"^Amount\(\$\)$")).nth(1).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('70000', exact=True).click(force=True)
+        select_salary(page, min_amount='40000', max_amount='70000')
         
         # 等待一下确保所有字段都已填写
         page.wait_for_timeout(1000)
@@ -345,16 +239,12 @@ def test_tc003_make_another_post(page: Page):
                 logger.error("⚠️ 页面可能有验证错误")
             raise
         
-        # Step2
+        # Step2: 填写 Job Description 并发布
         page.locator('#content').fill('Test job description for TC003.')
-        page.get_by_role('button', name='Continue').first.click(force=True)
-        page.wait_for_load_state("load")
-        page.wait_for_timeout(2000)
-        
-        # Step3
-        page.get_by_role('button', name='Post').click(force=True)
+        page.get_by_role('button', name='Post').first.click(force=True)
         page.wait_for_load_state("load")
         page.wait_for_timeout(3000)
+        logger.info("✓ 点击 Post 按钮发布职位")
         
         current_url = page.url; assert '/biz/en/publish/success' in current_url and 'id=' in current_url, f"期望成功页面 URL，实际: {current_url}"
         logger.info("✓ 已到达发布成功页")
@@ -419,21 +309,10 @@ def test_tc004_view_my_post(page: Page):
         
         login_if_needed(page, TEST_ACCOUNT["username"], TEST_ACCOUNT["password"])
         
-        # Step1
-        page.locator('#title').fill('Test Job for TC004')
-        page.get_by_role('heading', name='Job Basics').click(force=True)
-        page.wait_for_timeout(500)
-        
-        # 使用 Marketing & Communications，因为 TC002 用过且有效
+        # Step1 - 使用辅助函数
+        fill_job_title(page, 'Test Job for TC004')
         select_job_function(page, 'Marketing & Communications', 'Management')
-        
-        page.locator('div').filter(has_text='Amount($)').nth(5).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('50000', exact=True).first.click(force=True)
-        
-        page.locator('div').filter(has_text=re.compile(r"^Amount\(\$\)$")).nth(1).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('90000', exact=True).click(force=True)
+        select_salary(page, min_amount='50000', max_amount='80000')
         
         # 等待一下确保所有字段都已填写
         page.wait_for_timeout(1000)
@@ -443,16 +322,12 @@ def test_tc004_view_my_post(page: Page):
         page.wait_for_load_state("load")
         page.wait_for_timeout(2000)
         
-        # Step2
+        # Step2: 填写 Job Description 并发布
         page.locator('#content').fill('Test job description for TC004.')
-        page.get_by_role('button', name='Continue').first.click(force=True)
-        page.wait_for_load_state("load")
-        page.wait_for_timeout(2000)
-        
-        # Step3
-        page.get_by_role('button', name='Post').click(force=True)
+        page.get_by_role('button', name='Post').first.click(force=True)
         page.wait_for_load_state("load")
         page.wait_for_timeout(3000)
+        logger.info("✓ 点击 Post 按钮发布职位")
         
         current_url = page.url; assert '/biz/en/publish/success' in current_url and 'id=' in current_url, f"期望成功页面 URL，实际: {current_url}"
         logger.info("✓ 已到达发布成功页")

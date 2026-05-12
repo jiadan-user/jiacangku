@@ -3,6 +3,7 @@
 OK.com - 发布职位国际化与兼容性测试
 测试用例: TC029-TC032
 生成时间: 2026-03-02
+修复时间: 2026-05-12 - 更新元素定位策略
 """
 
 import re
@@ -10,6 +11,12 @@ import pytest
 import allure
 from playwright.sync_api import Page, expect
 from test_cases.publish_job.login_helper import login_if_needed
+from test_cases.publish_job.publish_job_helpers import (
+    select_job_function,
+    select_salary,
+    fill_job_title,
+    fill_job_description
+)
 from utils.logger import setup_logger
 
 logger = setup_logger()
@@ -118,34 +125,17 @@ def test_tc030_timezone_handling(page: Page):
         page.get_by_role('heading', name='Job Basics').click(force=True)
         page.wait_for_timeout(500)
         
-        # 使用已验证有效的 Job Function 组合
-        page.locator('div').filter(has_text='Select Job Functions').nth(4).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Engineering', exact=True).first.click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Systems Engineering', exact=True).click(force=True)
-        page.wait_for_timeout(500)
-        
-        page.locator('div').filter(has_text='Amount($)').nth(5).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('40000', exact=True).click(force=True)
-        
-        page.locator('div').filter(has_text=re.compile(r"^Amount\(\$\)$")).nth(1).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('70000', exact=True).click(force=True)
+        # 使用修复后的辅助函数
+        select_job_function(page, 'Engineering', 'Systems Engineering')
+        select_salary(page, min_amount='40000', max_amount='70000')
         
         page.get_by_role('button', name='Continue').first.click(force=True)
         page.wait_for_load_state("load")
         page.wait_for_timeout(2000)
         
-        # Step2
+        # Step2: 填写 Job Description 并发布
         page.locator('#content').fill('Test timezone handling.')
-        page.get_by_role('button', name='Continue').first.click(force=True)
-        page.wait_for_load_state("load")
-        page.wait_for_timeout(2000)
-        
-        # Step3
-        page.get_by_role('button', name='Post').click(force=True)
+        page.get_by_role('button', name='Post').first.click(force=True)
         page.wait_for_load_state("load")
         page.wait_for_timeout(3000)
         

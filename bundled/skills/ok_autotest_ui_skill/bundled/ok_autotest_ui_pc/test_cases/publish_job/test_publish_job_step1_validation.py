@@ -3,6 +3,8 @@
 OK.com - 发布职位 Step1 表单校验测试
 测试用例: TC005-TC011
 生成时间: 2026-03-02
+修复时间: 2026-05-12 - 更新元素定位策略
+修复时间: 2026-05-12 - 更新元素定位策略
 """
 
 import re
@@ -10,6 +12,11 @@ import pytest
 import allure
 from playwright.sync_api import Page, expect
 from test_cases.publish_job.login_helper import login_if_needed
+from test_cases.publish_job.publish_job_helpers import (
+    select_job_function,
+    select_salary,
+    fill_job_title
+)
 from utils.logger import setup_logger
 
 logger = setup_logger()
@@ -61,24 +68,11 @@ def test_tc005_job_title_empty_validation(page: Page):
         page.locator('#title').fill('')
         logger.info("✓ Job Title 保持为空")
         
-        # 选择 Job Function
-        page.locator('div').filter(has_text='Select Job Functions').nth(4).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Sales').click(force=True)
-        page.wait_for_timeout(500)
-        logger.info("✓ 选择 Job Function: Sales")
+        # 选择 Job Function（使用修复后的辅助函数）
+        select_job_function(page, 'Sales')
         
-        # 选择 Min Salary
-        page.locator('div').filter(has_text='Amount($)').nth(5).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('40000', exact=True).click(force=True)
-        logger.info("✓ 选择 Min Salary: $40,000")
-        
-        # 选择 Max Salary
-        page.locator('div').filter(has_text=re.compile(r"^Amount\(\$\)$")).nth(1).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('60000', exact=True).click(force=True)
-        logger.info("✓ 选择 Max Salary: $60,000")
+        # 选择薪资范围（使用修复后的辅助函数）
+        select_salary(page, min_amount='40000', max_amount='60000')
     
     with allure.step("点击 Continue 按钮"):
         page.get_by_role('button', name='Continue').click(force=True)
@@ -132,7 +126,11 @@ def test_tc006_job_title_100_chars_boundary(page: Page):
     with allure.step("填写 Job Title（100个字符）"):
         # 生成恰好 100 个字符的字符串
         title_100_chars = "A" * 100
-        page.locator('#title').fill(title_100_chars)
+        
+        # 等待元素可见后再填写
+        title_input = page.locator('#title')
+        title_input.wait_for(state='visible', timeout=10000)
+        title_input.fill(title_100_chars)
         logger.info(f"✓ 填写 Job Title: {len(title_100_chars)} 个字符")
         
         # 验证输入框的值
@@ -145,23 +143,11 @@ def test_tc006_job_title_100_chars_boundary(page: Page):
         page.wait_for_timeout(500)
     
     with allure.step("填写其他必填字段"):
-        # 选择 Job Function（使用已验证有效的组合）
-        page.locator('div').filter(has_text='Select Job Functions').nth(4).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Engineering', exact=True).first.click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Systems Engineering', exact=True).click(force=True)
-        page.wait_for_timeout(500)
+        # 选择 Job Function（使用修复后的辅助函数）
+        select_job_function(page, 'Engineering', 'Systems Engineering')
         
-        # 选择 Min Salary
-        page.locator('div').filter(has_text='Amount($)').nth(5).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('50000', exact=True).first.click(force=True)
-        
-        # 选择 Max Salary
-        page.locator('div').filter(has_text=re.compile(r"^Amount\(\$\)$")).nth(1).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('80000', exact=True).click(force=True)
+        # 选择薪资范围（使用修复后的辅助函数）
+        select_salary(page, min_amount='50000', max_amount='80000')
     
     with allure.step("点击 Continue 并验证进入 Step2"):
         page.get_by_role('button', name='Continue').click(force=True)
@@ -207,7 +193,11 @@ def test_tc007_job_title_101_chars_truncated(page: Page):
     with allure.step("尝试填写 Job Title（101个字符）"):
         # 生成 101 个字符的字符串
         title_101_chars = "B" * 101
-        page.locator('#title').fill(title_101_chars)
+        
+        # 等待元素可见后再填写
+        title_input = page.locator('#title')
+        title_input.wait_for(state='visible', timeout=10000)
+        title_input.fill(title_101_chars)
         logger.info(f"✓ 尝试填写 Job Title: {len(title_101_chars)} 个字符")
         
         # 验证输入框的实际值（应该被截断为 100）
@@ -263,21 +253,11 @@ def test_tc008_job_title_all_spaces_validation(page: Page):
         page.wait_for_timeout(500)
     
     with allure.step("填写其他必填字段"):
-        # 选择 Job Function
-        page.locator('div').filter(has_text='Select Job Functions').nth(4).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Sales').click(force=True)
-        page.wait_for_timeout(500)
+        # 选择 Job Function（使用修复后的辅助函数）
+        select_job_function(page, 'Sales')
         
-        # 选择 Min Salary
-        page.locator('div').filter(has_text='Amount($)').nth(5).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('30000', exact=True).click(force=True)
-        
-        # 选择 Max Salary
-        page.locator('div').filter(has_text=re.compile(r"^Amount\(\$\)$")).nth(1).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('50000', exact=True).first.click(force=True)
+        # 选择薪资范围（使用修复后的辅助函数）
+        select_salary(page, min_amount='30000', max_amount='50000')
     
     with allure.step("点击 Continue 按钮"):
         page.get_by_role('button', name='Continue').click(force=True)
@@ -341,23 +321,11 @@ def test_tc009_job_title_emoji_validation(page: Page):
         page.wait_for_timeout(500)
     
     with allure.step("填写其他必填字段"):
-        # 选择 Job Function
-        page.locator('div').filter(has_text='Select Job Functions').nth(4).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Information & Communication Technology').first.click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Developers/Programmers').click(force=True)
-        page.wait_for_timeout(500)
+        # 选择 Job Function（使用修复后的辅助函数）
+        select_job_function(page, 'Information & Communication Technology', 'Developers/Programmers')
         
-        # 选择 Min Salary
-        page.locator('div').filter(has_text='Amount($)').nth(5).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('70000', exact=True).click(force=True)
-        
-        # 选择 Max Salary
-        page.locator('div').filter(has_text=re.compile(r"^Amount\(\$\)$")).nth(1).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('110000').click(force=True)
+        # 选择薪资范围（使用修复后的辅助函数）
+        select_salary(page, min_amount='70000', max_amount='110000')
     
     with allure.step("点击 Continue"):
         page.get_by_role('button', name='Continue').click(force=True)
@@ -421,15 +389,8 @@ def test_tc010_job_function_empty_validation(page: Page):
         # 不选择 Job Function（跳过）
         logger.info("✓ 跳过 Job Function 选择")
         
-        # 选择 Min Salary
-        page.locator('div').filter(has_text='Amount($)').nth(5).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('40000', exact=True).click(force=True)
-        
-        # 选择 Max Salary
-        page.locator('div').filter(has_text=re.compile(r"^Amount\(\$\)$")).nth(1).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('70000', exact=True).click(force=True)
+        # 选择薪资范围（使用修复后的辅助函数）
+        select_salary(page, min_amount='40000', max_amount='70000')
     
     with allure.step("点击 Continue 按钮"):
         page.get_by_role('button', name='Continue').click(force=True)
@@ -488,12 +449,8 @@ def test_tc011_salary_range_empty_validation(page: Page):
         page.get_by_role('heading', name='Job Basics').click(force=True)
         page.wait_for_timeout(500)
         
-        # 选择 Job Function
-        page.locator('div').filter(has_text='Select Job Functions').nth(4).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Sales').click(force=True)
-        page.wait_for_timeout(500)
-        logger.info("✓ 选择 Job Function: Sales")
+        # 选择 Job Function（使用修复后的辅助函数）
+        select_job_function(page, 'Sales')
         
         # 不填写 Salary Range（跳过）
         logger.info("✓ 跳过 Salary Range 填写")
@@ -555,13 +512,8 @@ def test_tc012_doc_salary_min_empty_max_selected(page: Page):
         page.get_by_role('heading', name='Job Basics').click(force=True)
         page.wait_for_timeout(500)
         
-        # 选择 Job Function
-        page.locator('div').filter(has_text='Select Job Functions').nth(4).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Engineering', exact=True).first.click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Systems Engineering', exact=True).click(force=True)
-        page.wait_for_timeout(500)
+        # 选择 Job Function（使用修复后的辅助函数）
+        select_job_function(page, 'Engineering', 'Systems Engineering')
         logger.info("✓ 填写 Job Title 和 Job Function")
     
     with allure.step("只选择 Max Amount，不选 Min Amount"):
@@ -628,20 +580,13 @@ def test_tc013_doc_salary_max_empty_min_selected(page: Page):
         page.get_by_role('heading', name='Job Basics').click(force=True)
         page.wait_for_timeout(500)
         
-        # 选择 Job Function
-        page.locator('div').filter(has_text='Select Job Functions').nth(4).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Engineering', exact=True).first.click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Systems Engineering', exact=True).click(force=True)
-        page.wait_for_timeout(500)
+        # 选择 Job Function（使用修复后的辅助函数）
+        select_job_function(page, 'Engineering', 'Systems Engineering')
         logger.info("✓ 填写 Job Title 和 Job Function")
     
     with allure.step("只选择 Min Amount，不选 Max Amount"):
-        # 选择 Min Amount
-        page.locator('div').filter(has_text='Amount($)').nth(5).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('50000', exact=True).first.click(force=True)
+        # 选择 Min Amount（使用修复后的辅助函数）
+        select_salary(page, min_amount='50000', max_amount=None)
         logger.info("✓ 选择 Min Amount: $50,000")
         
         # 不选择 Max Amount

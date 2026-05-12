@@ -12,6 +12,12 @@ import pytest
 import allure
 from playwright.sync_api import Page, expect
 from test_cases.publish_job.login_helper import login_if_needed
+from test_cases.publish_job.publish_job_helpers import (
+    select_job_function,
+    select_salary,
+    fill_job_title,
+    fill_job_description
+)
 from utils.logger import setup_logger
 
 logger = setup_logger()
@@ -60,26 +66,14 @@ def test_tc016_doc_pay_type_switching(page: Page):
         page.get_by_role('heading', name='Job Basics').click(force=True)
         page.wait_for_timeout(500)
         
-        # 选择 Job Function
-        page.locator('div').filter(has_text='Select Job Functions').nth(4).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Engineering', exact=True).first.click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Systems Engineering', exact=True).click(force=True)
-        page.wait_for_timeout(500)
+        # 选择 Job Function（使用修复后的辅助函数）
+        select_job_function(page, 'Engineering', 'Systems Engineering')
         logger.info("✓ 填写基本字段")
     
     with allure.step("选择 Pay Type=Per Year，Min=$50,000，Max=$80,000"):
-        # 默认应该是 Per Year，选择 Min 和 Max
-        page.locator('div').filter(has_text='Amount($)').nth(5).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('50000', exact=True).first.click(force=True)
-        logger.info("✓ 选择 Min: $50,000")
-        
-        page.locator('div').filter(has_text=re.compile(r"^Amount\(\$\)$")).nth(1).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('80000', exact=True).click(force=True)
-        logger.info("✓ 选择 Max: $80,000")
+        # 默认应该是 Per Year，选择 Min 和 Max（使用修复后的辅助函数）
+        select_salary(page, min_amount='50000', max_amount='80000')
+        logger.info("✓ 选择薪资范围: $50,000 - $80,000")
     
     with allure.step("切换 Pay Type 为 Per Hour"):
         try:
@@ -143,22 +137,11 @@ def test_tc017_doc_job_location_empty_validation(page: Page):
         page.get_by_role('heading', name='Job Basics').click(force=True)
         page.wait_for_timeout(500)
         
-        # 选择 Job Function
-        page.locator('div').filter(has_text='Select Job Functions').nth(4).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Engineering', exact=True).first.click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Systems Engineering', exact=True).click(force=True)
-        page.wait_for_timeout(500)
+        # 选择 Job Function（使用修复后的辅助函数）
+        select_job_function(page, 'Engineering', 'Systems Engineering')
         
-        # 选择 Salary Range
-        page.locator('div').filter(has_text='Amount($)').nth(5).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('50000', exact=True).first.click(force=True)
-        
-        page.locator('div').filter(has_text=re.compile(r"^Amount\(\$\)$")).nth(1).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('80000', exact=True).click(force=True)
+        # 选择 Salary Range（使用修复后的辅助函数）
+        select_salary(page, min_amount='50000', max_amount='80000')
         
         logger.info("✓ 填写其他必填字段")
     
@@ -358,6 +341,7 @@ def test_tc022_doc_job_title_autocomplete_trigger(page: Page):
     
     with allure.step("输入 Job Title 并检查 autocomplete"):
         job_title_input = page.locator('#title')
+        job_title_input.wait_for(state='visible', timeout=10000)
         job_title_input.fill('Software')
         page.wait_for_timeout(1000)
         logger.info("✓ 输入 'Software'")
@@ -471,13 +455,8 @@ def test_tc028_doc_job_highlights_truncation(page: Page):
         page.get_by_role('heading', name='Job Basics').click(force=True)
         page.wait_for_timeout(500)
         
-        # 选择 Job Function
-        page.locator('div').filter(has_text='Select Job Functions').nth(4).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Engineering', exact=True).first.click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Systems Engineering', exact=True).click(force=True)
-        page.wait_for_timeout(500)
+        # 选择 Job Function（使用修复后的辅助函数）
+        select_job_function(page, 'Engineering', 'Systems Engineering')
         
         # 填写 Job Location
         try:
@@ -489,14 +468,8 @@ def test_tc028_doc_job_highlights_truncation(page: Page):
         except:
             pass
         
-        # 选择 Salary Range
-        page.locator('div').filter(has_text='Amount($)').nth(5).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('50000', exact=True).first.click(force=True)
-        
-        page.locator('div').filter(has_text=re.compile(r"^Amount\(\$\)$")).nth(1).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('80000', exact=True).click(force=True)
+        # 选择 Salary Range（使用修复后的辅助函数）
+        select_salary(page, min_amount='50000', max_amount='80000')
         
         # 点击 Continue
         page.get_by_role('button', name='Continue').first.click(force=True)
@@ -567,13 +540,8 @@ def test_tc030_doc_job_description_truncation(page: Page):
         page.get_by_role('heading', name='Job Basics').click(force=True)
         page.wait_for_timeout(500)
         
-        # 选择 Job Function
-        page.locator('div').filter(has_text='Select Job Functions').nth(4).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Engineering', exact=True).first.click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Systems Engineering', exact=True).click(force=True)
-        page.wait_for_timeout(500)
+        # 选择 Job Function（使用修复后的辅助函数）
+        select_job_function(page, 'Engineering', 'Systems Engineering')
         
         # 填写 Job Location
         try:
@@ -585,14 +553,8 @@ def test_tc030_doc_job_description_truncation(page: Page):
         except:
             pass
         
-        # 选择 Salary Range
-        page.locator('div').filter(has_text='Amount($)').nth(5).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('50000', exact=True).first.click(force=True)
-        
-        page.locator('div').filter(has_text=re.compile(r"^Amount\(\$\)$")).nth(1).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('80000', exact=True).click(force=True)
+        # 选择 Salary Range（使用修复后的辅助函数）
+        select_salary(page, min_amount='50000', max_amount='80000')
         
         # 点击 Continue
         page.get_by_role('button', name='Continue').first.click(force=True)
@@ -663,13 +625,8 @@ def test_tc032_doc_job_requirements_truncation(page: Page):
         page.get_by_role('heading', name='Job Basics').click(force=True)
         page.wait_for_timeout(500)
         
-        # 选择 Job Function
-        page.locator('div').filter(has_text='Select Job Functions').nth(4).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Engineering', exact=True).first.click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Systems Engineering', exact=True).click(force=True)
-        page.wait_for_timeout(500)
+        # 选择 Job Function（使用修复后的辅助函数）
+        select_job_function(page, 'Engineering', 'Systems Engineering')
         
         # 填写 Job Location
         try:
@@ -681,14 +638,8 @@ def test_tc032_doc_job_requirements_truncation(page: Page):
         except:
             pass
         
-        # 选择 Salary Range
-        page.locator('div').filter(has_text='Amount($)').nth(5).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('50000', exact=True).first.click(force=True)
-        
-        page.locator('div').filter(has_text=re.compile(r"^Amount\(\$\)$")).nth(1).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('80000', exact=True).click(force=True)
+        # 选择 Salary Range（使用修复后的辅助函数）
+        select_salary(page, min_amount='50000', max_amount='80000')
         
         # 点击 Continue
         page.get_by_role('button', name='Continue').first.click(force=True)
@@ -760,19 +711,13 @@ def test_tc014_doc_salary_max_disabled_when_less_than_min(page: Page):
         page.get_by_role('heading', name='Job Basics').click(force=True)
         page.wait_for_timeout(500)
         
-        # 选择 Job Function
-        page.locator('div').filter(has_text='Select Job Functions').nth(4).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Engineering', exact=True).first.click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Systems Engineering', exact=True).click(force=True)
-        page.wait_for_timeout(500)
+        # 选择 Job Function（使用修复后的辅助函数）
+        select_job_function(page, 'Engineering', 'Systems Engineering')
         logger.info("✓ 填写基本字段")
     
     with allure.step("选择 Min Amount = $50,000"):
-        page.locator('div').filter(has_text='Amount($)').nth(5).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('50000', exact=True).first.click(force=True)
+        # 选择 Min Amount（使用修复后的辅助函数）
+        select_salary(page, min_amount='50000', max_amount=None)
         logger.info("✓ 选择 Min Amount: $50,000")
     
     with allure.step("打开 Max Amount 下拉并检查 disabled 选项"):
@@ -1050,13 +995,8 @@ def test_tc024_doc_job_highlights_empty_allowed(page: Page):
         page.get_by_role('heading', name='Job Basics').click(force=True)
         page.wait_for_timeout(500)
         
-        # 选择 Job Function
-        page.locator('div').filter(has_text='Select Job Functions').nth(4).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Engineering', exact=True).first.click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Systems Engineering', exact=True).click(force=True)
-        page.wait_for_timeout(500)
+        # 选择 Job Function（使用修复后的辅助函数）
+        select_job_function(page, 'Engineering', 'Systems Engineering')
         
         # 填写 Job Location
         try:
@@ -1068,14 +1008,8 @@ def test_tc024_doc_job_highlights_empty_allowed(page: Page):
         except:
             pass
         
-        # 选择 Salary Range
-        page.locator('div').filter(has_text='Amount($)').nth(5).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('50000', exact=True).first.click(force=True)
-        
-        page.locator('div').filter(has_text=re.compile(r"^Amount\(\$\)$")).nth(1).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('80000', exact=True).click(force=True)
+        # 选择 Salary Range（使用修复后的辅助函数）
+        select_salary(page, min_amount='50000', max_amount='80000')
         
         # 点击 Continue
         page.get_by_role('button', name='Continue').first.click(force=True)
@@ -1096,14 +1030,14 @@ def test_tc024_doc_job_highlights_empty_allowed(page: Page):
         except Exception as e:
             logger.warning(f"⚠️ Step2 字段可能不存在: {e}")
     
-    with allure.step("点击 Continue 并验证可以进入 Step3"):
-        page.get_by_role('button', name='Continue').first.click(force=True)
+    with allure.step("点击 Post 并发布"):
+        page.get_by_role('button', name='Post').first.click(force=True)
         page.wait_for_load_state("load")
-        page.wait_for_timeout(2000)
+        page.wait_for_timeout(3000)
         
         current_url = page.url
-        if '/step3' in current_url or '/publish/success' in current_url or 'step' not in current_url:
-            logger.info("✓ 允许提交，进入 Step3 或发布成功（Job Highlights 非必填）")
+        if '/biz/en/publish/success' in current_url:
+            logger.info("✓ 允许发布，职位发布成功（Job Highlights 非必填）")
         else:
             logger.info("⚠️ 停留在 Step2（可能 Job Highlights 是必填的）")
     
@@ -1148,13 +1082,8 @@ def test_tc026_doc_job_description_empty_validation(page: Page):
         page.get_by_role('heading', name='Job Basics').click(force=True)
         page.wait_for_timeout(500)
         
-        # 选择 Job Function
-        page.locator('div').filter(has_text='Select Job Functions').nth(4).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Engineering', exact=True).first.click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Systems Engineering', exact=True).click(force=True)
-        page.wait_for_timeout(500)
+        # 选择 Job Function（使用修复后的辅助函数）
+        select_job_function(page, 'Engineering', 'Systems Engineering')
         
         # 填写 Job Location
         try:
@@ -1166,14 +1095,8 @@ def test_tc026_doc_job_description_empty_validation(page: Page):
         except:
             pass
         
-        # 选择 Salary Range
-        page.locator('div').filter(has_text='Amount($)').nth(5).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('50000', exact=True).first.click(force=True)
-        
-        page.locator('div').filter(has_text=re.compile(r"^Amount\(\$\)$")).nth(1).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('80000', exact=True).click(force=True)
+        # 选择 Salary Range（使用修复后的辅助函数）
+        select_salary(page, min_amount='50000', max_amount='80000')
         
         # 点击 Continue
         page.get_by_role('button', name='Continue').first.click(force=True)
@@ -1181,13 +1104,13 @@ def test_tc026_doc_job_description_empty_validation(page: Page):
         page.wait_for_timeout(2000)
         logger.info("✓ 完成 Step1，进入 Step2")
     
-    with allure.step("不填写任何字段，直接点击 Continue"):
-        page.get_by_role('button', name='Continue').first.click(force=True)
+    with allure.step("不填写任何字段，直接点击 Post"):
+        page.get_by_role('button', name='Post').first.click(force=True)
         page.wait_for_timeout(1000)
     
     with allure.step("验证停留在 Step2 并显示错误"):
         current_url = page.url
-        if '/step2' in current_url or ('step3' not in current_url and 'success' not in current_url):
+        if 'success' not in current_url:
             logger.info("✓ 停留在 Step2")
             
             # 验证显示错误提示
@@ -1212,18 +1135,17 @@ def test_tc026_doc_job_description_empty_validation(page: Page):
 @pytest.mark.step2
 def test_tc027_doc_job_requirements_empty_allowed(page: Page):
     """
-    TC027（文档编号）: Step2 Job Requirements 为空，点击 Continue，允许提交
+    TC027（文档编号）: Step2 直接发布，验证发布成功（注：Job Requirements 已从流程中移除）
     
     前置条件:
-    - 已进入 Step2，Job Requirements 为空
+    - 已进入 Step2
     
     执行步骤:
-    1. 不填写 Job Requirements
-    2. 填写其他必填字段（Job Description）
-    3. 点击 Continue
+    1. 填写 Job Description（必填）
+    2. 直接点击 Post 按钮
     
     预期结果:
-    - 允许提交，进入 Step3（Job Requirements 非必填）
+    - 允许直接发布，跳转到发布成功页面
     """
     with allure.step("访问发布职位页面"):
         page.goto(PUBLISH_URL)
@@ -1240,13 +1162,8 @@ def test_tc027_doc_job_requirements_empty_allowed(page: Page):
         page.get_by_role('heading', name='Job Basics').click(force=True)
         page.wait_for_timeout(500)
         
-        # 选择 Job Function
-        page.locator('div').filter(has_text='Select Job Functions').nth(4).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Engineering', exact=True).first.click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Systems Engineering', exact=True).click(force=True)
-        page.wait_for_timeout(500)
+        # 选择 Job Function（使用修复后的辅助函数）
+        select_job_function(page, 'Engineering', 'Systems Engineering')
         
         # 填写 Job Location
         try:
@@ -1258,14 +1175,8 @@ def test_tc027_doc_job_requirements_empty_allowed(page: Page):
         except:
             pass
         
-        # 选择 Salary Range
-        page.locator('div').filter(has_text='Amount($)').nth(5).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('50000', exact=True).first.click(force=True)
-        
-        page.locator('div').filter(has_text=re.compile(r"^Amount\(\$\)$")).nth(1).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('80000', exact=True).click(force=True)
+        # 选择 Salary Range（使用修复后的辅助函数）
+        select_salary(page, min_amount='50000', max_amount='80000')
         
         # 点击 Continue
         page.get_by_role('button', name='Continue').first.click(force=True)
@@ -1273,29 +1184,36 @@ def test_tc027_doc_job_requirements_empty_allowed(page: Page):
         page.wait_for_timeout(2000)
         logger.info("✓ 完成 Step1，进入 Step2")
     
-    with allure.step("只填写 Job Description，不填写 Job Requirements"):
+    with allure.step("填写 Job Description 并直接发布"):
+        # 填写 Job Description（必填）
         try:
-            # 填写 Job Description（必填）
-            description_input = page.locator('textarea[placeholder*="description" i]').first
-            description_input.fill('This is a test job description for requirements empty test.')
+            # 尝试使用 ID 定位（更可靠）
+            description_input = page.locator('#content')
+            description_input.fill('This is a test job description.')
             logger.info("✓ 填写 Job Description")
-            
-            # 不填写 Job Requirements
-            logger.info("✓ Job Requirements 保持为空")
-            
         except Exception as e:
-            logger.warning(f"⚠️ Step2 字段可能不存在: {e}")
-    
-    with allure.step("点击 Continue 并验证可以进入 Step3"):
-        page.get_by_role('button', name='Continue').first.click(force=True)
-        page.wait_for_load_state("load")
-        page.wait_for_timeout(2000)
+            logger.warning(f"⚠️ Job Description 字段填写失败: {e}")
+            # 尝试备用定位器
+            try:
+                description_input = page.locator('textarea[placeholder*="description" i]').first
+                description_input.fill('This is a test job description.')
+                logger.info("✓ 填写 Job Description（使用备用定位器）")
+            except Exception as e2:
+                logger.error(f"❌ Job Description 字段填写失败: {e2}")
         
+        # Step2 是最后一步，直接点击 Post 按钮
+        page.get_by_role('button', name='Post').first.click(force=True)
+        page.wait_for_load_state("load")
+        page.wait_for_timeout(3000)
+        logger.info("✓ 点击 Post 按钮发布职位")
+        
+        # 验证发布成功
         current_url = page.url
-        if '/step3' in current_url or '/publish/success' in current_url or 'step' not in current_url:
-            logger.info("✓ 允许提交，进入 Step3 或发布成功（Job Requirements 非必填）")
+        if '/publish/success' in current_url:
+            logger.info("✓ 发布成功，跳转到成功页面")
         else:
-            logger.info("⚠️ 停留在 Step2（可能 Job Requirements 是必填的）")
+            logger.warning(f"⚠️ 未跳转到成功页面，当前 URL: {current_url}")
     
-    logger.info("✅ TC027 测试通过：Job Requirements 为空允许提交验证完成")
+    logger.info("✅ TC027 测试通过：直接发布验证完成")
+
 

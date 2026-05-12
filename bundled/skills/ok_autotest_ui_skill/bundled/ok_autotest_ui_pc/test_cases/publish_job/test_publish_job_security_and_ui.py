@@ -3,6 +3,7 @@
 OK.com - 发布职位安全与UI测试
 测试用例: TC024-TC028
 生成时间: 2026-03-02
+修复时间: 2026-05-12 - 更新元素定位策略
 """
 
 import re
@@ -10,6 +11,12 @@ import pytest
 import allure
 from playwright.sync_api import Page, expect
 from test_cases.publish_job.login_helper import login_if_needed
+from test_cases.publish_job.publish_job_helpers import (
+    select_job_function,
+    select_salary,
+    fill_job_title,
+    fill_job_description
+)
 from utils.logger import setup_logger
 
 logger = setup_logger()
@@ -114,20 +121,11 @@ def test_tc025_xss_protection(page: Page):
         page.wait_for_timeout(500)
     
     with allure.step("填写其他必填字段"):
-        # 选择 Job Function
-        page.locator('div').filter(has_text='Select Job Functions').nth(4).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Sales').click(force=True)
-        page.wait_for_timeout(500)
+        # 选择 Job Function（使用修复后的辅助函数）
+        select_job_function(page, 'Sales')
         
-        # 选择 Salary
-        page.locator('div').filter(has_text='Amount($)').nth(5).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('40000', exact=True).click(force=True)
-        
-        page.locator('div').filter(has_text=re.compile(r"^Amount\(\$\)$")).nth(1).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('70000', exact=True).click(force=True)
+        # 选择 Salary（使用修复后的辅助函数）
+        select_salary(page, min_amount='40000', max_amount='70000')
     
     with allure.step("点击 Continue"):
         page.get_by_role('button', name='Continue').click(force=True)
@@ -198,20 +196,11 @@ def test_tc026_sql_injection_protection(page: Page):
         page.wait_for_timeout(500)
     
     with allure.step("填写其他必填字段"):
-        # 选择 Job Function
-        page.locator('div').filter(has_text='Select Job Functions').nth(4).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('Accounting', exact=True).first.click(force=True)
-        page.wait_for_timeout(500)
+        # 选择 Job Function（使用修复后的辅助函数）
+        select_job_function(page, 'Accounting')
         
-        # 选择 Salary
-        page.locator('div').filter(has_text='Amount($)').nth(5).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('50000', exact=True).first.click(force=True)
-        
-        page.locator('div').filter(has_text=re.compile(r"^Amount\(\$\)$")).nth(1).click(force=True)
-        page.wait_for_timeout(500)
-        page.get_by_text('80000', exact=True).click(force=True)
+        # 选择 Salary（使用修复后的辅助函数）
+        select_salary(page, min_amount='50000', max_amount='80000')
     
     with allure.step("点击 Continue"):
         page.get_by_role('button', name='Continue').click(force=True)

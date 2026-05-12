@@ -107,7 +107,7 @@ def pytest_runtest_makereport(item, call):
             
             try:
                 # 截图
-                page.screenshot(path=str(screenshot_path, timeout=60000), full_page=True)
+                page.screenshot(path=str(screenshot_path), timeout=60000, full_page=True)
                 
                 # 附加到 Allure 报告
                 with open(screenshot_path, 'rb') as f:
