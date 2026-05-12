@@ -908,9 +908,65 @@ class PropertyListPage(BasePage):
             )
         if "commercial" in path_part.lower():
             return self.page.locator(f'a[href*="{path_part}"]')
+        # 买房列表：卡片 href 为 cate-property-for-sale-*，与 get_buy_cards 一致；勿加 OKerAU_/A$ 过滤
+        # （线上可能无经纪人前缀或非 A$ 展示，过滤会导致 0 张卡片、房产类型恒为空）
+        if path_part == "cate-property-for-sale-":
+            return self.page.locator(f'a[href*="{path_part}"]')
         return self.page.locator(f'a[href*="{path_part}"]').filter(
             has=self.page.locator("text=/OKerAU_|A\\$/")
         )
+
+    def _pick_property_type_line_from_card_lines(self, lines: list) -> str:
+        """从卡片 inner_text 行列表中解析房产类型（兼容最后一行为空或非类型文案）。"""
+        if not lines:
+            return ""
+        cleaned = []
+        for ln in lines:
+            t = (ln or "").strip()
+            if not t:
+                continue
+            if t.endswith(" Property Information"):
+                t = t.replace(" Property Information", "").strip()
+            if t:
+                cleaned.append(t)
+        if not cleaned:
+            return ""
+
+        def _junk(ln: str) -> bool:
+            s = ln.strip()
+            low = s.lower()
+            if not s:
+                return True
+            if low in ("list", "map", "filter", "free"):
+                return True
+            if "contact for price" in low:
+                return True
+            if re.match(r"^A\$[\d,+-]+", s) or re.match(r"^A\$-?[\d,]+", s):
+                return True
+            if re.match(r"^OKer[A-Za-z]{2}_", s):
+                return True
+            if re.match(r"^\d+\s*(bed|beds)\b", low):
+                return True
+            if "sqm" in low or "m²" in s or "car" in low and ".png" in low:
+                return True
+            if len(s) > 80:
+                return True
+            return False
+
+        type_head = re.compile(
+            r"^(house|unit|apartment|townhouse|townhomes|villa|studio|other|retirement"
+            r"|student\s+accommodation|apartment&unit)(\b|[/\s&].*)$",
+            re.I,
+        )
+        land_dev = re.compile(r"^land\s*/\s*development$", re.I)
+        for ln in reversed(cleaned):
+            if _junk(ln):
+                continue
+            s = ln.strip()
+            if type_head.match(s) or land_dev.match(s):
+                return s
+        tail = cleaned[-1]
+        return tail if not _junk(tail) else ""
 
     def get_first_card_property_type_text(self, path_part: str = "cate-property-for-rent-"):
         """获取第一张卡片的房产类型文本（path_part: 租房/买房/学生公寓/商业地产卖房）。学生公寓时若首卡为空会尝试后续卡片。"""
@@ -940,9 +996,7 @@ class PropertyListPage(BasePage):
                     card.wait_for(state="visible", timeout=5000)
                     card_text = card.inner_text()
                     lines = [ln.strip() for ln in card_text.split("\n") if ln.strip()]
-                    raw = lines[-1] if lines else ""
-                    if raw.endswith(" Property Information"):
-                        raw = raw.replace(" Property Information", "").strip()
+                    raw = self._pick_property_type_line_from_card_lines(lines)
                     if raw:
                         return raw
                 except Exception as e:
@@ -971,9 +1025,7 @@ class PropertyListPage(BasePage):
                 card = cards.nth(i)
                 card_text = card.inner_text()
                 lines = [ln.strip() for ln in card_text.split("\n") if ln.strip()]
-                raw = lines[-1] if lines else ""
-                if raw.endswith(" Property Information"):
-                    raw = raw.replace(" Property Information", "").strip()
+                raw = self._pick_property_type_line_from_card_lines(lines)
                 if ("student" in path_part.lower() or "commercial" in path_part.lower()) and not raw:
                     continue
                 types_list.append(raw)
