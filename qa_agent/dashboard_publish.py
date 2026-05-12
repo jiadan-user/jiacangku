@@ -258,6 +258,10 @@ def _compact_phase_report_for_publish(value: Any) -> dict[str, Any]:
         "pytest_target_count",
         "result_source",
         "result_warnings",
+        "timed_out",
+        "timeout_type",
+        "timeout_elapsed_seconds",
+        "block_reason",
     }
     compact = {key: value[key] for key in keep_keys if key in value}
     case_results = value.get("case_results")
@@ -282,6 +286,10 @@ def _compact_ok_ui_summary_for_publish(summary: dict[str, Any]) -> dict[str, Any
         "parallel_granularity",
         "pytest_command",
         "artifact_retention",
+        "case_timeout_seconds",
+        "idle_timeout_seconds",
+        "phase_timeout_seconds",
+        "pytest_timeout_available",
         "run_status",
         "block_reason",
         "pytest_exit_code",

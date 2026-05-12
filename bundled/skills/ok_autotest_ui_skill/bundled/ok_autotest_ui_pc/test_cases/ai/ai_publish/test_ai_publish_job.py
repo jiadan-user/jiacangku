@@ -5,7 +5,7 @@ AE站 - Job发布AI推荐类目测试
 录制文档：test_cases/ai/ai_publish/Job发布-AI推荐类目-测试用例-20260310.md
 生成时间：2026-03-10
 
-测试站点：AE (https://aepub.58v5.cn)
+测试站点：AR (https://arpub.58v5.cn)
 测试角色：Seller (卖家)
 测试目标：验证在Job发布页面，当用户输入职位标题(Job Title)后，系统会基于AI智能分析，
          在Job Function下拉框中显示推荐的职位类目
@@ -23,11 +23,11 @@ logger = setup_logger()
 # 测试环境配置（来自录制文档，录制与运行使用同一账号）
 # ============================================
 _CONFIG = {
-    "site": "ae",
-    "site_name": "AE站",
+    "site": "ar",
+    "site_name": "AR站",
     "role": "seller",
     "user_name": "ae_job_publisher",
-    "base_url": "https://aepub.58v5.cn",
+    "base_url": "https://arpub.58v5.cn",
     "test_account": {
         "username": "yangyang100@58.com",
         "password": "Qa123456"
@@ -282,9 +282,9 @@ def setup_job_page(page, config):
     Class级别的前置条件：登录并导航到Job发布页面
     
     前置步骤（来自测试用例文档第48-50行）：
-    - 访问页面：https://aepub.58v5.cn/biz/en/publish/front
+    - 访问页面：https://arpub.58v5.cn/biz/en/publish/front
     - 若未登录，则先登录（username：yangyang100@58.com/Qa123456）
-    - 点击Job，进入Job发布页面（https://aepub.58v5.cn/biz/en/publish/job?categoryId=3000）
+    - 点击Job，进入Job发布页面（https://arpub.58v5.cn/biz/en/publish/job?categoryId=4000
     """
     login_page = LoginPage(page)
     job_page = AiPublishJobPage(page)
@@ -310,7 +310,7 @@ def setup_job_page(page, config):
     session_manager = SessionManager(page, base_url, session_name=f"{site}_{role}_{account_name}")
     session_loaded = False
     
-    # ========== 步骤1：进入页面 https://aepub.58v5.cn/biz/en/publish/front ==========
+    # ========== 步骤1：进入页面 https://arpub.58v5.cn/biz/en/publish/front ==========
     with allure.step("步骤1：访问发布首页"):
         page.goto(f"{base_url}/biz/en/publish/front", timeout=30000)
         page.wait_for_load_state("domcontentloaded", timeout=15000)
@@ -381,7 +381,7 @@ def setup_job_page(page, config):
         current_url = page.url
         assert "publish/job" in current_url, \
             f"未进入Job发布页面，当前URL: {current_url}"
-        assert "categoryId=3000" in current_url, \
+        assert "categoryId=4000" in current_url, \
             f"Job发布页面URL参数错误，当前URL: {current_url}"
         logger.info(f"✓ 已进入Job发布页面: {current_url}")
         logger.info("✅ Class Setup 完成！")

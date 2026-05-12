@@ -4,8 +4,25 @@ Marketplace Post Page Object
 AE站二手商品发布页面对象
 支持图片上传、AI生成描述、动态类别选择、位置选择等功能
 """
+import os
 import re
 from pathlib import Path
+from typing import Optional
+
+
+def _mp_env_int(key: str, default: int) -> int:
+    try:
+        raw = (os.environ.get(key) or "").strip()
+        return int(raw) if raw else default
+    except ValueError:
+        return default
+
+
+def _mp_env_flag(key: str, default: bool = True) -> bool:
+    raw = (os.environ.get(key) or "").strip().lower()
+    if not raw:
+        return default
+    return raw not in ("0", "false", "no", "off")
 
 _UPLOAD_INPUT_SELECTORS = (
     "input[type=file].upload-input",
@@ -621,7 +638,10 @@ class MarketplacePostPage(BasePage):
             raise
 
     def ensure_recommend_category_ui_ready(self, fallback_title: str = "Product for category test"):
-        """确保推荐区/More Categories 可点：无标题时补填并等待 AI。"""
+        """无标题时补填；短轮询推荐区 DOM（默认约 3s，可用 MARKETPLACE_POST_AI_RECOMMEND_WAIT_SEC 覆盖）。
+
+        非「AI 推荐类目」专项用例应走搜索 / Or browse，不依赖推荐区长时间就绪。
+        """
         try:
             has_panel = self.page.evaluate("""
             () => {
@@ -638,8 +658,12 @@ class MarketplacePostPage(BasePage):
                 pass
             if not title_val:
                 self.input_title(fallback_title)
-            self.logger.info("⏳ 等待 AI 推荐区加载...")
-            for i in range(60):
+            max_sec = max(0, _mp_env_int("MARKETPLACE_POST_AI_RECOMMEND_WAIT_SEC", 3))
+            if max_sec == 0:
+                self.logger.info("⏳ 跳过 AI 推荐区等待（MARKETPLACE_POST_AI_RECOMMEND_WAIT_SEC=0）")
+                return
+            self.logger.info(f"⏳ 等待 AI 推荐区加载（最多 {max_sec}s，可设 MARKETPLACE_POST_AI_RECOMMEND_WAIT_SEC）...")
+            for i in range(max_sec):
                 self.page.wait_for_timeout(1000)
                 if self.page.evaluate("""
                 () => document.querySelectorAll(
@@ -648,7 +672,9 @@ class MarketplacePostPage(BasePage):
                 """):
                     self.logger.info(f"  ✓ 第{i+1}秒 More Categories 已出现")
                     return
-            self.logger.warning("⚠️ 推荐区可能仍未在60秒内加载，继续尝试点击 More Categories")
+            self.logger.warning(
+                f"⚠️ 推荐区可能仍未在{max_sec}秒内加载，继续尝试点击 More Categories / 搜索选类"
+            )
         except Exception as e:
             self.logger.warning(f"ensure_recommend_category_ui_ready: {e}")
 
@@ -858,6 +884,24 @@ class MarketplacePostPage(BasePage):
                     """)
                 self.page.wait_for_timeout(1500)
 
+            if self._try_open_category_search_modal_fallback():
+                self.page.wait_for_timeout(400)
+                if self._wait_category_modal_any(12000):
+                    self.logger.info("✓ 已优先通过主表单入口打开类别弹层（不依赖 AI 推荐区长等待）")
+                    return
+
+            try:
+                cid = self.page.locator("#categoryId")
+                if cid.count() > 0:
+                    cid.scroll_into_view_if_needed(timeout=8000)
+                    cid.click(timeout=10000, force=True)
+                    self.page.wait_for_timeout(1500)
+                    if self._wait_category_modal_any(8000):
+                        self.logger.info("✓ 已通过 #categoryId 打开类别弹层")
+                        return
+            except Exception:
+                pass
+
             self.ensure_recommend_category_ui_ready()
 
             # 已选过类别时推荐区常收起：先点 Category 区域重新展开，再点 More Categories
@@ -896,19 +940,8 @@ class MarketplacePostPage(BasePage):
                         return
             except Exception:
                 pass
-            try:
-                cid = self.page.locator("#categoryId")
-                if cid.count() > 0:
-                    cid.scroll_into_view_if_needed(timeout=8000)
-                    cid.click(timeout=10000, force=True)
-                    self.page.wait_for_timeout(1500)
-                    if self._wait_category_modal_any(8000):
-                        self.logger.info("✓ 已通过 #categoryId 打开类别弹层")
-                        return
-            except Exception:
-                pass
 
-            max_wait = 120
+            max_wait = max(8, _mp_env_int("MARKETPLACE_POST_MORE_CATEGORIES_POLL_SEC", 42))
             for i in range(max_wait):
                 clicked = self.page.evaluate("""
                 () => {
@@ -952,7 +985,8 @@ class MarketplacePostPage(BasePage):
             self.logger.warning("常规方式未找到 More Categories，尝试点击已选类别区域展开...")
             if self._try_click_category_breadcrumb_to_expand():
                 self.page.wait_for_timeout(2000)
-                for j in range(40):
+                phase2 = max(4, _mp_env_int("MARKETPLACE_POST_MORE_CATEGORIES_PHASE2_POLL", 18))
+                for j in range(phase2):
                     clicked = self.page.evaluate("""
                     () => {
                         const clickEl = (el) => {
@@ -984,7 +1018,7 @@ class MarketplacePostPage(BasePage):
             if self._try_open_category_search_modal_fallback():
                 return
 
-            raise Exception("未在120秒内找到或可点击 More Categories")
+            raise Exception(f"未在约 {max_wait}s 内找到或可点击 More Categories（可调 MARKETPLACE_POST_MORE_CATEGORIES_*）")
 
         except Exception as e:
             self.logger.error(f"点击More Categories失败: {e}")
@@ -1096,14 +1130,102 @@ class MarketplacePostPage(BasePage):
             """))
         except Exception:
             return False
-    
-    def click_browse_to_find_category(self):
-        """点击Or browse to find a category，打开 Browse（category-select-modal）
-        
-        新UI（2026-04）：
-        - 此链接在 Search For Category Modal（.category-search-dialog）内
-        - 点击后关闭 Search Modal，打开 Browse Modal（.category-select-modal）
-        - Browse Modal 的 visible 属性可能为 False（CSS动画），改用内容存在判断
+
+    def _category_display_looks_like_electronics_mobiles_accessories(self) -> bool:
+        """主表单 Category 展示是否已落在 Electronics > Mobiles & Accessories（宽松文本匹配）。"""
+        try:
+            t = (self.get_category_display_text() or "").lower()
+        except Exception:
+            return False
+        if "electronics" not in t:
+            return False
+        if "mobiles" in t and "accessories" in t:
+            return True
+        if "mobile" in t and ("accessory" in t or "accessories" in t):
+            return True
+        return False
+
+    def try_select_electronics_mobiles_accessories_via_category_search(self) -> bool:
+        """在已打开的 ``.category-search-dialog`` 内用关键词搜索并点选 Mobiles & Accessories 路径；失败返回 False。"""
+        try:
+            if not self.page.evaluate("() => !!document.querySelector('.category-search-dialog')"):
+                return False
+            dlg = self.page.locator(".category-search-dialog")
+            if dlg.count() == 0:
+                return False
+            inp = dlg.locator("input[type='text'], input:not([type='hidden'])").first
+            if inp.count() == 0:
+                return False
+            for query in ("Electronics Mobiles Accessories", "Mobiles Accessories", "Mobile Accessories"):
+                try:
+                    inp.click(timeout=5000, force=True)
+                except Exception:
+                    pass
+                inp.fill("")
+                try:
+                    inp.press_sequentially(query, delay=35)
+                except Exception:
+                    inp.fill(query)
+                try:
+                    inp.evaluate(
+                        """el => { el.dispatchEvent(new Event('input', { bubbles: true }));
+                        el.dispatchEvent(new Event('change', { bubbles: true })); }"""
+                    )
+                except Exception:
+                    pass
+                self.page.wait_for_timeout(2300)
+                clicked = self.page.evaluate("""
+                () => {
+                  const dlg = document.querySelector('.category-search-dialog');
+                  if (!dlg) return false;
+                  const scoreRow = (raw) => {
+                    const t = (raw || '').replace(/\\s+/g, ' ').trim().toLowerCase();
+                    if (!t || t.length < 8 || t.length > 280) return -1;
+                    let s = 0;
+                    if (t.includes('mobiles') || t.includes('mobile')) s += 3;
+                    if (t.includes('accessories') || t.includes('accessory')) s += 3;
+                    if (t.includes('electronics')) s += 2;
+                    if (t.includes('marketplace')) s += 1;
+                    if (t.includes('›') || t.includes('>')) s += 1;
+                    return s;
+                  };
+                  const rows = Array.from(dlg.querySelectorAll(
+                    '.list-item, li[role="option"], [class*="list-item"], [class*="ListItem"], a, button'
+                  ));
+                  let best = null, bestScore = 0;
+                  for (const el of rows) {
+                    if (!el.offsetParent) continue;
+                    if (el.closest('.category-select-modal')) continue;
+                    const sc = scoreRow(el.innerText || '');
+                    if (sc >= 7 && sc > bestScore) { best = el; bestScore = sc; }
+                  }
+                  if (best) {
+                    best.scrollIntoView({ block: 'center' });
+                    best.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+                    return true;
+                  }
+                  return false;
+                }
+                """)
+                if not clicked:
+                    continue
+                self.page.wait_for_timeout(450)
+                for _ in range(22):
+                    if self._category_display_looks_like_electronics_mobiles_accessories():
+                        self.logger.info("✓ 搜索选类：主表单已显示 Electronics / Mobiles & Accessories")
+                        return True
+                    self.page.wait_for_timeout(320)
+            return False
+        except Exception as e:
+            self.logger.warning(f"try_select_electronics_mobiles_accessories_via_category_search: {e}")
+            return False
+
+    def click_browse_to_find_category(self, prefer_search: Optional[bool] = None):
+        """点击 Or browse 打开 Browse（category-select-modal）。
+
+        默认在 Search Modal 内先尝试 ``try_select_electronics_mobiles_accessories_via_category_search``，
+        不依赖点击推荐类目；``prefer_search=False`` 时跳过（如 TC041 手动树选）。
+        环境：``MARKETPLACE_POST_CATEGORY_VIA_SEARCH``（默认开）。
         """
         try:
             has_browse = self.page.evaluate("""
@@ -1114,6 +1236,15 @@ class MarketplacePostPage(BasePage):
             """)
             if has_browse:
                 self.logger.info("✓ Browse Modal 已就绪，跳过 Search Modal 内 Or browse")
+                return
+
+            use_search = (
+                _mp_env_flag("MARKETPLACE_POST_CATEGORY_VIA_SEARCH", True)
+                if prefer_search is None
+                else bool(prefer_search)
+            )
+            if use_search and self.try_select_electronics_mobiles_accessories_via_category_search():
+                self.logger.info("✓ 已在 Search Modal 中通过搜索完成 Mobiles & Accessories 类目，跳过 Or browse")
                 return
 
             # 勿在打开 Browse 前调用强 dismiss：曾误关含「Continue」文案的 Search Modal
@@ -1251,11 +1382,10 @@ class MarketplacePostPage(BasePage):
             self.logger.error(f"选择Electronics类别失败: {e}")
             raise
     
-    def select_category_cell_phones(self):
-        """选择Cell Phones类别
+    def select_category_mobiles_accessories(self):
+        """选择 Mobiles & Accessories 类别
         
         新UI（2026-04）：在 Browse Modal 中使用 .list-item 定位类别
-        注意：点击后子列表只会显示约700ms，需立即选择Apple等子类别
         """
         try:
             self.page.wait_for_timeout(200)
@@ -1265,33 +1395,47 @@ class MarketplacePostPage(BasePage):
                 const modal = document.querySelector('.category-select-modal');
                 if (!modal) return false;
                 const items = Array.from(modal.querySelectorAll('.list-item'));
-                const target = items.find(el => el.textContent.trim() === 'Cell Phones');
+                const norm = (s) => (s || '').replace(/\\s+/g, ' ').trim();
+                // 优先精确匹配
+                let target = items.find(el => norm(el.textContent) === 'Mobiles & Accessories');
+                if (!target) {
+                    // 模糊匹配
+                    target = items.find(el => {
+                        const t = norm(el.textContent).toLowerCase();
+                        return (t.includes('mobiles') || t.includes('mobile')) && 
+                               (t.includes('accessories') || t.includes('accessory'));
+                    });
+                }
                 if (target) { target.click(); return true; }
                 return false;
             }
             """
             result = self.page.evaluate(js_code)
             if not result:
-                raise Exception("未找到Cell Phones类别元素（Browse Modal .list-item）")
+                raise Exception("未找到 Mobiles & Accessories 类别元素（Browse Modal .list-item）")
 
-            self.page.wait_for_timeout(300)  # 缩短等待，子列表在700ms后会重置
-            self.logger.info("✓ 已选择Cell Phones类别")
+            self.page.wait_for_timeout(300)
+            self.logger.info("✓ 已选择 Mobiles & Accessories 类别")
         except Exception as e:
-            self.logger.error(f"选择Cell Phones类别失败: {e}")
+            self.logger.error(f"选择 Mobiles & Accessories 类别失败: {e}")
             raise
 
-    def select_category_electronics_cell_phones_apple(self):
-        """Browse Modal 已打开时，短间隔三连选 Electronics → Cell Phones → Apple（避免子列表约700ms被重置）。
+    def select_category_electronics_mobiles_accessories(self):
+        """Browse Modal 已打开时，选择 Electronics → Mobiles & Accessories（两级类别）。
         
-        增强版：如果首次选择失败（未找到 Cell Phones），自动关闭重开 Modal 重试一次。
+        增强版：如果首次选择失败（未找到 Mobiles & Accessories），自动关闭重开 Modal 重试一次。
+        若上一步 ``click_browse_to_find_category`` 已通过搜索完成选类，则此处直接返回。
         """
+        if self._category_display_looks_like_electronics_mobiles_accessories():
+            self.logger.info("✓ 主表单已为 Electronics / Mobiles & Accessories，跳过 Browse 树选")
+            return
         for retry_count in range(2):  # 最多尝试2次
             try:
-                self._select_electronics_cellphones_apple_once()
+                self._select_electronics_mobiles_accessories_once()
                 return  # 成功则直接返回
             except Exception as e:
                 error_msg = str(e)
-                if "未找到 Cell Phones" in error_msg and retry_count == 0:
+                if "未找到 Mobiles & Accessories" in error_msg and retry_count == 0:
                     self.logger.warning(
                         f"⚠️ 首次类目选择失败（{error_msg}），关闭Modal重新打开后重试..."
                     )
@@ -1309,11 +1453,11 @@ class MarketplacePostPage(BasePage):
                         raise e  # 抛出原始错误
                     # 继续循环进行第二次尝试
                 else:
-                    # 非Cell Phones错误，或已是第二次尝试，直接抛出
+                    # 非 Mobiles & Accessories 错误，或已是第二次尝试，直接抛出
                     raise
 
-    def _select_electronics_cellphones_apple_once(self):
-        """执行一次完整的 Electronics → Cell Phones → Apple 选择（内部方法）。"""
+    def _select_electronics_mobiles_accessories_once(self):
+        """执行一次完整的 Electronics → Mobiles & Accessories 选择（内部方法）。"""
         try:
             self._wait_for_category_select_modal(timeout=15000)
             self.page.wait_for_timeout(400)
@@ -1353,29 +1497,6 @@ class MarketplacePostPage(BasePage):
                     name,
                 )
 
-            def _pick_apple() -> bool:
-                try:
-                    self.page.wait_for_function(
-                        """
-                        () => {
-                            const modal = document.querySelector('.category-select-modal');
-                            if (!modal) return false;
-                            return Array.from(modal.querySelectorAll('.list-item')).some(
-                                el => el.textContent.trim() === 'Apple'
-                            );
-                        }
-                        """,
-                        timeout=5000,
-                    )
-                except Exception:
-                    pass
-                self.page.wait_for_timeout(100)
-                for _ in range(28):
-                    if _click_name("Apple"):
-                        return True
-                    self.page.wait_for_timeout(70)
-                return False
-
             # 顶级常为站点大类（Jobs/Property/Marketplace/…），需先进入 Marketplace 再选 Electronics
             root_labels = self.page.evaluate("""
             () => {
@@ -1409,7 +1530,8 @@ class MarketplacePostPage(BasePage):
                 }
                 """)
                 raise Exception(f"未找到 Electronics，当前列表项: {avail}")
-            # Electronics 后子列可能尚未渲染，先等 Cell Phones 行出现再点（无头长跑更稳）
+            
+            # Electronics 后子列可能尚未渲染，先等 Mobiles & Accessories 行出现再点
             self.page.wait_for_timeout(400)
             try:
                 self.page.wait_for_function(
@@ -1419,65 +1541,73 @@ class MarketplacePostPage(BasePage):
                         if (!m) return false;
                         return Array.from(
                             m.querySelectorAll('.list-item, [class*="list-item"], li[role="option"], [class*="ListItem"]')
-                        ).some((el) => /cell\\s*phones/i.test((el.textContent || '').trim()));
+                        ).some((el) => {
+                            const t = (el.textContent || '').trim().toLowerCase();
+                            return (t.includes('mobiles') || t.includes('mobile')) && 
+                                   (t.includes('accessories') || t.includes('accessory'));
+                        });
                     }
                     """,
                     timeout=30000,
                 )
             except Exception:
-                self.logger.warning("Electronics 后 30s 内未稳定出现 Cell Phones 行，仍尝试点击")
+                self.logger.warning("Electronics 后 30s 内未稳定出现 Mobiles & Accessories 行，仍尝试点击")
 
-            cell_phones_clicked = False
-            if _click_name("Cell Phones"):
-                cell_phones_clicked = True
+            mobiles_clicked = False
+            if _click_name("Mobiles & Accessories"):
+                mobiles_clicked = True
             else:
-                try:
-                    self.page.wait_for_function(
-                        """
-                        () => {
-                            const m = document.querySelector('.category-select-modal');
-                            if (!m) return false;
-                            return Array.from(
-                                m.querySelectorAll('.list-item, [class*="list-item"], li[role="option"], [class*="ListItem"]')
-                            ).some((el) => /cell\\s*phones/i.test((el.textContent || '').trim()));
-                        }
-                        """,
-                        timeout=30000,
-                    )
-                except Exception:
-                    pass
-                for _r in range(55):
-                    if _click_name("Cell Phones"):
-                        cell_phones_clicked = True
+                # 尝试其他可能的名称变体
+                for variant in ["Mobiles and Accessories", "Mobiles&Accessories", "Mobile & Accessories"]:
+                    if _click_name(variant):
+                        mobiles_clicked = True
                         break
-                    self.page.wait_for_timeout(350)
-                if not cell_phones_clicked:
-                    raise Exception("未找到 Cell Phones")
-            # Cell Phones 点击后等待子列（常为 Apple）刷新，避免立即点 Apple 命中旧列表
-            self._wait_cell_phones_sublist_stable(timeout_ms=28000)
-            self.page.wait_for_timeout(220)
-            if not _pick_apple():
-                # 列表偶发回到顶级：再点一次 Cell Phones 路径后重试 Apple
-                self.logger.warning("⚠️ Apple 首次未点到，重试 Electronics → Cell Phones → Apple")
-                if _click_name("Electronics"):
                     self.page.wait_for_timeout(200)
-                if _click_name("Cell Phones"):
-                    self._wait_cell_phones_sublist_stable(timeout_ms=22000)
-                    self.page.wait_for_timeout(180)
-                if not _pick_apple():
+                
+                if not mobiles_clicked:
+                    # 最后尝试模糊匹配
+                    for _r in range(55):
+                        result = self.page.evaluate("""
+                        () => {
+                            const modal = document.querySelector('.category-select-modal');
+                            if (!modal) return false;
+                            const items = Array.from(
+                                modal.querySelectorAll('.list-item, [class*="list-item"], li[role="option"], [class*="ListItem"]')
+                            );
+                            const target = items.find((el) => {
+                                const t = (el.textContent || '').trim().toLowerCase();
+                                return (t.includes('mobiles') || t.includes('mobile')) && 
+                                       (t.includes('accessories') || t.includes('accessory'));
+                            });
+                            if (target) {
+                                target.scrollIntoView({ block: 'center' });
+                                target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+                                return true;
+                            }
+                            return false;
+                        }
+                        """)
+                        if result:
+                            mobiles_clicked = True
+                            break
+                        self.page.wait_for_timeout(350)
+                    
+                if not mobiles_clicked:
                     avail = self.page.evaluate("""
                     () => {
                         const m = document.querySelector('.category-select-modal');
                         if (!m) return [];
-                        return Array.from(m.querySelectorAll('.list-item')).map(el => el.textContent.trim()).slice(0, 22);
+                        return Array.from(m.querySelectorAll('.list-item')).map(el => el.textContent.trim()).slice(0, 30);
                     }
                     """)
-                    raise Exception(f"未找到 Apple，当前列表: {avail}")
+                    raise Exception(f"未找到 Mobiles & Accessories，当前列表: {avail}")
+            
+            # Mobiles & Accessories 是终点类别，点击后 Modal 应该关闭
             self.wait_for_category_modal_closed()
             self.page.wait_for_timeout(800)
-            self.logger.info("✓ 已选择 Electronics > Cell Phones > Apple")
+            self.logger.info("✓ 已选择 Electronics > Mobiles & Accessories")
         except Exception as e:
-            self.logger.error(f"三连选手机类别失败: {e}")
+            self.logger.error(f"选择类别失败: {e}")
             raise
 
     def _wait_for_category_select_modal(self, timeout=8000):

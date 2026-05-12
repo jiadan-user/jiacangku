@@ -80,13 +80,19 @@ class MessagesExplorePage(BasePage):
     
     def navigate_to_home(self, base_url):
         """导航到首页"""
-        try:
-            self.page.goto(base_url, wait_until="domcontentloaded", timeout=60000)
-            # 等待页面关键元素加载，而不是 networkidle
-            self.page.wait_for_timeout(2000)
-        except Exception as e:
-            self.logger.error(f"导航到首页失败: {e}")
-            raise
+        last_err = None
+        for attempt in range(3):
+            try:
+                self.page.goto(base_url, wait_until="domcontentloaded", timeout=60000)
+                self.page.wait_for_timeout(2000)
+                if not self.page.url.startswith("chrome-error://"):
+                    return
+            except Exception as e:
+                last_err = e
+                self.logger.warning(f"导航到首页重试({attempt + 1}/3): {str(e)[:120]}")
+            self.page.wait_for_timeout(1200 * (attempt + 1))
+        self.logger.error(f"导航到首页失败: {last_err}")
+        raise last_err if last_err else AssertionError(f"导航到首页失败: {base_url}")
     
     def click_messages_link(self, timeout=10000):
         """点击Messages链接"""
@@ -112,14 +118,20 @@ class MessagesExplorePage(BasePage):
 
     def navigate_to_messages_directly(self, target_url):
         """直接导航到Messages页面"""
-        try:
-            self.page.goto(target_url, wait_until="domcontentloaded", timeout=60000)
-            self.wait_for_messages_page_loaded(timeout=60000)
-            # 短等待：给 SPA / 列表渲染一帧时间（不用 networkidle，避免长连接页面永不 idle）
-            self.page.wait_for_timeout(2000)
-        except Exception as e:
-            self.logger.error(f"直接导航到Messages页面失败: {e}")
-            raise
+        last_err = None
+        for attempt in range(3):
+            try:
+                self.page.goto(target_url, wait_until="domcontentloaded", timeout=60000)
+                self.wait_for_messages_page_loaded(timeout=60000)
+                self.page.wait_for_timeout(2000)
+                if not self.page.url.startswith("chrome-error://"):
+                    return
+            except Exception as e:
+                last_err = e
+                self.logger.warning(f"直接导航消息页重试({attempt + 1}/3): {str(e)[:120]}")
+            self.page.wait_for_timeout(1200 * (attempt + 1))
+        self.logger.error(f"直接导航到Messages页面失败: {last_err}")
+        raise last_err if last_err else AssertionError(f"直接导航到Messages页面失败: {target_url}")
     
     # 与 Playwright 选择器互补：类名微调时仍可在浏览器内统计左侧行数
     _CONVERSATION_COUNT_JS = """

@@ -5,7 +5,7 @@ AE站 - Services发布页AI推荐功能测试
 录制文档：test_cases/ai/ai_publish/ai_publish_Services测试用例_20260312.md
 生成时间：2026-03-13
 
-测试站点：AE (https://aepub.58v5.cn)
+测试站点：AE (https://arpub.58v5.cn)
 测试角色：Seller (卖家)
 测试目标：验证在Services发布页面，当用户上传服务图片和输入Title后，系统会基于AI智能分析，
          显示推荐的服务类目，并支持AI生成描述内容
@@ -28,7 +28,7 @@ _CONFIG = {
     "site_name": "AE站",
     "role": "seller",
     "user_name": "ae_seller_services",
-    "base_url": "https://aepub.58v5.cn",
+    "base_url": "https://arpub.58v5.cn",
     "test_account": {
         "username": "yangyang100@58.com",
         "password": "Qa123456"
@@ -216,7 +216,7 @@ class TestAiPublishServices:
             os.path.join(os.getcwd(), "test_data/images/services_3.png"),
         ]
 
-        publish_url = f"{_CONFIG['base_url']}/biz/en/publish?categoryId=23&traceId=1773367130686"
+        publish_url = f"{_CONFIG['base_url']}/biz/en/publish?categoryId=49&traceId=1778493967259"
         with allure.step("前置：重新导航到Services发布页面"):
             page.goto(publish_url, timeout=60000)
             page.wait_for_load_state("domcontentloaded", timeout=30000)
@@ -275,7 +275,7 @@ class TestAiPublishServices:
             os.path.join(os.getcwd(), "test_data/images/services_2.png"),
             os.path.join(os.getcwd(), "test_data/images/services_3.png"),
         ]
-        publish_url = f"{_CONFIG['base_url']}/biz/en/publish?categoryId=23&traceId=1773367130686"
+        publish_url = f"{_CONFIG['base_url']}/biz/en/publish?categoryId=49&traceId=1778493967259"
 
         with allure.step("前置：重新导航到发布页面，清空页面状态"):
             page.goto(publish_url, timeout=60000)
@@ -352,7 +352,7 @@ class TestAiPublishServices:
         logger.info("="*80)
 
         title = "Professional Home Cleaning Service"
-        publish_url = f"{_CONFIG['base_url']}/biz/en/publish?categoryId=23&traceId=1773367130686"
+        publish_url = f"{_CONFIG['base_url']}/biz/en/publish?categoryId=49&traceId=1778493967259"
 
         with allure.step("前置：重新导航到Services发布页面"):
             page.goto(publish_url, timeout=60000)
@@ -471,7 +471,7 @@ class TestAiPublishServices:
 
         image_path = os.path.join(os.getcwd(), "test_data/images/services_1.png")
         title = "Professional Home Cleaning Service"
-        publish_url = f"{_CONFIG['base_url']}/biz/en/publish?categoryId=23&traceId=1773367130686"
+        publish_url = f"{_CONFIG['base_url']}/biz/en/publish?categoryId=49&traceId=1778493967259"
 
         with allure.step("前置：重新导航到Services发布页面"):
             page.goto(publish_url, timeout=60000)
@@ -538,7 +538,7 @@ class TestAiPublishServices:
 
         image_path = os.path.join(os.getcwd(), "test_data/images/services_1.png")
         title = "Professional Home Cleaning Service"
-        publish_url = f"{_CONFIG['base_url']}/biz/en/publish?categoryId=23&traceId=1773367130686"
+        publish_url = f"{_CONFIG['base_url']}/biz/en/publish?categoryId=49&traceId=1778493967259"
 
         with allure.step("前置：重新导航到Services发布页面"):
             page.goto(publish_url, timeout=60000)
@@ -624,7 +624,7 @@ class TestAiPublishServices:
         logger.info("="*80)
 
         image_path = os.path.join(os.getcwd(), "test_data/images/services_1.png")
-        publish_url = f"{_CONFIG['base_url']}/biz/en/publish?categoryId=23&traceId=1773367130686"
+        publish_url = f"{_CONFIG['base_url']}/biz/en/publish?categoryId=49&traceId=1778493967259"
 
         with allure.step("前置：重新导航到Services发布页面"):
             page.goto(publish_url, timeout=60000)
@@ -661,7 +661,7 @@ def setup_services_page(page, config):
     Function级别的前置条件：登录并导航到Services发布页面
 
     前置步骤（来自测试用例文档）：
-    - 访问页面：https://aepub.58v5.cn/biz/en/publish/front
+    - 访问页面：https://arpub.58v5.cn/biz/en/publish/front
     - 若未登录，则先登录（username：yangyang100@58.com/Qa123456）
     - 点击Services，进入Services发布页面（/biz/en/publish/services）
     """

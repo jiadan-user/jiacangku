@@ -5,7 +5,7 @@ AE站 - Marketplace发布页AI推荐功能测试
 录制文档：test_cases/ai/ai_publish/ai_publish_Marketplace测试用例_20260312.md
 生成时间：2026-03-13
 
-测试站点：AE (https://aepub.58v5.cn)
+测试站点：AE (https://arpub.58v5.cn)
 测试角色：Seller (卖家)
 测试目标：验证在Marketplace发布页面，当用户上传商品图片和输入Title后，系统会基于AI智能分析，
          显示推荐的商品类目，并支持AI生成描述内容
@@ -28,7 +28,7 @@ _CONFIG = {
     "site_name": "AE站",
     "role": "seller",
     "user_name": "ae_seller_marketplace",
-    "base_url": "https://aepub.58v5.cn",
+    "base_url": "https://arpub.58v5.cn",
     "test_account": {
         "username": "yangyang100@58.com",
         "password": "Qa123456"
@@ -661,7 +661,7 @@ def setup_marketplace_page(page, config):
     Function级别的前置条件：登录并导航到Marketplace发布页面
 
     前置步骤（来自测试用例文档）：
-    - 访问页面：https://aepub.58v5.cn/biz/en/publish/front
+    - 访问页面：https://arpub.58v5.cn/biz/en/publish/front
     - 若未登录，则先登录（username：yangyang100@58.com/Qa123456）
     - 点击Marketplace，进入Marketplace发布页面（/biz/en/publish/classified）
     """

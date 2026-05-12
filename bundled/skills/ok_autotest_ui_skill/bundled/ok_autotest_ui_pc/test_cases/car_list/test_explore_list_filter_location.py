@@ -457,7 +457,7 @@ def test_tc029_invalid_city_url(page, config):
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("探索列表页 - Filter 综合筛选")
-@allure.title("Filter 弹窗展示 8 个筛选分组：Body Style/Color/Year/Specs/energyType/Transmission/Engine/Drive Type")
+@allure.title("Filter 弹窗展示 8 个筛选分组：Body Style/Color/Year/Specs/Fuel Type/Transmission/Engine/Drive Type")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证 Filter 弹窗内包含全部 8 个筛选分组名称，顺序正确")
 def test_tc059_filter_all_groups_visible(page, config):
@@ -468,7 +468,7 @@ def test_tc059_filter_all_groups_visible(page, config):
 
     expected_groups = [
         "Body Style", "Body Color", "Year", "Specs",
-        "energyType", "Transmission", "Engine(cc)", "Drive Type"
+        "Fuel Type", "Transmission", "Engine(cc)", "Drive Type"
     ]
 
     with allure.step("步骤1：打开 Filter 弹窗"):
@@ -492,9 +492,9 @@ def test_tc059_filter_all_groups_visible(page, config):
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("探索列表页 - Filter 综合筛选")
-@allure.title("Filter - Body Style 选择 SUV，URL 含 attr_190 参数，列表结果更新")
+@allure.title("Filter - Body Style 选择 SUV，URL 含 attr_181 参数，列表结果更新")
 @allure.severity(allure.severity_level.NORMAL)
-@allure.description("验证在 Filter 弹窗选择 Body Style = SUV 后，URL 包含 attr_190 参数，Filter 角标数为 1")
+@allure.description("验证在 Filter 弹窗选择 Body Style = SUV 后，URL 包含 attr_181 参数，Filter 角标数为 1")
 def test_tc060_filter_body_style_suv(page, config):
     """TC064: Filter - Body Style 筛选 SUV"""
 
@@ -512,10 +512,10 @@ def test_tc060_filter_body_style_suv(page, config):
     with allure.step("步骤3：Confirm 筛选"):
         list_page.click_filter_confirm()
 
-    with allure.step("验证 URL 包含 Body Style 参数 attr_190"):
+    with allure.step("验证 URL 包含 Body Style 参数 attr_181"):
         current_url = list_page.get_current_url()
-        assert "attr_190" in current_url, \
-            f"URL 应含 'attr_190'（Body Style），实际: {current_url}"
+        assert "attr_181" in current_url, \
+            f"URL 应含 'attr_181'（Body Style），实际: {current_url}"
         logger.info(f"✓ URL 验证通过: {current_url}")
 
     with allure.step("验证 Filter 角标数为 1"):
@@ -569,9 +569,9 @@ def test_tc061_filter_body_color_white(page, config):
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("探索列表页 - Filter 综合筛选")
-@allure.title("Filter - Year 下拉选项包含历史年份，选择后 URL 含 attr_199")
+@allure.title("Filter - Year 下拉选项包含历史年份，选择后 URL 含 attr_190")
 @allure.severity(allure.severity_level.NORMAL)
-@allure.description("验证 Year 下拉包含历史年份选项，选择后 URL 含 attr_199 参数")
+@allure.description("验证 Year 下拉包含历史年份选项，选择后 URL 含 attr_190 参数")
 def test_tc062_filter_year_selection(page, config):
     """TC066: Filter - Year 年份筛选"""
 
@@ -596,10 +596,10 @@ def test_tc062_filter_year_selection(page, config):
         logger.info(f"✓ 已选择年份: {selected}")
         list_page.click_filter_confirm()
 
-    with allure.step("验证 URL 含 attr_199（Year）"):
+    with allure.step("验证 URL 含 attr_190（Year）"):
         current_url = list_page.get_current_url()
-        assert "attr_199" in current_url, \
-            f"URL 应含 'attr_199'（Year），实际: {current_url}"
+        assert "attr_190" in current_url, \
+            f"URL 应含 'attr_190'（Year），实际: {current_url}"
         logger.info(f"✓ Year URL 验证通过: {current_url}")
 
     logger.info("✅ TC066 通过")
@@ -610,9 +610,9 @@ def test_tc062_filter_year_selection(page, config):
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("探索列表页 - Filter 综合筛选")
-@allure.title("Filter - Specs 选择 European，URL 含 attr_194 参数")
+@allure.title("Filter - Specs 选择 European，URL 含 attr_186 参数")
 @allure.severity(allure.severity_level.NORMAL)
-@allure.description("验证选择 Specs = European 后，URL 包含 attr_194 参数")
+@allure.description("验证选择 Specs = European 后，URL 包含 attr_186 参数")
 def test_tc063_filter_specs_european(page, config):
     """TC067: Filter - Specs 规格筛选"""
 
@@ -630,10 +630,10 @@ def test_tc063_filter_specs_european(page, config):
     with allure.step("步骤3：Confirm 筛选"):
         list_page.click_filter_confirm()
 
-    with allure.step("验证 URL 含 attr_194（Specs）"):
+    with allure.step("验证 URL 含 attr_186（Specs）"):
         current_url = list_page.get_current_url()
-        assert "attr_194" in current_url, \
-            f"URL 应含 'attr_194'（Specs），实际: {current_url}"
+        assert "attr_186" in current_url, \
+            f"URL 应含 'attr_186'（Specs），实际: {current_url}"
         logger.info(f"✓ Specs URL 验证通过: {current_url}")
 
     logger.info("✅ TC067 通过")
@@ -644,36 +644,36 @@ def test_tc063_filter_specs_european(page, config):
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("探索列表页 - Filter 综合筛选")
-@allure.title("Filter - energyType 选择 Petrol，URL 含 attr_192 参数")
+@allure.title("Filter - Fuel Type 选择 Petrol，URL 含 attr_183 参数")
 @allure.severity(allure.severity_level.NORMAL)
-@allure.description("验证选择 energyType = Petrol 后，URL 含 attr_192，列表结果为汽油车")
+@allure.description("验证选择 Fuel Type = Petrol 后，URL 含 attr_183，列表结果为汽油车")
 def test_tc064_filter_fuel_type_petrol(page, config):
-    """TC068: Filter - energyType 燃油类型筛选"""
+    """TC068: Filter - Fuel Type 燃油类型筛选"""
 
     list_page = ExploreListPage(page)
-    logger.info("TC068: Filter energyType Petrol")
+    logger.info("TC068: Filter Fuel Type Petrol")
 
-    with allure.step("步骤1：查看 energyType 全选项"):
+    with allure.step("步骤1：查看 Fuel Type 全选项"):
         list_page.navigate_to_url(config["target_url"])
         list_page.click_filter()
-        fuel_options = list_page.get_filter_group_options("energyType")
-        logger.info(f"energyType 选项: {fuel_options}")
+        fuel_options = list_page.get_filter_group_options("Fuel Type")
+        logger.info(f"Fuel Type 选项: {fuel_options}")
         assert "Petrol" in fuel_options or "Diesel" in fuel_options, \
-            f"energyType 应包含 Petrol 或 Diesel，实际: {fuel_options}"
+            f"Fuel Type 应包含 Petrol 或 Diesel，实际: {fuel_options}"
 
     with allure.step("步骤2：重新导航后打开 Filter 并选择 Petrol"):
         list_page.navigate_to_url(config["target_url"])
         list_page.click_filter()
         target = "Petrol" if "Petrol" in fuel_options else fuel_options[0]
-        selected = list_page.select_filter_option_by_group("energyType", option_text=target)
+        selected = list_page.select_filter_option_by_group("Fuel Type", option_text=target)
         logger.info(f"✓ 已选择燃油类型: {selected}")
         list_page.click_filter_confirm()
 
-    with allure.step("验证 URL 含 attr_192（energyType）"):
+    with allure.step("验证 URL 含 attr_183（Fuel Type）"):
         current_url = list_page.get_current_url()
-        assert "attr_192" in current_url, \
-            f"URL 应含 'attr_192'（energyType），实际: {current_url}"
-        logger.info(f"✓ energyType URL 验证通过: {current_url}")
+        assert "attr_183" in current_url, \
+            f"URL 应含 'attr_183'（Fuel Type），实际: {current_url}"
+        logger.info(f"✓ Fuel Type URL 验证通过: {current_url}")
 
     logger.info("✅ TC068 通过")
 
@@ -683,9 +683,9 @@ def test_tc064_filter_fuel_type_petrol(page, config):
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("探索列表页 - Filter 综合筛选")
-@allure.title("Filter - Transmission 选择 Auto，URL 含 attr_197 参数")
+@allure.title("Filter - Transmission 选择 Auto，URL 含 attr_188 参数")
 @allure.severity(allure.severity_level.NORMAL)
-@allure.description("验证选择 Transmission = Auto 后，URL 含 attr_197 参数，Filter 激活")
+@allure.description("验证选择 Transmission = Auto 后，URL 含 attr_188 参数，Filter 激活")
 def test_tc065_filter_transmission_auto(page, config):
     """TC069: Filter - Transmission 变速箱类型筛选"""
 
@@ -708,10 +708,10 @@ def test_tc065_filter_transmission_auto(page, config):
         logger.info(f"✓ 已选择变速箱: {selected}")
         list_page.click_filter_confirm()
 
-    with allure.step("验证 URL 含 attr_197（Transmission）"):
+    with allure.step("验证 URL 含 attr_188（Transmission）"):
         current_url = list_page.get_current_url()
-        assert "attr_197" in current_url, \
-            f"URL 应含 'attr_197'（Transmission），实际: {current_url}"
+        assert "attr_188" in current_url, \
+            f"URL 应含 'attr_188'（Transmission），实际: {current_url}"
         logger.info(f"✓ Transmission URL 验证通过: {current_url}")
 
     logger.info("✅ TC069 通过")
@@ -722,9 +722,9 @@ def test_tc065_filter_transmission_auto(page, config):
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("探索列表页 - Filter 综合筛选")
-@allure.title("Filter - Engine(cc) 输入排量区间 1000-3000，URL 含 attr_479 参数")
+@allure.title("Filter - Engine(cc) 输入排量区间 1000-3000，URL 含 attr_184 参数")
 @allure.severity(allure.severity_level.NORMAL)
-@allure.description("验证在 Engine(cc) 输入框输入 1000-3000 并 Confirm 后，URL 含 attr_479=1000_3000")
+@allure.description("验证在 Engine(cc) 输入框输入 1000-3000 并 Confirm 后，URL 含 attr_184=1000_3000")
 def test_tc066_filter_engine_cc_range(page, config):
     """TC070: Filter - Engine(cc) 排量区间筛选"""
 
@@ -743,10 +743,10 @@ def test_tc066_filter_engine_cc_range(page, config):
     with allure.step("步骤3：Confirm 筛选"):
         list_page.click_filter_confirm()
 
-    with allure.step("验证 URL 含 attr_479（Engine cc）及区间值"):
+    with allure.step("验证 URL 含 attr_184（Engine cc）及区间值"):
         current_url = list_page.get_current_url()
-        assert "attr_479" in current_url, \
-            f"URL 应含 'attr_479'（Engine cc），实际: {current_url}"
+        assert "attr_184" in current_url, \
+            f"URL 应含 'attr_184'（Engine cc），实际: {current_url}"
         assert "1000" in current_url and "3000" in current_url, \
             f"URL 应含排量区间值 1000 和 3000，实际: {current_url}"
         logger.info(f"✓ Engine(cc) URL 验证通过: {current_url}")
@@ -759,9 +759,9 @@ def test_tc066_filter_engine_cc_range(page, config):
 @pytest.mark.ae
 @allure.feature("OK")
 @allure.story("探索列表页 - Filter 综合筛选")
-@allure.title("Filter - Drive Type 选择 AWD，URL 含 attr_191 参数")
+@allure.title("Filter - Drive Type 选择 AWD，URL 含 attr_182 参数")
 @allure.severity(allure.severity_level.NORMAL)
-@allure.description("验证选择 Drive Type = AWD 后，URL 含 attr_191 参数，Filter 激活")
+@allure.description("验证选择 Drive Type = AWD 后，URL 含 attr_182 参数，Filter 激活")
 def test_tc067_filter_drive_type_awd(page, config):
     """TC071: Filter - Drive Type 驱动类型筛选"""
 
@@ -783,10 +783,10 @@ def test_tc067_filter_drive_type_awd(page, config):
         logger.info(f"✓ 已选择驱动类型: {selected}")
         list_page.click_filter_confirm()
 
-    with allure.step("验证 URL 含 attr_191（Drive Type）"):
+    with allure.step("验证 URL 含 attr_182（Drive Type）"):
         current_url = list_page.get_current_url()
-        assert "attr_191" in current_url, \
-            f"URL 应含 'attr_191'（Drive Type），实际: {current_url}"
+        assert "attr_182" in current_url, \
+            f"URL 应含 'attr_182'（Drive Type），实际: {current_url}"
         logger.info(f"✓ Drive Type URL 验证通过: {current_url}")
 
     with allure.step("验证 Filter 处于激活状态"):
