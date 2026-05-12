@@ -288,6 +288,11 @@ def geolocation_page(request, config):
     grant = geo_param.get("grant_permission", True)
     geo_coords = geo_param.get("geolocation", None)
 
+    # 单条子线程命令超时须大于：navigate_to_map_page 最坏两次 goto(90s)+间隔，
+    # 否则 _res_q.get 会先抛出 queue.Empty（易被误判为 Playwright 内部错误）。
+    _STARTUP_TIMEOUT = float(os.environ.get("GEO_BROWSER_STARTUP_TIMEOUT_SEC", "180"))
+    _CMD_TIMEOUT = float(os.environ.get("GEO_BROWSER_CMD_TIMEOUT_SEC", "300"))
+
     _res_q = _queue.Queue()   # 子线程 → 主线程：启动结果 / 操作结果
     _cmd_q = _queue.Queue()   # 主线程 → 子线程：callable 指令
     _STOP = object()
@@ -344,7 +349,13 @@ def geolocation_page(request, config):
     t = threading.Thread(target=_browser_thread, daemon=True)
     t.start()
 
-    status, err = _res_q.get(timeout=120)
+    try:
+        status, err = _res_q.get(timeout=_STARTUP_TIMEOUT)
+    except _queue.Empty as e:
+        t.join(timeout=2)
+        raise TimeoutError(
+            f"geolocation 浏览器子线程在 {_STARTUP_TIMEOUT:g}s 内未完成启动（检查网络/Chromium）"
+        ) from e
     if status == 'error':
         t.join(timeout=5)
         raise err
@@ -352,7 +363,13 @@ def geolocation_page(request, config):
     def run_in_browser(fn):
         """在持有 page 的子线程中执行 fn(page)，返回结果或抛出异常"""
         _cmd_q.put(fn)
-        s, r = _res_q.get(timeout=120)
+        try:
+            s, r = _res_q.get(timeout=_CMD_TIMEOUT)
+        except _queue.Empty as e:
+            raise TimeoutError(
+                f"geolocation 子线程在 {_CMD_TIMEOUT:g}s 内未返回。"
+                "常见于 navigate_to_map_page 两次 goto 各 90s、或 is_map_rendered 长时间等待。"
+            ) from e
         if s == 'error':
             raise r
         return r

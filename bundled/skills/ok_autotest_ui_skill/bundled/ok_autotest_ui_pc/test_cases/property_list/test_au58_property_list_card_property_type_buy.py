@@ -14,7 +14,7 @@ from utils.logger import setup_logger
 
 logger = setup_logger()
 
-# 买房列表（sale）path_part
+# 买房列表 URL 为 /cate-buy/，但卡片 a 链接仍为 cate-property-for-sale-*（与 get_buy_cards 一致）
 PATH_PART_BUY = "cate-property-for-sale-"
 
 # ============================================
