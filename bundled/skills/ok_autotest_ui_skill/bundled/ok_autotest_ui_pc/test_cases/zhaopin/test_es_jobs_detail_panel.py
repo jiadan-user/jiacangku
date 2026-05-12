@@ -14,6 +14,7 @@
 import pytest
 import allure
 from pages.jobs_detail_panel_page_es import JobsDetailPanelPageES
+from pages.es_home_page import EsHomePage
 from test_cases.zhaopin.es_login_helper import ensure_es_logged_in
 from utils.logger import setup_logger
 
@@ -60,6 +61,9 @@ _CONFIG = {
     "other_post_description": "software enginneer find a job",  # 注：帖子实际内容有拼写错误
     "resume_url": "https://espub.58v5.cn/biz/en/resume",       # 点击 Resume 入口后的跳转目标（当前为简历 hub，非 /add）
     "list_url": "https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs",
+    # 未登录点击 Contact：进入 espub 访客微聊会话（非列表页登录引导弹窗）
+    "guest_chat_host": "espub.58v5.cn",
+    "guest_chat_path_keyword": "chat-guest",
     "chat_url_domain": "espub.58v5.cn/biz/en/chat",
     "edit_url_domain": "espub.58v5.cn/biz/en/publish/job",
     "edit_page_title": "Post",
@@ -91,6 +95,97 @@ def _guard_own_post_imcinfo(
         pytest.skip(
             f"imcinfo/{oid} 无 Title/Content，固定种子帖可能已失效；跳过依赖该帖的用例"
         )
+
+
+def _assert_unauthenticated_contact_navigates_to_guest_chat(
+    url_after: str, *, list_url: str, config: dict
+) -> None:
+    """未登录点击 Contact 后应进入 espub 访客微聊页（带 needLogin）。"""
+    host = config.get("guest_chat_host") or "espub.58v5.cn"
+    path_kw = config.get("guest_chat_path_keyword") or "chat-guest"
+    assert host in url_after, (
+        f"未登录 Contact 后应进入 {host} 微聊域，实际 URL: {url_after}"
+    )
+    assert path_kw in url_after or "/biz/en/chat" in url_after, (
+        f"未登录 Contact 后 URL 应含访客微聊路径（{path_kw} 或 /biz/en/chat），实际: {url_after}"
+    )
+    assert "needlogin=true" in url_after.lower(), (
+        f"访客微聊 URL 应携带 needLogin=true，实际: {url_after}"
+    )
+    assert list_url.rstrip("/") not in url_after.rstrip("/"), (
+        "未登录 Contact 后应离开招聘列表页进入微聊页"
+    )
+
+
+def _dismiss_es_cookie_banner_if_present(page) -> None:
+    """与 JobsDetailPanelPageES 未登录导航一致的 Cookie 横幅处理。"""
+    try:
+        only_essential = page.get_by_role("button", name="Only essential")
+        if only_essential.is_visible(timeout=4000):
+            only_essential.click()
+            page.wait_for_timeout(1000)
+            return
+    except Exception:
+        pass
+    try:
+        accept_all = page.get_by_role("button", name="Accept all")
+        if accept_all.is_visible(timeout=2000):
+            accept_all.click()
+            page.wait_for_timeout(1000)
+    except Exception:
+        pass
+
+
+def _ensure_es_visitor_before_unauthenticated_case(page, config) -> None:
+    """
+    未登录场景用例前置：若当前为登录态则退登；失败时回退为清理 Cookie 与本地存储。
+    """
+    base_url = config["base_url"]
+    home_url = f"{base_url}/en/city-madrid2/"
+    try:
+        page.goto(home_url, wait_until="domcontentloaded", timeout=30000)
+        dom_content_loaded_soft(page, 20000)
+    except Exception as e:
+        logger.warning("ES 访客态前置：导航首页失败: %s", e)
+        return
+
+    _dismiss_es_cookie_banner_if_present(page)
+
+    es_home = EsHomePage(page)
+    if not es_home.is_logged_in():
+        logger.info("ES 访客态前置：当前已是访客态")
+        return
+
+    logger.info("ES 访客态前置：检测到登录态，尝试退登")
+    try:
+        page.locator("text=/OKerES_/").first.click()
+        dom_content_loaded_soft(page, 20000)
+        page.get_by_text("Log Out").click()
+        page.wait_for_load_state("domcontentloaded", timeout=15000)
+        dom_content_loaded_soft(page, 20000)
+    except Exception as e:
+        logger.warning("ES UI 退登失败，清理存储与 Cookie: %s", e)
+        try:
+            page.evaluate("() => { localStorage.clear(); sessionStorage.clear(); }")
+        except Exception:
+            pass
+        page.context.clear_cookies()
+        try:
+            page.goto(home_url, wait_until="domcontentloaded", timeout=30000)
+            dom_content_loaded_soft(page, 20000)
+            _dismiss_es_cookie_banner_if_present(page)
+        except Exception:
+            pass
+
+    if es_home.is_logged_in():
+        try:
+            page.evaluate("() => { localStorage.clear(); sessionStorage.clear(); }")
+        except Exception:
+            pass
+        page.context.clear_cookies()
+        page.goto(home_url, wait_until="domcontentloaded", timeout=30000)
+        dom_content_loaded_soft(page, 20000)
+        _dismiss_es_cookie_banner_if_present(page)
 
 
 # ============================================
@@ -980,11 +1075,15 @@ class TestUnauthenticatedPermissions:
     @pytest.mark.p0
     @pytest.mark.es
     @allure.story("ES站详情面板未登录权限")
-    @allure.title("TC024: 未登录状态-点击Contact按钮弹出登录引导弹窗（不跳转页面）")
+    @allure.title("TC024: 未登录状态-点击Contact进入访客微聊会话页（espub）")
     @allure.severity(allure.severity_level.CRITICAL)
-    @allure.description("验证未登录点击Contact后弹出 'Welcome to OK.com' 登录引导弹窗，页面不跳转")
-    def test_tc024_unauthenticated_contact_shows_login_dialog(self, page, config):
-        """TC024: 未登录点击 Contact 弹出登录引导弹窗"""
+    @allure.description(
+        "验证未登录点击 Contact 后页面跳转至 espub 访客微聊（如 chat-guest），"
+        "URL 携带 needLogin=true，不再在列表页弹出登录引导弹窗"
+    )
+    def test_tc024_unauthenticated_contact_opens_guest_chat(self, page, config):
+        """TC024: 未登录点击 Contact 进入访客微聊页"""
+        _ensure_es_visitor_before_unauthenticated_case(page, config)
         detail_page = JobsDetailPanelPageES(page)
 
         with allure.step("步骤1：清除 Cookie，访问招聘列表页"):
@@ -994,52 +1093,70 @@ class TestUnauthenticatedPermissions:
         with allure.step("步骤2：点击 Contact 按钮"):
             url_before = page.url
             detail_page.click_contact_button()
+            try:
+                page.wait_for_load_state("domcontentloaded", timeout=15000)
+            except Exception:
+                pass
             dom_content_loaded_soft(page, 20000)
             url_after = page.url
             logger.info(f"Contact后URL: {url_before} -> {url_after}")
 
-        with allure.step("步骤3：验证登录引导弹窗各元素"):
+        with allure.step("步骤3：验证进入访客微聊页（非列表页登录弹窗）"):
+            _assert_unauthenticated_contact_navigates_to_guest_chat(
+                url_after, list_url=config["list_url"], config=config
+            )
             dialog_visible = detail_page.is_login_guide_dialog_visible()
-            has_email_input = detail_page.is_login_guide_dialog_has_email_input()
-            continue_disabled = detail_page.is_login_guide_continue_button_disabled()
-            logger.info(f"登录引导弹窗可见={dialog_visible}, 有email输入框={has_email_input}, Continue=disabled: {continue_disabled}")
-
-        assert url_before == url_after, "未登录点击Contact后页面不应跳转"
-        assert dialog_visible, "未登录点击Contact后应弹出 'Welcome to OK.com' 登录引导弹窗"
-        assert has_email_input, "登录引导弹窗应包含 'Email or phone number' 输入框"
-        assert continue_disabled, "登录引导弹窗中 Continue 按钮初始应为 disabled 状态"
+            logger.info(f"列表页登录引导弹窗可见（应为False）: {dialog_visible}")
+        assert not dialog_visible, (
+            "当前产品未登录 Contact 应直达微聊，不应再出现列表页登录引导弹窗"
+        )
 
     @pytest.mark.case_id_es_detail_tc025
     @pytest.mark.p1
     @pytest.mark.es
     @allure.story("ES站详情面板未登录权限")
-    @allure.title("TC025: 未登录状态-登录引导弹窗点击×可关闭，返回列表页")
+    @allure.title("TC025: 未登录状态-访客微聊页浏览器后退返回招聘列表，Contact仍可用")
     @allure.severity(allure.severity_level.NORMAL)
-    @allure.description("验证未登录弹出的登录引导弹窗点击×关闭后，弹窗消失，页面回到列表页，Contact按钮仍可见")
-    def test_tc025_unauthenticated_login_dialog_close(self, page, config):
-        """TC025: 未登录登录引导弹窗点击 × 关闭"""
+    @allure.description(
+        "验证未登录点击 Contact 进入访客微聊后，使用浏览器后退回到招聘列表页，"
+        "URL 仍为列表页且详情面板 Contact 按钮仍可见"
+    )
+    def test_tc025_unauthenticated_guest_chat_back_returns_to_list(self, page, config):
+        """TC025: 访客微聊页后退返回列表，Contact 仍可见"""
+        _ensure_es_visitor_before_unauthenticated_case(page, config)
         detail_page = JobsDetailPanelPageES(page)
 
-        with allure.step("步骤1：清除 Cookie，访问列表页，点击 Contact 弹出登录引导弹窗"):
+        with allure.step("步骤1：清除 Cookie，访问列表页，点击 Contact 进入访客微聊"):
             detail_page.navigate_to_jobs_list_without_login(config['base_url'])
             detail_page.click_contact_button()
+            try:
+                page.wait_for_load_state("domcontentloaded", timeout=15000)
+            except Exception:
+                pass
             dom_content_loaded_soft(page, 20000)
-            dialog_before = detail_page.is_login_guide_dialog_visible()
-            logger.info(f"弹窗已出现: {dialog_before}")
-            assert dialog_before, "登录引导弹窗应已弹出"
+            url_chat = page.url
+            logger.info(f"微聊页 URL: {url_chat}")
+            _assert_unauthenticated_contact_navigates_to_guest_chat(
+                url_chat, list_url=config["list_url"], config=config
+            )
 
-        with allure.step("步骤2：点击弹窗右上角 × 关闭按钮"):
-            detail_page.click_login_guide_dialog_close()
+        with allure.step("步骤2：浏览器后退返回招聘列表页"):
+            page.go_back()
+            try:
+                page.wait_for_load_state("domcontentloaded", timeout=15000)
+            except Exception:
+                pass
+            dom_content_loaded_soft(page, 20000)
 
-        with allure.step("步骤3：验证弹窗消失，页面恢复，Contact 仍可见"):
-            dialog_after = detail_page.is_login_guide_dialog_visible()
+        with allure.step("步骤3：验证回到列表页且 Contact 仍可见"):
             url_after = page.url
             contact_visible = detail_page.is_contact_button_visible()
-            logger.info(f"弹窗消失: {not dialog_after}, URL={url_after}, Contact={contact_visible}")
+            logger.info(f"后退后 URL={url_after}, Contact={contact_visible}")
 
-        assert not dialog_after, "点击×后登录引导弹窗应消失"
-        assert config['list_url'] in url_after, "关闭弹窗后页面应仍在列表页"
-        assert contact_visible, "关闭弹窗后 Contact 按钮应仍然可见"
+        assert config["list_url"] in url_after, (
+            f"后退后应回到招聘列表页，期望 URL 含 {config['list_url']!r}，实际: {url_after}"
+        )
+        assert contact_visible, "返回列表后 Contact 按钮应仍然可见"
 
     @pytest.mark.case_id_es_detail_tc026
     @pytest.mark.p1

@@ -11,9 +11,21 @@ from test_cases.marketplace.explicit_waits import wait_network_quiet, wait_short
 
 
 def wait_apple_details_ready_for_tc001(page: Page, timeout: int = 35_000) -> None:
-    """TC001：Condition + 容量选项出现（替代固定 4s）。增加timeout从25s到35s。"""
+    """等待 Details 选项就绪（Condition 等）。
+    
+    注意：Mobiles & Accessories 类目可能没有 Storage 字段，只等待 Condition。
+    已重命名为 wait_details_ready_for_tc001() 保持向后兼容。
+    """
+    wait_details_ready_for_tc001(page, timeout)
+
+
+def wait_details_ready_for_tc001(page: Page, timeout: int = 35_000) -> None:
+    """等待 Details 选项就绪（Condition 等），不强制要求 Storage。
+    
+    注意：Mobiles & Accessories 类目可能没有 Storage 字段，只等待 Condition。
+    """
     page.get_by_text("Excellent", exact=True).first.wait_for(state="visible", timeout=timeout)
-    page.locator("text=/\\d+\\s*(GB|TB)/i").first.wait_for(state="visible", timeout=timeout)
+    # 不再强制等待 Storage，因为 Mobiles & Accessories 类目可能没有此字段
 
 
 def wait_price_input_ready(page: Page, timeout: int = 10_000) -> None:

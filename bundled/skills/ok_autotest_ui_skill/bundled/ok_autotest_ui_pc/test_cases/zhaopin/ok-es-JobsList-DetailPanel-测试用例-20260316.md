@@ -2,6 +2,7 @@
 
 > **生成时间**: 2026-03-16  
 > **MCP实测修正**: 2026-03-20（全量重新录制验证）  
+> **产品变更**: 2026-05-12 — **TC024 / TC025**：未登录点击 Contact 改为直接进入 **espub 访客微聊会话页**（不再在列表页弹出登录引导弹窗）；TC025 改为「微聊页浏览器后退返回列表」验证。  
 > **测试范围**: 招聘列表页右侧详情面板内容展示（帖子信息）、本人帖操作（Withdraw/Edit）、非本人帖操作（Contact）、通用操作（Favourites/New tab/Share）及其跳转验证  
 > **总用例数**: 28条（TC001~TC028）  
 > **可自动化**: 28条 (100%)  
@@ -700,7 +701,7 @@
 
 ---
 
-### TC024: 未登录状态-点击Contact按钮弹出登录引导弹窗（不跳转页面）
+### TC024: 未登录状态-点击Contact进入访客微聊会话页（espub）
 
 #### 📋 前置条件
 - 未登录状态（Cookie 已清除，右上角显示 "Log in / Register"）
@@ -712,17 +713,9 @@
 3. 点击详情面板中的 `button "Contact"`
 
 #### ✅ 预期结果
-- 页面**不跳转**，URL 保持为 `https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs`
-- 当前页弹出登录引导 dialog（页面内弹层，非新页面）
-- 弹窗顶部显示绿色文字 **"Your data is protected"**
-- 弹窗标题显示 **"Welcome to OK.com"** 后跟站点标识 **"ES"**
-- 弹窗副标题显示 **"Free to post. Easy to find."**
-- 弹窗内包含 **"Email or phone number"** 输入框（placeholder 文字）
-- 弹窗内包含 `button "Continue"`，初始状态为 **disabled**（灰色不可点击，需填写输入框后才激活）
-- 弹窗内包含 **"OR"** 分隔线
-- 弹窗内包含 Google、Facebook、Apple 三个第三方登录图标
-- 弹窗底部显示服务条款文字，含 "Terms of Use" 和 "Privacy Policy" 链接
-- 弹窗右上角存在 **×** 关闭按钮
+- 页面**跳转**离开招聘列表：当前 URL 落在 **`espub.58v5.cn`** 业务域下的**访客微聊**路径（实测为 `.../biz/en/chat-guest-server1/...`，以环境为准；须为微聊/会话类路径，而非列表页）
+- URL 查询参数中含 **`needLogin=true`**（表示访客会话场景下仍可引导登录）
+- **不再**在 ES 列表页上弹出原「Welcome to OK.com」登录引导弹层（与历史 MCP 录制行为不同，以当前产品为准）
 
 #### 📊 用例属性
 - **优先级**: P0
@@ -731,26 +724,25 @@
 
 ---
 
-### TC025: 未登录状态-登录引导弹窗点击×可关闭，返回列表页
+### TC025: 未登录状态-访客微聊页浏览器后退返回列表，Contact仍可用
 
 #### 📋 前置条件
-- 未登录状态，已点击 Contact 按钮，登录引导弹窗已弹出
+- 未登录状态（Cookie 已清除）
+- 已完成「列表页 → 点击 Contact → 进入访客微聊页」（与 TC024 一致）
 
 #### 🎬 执行步骤
 1. 清除所有 Cookie 后访问 `https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs`
 2. 处理 Cookie 同意弹窗
-3. 点击详情面板中的 `button "Contact"`（登录引导弹窗弹出）
-4. 点击弹窗右上角的 **×** 关闭按钮
+3. 点击详情面板中的 `button "Contact"`，等待进入 espub 访客微聊页
+4. 使用浏览器**后退**（`history.back` / 工具栏后退）返回上一页
 
 #### ✅ 预期结果
-- 登录引导弹窗**消失**（dialog 节点从 DOM 中移除或隐藏）
-- 页面背景恢复正常（遮罩消失）
-- 当前页 URL 不变，仍为 `https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs`
-- 右侧详情面板内容保持不变，Contact 按钮仍可见
+- 后退后当前 URL **回到**招聘列表页（包含 `es.58v5.cn` 与 `cate-jobs`，与 `https://es.58v5.cn/en/city-madrid2/cate-jobs/?iconSource=jobs` 一致或等价）
+- 右侧详情面板区域 **`button "Contact"`** 仍可见、可再次点击（与未登录权限一致）
 
 #### 📊 用例属性
 - **优先级**: P1
-- **测试类型**: 权限测试
+- **测试类型**: 权限测试 / 导航回归
 - **UI自动化**: ✅ 可自动化
 
 ---
@@ -869,8 +861,8 @@
 | TC021 | **重命名**：原 TC020 改为 TC021 |
 | **TC022** | **新增**：反向切换验证（非本人帖→本人帖），确保双向切换均正确 |
 | **TC023** | **重大修正**：从"不可自动化"改为**可自动化**（通过 clearCookies 模拟）；明确未登录下 Contact 可见、Withdraw/Edit 不可见的具体预期结果 |
-| **TC024** | **新增**：未登录点击 Contact 弹出登录引导弹窗（MCP实测）；详细记录弹窗结构：标题/副标题/输入框/Continue(disabled)/OR/三方登录/×关闭按钮 |
-| **TC025** | **新增**：登录引导弹窗点击×关闭后页面恢复正常 |
+| **TC024** | **产品变更（2026-05-12）**：未登录点击 Contact **跳转 espub 访客微聊**；校验域名、微聊路径、`needLogin=true`；不再校验列表页登录弹窗 |
+| **TC025** | **产品变更（2026-05-12）**：由「弹窗×关闭」改为 **访客微聊页浏览器后退** 返回列表，Contact 仍可见 |
 | **TC026** | **新增**：未登录状态下任意帖子均统一展示 Contact，无 Withdraw/Edit 的系统行为验证 |
 | **TC027** | **新增**：MCP 实测确认 Resume 入口在详情面板侧边可见（`generic "Resume"` 节点） |
 | **TC028** | **新增**：MCP 实测确认点击 Resume 入口跳转至 `https://espub.58v5.cn/biz/en/resume/add`，标题含 "Jobs" |

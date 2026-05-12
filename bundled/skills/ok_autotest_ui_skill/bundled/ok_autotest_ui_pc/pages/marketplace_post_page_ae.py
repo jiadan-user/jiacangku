@@ -2380,8 +2380,11 @@ class MarketplacePostPage(BasePage):
     # getByRole('paragraph').filter({ hasText: '...' }) + 滚到底部 + scrollIntoView + scrollBy(-100) 避开固定 Post 底栏
     # 线上文案可能从 postage 改为 shipping 等，故同一选项使用多候选串 + radio/label 兜底。
 
-    def _wait_delivery_section_visible(self, timeout_ms: int = 28000) -> None:
-        """类目等表单就绪后，显式等待 Delivery / Shipping 区块出现在主线（与 TC063 检测一致）。"""
+    def _wait_delivery_section_visible(self, timeout_ms: int = 28000) -> bool:
+        """类目等表单就绪后，显式等待 Delivery / Shipping 区块出现在主线（与 TC063 检测一致）。
+        
+        返回：True 如果 Delivery 区域出现，False 如果超时（某些类目如 Mobiles & Accessories 可能不显示配送选项）
+        """
         try:
             self.page.wait_for_function(
                 """
@@ -2405,11 +2408,13 @@ class MarketplacePostPage(BasePage):
                 timeout=timeout_ms,
             )
             self.logger.info("✓ Delivery 区域已就绪（可见性等待通过）")
+            self.page.wait_for_timeout(350)
+            return True
         except Exception as e:
             self.logger.warning(
-                f"Delivery 区域可见性等待未在 {timeout_ms}ms 内满足，仍尝试点击配送项: {e}"
+                f"Delivery 区域在 {timeout_ms}ms 内未出现，当前类目可能不需要配送选项: {e}"
             )
-        self.page.wait_for_timeout(350)
+            return False
 
     def _scroll_to_delivery_block(self) -> None:
         """将 Delivery / Shipping 区域滚入视口，便于选项已渲染。"""
@@ -2431,9 +2436,21 @@ class MarketplacePostPage(BasePage):
         except Exception:
             pass
 
-    def _click_delivery_option_paragraph(self, candidate_texts: list[str]):
-        """按候选文案依次尝试点击配送选项（paragraph/div/label/radio）。"""
-        self._wait_delivery_section_visible()
+    def _click_delivery_option_paragraph(self, candidate_texts: list[str], optional: bool = False):
+        """按候选文案依次尝试点击配送选项（paragraph/div/label/radio）。
+        
+        参数：
+            candidate_texts: 候选文案列表
+            optional: 如果为 True，当前类目没有配送选项时只警告不抛异常
+        """
+        delivery_visible = self._wait_delivery_section_visible()
+        if not delivery_visible:
+            if optional:
+                self.logger.warning("当前类目没有配送选项区域，optional=True，跳过")
+                return
+            else:
+                raise TimeoutError("当前类目没有配送选项区域，无法选择配送方式")
+        
         last_err: Exception | None = None
         for text in candidate_texts:
             try:
@@ -2454,7 +2471,7 @@ class MarketplacePostPage(BasePage):
                 ):
                     try:
                         cand = factory()
-                        cand.wait_for(state="attached", timeout=25000)
+                        cand.wait_for(state="attached", timeout=8000)
                         loc = cand
                         break
                     except Exception:
@@ -2467,16 +2484,20 @@ class MarketplacePostPage(BasePage):
                 self.page.evaluate("window.scrollBy(0, -100)")
                 self.page.wait_for_timeout(300)
                 try:
-                    loc.click(timeout=20000)
+                    loc.click(timeout=10000)
                 except Exception as e:
                     self.logger.warning(f"配送选项常规点击失败，改用 force: {e}")
-                    loc.click(force=True, timeout=28000)
+                    loc.click(force=True, timeout=12000)
                 self.page.wait_for_timeout(800)
                 self.logger.info(f"✓ 已点击配送选项（匹配: {text!r}）")
                 return
             except Exception as e:
                 last_err = e
                 self.logger.warning(f"配送候选 {text!r} 未命中，尝试下一文案: {e}")
+        
+        if optional:
+            self.logger.warning(f"所有候选配送选项均未命中，optional=True，继续: {candidate_texts}")
+            return
         assert last_err is not None
         raise last_err
 

@@ -13,6 +13,7 @@ AE站 - Jobs列表页 Location与Add Job Preferences入口验证
 import pytest
 import allure
 from pages.jobs_list_page_ae import JobsListPageAE
+from pages.sg_home_page import SgHomePage
 from utils.logger import setup_logger
 
 logger = setup_logger()
@@ -46,6 +47,63 @@ _CONFIG = {
 }
 
 
+def _ensure_ae_visitor_before_test(page, config) -> None:
+    """
+    访客态用例前置：若当前为登录态则退登；失败时回退为清理 Cookie 与本地存储。
+    """
+    home_url = config["home_url"]
+    try:
+        page.goto(home_url, wait_until="domcontentloaded", timeout=15000)
+        dom_content_loaded_soft(page, 20000)
+    except Exception as e:
+        logger.warning("AE 访客态前置：导航首页失败: %s", e)
+        return
+
+    home = SgHomePage(page)
+    try:
+        home.handle_cookie_popup()
+    except Exception:
+        pass
+
+    if not home.is_logged_in():
+        logger.info("AE 访客态前置：当前已是访客态")
+        return
+
+    logger.info("AE 访客态前置：检测到登录态，尝试退登")
+    try:
+        page.locator("text=/OKer_/").first.click()
+        dom_content_loaded_soft(page, 20000)
+        page.get_by_text("Log Out").click()
+        page.wait_for_load_state("domcontentloaded", timeout=15000)
+        dom_content_loaded_soft(page, 20000)
+    except Exception as e:
+        logger.warning("AE UI 退登失败，清理存储与 Cookie: %s", e)
+        try:
+            page.evaluate("() => { localStorage.clear(); sessionStorage.clear(); }")
+        except Exception:
+            pass
+        page.context.clear_cookies()
+        try:
+            page.goto(home_url, wait_until="domcontentloaded", timeout=15000)
+            dom_content_loaded_soft(page, 20000)
+            home.handle_cookie_popup()
+        except Exception:
+            pass
+
+    if home.is_logged_in():
+        try:
+            page.evaluate("() => { localStorage.clear(); sessionStorage.clear(); }")
+        except Exception:
+            pass
+        page.context.clear_cookies()
+        page.goto(home_url, wait_until="domcontentloaded", timeout=15000)
+        dom_content_loaded_soft(page, 20000)
+        try:
+            home.handle_cookie_popup()
+        except Exception:
+            pass
+
+
 @pytest.mark.case_id_ae_jobs_location01
 @pytest.mark.smoke
 @pytest.mark.p0
@@ -58,7 +116,8 @@ _CONFIG = {
 @allure.description("验证从首页点击Jobs金刚位进入列表页后，Location筛选器显示当前城市Abu Dhabi而不是空值状态")
 def test_location_filter_shows_specific_city(page, config):
     """TC001: Location筛选器显示具体城市地址"""
-    
+    _ensure_ae_visitor_before_test(page, config)
+
     # ========== Arrange：准备测试数据和对象 ==========
     jobs_list_page = JobsListPageAE(page)
     
@@ -156,7 +215,8 @@ def test_location_filter_shows_specific_city(page, config):
 @allure.description("验证从首页进入Jobs列表页后，未登录用户可以看到Add Job Preferences引导入口卡片")
 def test_add_job_preferences_entry_visible(page, config):
     """TC002: Add Job Preferences入口在列表页可见"""
-    
+    _ensure_ae_visitor_before_test(page, config)
+
     # ========== Arrange：准备测试数据和对象 ==========
     jobs_list_page = JobsListPageAE(page)
     
