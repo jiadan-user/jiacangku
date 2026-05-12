@@ -116,7 +116,10 @@ class TestCanberraMapCardPagination:
     @allure.story("Canberra地图模式 - 卡片列表")
     @allure.title("TC002: 面包屑显示 Home > Property > Student Accommodation")
     @allure.severity(allure.severity_level.NORMAL)
-    @allure.description("验证面包屑层级：Home 和 Property 为链接，Student Accommodation 为 H1 标题")
+    @allure.description(
+        "验证面包屑层级：Home 和 Property 为链接；末级 Student Accommodation 为 H1 或面包屑当前项 span；"
+        "若无则回退校验与 TC001 一致的列表区与 Map 区域"
+    )
     def test_breadcrumb_shows_correct_hierarchy(self, page, config, canberra_page):
         """TC002：面包屑显示正确层级"""
 
@@ -137,38 +140,39 @@ class TestCanberraMapCardPagination:
                 f"期望 Property 面包屑指向 /cate-property/ 路径，实际 href: {href}"
             logger.info(f"✓ Property 面包屑链接可见，href: {href}")
 
-        with allure.step("验证 Student Accommodation 为 H1 标题（或页面正常加载）"):
-            # 地图模式页面可能不展示 H1，放宽断言
-            try:
-                h1 = page.get_by_role("heading", level=1).first
-                h1_text = h1.inner_text(timeout=5000).strip()
-                if h1_text:
-                    assert "Student Accommodation" in h1_text, \
-                        f"期望 H1 含 'Student Accommodation'，实际: {h1_text}"
-                    logger.info(f"✓ H1 标题: {h1_text}")
+        with allure.step(
+            "验证 Student Accommodation 为 H1 / 面包屑末级，或与 TC001 一致的地图与列表区域"
+        ):
+            # 末级类目常为面包屑 span，而非 h1；避免对「首个 h1」做 inner_text 长超时抛错
+            sa = canberra_page
+            h1_text = sa.get_h1_text()
+            if h1_text and "Student Accommodation" in h1_text:
+                logger.info(f"✓ H1 标题: {h1_text}")
+            else:
+                # 与 BreadcrumbPage：末级为 .Breadcrumb_breadcrumbSpan__*（hash 可能随构建变）
+                crumb_current = page.locator("[class*='Breadcrumb_breadcrumbSpan']").filter(
+                    has_text="Student Accommodation"
+                ).first
+                if crumb_current.is_visible(timeout=5000):
+                    tail = crumb_current.inner_text(timeout=3000).strip()
+                    assert "Student Accommodation" in tail, \
+                        f"期望面包屑末级含 'Student Accommodation'，实际: {tail}"
+                    logger.info(f"✓ 面包屑末级（当前页）: {tail}")
                 else:
-                    logger.warning("⚠️ H1 存在但为空，验证其他元素")
-                    raise Exception("H1 empty")
-            except Exception:
-                # 如果没有 H1，验证其他核心元素确保页面正常加载
-                logger.info("ℹ️ 地图模式页面未找到 H1，验证其他核心元素")
-                
-                has_map = False
-                has_cards = False
-                
-                try:
-                    has_map = page.locator("[class*='map'], #map, [id*='map']").first.is_visible(timeout=3000)
-                except:
-                    pass
-                
-                try:
-                    has_cards = page.locator("[class*='card'], [class*='item']").first.is_visible(timeout=3000)
-                except:
-                    pass
-                
-                assert has_map or has_cards, \
-                    "地图模式页面无 H1 且未找到地图或卡片列表，可能加载失败"
-                logger.info(f"✓ 页面正常加载（地图={has_map}, 卡片列表={has_cards}）")
+                    # 与 TC001 相同：左侧列表容器 + 无障碍「Map」区域，避免泛化 class*=map 误漏
+                    logger.info("ℹ️ 未命中 H1/面包屑末级可见节点，回退校验地图模式核心布局")
+                    has_list = page.locator(".PropertyList_listContent__3PHpO").is_visible(
+                        timeout=5000
+                    )
+                    has_map_region = page.get_by_role("region", name="Map").is_visible(
+                        timeout=5000
+                    )
+                    assert has_list or has_map_region, (
+                        "地图模式：无有效 H1/面包屑末级，且左侧列表与 Map 区域均不可见，可能加载失败"
+                    )
+                    logger.info(
+                        f"✓ 页面正常加载（左侧列表={has_list}, Map region={has_map_region}）"
+                    )
 
     @pytest.mark.case_id_canberra_map_003
     @pytest.mark.p0
