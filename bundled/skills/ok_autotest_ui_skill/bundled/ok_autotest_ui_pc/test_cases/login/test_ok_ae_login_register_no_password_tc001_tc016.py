@@ -50,18 +50,99 @@ _CONFIG = {
 }
 
 
-@pytest.fixture
-def config():
-    return _CONFIG
+# 为 LoginPage 动态添加 ensure_logged_out 方法（与 login/conftest.py 一致）
+def _ensure_logged_out_impl(self, base_url=None):
+    """确保已退出登录状态"""
+    try:
+        # 清除 cookies 和存储
+        self.page.context.clear_cookies()
+        self.page.evaluate("() => { localStorage.clear(); sessionStorage.clear(); }")
+        logger.debug("✓ 已清除 Cookies 和存储")
+        
+        # 重新加载页面
+        if base_url:
+            self.page.goto(base_url, wait_until="domcontentloaded", timeout=10000)
+        else:
+            self.page.reload(wait_until="domcontentloaded", timeout=10000)
+        
+        self.page.wait_for_timeout(1000)
+        
+        # 处理 cookie 弹窗
+        self.handle_cookie_popup()
+        logger.debug("✓ 已确保退出登录状态")
+    except Exception as e:
+        logger.warning(f"确保退出登录失败: {e}")
+
+
+# 定义模块特定配置，包含 test_account 等特有字段
+@pytest.fixture(scope="module")
+def login_config():
+    """
+    本模块专用配置，包含 test_account 和 test_phone_no_password 字段
+    """
+    import os
+    config = _CONFIG.copy()
+    # 支持环境变量覆盖 headless
+    env_headless = os.getenv("HEADLESS")
+    if env_headless:
+        config['browser']['headless'] = env_headless.lower() in ('true', '1', 'yes')
+    
+    # 为 LoginPage 类动态添加 ensure_logged_out 方法
+    if not hasattr(LoginPage, 'ensure_logged_out'):
+        LoginPage.ensure_logged_out = _ensure_logged_out_impl
+        logger.debug("✅ 已为 LoginPage 添加 ensure_logged_out 方法")
+    
+    return config
+
+
+@pytest.fixture(scope="module")
+def page(login_config):
+    """
+    为本模块提供独立的 page fixture，确保页面正确初始化
+    """
+    from utils.browser_manager import BrowserManager
+    import os
+    
+    browser_manager = BrowserManager()
+    headless = os.getenv("HEADLESS", "").lower() in ("true", "1", "yes")
+    if not headless:
+        headless = login_config['browser'].get('headless', False)
+    
+    page = browser_manager.start_browser(
+        browser_type=login_config['browser']['type'],
+        headless=headless,
+        base_url=login_config['base_url'],
+        viewport=login_config['browser']['viewport']
+    )
+    
+    # 设置默认超时
+    page.set_default_timeout(30000)
+    
+    yield page
+    
+    # 清理
+    try:
+        browser_manager.close_browser(page)
+    except Exception:
+        pass
 
 
 @pytest.fixture(autouse=True)
-def ensure_logged_out_before_test(page: Page, config):
-    """每个用例前尽量恢复访客态，避免串行污染（与登录模块其它脚本一致）。"""
+def ensure_logged_out_before_test(page: Page, login_config):
+    """
+    每个用例前确保访客态。
+    conftest.py 的 smart_reset_for_login_tests 已处理弹窗关闭；
+    _navigate_xxx_page 辅助函数内会调用 ensure_logged_out 做真正的状态重置。
+    此处只做快速登录态检测（200ms），避免重复触发完整页面导航。
+    """
     login_page = LoginPage(page)
     try:
-        if login_page.is_login_button_text_changed(timeout=1000):
-            login_page.ensure_logged_out(config["base_url"])
+        if login_page.is_login_button_text_changed(timeout=200):
+            # 已登录：才做一次轻量 cookie 清理 + reload，不重复 goto
+            page.context.clear_cookies()
+            page.evaluate("() => { localStorage.clear(); sessionStorage.clear(); }")
+            page.reload(wait_until="domcontentloaded", timeout=15000)
+            page.wait_for_timeout(500)
     except Exception:
         pass
     yield
@@ -77,29 +158,39 @@ def _code_input(dialog):
     ).first
 
 
-def _navigate_email_no_password_password_page(page: Page, config) -> None:
+def _navigate_email_no_password_password_page(page: Page, login_config) -> None:
+    # 确保页面已导航到正确的 URL
+    if page.url == "about:blank" or not page.url.startswith(login_config["base_url"]):
+        page.goto(login_config["base_url"], wait_until="domcontentloaded", timeout=30000)
+        page.wait_for_timeout(1500)
+    
     login_page = LoginPage(page)
-    login_page.ensure_logged_out(config["base_url"])
+    login_page.ensure_logged_out(login_config["base_url"])
     login_page.click_login_register_button()
     page.wait_for_timeout(1200)
-    login_page.input_email(config["test_account"]["username"])
+    login_page.input_email(login_config["test_account"]["username"])
     login_page.click_continue_button()
     page.wait_for_timeout(2500)
 
 
-def _navigate_email_verification_page(page: Page, config) -> None:
-    _navigate_email_no_password_password_page(page, config)
+def _navigate_email_verification_page(page: Page, login_config) -> None:
+    _navigate_email_no_password_password_page(page, login_config)
     dialog = _dialog(page)
     dialog.get_by_role("button", name="Send code").click()
     page.wait_for_timeout(2000)
 
 
-def _navigate_phone_no_password_password_page(page: Page, config) -> None:
+def _navigate_phone_no_password_password_page(page: Page, login_config) -> None:
+    # 确保页面已导航到正确的 URL
+    if page.url == "about:blank" or not page.url.startswith(login_config["base_url"]):
+        page.goto(login_config["base_url"], wait_until="domcontentloaded", timeout=30000)
+        page.wait_for_timeout(1500)
+    
     login_page = LoginPage(page)
-    login_page.ensure_logged_out(config["base_url"])
+    login_page.ensure_logged_out(login_config["base_url"])
     login_page.click_login_register_button()
     page.wait_for_timeout(1200)
-    login_page.input_email(config["test_phone_no_password"]["local"])
+    login_page.input_email(login_config["test_phone_no_password"]["local"])
     login_page.click_continue_button()
     page.wait_for_timeout(3000)
 
@@ -157,12 +248,12 @@ class TestAeNoPasswordEmail:
     @allure.description(
         "验证未设置密码邮箱进入密码页后展示 Welcome back、无密码提示、Send code 且无密码框。"
     )
-    def test_tc001_no_password_email_password_page(self, page: Page, config):
-        _navigate_email_no_password_password_page(page, config)
+    def test_tc001_no_password_email_password_page(self, page: Page, login_config):
+        _navigate_email_no_password_password_page(page, login_config)
         dialog = _dialog(page)
         assert dialog.is_visible(timeout=8000)
         assert dialog.locator("text=/welcome.*back/i").first.is_visible()
-        assert dialog.get_by_text(config["test_account"]["username"]).first.is_visible()
+        assert dialog.get_by_text(login_config["test_account"]["username"]).first.is_visible()
         hint = (
             dialog.locator("text=/haven't added a password/i").first.is_visible(timeout=4000)
             or dialog.locator("text=/Sign in with.*email code/i").first.is_visible(timeout=2000)
@@ -179,8 +270,8 @@ class TestAeNoPasswordEmail:
     @allure.title("TC002: Send code 按钮初始状态正常")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description("验证 Send code 可见、可点且文案为 Send code。")
-    def test_tc002_send_code_initial_state(self, page: Page, config):
-        _navigate_email_no_password_password_page(page, config)
+    def test_tc002_send_code_initial_state(self, page: Page, login_config):
+        _navigate_email_no_password_password_page(page, login_config)
         btn = _dialog(page).get_by_role("button", name="Send code")
         expect(btn).to_be_visible()
         expect(btn).to_be_enabled()
@@ -195,8 +286,8 @@ class TestAeNoPasswordEmail:
     @allure.description(
         "验证点击 Send code 后出现邮箱 Toast、进入 Verification code 页且 Confirm 初始禁用。"
     )
-    def test_tc003_send_code_email_flow(self, page: Page, config):
-        _navigate_email_no_password_password_page(page, config)
+    def test_tc003_send_code_email_flow(self, page: Page, login_config):
+        _navigate_email_no_password_password_page(page, login_config)
         dialog = _dialog(page)
         dialog.get_by_role("button", name="Send code").click()
         page.wait_for_timeout(900)
@@ -210,7 +301,7 @@ class TestAeNoPasswordEmail:
         assert dialog.locator("text=/Verification.*code/i").first.is_visible()
         body = dialog.inner_text()
         assert "To continue, complete this verification step" in body
-        assert config["test_account"]["username"] in body.replace("\u00a0", " ")
+        assert login_config["test_account"]["username"] in body.replace("\u00a0", " ")
         code_in = _code_input(dialog)
         assert code_in.is_visible(timeout=8000)
         ph = code_in.get_attribute("placeholder") or ""
@@ -226,8 +317,8 @@ class TestAeNoPasswordEmail:
     @allure.title("TC004: 验证码倒计时正常运行（短时采样）")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description("进入验证码页后等待数秒，校验倒计时按钮秒数递减或保持合法倒计时形态。")
-    def test_tc004_countdown_ticks(self, page: Page, config):
-        _navigate_email_verification_page(page, config)
+    def test_tc004_countdown_ticks(self, page: Page, login_config):
+        _navigate_email_verification_page(page, login_config)
         dialog = _dialog(page)
         cd = dialog.locator("button").filter(has_text=re.compile(r"^\d+s$")).first
         if not cd.is_visible(timeout=4000):
@@ -252,8 +343,8 @@ class TestAeNoPasswordEmail:
     @allure.title("TC007: 验证码输入框初始状态")
     @allure.severity(allure.severity_level.BLOCKER)
     @allure.description("验证码页输入框可见、占位或标签含 Enter code，Confirm 为 disabled。")
-    def test_tc007_code_input_initial(self, page: Page, config):
-        _navigate_email_verification_page(page, config)
+    def test_tc007_code_input_initial(self, page: Page, login_config):
+        _navigate_email_verification_page(page, login_config)
         dialog = _dialog(page)
         inp = _code_input(dialog)
         assert inp.is_visible()
@@ -269,8 +360,8 @@ class TestAeNoPasswordEmail:
     @allure.title("TC008: 输入验证码后 Confirm 按钮变为 enabled")
     @allure.severity(allure.severity_level.BLOCKER)
     @allure.description("输入六位数字后 Confirm 从 disabled 变为 enabled。")
-    def test_tc008_confirm_enabled_after_input(self, page: Page, config):
-        _navigate_email_verification_page(page, config)
+    def test_tc008_confirm_enabled_after_input(self, page: Page, login_config):
+        _navigate_email_verification_page(page, login_config)
         dialog = _dialog(page)
         inp = _code_input(dialog)
         inp.fill("123456")
@@ -283,8 +374,8 @@ class TestAeNoPasswordEmail:
     @allure.title("TC009: 清空验证码后 Confirm 恢复 disabled")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description("输入后再清空验证码，Confirm 应恢复为 disabled。")
-    def test_tc009_clear_code_disables_confirm(self, page: Page, config):
-        _navigate_email_verification_page(page, config)
+    def test_tc009_clear_code_disables_confirm(self, page: Page, login_config):
+        _navigate_email_verification_page(page, login_config)
         dialog = _dialog(page)
         inp = _code_input(dialog)
         inp.fill("123456")
@@ -300,8 +391,8 @@ class TestAeNoPasswordEmail:
     @allure.title("TC010: 验证码输入框允许输入长字符串")
     @allure.severity(allure.severity_level.MINOR)
     @allure.description("向验证码框输入超过 20 位字符，前端不截断且 Confirm 可启用。")
-    def test_tc010_long_input_not_truncated_ui(self, page: Page, config):
-        _navigate_email_verification_page(page, config)
+    def test_tc010_long_input_not_truncated_ui(self, page: Page, login_config):
+        _navigate_email_verification_page(page, login_config)
         dialog = _dialog(page)
         long_val = "12345678901234567890123"
         inp = _code_input(dialog)
@@ -316,8 +407,8 @@ class TestAeNoPasswordEmail:
     @allure.title("TC011: 验证码输入特殊字符")
     @allure.severity(allure.severity_level.MINOR)
     @allure.description("验证码框可输入特殊字符序列，用于前端容忍度校验。")
-    def test_tc011_special_chars_input(self, page: Page, config):
-        _navigate_email_verification_page(page, config)
+    def test_tc011_special_chars_input(self, page: Page, login_config):
+        _navigate_email_verification_page(page, login_config)
         dialog = _dialog(page)
         inp = _code_input(dialog)
         inp.fill("!@#$%^")
@@ -332,8 +423,8 @@ class TestAeNoPasswordEmail:
     @allure.description(
         "在无密码密码页点击返回类控件后应回到欢迎页并可见 Welcome to OK.com。"
     )
-    def test_tc012_back_to_welcome_from_password_page(self, page: Page, config):
-        _navigate_email_no_password_password_page(page, config)
+    def test_tc012_back_to_welcome_from_password_page(self, page: Page, login_config):
+        _navigate_email_no_password_password_page(page, login_config)
         _click_login_dialog_back(page)
         dialog = _dialog(page)
         welcome_ok = dialog.get_by_text("Welcome to OK.com").first.is_visible(timeout=10000)
@@ -348,13 +439,13 @@ class TestAeNoPasswordEmail:
     @allure.title("TC013: 验证码页面文案完整性（邮箱）")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description("校验 Verification code 标题、引导句、邮箱号、Confirm 与合规文案区域。")
-    def test_tc013_verification_copy_email(self, page: Page, config):
-        _navigate_email_verification_page(page, config)
+    def test_tc013_verification_copy_email(self, page: Page, login_config):
+        _navigate_email_verification_page(page, login_config)
         dialog = _dialog(page)
         assert dialog.locator("text=/Verification.*code/i").first.is_visible()
         body = dialog.inner_text()
         assert "To continue, complete this verification step" in body
-        assert config["test_account"]["username"] in body.replace("\u00a0", " ")
+        assert login_config["test_account"]["username"] in body.replace("\u00a0", " ")
         assert dialog.get_by_role("button", name="Confirm").is_visible()
         assert dialog.locator("text=/data.*protected/i").first.is_visible(timeout=5000)
         _attach_screenshot(page, "TC013_邮箱验证码文案")
@@ -374,12 +465,12 @@ class TestAeNoPasswordPhone:
     @allure.description(
         "验证手机号无密码密码页展示完整号码、无 Phone number 小标题、Send code 与无密码提示。"
     )
-    def test_tc014_phone_no_password_password_page(self, page: Page, config):
-        _navigate_phone_no_password_password_page(page, config)
+    def test_tc014_phone_no_password_password_page(self, page: Page, login_config):
+        _navigate_phone_no_password_password_page(page, login_config)
         dialog = _dialog(page)
         assert dialog.is_visible(timeout=8000)
         assert dialog.locator("text=/welcome.*back/i").first.is_visible()
-        full = config["test_phone_no_password"]["full"]
+        full = login_config["test_phone_no_password"]["full"]
         assert dialog.get_by_text(full).first.is_visible()
         phone_label = dialog.get_by_text("Phone number", exact=True)
         assert not phone_label.is_visible(timeout=2000)
@@ -403,8 +494,8 @@ class TestAeNoPasswordPhone:
     @allure.description(
         "验证手机号路径 Toast 含 sent to your phone、说明含 phone number 与完整号码、Confirm 初始禁用。"
     )
-    def test_tc015_phone_send_code(self, page: Page, config):
-        _navigate_phone_no_password_password_page(page, config)
+    def test_tc015_phone_send_code(self, page: Page, login_config):
+        _navigate_phone_no_password_password_page(page, login_config)
         dialog = _dialog(page)
         dialog.get_by_role("button", name="Send code").click()
         page.wait_for_timeout(900)
@@ -418,7 +509,7 @@ class TestAeNoPasswordPhone:
         assert dialog.locator("text=/Verification.*code/i").first.is_visible()
         body = dialog.inner_text().replace("\u00a0", " ")
         assert re.search(r"phone\s+number", body, re.I)
-        assert config["test_phone_no_password"]["full"] in body
+        assert login_config["test_phone_no_password"]["full"] in body
         expect(dialog.get_by_role("button", name="Confirm")).to_be_disabled()
         _attach_screenshot(page, "TC015_手机号验证码页")
 
@@ -429,8 +520,8 @@ class TestAeNoPasswordPhone:
     @allure.title("TC016: 手机号验证码页面文案包含 +971 501234579（不自动化）")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description("校验验证码页标题、引导关键词、完整手机号、Enter code 区域与 Confirm。")
-    def test_tc016_phone_verification_copy(self, page: Page, config):
-        _navigate_phone_no_password_password_page(page, config)
+    def test_tc016_phone_verification_copy(self, page: Page, login_config):
+        _navigate_phone_no_password_password_page(page, login_config)
         dialog = _dialog(page)
         dialog.get_by_role("button", name="Send code").click()
         page.wait_for_timeout(3500)
@@ -439,7 +530,7 @@ class TestAeNoPasswordPhone:
         for kw in ("continue", "verification", "step", "phone"):
             assert dialog.locator(f"text=/{kw}/i").first.is_visible(timeout=3000)
         norm = dialog.inner_text().replace("\u00a0", " ")
-        assert config["test_phone_no_password"]["full"] in norm
+        assert login_config["test_phone_no_password"]["full"] in norm
         enter_ok = (
             dialog.get_by_placeholder("Enter code").first.is_visible(timeout=2000)
             or dialog.get_by_label("Enter code").first.is_visible(timeout=2000)

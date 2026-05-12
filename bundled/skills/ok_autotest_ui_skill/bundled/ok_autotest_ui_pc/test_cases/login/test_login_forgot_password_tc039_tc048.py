@@ -48,7 +48,8 @@ def ensure_logged_out_before_test(preloaded_page):
     """测试前确保退出登录状态"""
     login_page = LoginPage(preloaded_page)
     try:
-        preloaded_page.goto(BASE_URL, wait_until="domcontentloaded", timeout=10000)
+        # 用 load 代替 domcontentloaded：确保 JS 事件监听已挂载，登录按钮可交互
+        preloaded_page.goto(BASE_URL, wait_until="load", timeout=20000)
         if login_page.is_login_button_text_changed(timeout=1000):
             try:
                 login_page.logout()
@@ -56,13 +57,14 @@ def ensure_logged_out_before_test(preloaded_page):
                 logger.warning(f"退登失败，强制清理: {e}")
                 preloaded_page.context.clear_cookies()
                 preloaded_page.evaluate("() => { localStorage.clear(); sessionStorage.clear(); }")
-                preloaded_page.reload(wait_until="domcontentloaded")
+                preloaded_page.reload(wait_until="load", timeout=20000)
     except Exception as e:
         logger.warning(f"退登检查失败，强制清理状态: {e}")
     try:
         preloaded_page.context.clear_cookies()
         preloaded_page.evaluate("() => { localStorage.clear(); sessionStorage.clear(); }")
-        preloaded_page.goto(BASE_URL, wait_until="domcontentloaded", timeout=10000)
+        # 等待 load 事件确保 JS 完整挂载，否则登录按钮点击不触发弹窗
+        preloaded_page.goto(BASE_URL, wait_until="load", timeout=20000)
     except Exception:
         pass
 
@@ -385,10 +387,15 @@ class TestLoginForgotPassword:
             assert confirm_button.is_disabled(), "初始状态 Confirm 应为 disabled"
             allure.attach("初始状态：Confirm disabled", name="✅ 初始状态")
         with allure.step("输入验证码"):
-            # 验证码输入框：type=tel, class=ok_login_input_label_content_input
+            # 重新查询 dialog 避免 React 重渲染后 DOM 脱离
+            dialog = preloaded_page.locator('[role="dialog"]').first
             code_input = dialog.locator('input.ok_login_input_label_content_input, input[type="tel"]').first
+            code_input.wait_for(state="visible", timeout=5000)
             code_input.fill("123456")
+            preloaded_page.wait_for_timeout(500)
         with allure.step("验证 Confirm 按钮变为 enabled"):
+            # 重新查询 confirm_button 避免 fill 触发重渲染后引用失效
+            confirm_button = dialog.locator('button:has-text("Confirm")').first
             is_enabled = not confirm_button.is_disabled()
             if is_enabled:
                 allure.attach("输入后：Confirm enabled", name="✅ 状态切换")
