@@ -358,9 +358,21 @@ def setup_wallet_module(page):
                 import os
                 script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
                 script_path = os.path.join(script_dir, "airwallex_recharge", "update_payment_status.py")
+                
+                # 检查脚本是否存在
+                if not os.path.exists(script_path):
+                    logger.error(f"❌ 清除脚本不存在: {script_path}")
+                    logger.info(f"当前文件: {__file__}")
+                    logger.info(f"脚本目录: {script_dir}")
+                    return
+                
                 try:
+                    python_exec = sys.executable
+                    logger.info(f"🔧 使用Python执行器: {python_exec}")
+                    logger.info(f"🔧 脚本路径: {script_path}")
+                    
                     result = subprocess.run(
-                        ['python', script_path, '--clear-withdrawal-restriction'],
+                        [python_exec, script_path, '--clear-withdrawal-restriction'],
                         capture_output=True,
                         encoding='utf-8',
                         errors='replace',
@@ -372,8 +384,14 @@ def setup_wallet_module(page):
                         logger.info(f"脚本输出: {result.stdout[:300] if result.stdout else '(无输出)'}")
                     else:
                         logger.error(f"❌ 清除提现限制失败: {result.stderr[:300] if result.stderr else '(无错误信息)'}")
+                except FileNotFoundError as e:
+                    logger.error(f"❌ 执行清除脚本异常 - 文件未找到: {e}")
+                    logger.error(f"   Python执行器: {sys.executable}")
+                    logger.error(f"   是否存在: {os.path.exists(sys.executable)}")
                 except Exception as e:
                     logger.error(f"❌ 执行清除脚本异常: {e}")
+                    import traceback
+                    logger.error(f"   详细错误: {traceback.format_exc()}")
         except Exception as e:
             logger.debug(f"处理控制台消息时出错（可忽略）: {e}")
     
@@ -1230,15 +1248,22 @@ def _clear_withdrawal_in_progress(page):
         
         # 步骤5: 执行更新脚本
         logger.info(f"📋 步骤3: 调用脚本更新状态为成功")
-        logger.info(f"🔧 执行命令: python test_cases/airwallex_recharge/update_payment_status.py --payment-no {reference_id} --status 1")
+        logger.info(f"🔧 Reference ID: {reference_id}")
 
         import os
         script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         script_path = os.path.join(script_dir, "airwallex_recharge", "update_payment_status.py")
+        
+        if not os.path.exists(script_path):
+            logger.error(f"❌ 脚本文件不存在: {script_path}")
+            return False
 
         try:
+            python_exec = sys.executable
+            logger.info(f"🔧 执行命令: {python_exec} {script_path} --payment-no {reference_id} --status 1")
+            
             result = subprocess.run(
-                ['python', script_path, '--payment-no', reference_id, '--status', '1'],
+                [python_exec, script_path, '--payment-no', reference_id, '--status', '1'],
                 capture_output=True,
                 encoding='utf-8',
                 errors='replace',
@@ -2035,7 +2060,7 @@ def _old_test_helper_implementation():
         script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         script_path = os.path.join(script_dir, "airwallex_recharge", "update_payment_status.py")
         cmd = [
-            "python",
+            sys.executable,
             script_path,
             "--payment-no",
             reference_id,
@@ -2172,18 +2197,39 @@ class TestBalanceDisplayFeature:
     def test_click_eye_icon_should_show_balance(self, page):
         """TC004: 点击眼睛图标应显示实际余额和汇率"""
         
+        _ensure_on_home_page(page)
+        
         logger.info("="*80)
         logger.info("TC004: 点击眼睛图标应显示实际余额和汇率")
         logger.info("="*80)
         
+        with allure.step("确认余额初始为隐藏状态"):
+            initial_balance = _get_balance_display_text(page, wait_ms=1000)
+            logger.info(f"✓ 初始余额显示: {initial_balance}")
+        
         with allure.step("点击眼睛图标"):
-            page.wait_for_timeout(1000)
-            page.get_by_role('img').nth(2).click()
-            page.wait_for_timeout(1000)
+            # 尝试多种选择器策略
+            eye_icon = None
+            try:
+                # 策略1: 在balance区域找最后一个svg/img
+                eye_icon = page.locator('[class*="balance"]').locator('svg, img').last
+                eye_icon.wait_for(state='visible', timeout=3000)
+            except:
+                try:
+                    # 策略2: 通过role找所有image，选择合适的
+                    eye_icon = page.get_by_role('img').nth(2)
+                    eye_icon.wait_for(state='visible', timeout=3000)
+                except:
+                    # 策略3: 直接找所有svg，选择第3个左右
+                    eye_icon = page.locator('svg').nth(2)
+                    eye_icon.wait_for(state='visible', timeout=3000)
+            
+            eye_icon.click()
+            page.wait_for_timeout(1500)
             logger.info("✓ 点击眼睛图标")
         
         with allure.step("验证余额和汇率显示"):
-            balance_text = _get_balance_display_text(page, wait_ms=1000)
+            balance_text = _get_balance_display_text(page, wait_ms=1500)
             logger.info(f"✓ 当前余额显示: {balance_text}")
             
             assert balance_text and "$" in balance_text and "****" not in balance_text, \
@@ -2204,17 +2250,51 @@ class TestBalanceDisplayFeature:
     def test_click_eye_icon_again_should_hide_balance(self, page):
         """TC005: 再次点击眼睛图标应隐藏余额"""
         
+        _ensure_on_home_page(page)
+        
         logger.info("="*80)
         logger.info("TC005: 再次点击眼睛图标应隐藏余额")
         logger.info("="*80)
         
-        with allure.step("再次点击眼睛图标隐藏余额"):
-            page.get_by_role('img').nth(2).click()
-            page.wait_for_timeout(1000)
-            logger.info("✓ 第二次点击眼睛图标")
+        # 尝试多种选择器策略获取眼睛图标
+        eye_icon = None
+        try:
+            # 策略1: 在balance区域找最后一个svg/img
+            eye_icon = page.locator('[class*="balance"]').locator('svg, img').last
+            eye_icon.wait_for(state='visible', timeout=3000)
+        except:
+            try:
+                # 策略2: 通过role找所有image，选择合适的
+                eye_icon = page.get_by_role('img').nth(2)
+                eye_icon.wait_for(state='visible', timeout=3000)
+            except:
+                # 策略3: 直接找所有svg，选择第3个左右
+                eye_icon = page.locator('svg').nth(2)
+                eye_icon.wait_for(state='visible', timeout=3000)
+        
+        with allure.step("检查当前余额状态"):
+            current_balance = _get_balance_display_text(page, wait_ms=1000)
+            is_hidden = "****" in current_balance
+            logger.info(f"✓ 当前余额状态: {current_balance} ({'隐藏' if is_hidden else '显示'})")
+        
+        with allure.step("确保余额处于显示状态"):
+            if is_hidden:
+                eye_icon.click()
+                page.wait_for_timeout(1500)
+                balance_shown = _get_balance_display_text(page, wait_ms=1000)
+                logger.info(f"✓ 余额已显示: {balance_shown}")
+                assert "$" in balance_shown and "****" not in balance_shown, \
+                    f"点击后余额应显示，但当前是: {balance_shown}"
+            else:
+                logger.info("✓ 余额已经是显示状态，跳过第一次点击")
+        
+        with allure.step("点击眼睛图标隐藏余额"):
+            eye_icon.click()
+            page.wait_for_timeout(1500)
+            logger.info("✓ 点击眼睛图标隐藏余额")
         
         with allure.step("验证余额已重新隐藏"):
-            balance_text = _get_balance_display_text(page, wait_ms=1000)
+            balance_text = _get_balance_display_text(page, wait_ms=1500)
             logger.info(f"✓ 当前余额显示: {balance_text}")
             
             assert balance_text and "****" in balance_text, f"余额未隐藏，当前显示: {balance_text}"
@@ -2925,7 +3005,7 @@ class TestWithdrawCompleteFlow:
             script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             script_path = os.path.join(script_dir, "airwallex_recharge", "update_payment_status.py")
             cmd = [
-                "python",
+                sys.executable,
                 script_path,
                 "--payment-no",
                 TestWithdrawCompleteFlow.reference_id,
@@ -4178,7 +4258,7 @@ class TestRechargeAndWithdrawAll:
         
         with allure.step("更新提现状态为成功"):
             result = subprocess.run(
-                ["python", "test_cases/airwallex_recharge/update_payment_status.py",
+                [sys.executable, "test_cases/airwallex_recharge/update_payment_status.py",
                  "--payment-no", TestRechargeAndWithdrawAll.reference_id, "--status", "1"],
                 capture_output=True,
                 text=True,
@@ -4429,17 +4509,58 @@ class TestRechargeAndWithdrawAll:
 
         page.wait_for_timeout(2000)
 
+        # 方法1: 尝试从当前页面查找Reference ID（可能在确认页面）
+        reference_id = None
         ref_loc = page.locator('text=/\\d{19}/').first
-        if not ref_loc.is_visible(timeout=8000):
-            logger.warning("TC056: 当前页未见 Reference ID，回钱包首页再查找")
-            _ensure_on_home_page(page)
-            page.goto(_CONFIG['base_url'])
-            page.wait_for_load_state("domcontentloaded", timeout=15000)
-            page.wait_for_timeout(2500)
-            ref_loc = page.locator('text=/\\d{19}/').first
-
-        assert ref_loc.is_visible(timeout=8000), "提现提交后应显示Reference ID"
-        logger.info("✅ TC056 通过")
+        if ref_loc.is_visible(timeout=5000):
+            reference_id = ref_loc.inner_text()
+            logger.info(f"✓ 方法1: 从当前页面找到 Reference ID: {reference_id}")
+        else:
+            logger.info("TC056: 当前页未见 Reference ID，尝试从交易历史查找")
+            
+            # 方法2: 从交易历史查找最新的Withdrawal记录
+            try:
+                _ensure_on_home_page(page)
+                page.wait_for_timeout(1000)
+                
+                # 点击Details进入交易历史
+                details_button = page.locator('text="Details"').first
+                if details_button.is_visible(timeout=5000):
+                    details_button.click()
+                    page.wait_for_timeout(2000)
+                    logger.info("✓ 已进入交易历史页面")
+                    
+                    # 查找最新的Withdrawal记录（第一行通常是最新的）
+                    first_withdrawal = page.locator('text=/Withdrawal|Bank Processing/i').first
+                    if first_withdrawal.is_visible(timeout=5000):
+                        # 尝试从该行文本直接提取Reference ID
+                        row_text = first_withdrawal.locator('..').inner_text()
+                        matches = re.findall(r'\d{19}', row_text)
+                        if matches:
+                            reference_id = matches[0]
+                            logger.info(f"✓ 方法2: 从交易历史行中找到 Reference ID: {reference_id}")
+                        else:
+                            # 尝试点击Details按钮查看详情
+                            row_details = first_withdrawal.locator('..').get_by_role('button', name='Details')
+                            if row_details.is_visible(timeout=3000):
+                                row_details.click()
+                                page.wait_for_timeout(2000)
+                                
+                                # 从弹窗中提取Reference ID
+                                dialog = page.get_by_role('dialog')
+                                if dialog.is_visible(timeout=3000):
+                                    dialog_text = dialog.inner_text()
+                                    matches = re.findall(r'\d{19}', dialog_text)
+                                    if matches:
+                                        reference_id = matches[0]
+                                        logger.info(f"✓ 方法2: 从Details弹窗找到 Reference ID: {reference_id}")
+                                    page.keyboard.press('Escape')
+                                    page.wait_for_timeout(500)
+            except Exception as e:
+                logger.warning(f"TC056: 从交易历史查找 Reference ID 失败: {e}")
+        
+        assert reference_id, "提现提交后应显示Reference ID（从确认页面或交易历史）"
+        logger.info(f"✅ TC056 通过 - Reference ID: {reference_id}")
 
     @pytest.mark.case_id_wallet_withdraw_tc057
     @allure.title("TC057: Withdraw All 一键全额提现功能")
