@@ -3228,22 +3228,31 @@ def test_p0_31_edit_published_car(page, config):
         # 查找 Edit（可访问名未必是精确 "Edit"，含链接/按钮多种形态）
         edit_clicked = False
         edit_candidates = [
-            page.get_by_role("link", name=re.compile(r"edit", re.I)).first,
-            page.locator('a[href*="edit" i], a[href*="publish" i]').filter(
+            # 优先尝试常见的Edit链接/按钮
+            page.locator('a:has-text("Edit"), button:has-text("Edit")').first,
+            page.get_by_role("link", name=re.compile(r"^edit$", re.I)).first,
+            page.get_by_role("button", name=re.compile(r"^edit$", re.I)).first,
+            # 再尝试通过href属性
+            page.locator('a[href*="/edit"], a[href*="/publish?"]').filter(
                 has_text=re.compile(r"edit", re.I)
             ).first,
-            page.get_by_role("button", name=re.compile(r"edit", re.I)).first,
-            page.locator('button:has-text("Edit"), a:has-text("Edit")').first,
+            # 尝试文本包含edit的链接
+            page.locator('a, button').filter(has_text=re.compile(r"\bedit\b", re.I)).first,
+            # 最后尝试图标+文本组合
+            page.locator('[class*="edit" i], [data-action*="edit" i]').first,
         ]
         for eb in edit_candidates:
             try:
-                eb.wait_for(state="visible", timeout=6000)
-                eb.scroll_into_view_if_needed(timeout=15000)
-                page.wait_for_timeout(400)
-                eb.click(timeout=15000)
-                edit_clicked = True
-                break
-            except Exception:
+                if eb.count() > 0:
+                    eb.wait_for(state="visible", timeout=6000)
+                    eb.scroll_into_view_if_needed(timeout=15000)
+                    page.wait_for_timeout(400)
+                    eb.click(timeout=15000)
+                    edit_clicked = True
+                    logger.info(f"✓ 成功点击Edit按钮")
+                    break
+            except Exception as e:
+                logger.debug(f"尝试Edit候选项失败: {str(e)[:100]}")
                 continue
         assert edit_clicked, "未找到可点击的 Edit 入口（详情页结构可能变更）"
         page.wait_for_timeout(2000)

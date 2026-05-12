@@ -1918,7 +1918,8 @@ def test_car_detail_page_refresh(page, config):
         logger.info(f"✓ 标题一致: {new_title}")
         
         # 验证核心信息仍然存在（如车辆标题）
-        car_title = page.get_by_role("heading", name=re.compile(r"AUDI A6", re.I))
+        # 使用 first 避免 strict mode violation（页面可能有多个相似heading）
+        car_title = page.get_by_role("heading", name=re.compile(r"AUDI A6", re.I)).first
         assert car_title.is_visible(timeout=5000), "车辆标题不可见"
         logger.info("✓ 核心信息一致")
 
