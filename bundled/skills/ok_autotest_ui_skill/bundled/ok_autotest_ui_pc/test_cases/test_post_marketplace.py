@@ -21,6 +21,8 @@ OK阿联酋站 - Marketplace发布页测试套件
 import pytest
 import allure
 import os
+import time
+import re
 from playwright.sync_api import Page, expect
 from pages.login_page import LoginPage
 from utils.session_manager import SessionManager
@@ -120,10 +122,155 @@ def _trigger_categories(page: Page):
     page.wait_for_timeout(2000)
 
 
+def _category_search_dialog_visible_mp(page: Page) -> bool:
+    """类目搜索弹层是否已打开（Marketplace 与 Services 共用弹层结构）。"""
+    try:
+        loc = page.locator('.category-search-dialog__title').first
+        return loc.count() > 0 and loc.is_visible(timeout=2000)
+    except Exception:
+        return False
+
+
+def _open_more_categories_modal_mp(page: Page, timeout_ms: int = 45000) -> None:
+    """打开 More Categories：先 JS 点可见节点，再 Playwright 遍历可见项，避免裸 .click() 等满 30s。"""
+    deadline = time.time() + timeout_ms / 1000.0
+    while time.time() < deadline:
+        if _category_search_dialog_visible_mp(page):
+            return
+        clicked = page.evaluate(
+            r"""() => {
+                const clickEl = (el) => {
+                    if (!el || el.closest('[role="dialog"]')) return false;
+                    if (!el.offsetParent) return false;
+                    const r = el.getBoundingClientRect();
+                    if (r.width < 2 || r.height < 2) return false;
+                    el.scrollIntoView({ block: 'center', inline: 'nearest' });
+                    el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+                    return true;
+                };
+                for (const sel of [
+                    '[class*="recommend-category_moreCategory"]',
+                    '[class*="moreCategory"]',
+                    '[class*="more_category"]',
+                ]) {
+                    for (const el of document.querySelectorAll(sel)) {
+                        if (clickEl(el)) return true;
+                    }
+                }
+                const byText = Array.from(document.querySelectorAll('a, button, span, div, p')).find(
+                    (el) => {
+                        if (!el || el.closest('[role="dialog"]')) return false;
+                        if (!el.offsetParent) return false;
+                        const t = (el.textContent || '').replace(/\s+/g, ' ').trim();
+                        return /^More Categories$/i.test(t) && t.length < 48;
+                    }
+                );
+                return byText ? clickEl(byText) : false;
+            }"""
+        )
+        if clicked:
+            page.wait_for_timeout(800)
+            if _category_search_dialog_visible_mp(page):
+                return
+        for sel in (
+            '[class*="recommend-category_moreCategory"]',
+            '[class*="moreCategory"]',
+            '[class*="more_category"]',
+        ):
+            items = page.locator(sel)
+            for i in range(min(items.count(), 35)):
+                loc = items.nth(i)
+                try:
+                    if not loc.is_visible(timeout=700):
+                        continue
+                    loc.scroll_into_view_if_needed(timeout=2500)
+                    loc.click(timeout=8000)
+                except Exception:
+                    try:
+                        loc.click(timeout=8000, force=True)
+                    except Exception:
+                        continue
+                page.wait_for_timeout(500)
+                if _category_search_dialog_visible_mp(page):
+                    return
+        try:
+            hits = page.get_by_role('button', name=re.compile(r'more\s+categories', re.I))
+            for i in range(min(hits.count(), 12)):
+                hb = hits.nth(i)
+                if hb.is_visible(timeout=800):
+                    hb.click(timeout=6000)
+                    page.wait_for_timeout(600)
+                    if _category_search_dialog_visible_mp(page):
+                        return
+        except Exception:
+            pass
+        page.evaluate('() => window.scrollBy(0, 280)')
+        page.wait_for_timeout(400)
+    raise AssertionError('Marketplace: 未能打开 More Categories 弹层（检查推荐区是否已出现）')
+
+
+def _click_first_visible_category_result_mp(page: Page) -> None:
+    items = page.locator('.category-search-dialog__list-item')
+    for i in range(min(items.count(), 50)):
+        loc = items.nth(i)
+        try:
+            if not loc.is_visible(timeout=600):
+                continue
+            loc.scroll_into_view_if_needed(timeout=3000)
+            loc.click(timeout=8000)
+            return
+        except Exception:
+            try:
+                loc.click(timeout=8000, force=True)
+                return
+            except Exception:
+                continue
+    raise AssertionError('无可见的类目搜索结果项')
+
+
 def _select_first_suggested_category(page: Page):
-    """选择第一个推荐分类"""
-    page.locator('[class*="recommendCategoryItem"]').first.click()
-    page.wait_for_timeout(2000)
+    """选择第一个「可见」推荐分类；避免 .first 绑到隐藏节点导致 30s click 超时。"""
+    items = page.locator('[class*="recommendCategoryItem"]')
+    for _round in range(22):
+        n = min(items.count(), 45)
+        for i in range(n):
+            loc = items.nth(i)
+            try:
+                if not loc.is_visible(timeout=800):
+                    continue
+                loc.scroll_into_view_if_needed(timeout=4000)
+                try:
+                    loc.click(timeout=10000)
+                except Exception:
+                    loc.click(timeout=10000, force=True)
+                page.wait_for_timeout(2000)
+                return
+            except Exception:
+                continue
+        clicked = page.evaluate(
+            r"""() => {
+                var nodes = document.querySelectorAll('[class*="recommendCategoryItem"]');
+                for (var i = 0; i < nodes.length; i++) {
+                    var el = nodes[i];
+                    if (!el.offsetParent) continue;
+                    var r = el.getBoundingClientRect();
+                    if (r.width < 2 || r.height < 2) continue;
+                    el.scrollIntoView({block:'center'});
+                    el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+                    return true;
+                }
+                return false;
+            }"""
+        )
+        if clicked:
+            page.wait_for_timeout(2000)
+            return
+        try:
+            page.evaluate('() => window.scrollBy(0, 280)')
+        except Exception:
+            pass
+        page.wait_for_timeout(400)
+    raise TimeoutError('Marketplace: 未找到可点击的可见 recommendCategoryItem')
 
 
 def _full_setup_to_post_ready(page: Page, title='Test Item'):
@@ -652,8 +799,8 @@ def test_more_categories_search(publish_page: Page):
         _trigger_categories(page)
 
     with allure.step("打开More Categories模态框"):
-        page.locator('[class*="moreCategory"]').click()
-        page.wait_for_timeout(2000)
+        _open_more_categories_modal_mp(page, timeout_ms=45000)
+        page.wait_for_timeout(800)
 
     with allure.step("验证模态框标题"):
         modal_title = page.locator('.category-search-dialog__title').text_content(timeout=5000)
@@ -670,7 +817,7 @@ def test_more_categories_search(publish_page: Page):
         logger.info(f"✓ 搜索结果数量: {len(results)}")
 
     with allure.step("点击第一个搜索结果"):
-        page.locator('.category-search-dialog__list-item').first.click()
+        _click_first_visible_category_result_mp(page)
         page.wait_for_timeout(2000)
 
     with allure.step("验证模态框关闭且Category已选"):
@@ -700,10 +847,8 @@ def test_browse_category_path(publish_page: Page):
         _upload_image(page)
         _fill_basic_fields(page)
         _trigger_categories(page)
-        page.locator('[class*="moreCategory"]').click()
-        page.wait_for_timeout(2000)
-
-    with allure.step("点击Or browse to find a category"):
+        _open_more_categories_modal_mp(page, timeout_ms=45000)
+        page.wait_for_timeout(800)
         page.locator('text=Or browse to find a category').first.click()
         page.wait_for_timeout(1500)
 
@@ -1272,9 +1417,8 @@ def test_more_categories_empty_search(publish_page: Page):
         _upload_image(page)
         _fill_basic_fields(page)
         _trigger_categories(page)
-        # 使用具体类名点击More Categories，确保选中正确元素
-        page.locator('[class*="moreCategory"]').click()
-        page.wait_for_timeout(2000)
+        _open_more_categories_modal_mp(page, timeout_ms=45000)
+        page.wait_for_timeout(800)
 
     with allure.step("不输入内容，验证模态框初始状态"):
         # 弹窗已打开，直接检查弹窗元素文字
@@ -1869,8 +2013,8 @@ def test_more_categories_esc_close(publish_page):
         page.wait_for_timeout(2000)
 
     with allure.step("打开More Categories弹窗"):
-        page.locator('[class*="moreCategory"]').click()
-        page.wait_for_timeout(2000)
+        _open_more_categories_modal_mp(page, timeout_ms=45000)
+        page.wait_for_timeout(800)
         modal_title = page.locator('.category-search-dialog__title').text_content(timeout=5000)
         assert 'Search For Category' in modal_title, f"More Categories弹窗应已打开，实际标题='{modal_title}'"
 
@@ -2047,7 +2191,21 @@ def _do_full_post_and_get_success(page):
         page.wait_for_timeout(500)
         if page.evaluate("() => document.querySelectorAll('[class*=recommendCategoryItem]').length") > 0:
             break
-    page.evaluate("() => { var items = document.querySelectorAll('[class*=recommendCategoryItem]'); if (items.length > 0) items[0].click(); }")
+    page.evaluate(
+        r"""() => {
+            var nodes = document.querySelectorAll('[class*="recommendCategoryItem"]');
+            for (var i = 0; i < nodes.length; i++) {
+                var el = nodes[i];
+                if (!el.offsetParent) continue;
+                var r = el.getBoundingClientRect();
+                if (r.width < 2 || r.height < 2) continue;
+                el.scrollIntoView({block:'center'});
+                el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+                return true;
+            }
+            return false;
+        }"""
+    )
     # 等待发布页完全加载（含Delivery Options）
     for _ in range(12):
         page.wait_for_timeout(500)
