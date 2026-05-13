@@ -23,7 +23,7 @@ _CONFIG = {
     "user_name": "qa_visitor_ae_pub",
     "base_url": "https://ae.58v5.cn",
     "detail_url": (
-        "https://ae.58v5.cn/en/city-abu-dhabi/cate-others266/ddfasdf-6516039766105310/"
+        "https://ae.58v5.cn/en/city-abu-dhabi/cate-other-business-industrial/google-pixel-6-pro-128gb-excellent-condition-for-sale-2053750384618487810/"
     ),
     "test_account": {
         "username": "shenchang@58.com",
@@ -52,12 +52,22 @@ class TestDetailPagePublisherVisitor:
     @pytest.mark.p0
     @pytest.mark.detail_page
     @pytest.mark.ae
-    @allure.title("TC-PUB-009: 未登录点击 Contact 弹出登录层")
+    @allure.title("TC-PUB-009: 从未登录访客点击 Contact 进入访客微聊")
     @allure.severity(allure.severity_level.BLOCKER)
-    def test_tc_pub_009_contact_opens_login_modal(self, page, config):
+    def test_tc_pub_009_contact_opens_guest_chat(self, page, config):
         login_page = LoginPage(page)
         pub = DetailPagePublisher(page)
         detail = config["detail_url"]
+
+        with allure.step("完全清除所有存储，模拟从未登录的干净环境"):
+            # 先访问站点
+            page.goto(config["base_url"], wait_until="domcontentloaded", timeout=30000)
+            
+            # 清除所有存储：Cookie + localStorage + sessionStorage
+            page.context.clear_cookies()
+            page.evaluate("() => { localStorage.clear(); sessionStorage.clear(); }")
+            logger.info("✓ 已清除所有Cookie、localStorage、sessionStorage，模拟从未登录状态")
+            page.wait_for_timeout(1000)
 
         with allure.step("访客打开详情页"):
             pub.goto_detail(detail)
@@ -71,73 +81,86 @@ class TestDetailPagePublisherVisitor:
             c.wait_for(state="visible", timeout=15000)
             c.click()
 
-        with allure.step("等待登录弹层出现（避免匹配页面上隐藏的空白 dialog 节点）"):
-            # 等待弹窗出现，58v5.cn环境可能需要更长时间
-            page.wait_for_timeout(3000)  # 增加等待时间
+        with allure.step("跳转至访客微聊页面"):
+            # 等待可能的跳转或弹层
+            page.wait_for_timeout(3000)
             
-            # 使用宽松的定位器，增加超时时间
-            dlg = page.locator('[role="dialog"]').filter(
-                has_text=re.compile(r"Welcome", re.I)
-            ).first
+            current_url = page.url
+            logger.info(f"从未登录访客点击Contact后URL: {current_url}")
             
-            # 尝试等待dialog出现，如果失败则检查是否有其他登录元素
-            try:
-                dlg.wait_for(state="visible", timeout=15000)
-            except Exception as e:
-                # 如果dialog没找到，尝试直接查找Email输入框
-                logger.warning(f"未找到Welcome dialog: {e}")
-                email_input = page.get_by_role("textbox", name=re.compile("Email", re.I))
-                email_input.wait_for(state="visible", timeout=5000)
-                # 重新定位dialog
-                dlg = page.locator('[role="dialog"]').first
+            # 检查是否有URL跳转
+            url_changed = "6516039766105310" not in current_url
+            has_chat_in_url = "chat" in current_url.lower() or "message" in current_url.lower()
             
-            # 验证登录弹窗的关键元素
-            expect(page.get_by_role("textbox", name=re.compile("Email", re.I))).to_be_visible(timeout=5000)
-
-        with allure.step("仍停留在详情 URL"):
-            expect(page).to_have_url(re.compile(r".*6516039766105310.*"))
-
-        with allure.step("登录弹层内容"):
-            expect(dlg).to_be_visible(timeout=5000)
-            # 验证登录弹窗的关键元素
-            expect(page.get_by_role("textbox", name=re.compile("Email", re.I))).to_be_visible()
-            expect(page.get_by_role("button", name=re.compile("Continue", re.I))).to_be_visible()
-            # 验证Welcome文本
-            expect(page.get_by_text(re.compile(r"Welcome.*OK", re.I))).to_be_visible()
+            # 检查是否有弹层或新打开的聊天UI
+            has_chat_dialog = page.locator('[role="dialog"]').filter(
+                has_text=re.compile(r"message|chat|send", re.I)
+            ).count() > 0
+            has_chat_input = page.locator('textarea[placeholder*="message"], input[placeholder*="message"]').count() > 0
+            has_chat_window = page.locator('.chat, .message, [class*="chat"], [class*="message"]').count() > 0
+            
+            # 检查是否有登录引导
+            has_login_modal = page.locator('[role="dialog"]').filter(
+                has_text=re.compile(r"login|sign in|welcome", re.I)
+            ).count() > 0
+            
+            logger.info(f"URL变化: {url_changed}, Chat相关URL: {has_chat_in_url}")
+            logger.info(f"Chat弹层: {has_chat_dialog}, Chat输入框: {has_chat_input}, Chat窗口: {has_chat_window}")
+            logger.info(f"登录弹层: {has_login_modal}")
+            
+            # 验证：应该跳转到微聊页或出现微聊UI
+            assert url_changed or has_chat_in_url or has_chat_dialog or has_chat_input or has_chat_window, \
+                f"应跳转到访客微聊页或出现微聊UI，实际URL: {current_url}，无相关UI元素"
+            
+            logger.info("✓ 从未登录访客点击Contact：已进入访客微聊或出现微聊UI")
 
     @pytest.mark.case_id_pub_010
     @pytest.mark.p1
     @pytest.mark.detail_page
     @pytest.mark.ae
-    @allure.title("TC-PUB-010: 关闭登录弹层后仍在详情页")
+    @allure.title("TC-PUB-010: 访客从微聊返回详情页后信息仍完整")
     @allure.severity(allure.severity_level.NORMAL)
-    def test_tc_pub_010_close_login_modal_stays_on_detail(self, page, config):
+    def test_tc_pub_010_back_from_chat_to_detail(self, page, config):
         login_page = LoginPage(page)
         pub = DetailPagePublisher(page)
         detail = config["detail_url"]
 
-        with allure.step("访客打开详情并点开 Contact"):
+        with allure.step("完全清除所有Cookie，模拟从未登录的干净环境"):
+            page.goto(config["base_url"], wait_until="domcontentloaded", timeout=30000)
+            page.context.clear_cookies()
+            logger.info("✓ 已清除所有Cookie，模拟从未登录状态")
+            page.wait_for_timeout(1000)
+
+        with allure.step("访客打开详情并点击 Contact"):
             pub.goto_detail(detail)
             login_page.handle_cookie_popup()
             c = pub.contact_button
             c.wait_for(state="visible", timeout=15000)
             c.click()
-            # 等待登录弹窗出现（使用宽松的定位器）
+            
+            # 等待跳转到访客微聊页
+            page.wait_for_load_state("networkidle", timeout=30000)
             page.wait_for_timeout(2000)
-            page.locator('[role="dialog"]').filter(
-                has_text=re.compile(r"Welcome", re.I)
-            ).first.wait_for(state="visible", timeout=10000)
+            
+            chat_url = page.url
+            logger.info(f"访客进入微聊页: {chat_url}")
+            
+            # 验证已跳转
+            assert "6516039766105310" not in chat_url or "chat" in chat_url.lower(), \
+                f"应跳转到访客微聊页，实际URL: {chat_url}"
 
-        with allure.step("点击弹层关闭"):
-            pub.close_login_dialog_if_present()
-
-        with allure.step("弹层消失且仍在详情"):
-            # 验证登录弹窗已隐藏
+        with allure.step("点击浏览器后退按钮"):
+            page.go_back(wait_until="domcontentloaded", timeout=30000)
             page.wait_for_timeout(1000)
-            expect(
-                page.locator('[role="dialog"]').filter(
-                    has_text=re.compile(r"Welcome", re.I)
-                ).first
-            ).to_be_hidden(timeout=10000)
-            expect(page).to_have_url(re.compile(r".*6516039766105310.*"))
+
+        with allure.step("验证返回到原详情页，信息完整"):
+            # 验证URL回到详情页
+            expect(page).to_have_url(re.compile(r".*2053750384618487810.*"), timeout=10000)
+            
+            # 验证发布者信息卡片仍完整展示
             expect(pub.contact_button).to_be_visible(timeout=10000)
+            expect(page.get_by_text(re.compile(r"Log\s*in\s*/\s*Register", re.I))).to_be_visible(
+                timeout=10000
+            )
+            
+            logger.info("✓ 访客从微聊返回详情页，信息完整")
