@@ -11,6 +11,9 @@ AE Marketplace - 订单流转 v2 测试脚本
 执行规则：每条 TC 独立，按文档顺序执行，前置条件复用已有订单数据，无数据则自动构造
 """
 import re
+import time
+import requests
+import threading
 from typing import Optional
 from urllib.parse import quote, urlparse
 
@@ -23,6 +26,13 @@ from utils.session_manager import SessionManager
 from utils.logger import setup_logger
 
 logger = setup_logger()
+
+# ============================================
+# 前置数据：帖子 ID 列表（由 setup_ads_data fixture 填充）
+# ============================================
+ads: list = []          # 保存每次创建帖子后的帖子 ID
+_ads_index: int = 0     # 顺序消费指针
+_ads_lock = threading.Lock()  # 多线程安全
 
 # ============================================
 # 测试环境配置（来自用例文档，双角色）
@@ -55,6 +65,388 @@ _CONFIG = {
     "marketplace_search_keyword": "iphone pays postage aitest",
 }
 
+
+# ============================================
+# 前置数据准备：通过接口批量创建帖子，读取 inteface.md 的接口信息
+# 流程：先调用 #登录接口 获取最新 auth cookie → 再调用 #发帖接口 批量创建帖子
+# ============================================
+
+# ------ 登录接口（来自 inteface.md #登录接口 curl 命令）------
+_LOGIN_API_URL = "https://aepub.58v5.cn/auth/login/v2"
+
+_LOGIN_HEADERS = {
+    "accept": "*/*",
+    "accept-language": "zh-CN,zh;q=0.9",
+    "busid": "100002",
+    "cache-control": "no-cache",
+    "content-type": "application/json",
+    "country": "AE",
+    "language": "en",
+    "origin": "https://ae.58v5.cn",
+    "platform": "-1",
+    "pragma": "no-cache",
+    "referer": "https://ae.58v5.cn/",
+    "user-agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/147.0.0.0 Safari/537.36"
+    ),
+    "uuid": "smhzh3khxo1776224440635",
+}
+
+# 登录请求只需带静态浏览器指纹 cookie，不含 auth cookie
+_LOGIN_STATIC_COOKIES = {
+    "uuid": "CroD5GnfCLg2aI1hAwRlAg==",
+    "AWX_RISK_ID": "4250368ba7c59550e1e7d477a6da4ca7b912892b_260415",
+    "__AWX_TEMP_F_D__": "09c00484dc725d5c9829507d9a6a57a7",
+    "last_language": "AE:en",
+    "last_city_code": "AE:abu-dhabi",
+    "last_country": "ae",
+    "last_location_name": "Abu Dhabi",
+}
+
+# 登录 body（seller 账号；password 为服务端 RSA 公钥加密后的密文，来自 inteface.md）
+_LOGIN_BODY = {
+    "accountType": "email",
+    "account": "wangyongli@58.com",
+    "password": (
+        "kk52Bib31nyV5jr4OT5+9yuegAryZCmU9RliD7oUhYJYMoYSgn28Cq3PtOCwJAUG"
+        "PwtkErq6Ar4XO1ossU+AvZ+gPgPv/czDXns/oe6KGdaBpYA/smipVBby5Do5kzsWi"
+        "vqS+gL46pWUfSR1yyoildmOEd9cH8Xd8yTxcqIfhg3S5+ow0aLPQWLoUqfIDHNiyi"
+        "rZTNqPtuRYLv1OjK/IMvk5X/OqEmU4JtWm1pZoLJ4979+dbbVgCijLLdxmP2Nn93b"
+        "7fRAybsw6h4lMZn7acXUnT0JpTv0wA9qAtbQSyL17tMH/Leuk/WQa8AYhSvWkb3SU"
+        "ZwCYnP0uweWoYyjOtQ=="
+    ),
+}
+
+# ------ 发帖接口（来自 inteface.md #发帖接口 curl 命令）------
+_PUBLISH_API_URL = "https://aepub.58v5.cn/easypost/api/posts/publish"
+
+# 发帖接口静态 cookie（不含 uid/tk/JSESSIONID，这三个在登录后动态注入）
+_PUBLISH_STATIC_COOKIES = {
+    "uuid": "CroD5GnfCLg2aI1hAwRlAg==",
+    "AWX_RISK_ID": "4250368ba7c59550e1e7d477a6da4ca7b912892b_260415",
+    "__AWX_TEMP_F_D__": "09c00484dc725d5c9829507d9a6a57a7",
+    "last_country": "AE",
+    "last_language": "AE:en",
+    "last_city_code": "AE:abu-dhabi",
+}
+
+# 登录后动态写入的 auth cookie 缓存（由 _api_login() 刷新）
+# 兜底值来自 inteface.md 中的发帖 curl，防止登录失败时完全无法发帖
+_session_auth_cookies: dict = {
+    "uid100002": "796133836057336352",
+    "tk100002": (
+        "bHfGyFQYIXTeYPKMaBbqd0F9EWWYc6u622RjcSNpuy6kvj3ikZLmL8VVlojc2T63"
+        "duuOm4exEOMMpHXVEU_kUcfeiLDMBhehyivd1z9PMQplIkiBObWiEv_CcnMqHumIO"
+        "jZRG449MfJkfT39G6ZqXwZMMj4izkZXuNEc8Xe9WrCGIBAuFiBSVS618qs3oCu-UX"
+        "dZu1j7u2dn2RUUjDKSQCwKS3o6TM8rifLsYEVZWCs"
+    ),
+    "JSESSIONID": "A206056C8364A200F2FE9B3C842604AD",
+}
+
+_PUBLISH_HEADERS = {
+    "accept": "*/*",
+    "accept-language": "zh-CN,zh;q=0.9",
+    "busid": "100002",
+    "cache-control": "no-cache",
+    "content-type": "application/json",
+    "country": "AE",
+    "language": "en",
+    "origin": "https://aepub.58v5.cn",
+    "platform": "-1",
+    "pragma": "no-cache",
+    "referer": "https://aepub.58v5.cn/biz/en/publish/classified",
+    "user-agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/147.0.0.0 Safari/537.36"
+    ),
+}
+
+_PUBLISH_BODY_TEMPLATE = {
+    "country": "AE",
+    "source": 2,
+    "cateId": 10032,
+    "addr": {
+        "detail": "Abu Dhabi",
+        "standard": {
+            "country": "United Arab Emirates",
+            "countryCode": "AE",
+            "administrative_area_level_1": "Abu Dhabi",
+            "administrative_area_level_2": "Abu Dhabi Region",
+            "administrative_area_level_3": "",
+            "administrative_area_level_4": "",
+            "administrative_area_level_5": "",
+            "administrative_area_level_6": "",
+            "administrative_area_level_7": "",
+            "locality": "Abu Dhabi",
+            "postal_town": "",
+            "sublocality_level_1": "",
+            "sublocality_level_2": "",
+            "sublocality_level_3": "",
+            "sublocality_level_4": "",
+            "sublocality_level_5": "",
+            "addressComponents": [
+                {
+                    "longText": "Abu Dhabi",
+                    "shortText": "Abu Dhabi",
+                    "types": ["locality", "political"],
+                },
+                {
+                    "longText": "Abu Dhabi Region",
+                    "shortText": "Abu Dhabi Region",
+                    "types": ["administrative_area_level_2", "political"],
+                },
+                {
+                    "longText": "Abu Dhabi",
+                    "shortText": "Abu Dhabi",
+                    "types": ["administrative_area_level_1", "political"],
+                },
+                {
+                    "longText": "United Arab Emirates",
+                    "shortText": "AE",
+                    "types": ["country", "political"],
+                },
+            ],
+        },
+        "fullAddress": "",
+        "coordinate": [{"lonti": 54.3773438, "lati": 24.453884, "axes": "WGS-84"}],
+    },
+    "pics": ["https://easypost.58v5.cn/iphone11_1778588582065.jpg?ow=450&oh=450"],
+    "videos": [],
+    "price": {
+        "amount": "888",
+        "currency": {
+            "id": 3,
+            "name": "UAE Dirham",
+            "value": "AED ",
+            "code": "AED",
+            "prevId": 0,
+            "childNum": 0,
+            "attrId": 0,
+        },
+    },
+    "isBiz": 0,
+    "isDraft": 2,
+    "publishType": 2,
+    "secondhandAttrs": {
+        "customizedBrand": "",
+        "deliverType": 1,
+        "deliverPayer": 2,
+        "transactionType": 1,
+        "pickup": 0,
+    },
+    "attrs": [
+        {"id": "30", "value": "4"},
+        {"id": "163", "value": ""},
+        {"id": "164", "value": ""},
+        {"id": "804", "value": ""},
+    ],
+}
+
+
+def _api_login() -> bool:
+    """
+    调用 inteface.md 中的 #登录接口（https://aepub.58v5.cn/auth/login/v2），
+    获取最新的 uid100002 / tk100002 / JSESSIONID，写入模块级 _session_auth_cookies。
+
+    每次运行脚本时自动刷新，保证发帖接口使用的 Cookie 始终有效。
+    登录成功返回 True；失败返回 False（后续将使用兜底 Cookie 值）。
+    """
+    global _session_auth_cookies
+    try:
+        session = requests.Session()
+        resp = session.post(
+            _LOGIN_API_URL,
+            headers=_LOGIN_HEADERS,
+            cookies=_LOGIN_STATIC_COOKIES,
+            json=_LOGIN_BODY,
+            timeout=30,
+            allow_redirects=True,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+        # 优先从 Set-Cookie 响应头（session.cookies）提取 auth cookie
+        auth_from_header = {}
+        for cookie in session.cookies:
+            if cookie.name in ("uid100002", "tk100002", "JSESSIONID"):
+                auth_from_header[cookie.name] = cookie.value
+
+        # 其次从响应 body 提取（部分服务将 token 放在 data 字段）
+        auth_from_body = {}
+        if data.get("code") == 0:
+            body_data = data.get("data") or {}
+            if isinstance(body_data, dict):
+                uid = (body_data.get("uid100002") or body_data.get("uid")
+                       or body_data.get("userId"))
+                tk = (body_data.get("tk100002") or body_data.get("tk")
+                      or body_data.get("token"))
+                jsid = body_data.get("JSESSIONID") or body_data.get("jsessionId")
+                if uid:
+                    auth_from_body["uid100002"] = str(uid)
+                if tk:
+                    auth_from_body["tk100002"] = str(tk)
+                if jsid:
+                    auth_from_body["JSESSIONID"] = str(jsid)
+
+        # 合并：响应头优先，body 补充
+        merged = {**auth_from_body, **auth_from_header}
+
+        if merged:
+            # 部分更新：只覆盖登录接口实际返回的字段，保留未返回的字段的兜底值
+            # 例：登录只返回 uid100002 时，tk100002 / JSESSIONID 保持原有兜底值
+            _session_auth_cookies.update(merged)
+            logger.info(
+                f"✅ API 登录成功，auth cookie 已刷新（部分更新）: "
+                f"更新字段={list(merged.keys())}, "
+                f"uid100002={_session_auth_cookies.get('uid100002')}, "
+                f"JSESSIONID={_session_auth_cookies.get('JSESSIONID', '(未返回)')}"
+            )
+            return True
+
+        # 记录详情帮助排查
+        logger.warning(
+            f"⚠️  API 登录响应未包含任何 auth cookie: "
+            f"code={data.get('code')}, msg={data.get('message') or data.get('msg')}, "
+            f"Set-Cookie keys={list(auth_from_header.keys())}, "
+            f"body keys={list(auth_from_body.keys())}, "
+            f"resp_snippet={str(data)[:300]}"
+        )
+        return False
+
+    except Exception as exc:
+        logger.error(f"❌ API 登录异常: {exc}")
+        return False
+
+
+def _create_post_via_api(index: int) -> str:
+    """
+    调用 inteface.md 中的 #发帖接口，返回创建成功的帖子 ID（字符串）。
+    Cookie 中的 uid100002 / tk100002 / JSESSIONID 使用 _session_auth_cookies 中的最新值。
+    每次调用使用唯一标题（含时间戳 + 序号），避免重复。
+    """
+    ts = int(time.time() * 1000)
+    unique_suffix = f"{ts}_{index:02d}"
+    title = f"iphone-14-pro-max-seller-pays-postage-{unique_suffix} aitest"
+
+    body = dict(_PUBLISH_BODY_TEMPLATE)
+    body["title"] = title
+    body["content"] = title
+
+    # 合并静态 cookie 与登录后的 auth cookie（auth 值覆盖静态中的同名 key）
+    cookies = {**_PUBLISH_STATIC_COOKIES, **_session_auth_cookies}
+
+    try:
+        resp = requests.post(
+            _PUBLISH_API_URL,
+            headers=_PUBLISH_HEADERS,
+            cookies=cookies,
+            json=body,
+            timeout=30,
+        )
+        if not resp.text.strip():
+            logger.error(
+                f"❌ 创建帖子 [{index+1}] 接口返回空响应，"
+                f"HTTP {resp.status_code}，可能 Cookie 已过期"
+            )
+            return ""
+        data = resp.json()
+        # 接口响应结构：{"code": 200, "msg": "", "data": {"infoId": "<postId>", ...}}
+        # code=200 表示成功；兼容 code=0 的旧版格式
+        code_val = data.get("code")
+        if code_val in (0, 200):
+            raw = data.get("data")
+            if isinstance(raw, dict):
+                # infoId 为发帖接口实际返回字段；兼容 id / postId / adId
+                post_id = str(
+                    raw.get("infoId") or raw.get("id")
+                    or raw.get("postId") or raw.get("adId") or ""
+                )
+            else:
+                post_id = str(raw) if raw else ""
+            if post_id:
+                logger.info(f"✅ 创建帖子成功 [{index+1}]: post_id={post_id}, title={title}")
+                return post_id
+        logger.warning(
+            f"⚠️  创建帖子 [{index+1}] 接口返回异常: code={data.get('code')}, "
+            f"msg={data.get('message') or data.get('msg')}, resp={str(data)[:300]}"
+        )
+    except Exception as exc:
+        logger.error(f"❌ 创建帖子 [{index+1}] 请求异常: {exc}")
+    return ""
+
+
+def _setup_ads_precondition(count: int = 5) -> list:
+    """
+    循环调用创建帖子接口 count 次，收集所有成功的帖子 ID。
+    至少创建 1 个帖子；若全部失败则抛出异常。
+    """
+    result = []
+    for i in range(count):
+        post_id = _create_post_via_api(i)
+        if post_id:
+            result.append(post_id)
+        time.sleep(0.5)  # 接口限流保护
+    if not result:
+        raise RuntimeError(
+            f"前置条件失败：批量创建帖子 {count} 次全部失败，"
+            f"请检查登录接口是否正常或 Cookie 是否已过期。"
+        )
+    logger.info(f"✅ 前置帖子创建完成，共 {len(result)} 个 ads: {result}")
+    return result
+
+
+def _get_next_ad_id() -> str:
+    """
+    从 ads 列表中顺序获取下一个帖子 ID（循环），线程安全。
+    必须在 setup_ads_data fixture 执行后调用。
+    """
+    global _ads_index
+    if not ads:
+        raise AssertionError(
+            "ads 列表为空，前置帖子创建失败，请检查 setup_ads_data fixture 是否正常执行。"
+        )
+    with _ads_lock:
+        ad_id = ads[_ads_index % len(ads)]
+        _ads_index += 1
+    return str(ad_id)
+
+
+@pytest.fixture(scope="module", autouse=True)
+def setup_ads_data():
+    """
+    模块前置：在本测试模块所有用例执行前自动执行，流程如下：
+      1. 调用 #登录接口 获取最新 uid100002 / tk100002 / JSESSIONID，刷新 _session_auth_cookies
+      2. 调用 #发帖接口 5 次，将创建的帖子 ID 存入模块级 ads 列表
+    ads 列表供 _open_product_with_buy_now 顺序消费（每次调用取下一个 ID 作为搜索词）。
+    """
+    global ads, _ads_index
+    ads.clear()
+    _ads_index = 0
+
+    # Step 1: 登录，刷新 auth cookie
+    logger.info("[setup_ads_data] Step 1: 调用登录接口获取最新 auth cookie ...")
+    login_ok = _api_login()
+    if not login_ok:
+        logger.warning(
+            "[setup_ads_data] ⚠️  登录接口未返回预期 auth cookie，"
+            "将使用 _session_auth_cookies 中的兜底值继续尝试创建帖子"
+        )
+
+    # Step 2: 批量创建帖子
+    logger.info("[setup_ads_data] Step 2: 调用发帖接口批量创建 5 个帖子 ...")
+    ad_ids = _setup_ads_precondition(count=5)
+    ads.extend(ad_ids)
+    logger.info(f"[setup_ads_data] ✅ 初始化完成: ads = {ads}")
+    yield
+    # teardown：无需清理
+
+
+# ============================================
+# Marketplace 搜索 URL / 商品列表辅助
+# ============================================
 
 def _marketplace_search_url(config, keyword: Optional[str] = None):
     """根据配置生成 Marketplace 搜索 URL。keyword 非空时优先，否则用 marketplace_search_keyword。"""
@@ -422,33 +814,174 @@ def _open_product_loop_from_marketplace_list(
     raise AssertionError(f"在搜索 {kw} 后的前 10 个商品中未找到可用的 Buy Now")
 
 
+def _try_ad_product_buy_now(page, search_url: str, ad_id: str):
+    """
+    【专用于 ads ID 搜索】搜索结果只会出现 1 个商品卡片，只尝试第 0 个。
+    流程：等待搜索结果 → 点击第 0 个商品 → 检查 Buy Now → 点击 → 检查 bid 错误 → 检查 Pay。
+    成功返回 (product_page, is_new_tab)；以下情况直接抛出 AssertionError（不再遍历）：
+      - 搜索结果无商品卡片
+      - 商品详情页无 Buy Now 按钮
+      - 点击后出现 "Someone placed a bid" 提示
+      - Buy Now 点击后未出现 Pay 按钮
+    """
+    try:
+        _wait_marketplace_search_has_product_links(page, timeout=35000)
+    except Exception as exc:
+        raise AssertionError(f"等待搜索结果超时（ad_id={ad_id}）: {exc}") from exc
+
+    entries = _get_marketplace_product_link_entries(page)
+    if not entries:
+        raise AssertionError(f"搜索结果页无商品卡片（ad_id={ad_id}）")
+
+    # 点击第 0 个商品进入详情
+    try:
+        product_page, is_new_tab = _click_marketplace_product_at_index(page, 0)
+    except Exception as exc:
+        raise AssertionError(f"打开商品失败（ad_id={ad_id}）: {exc}") from exc
+
+    product_page.wait_for_load_state("domcontentloaded")
+    product_page.wait_for_timeout(2000)
+
+    # 检查 Buy Now
+    buy_btn_ok = False
+    try:
+        buy_btn = product_page.get_by_role("button", name="Buy Now")
+        buy_btn_ok = buy_btn.is_visible(timeout=3000)
+    except Exception:
+        pass
+    if not buy_btn_ok:
+        if is_new_tab:
+            try:
+                product_page.close()
+            except Exception:
+                pass
+        raise AssertionError(f"商品详情页无 Buy Now 按钮（ad_id={ad_id}）")
+
+    # 点击 Buy Now
+    try:
+        buy_btn.click()
+        product_page.wait_for_load_state("domcontentloaded")
+        product_page.wait_for_timeout(4000)
+    except Exception as exc:
+        if is_new_tab:
+            try:
+                product_page.close()
+            except Exception:
+                pass
+        raise AssertionError(f"点击 Buy Now 失败（ad_id={ad_id}）: {exc}") from exc
+
+    # 检查 bid 错误
+    err_phrases = ["Someone placed a bid but didn't complete payment", "Someone placed a bid"]
+    for phrase in err_phrases:
+        try:
+            if product_page.get_by_text(phrase, exact=False).is_visible(timeout=2000):
+                if is_new_tab:
+                    try:
+                        product_page.close()
+                    except Exception:
+                        pass
+                raise AssertionError(
+                    f"商品已被他人下单（bid 错误: \"{phrase}\"，ad_id={ad_id}）"
+                )
+        except AssertionError:
+            raise
+        except Exception:
+            continue
+
+    # 确认 Pay 按钮出现（Checkout 已加载）
+    try:
+        if product_page.locator("button:has-text('Pay')").first.is_visible(timeout=5000):
+            return product_page, is_new_tab
+    except Exception:
+        pass
+
+    if is_new_tab:
+        try:
+            product_page.close()
+        except Exception:
+            pass
+    raise AssertionError(
+        f"点击 Buy Now 后未出现 Pay 按钮，Checkout 未加载（ad_id={ad_id}）"
+    )
+
+
 def _open_product_with_buy_now(page, config):
     """
     统一商品选择流程：
-    直接访问 Marketplace 搜索结果页 → 依次尝试前 10 个商品卡片 → 进入详情 → 点击【Buy Now】→ 进入 Checkout。
-    
-    如遇到找不到【Buy Now】按钮或点击后提示"Someone placed a bid"，则退回搜索页点击下一个商品卡片。
+
+    【有 ads 时 - 单商品模式】
+      每个 ad ID 搜索后只出现 1 个商品卡片，不做多商品遍历：
+      1. 取 ads 中下一个帖子 ID，搜索该 ID。
+      2. 仅尝试第 0 个商品：点击 → 检查 Buy Now → 点击 → 检查 bid 错误。
+      3. 成功则返回；若无 Buy Now 或弹 "Someone placed a bid"，立即回退到首页
+         并取下一个 ad ID 重试（步骤 1-2）。
+      4. ads 全部耗尽仍未找到时才抛出 AssertionError。
+
+    【无 ads 时 - 降级关键词模式（10 商品遍历）】
+      使用 config["marketplace_search_keyword"] 搜索，依次遍历最多 10 个商品卡片，
+      直到找到有 Buy Now 且无 bid 错误的商品（与原逻辑完全一致）。
+
     返回: (product_page, 是否为新开标签)
     """
-    kw = config.get("marketplace_search_keyword", "iphone pays postage aitest")
-    search_url = _marketplace_search_url(config, keyword=kw)
-    
-    # 直接访问搜索结果页（带 keyword 参数）
-    page.goto(search_url)
-    page.wait_for_load_state("domcontentloaded")
-    try:
-        page.wait_for_load_state("networkidle", timeout=20000)
-    except Exception:
-        pass
-    page.wait_for_timeout(1500)
-    
-    # 循环尝试商品（从第 0 个开始，最多 10 个）
-    return _open_product_loop_from_marketplace_list(
-        page,
-        config,
-        search_url=search_url,
-        kw=kw,
-        start_product_index=0,
+    # ── 降级路径：ads 为空，关键词搜索 + 10 商品遍历 ─────────────────────────────
+    if not ads:
+        kw = config.get("marketplace_search_keyword", "iphone pays postage aitest")
+        logger.warning(f"[_open_product_with_buy_now] ads 为空，回退到关键词搜索（10 商品遍历）: {kw}")
+        search_url = _marketplace_search_url(config, keyword=kw)
+        page.goto(search_url)
+        page.wait_for_load_state("domcontentloaded")
+        try:
+            page.wait_for_load_state("networkidle", timeout=20000)
+        except Exception:
+            pass
+        page.wait_for_timeout(1500)
+        return _open_product_loop_from_marketplace_list(
+            page, config, search_url=search_url, kw=kw, start_product_index=0
+        )
+
+    # ── 主路径：ads ID 搜索，每次只试 1 个商品 ───────────────────────────────────
+    # max_attempts = ads 总数，防止无限循环
+    max_attempts = len(ads)
+    failed_ids = []
+
+    for attempt in range(max_attempts):
+        kw = _get_next_ad_id()
+        logger.info(
+            f"[_open_product_with_buy_now] 第 {attempt + 1}/{max_attempts} 次尝试，"
+            f"ads 帖子ID={kw}"
+        )
+        search_url = _marketplace_search_url(config, keyword=kw)
+
+        page.goto(search_url)
+        page.wait_for_load_state("domcontentloaded")
+        try:
+            page.wait_for_load_state("networkidle", timeout=20000)
+        except Exception:
+            pass
+        page.wait_for_timeout(1500)
+
+        try:
+            result = _try_ad_product_buy_now(page, search_url, kw)
+            logger.info(
+                f"[_open_product_with_buy_now] ✅ 帖子ID={kw} 可用，进入 Checkout"
+            )
+            return result
+
+        except AssertionError as exc:
+            failed_ids.append(kw)
+            logger.warning(
+                f"[_open_product_with_buy_now] ⚠️  帖子ID={kw} 不可用（{exc}），"
+                f"回退首页，切换下一个 ads ID ..."
+            )
+            try:
+                page.goto(config["base_url"])
+                page.wait_for_load_state("domcontentloaded")
+                page.wait_for_timeout(1000)
+            except Exception:
+                pass
+
+    raise AssertionError(
+        f"ads 列表中的全部 {max_attempts} 个帖子 ID 均不可用，已尝试: {failed_ids}"
     )
 
 
