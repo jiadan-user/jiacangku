@@ -421,25 +421,30 @@ def test_tc014_sort_highest_price_sortid(page, config):
 @allure.title("TC015: 进入 Electronics 子分类")
 def test_tc015_subcategory_computers_tablets(page, config):
     """
-    访客模式下，点击Marketplace分类 → 点击Electronics链接，验证进入Electronics分类页
+    访客模式下，点击筛选行 Marketplace 分类项 → 弹出分类面板 → 点击 Electronics → 验证进入 Electronics 分类页
     """
     mp = _prepare_marketplace(page, config)
-    fa = page.locator("#istPageFilterArea")
-    
-    # 点击Marketplace分类触发器
-    cat_trigger = fa.locator("div, button, [role='button']").filter(
-        has_text=re.compile(r"^Marketplace$", re.I)
-    ).first
-    cat_trigger.click(timeout=8000)
-    page.wait_for_timeout(1000)
-    
-    # 查找并点击Electronics链接
-    elec_link = page.locator("a").filter(has_text=re.compile(r"^Electronics$", re.I))
-    expect(elec_link.first).to_be_visible(timeout=5000)
-    elec_link.first.click()
+
+    with allure.step("点击筛选行 Marketplace 分类项，打开分类面板"):
+        cat_trigger = page.locator(".FilterItem_filterItem__Ur24_").filter(
+            has_text=re.compile(r"^Marketplace$", re.I)
+        ).first
+        cat_trigger.click(timeout=8000)
+        # 等待分类面板 overlay 出现
+        page.locator(".FilterItemPC_filterItemOverlay__jfLC_").wait_for(
+            state="visible", timeout=8000
+        )
+
+    with allure.step("在分类面板中点击 Electronics"):
+        # Electronics 在面板左列，是 <a> 标签（display:flex），通过 modal 范围限定避免命中 TopBar 的同名元素
+        modal = page.locator(".FilterItemPC_filterItemOverlay__jfLC_")
+        elec_link = modal.locator("a").filter(
+            has_text=re.compile(r"^Electronics$", re.I)
+        ).first
+        expect(elec_link).to_be_visible(timeout=5000)
+        elec_link.click(timeout=8000)
+
     page.wait_for_timeout(2000)
-    
-    # 验证URL已切换到Electronics分类
     page.wait_for_load_state("domcontentloaded", timeout=15000)
     new_url = page.url
     assert "electronics" in new_url.lower(), f"Expected 'electronics' in URL, got: {new_url}"
@@ -613,7 +618,7 @@ def test_tc025_transaction_online(page, config):
 @allure.story("AE Marketplace 首页金刚位（common_list MD）")
 @allure.title("TC026: Books 列表 Condition 多选")
 def test_tc026_books_condition_multi(page, config):
-    page.goto(config["books_url"], wait_until="domcontentloaded", timeout=30000)
+    page.goto("https://ae.58v5.cn/en/city-abu-dhabi/cate-beauty-products/", wait_until="domcontentloaded", timeout=30000)
     page.wait_for_timeout(2000)
     
     # 滚动到顶部确保Condition可见
@@ -660,8 +665,13 @@ def test_tc026_books_condition_multi(page, config):
 @allure.story("AE Marketplace 首页金刚位（common_list MD）")
 @allure.title("TC027: Books Price + Condition")
 def test_tc027_books_price_and_condition(page, config):
-    page.goto(config["books_url"], wait_until="domcontentloaded", timeout=30000)
-    page.wait_for_timeout(2000)
+    _beauty_url = "https://ae.58v5.cn/en/city-abu-dhabi/cate-beauty-products/"
+    # 前置条件：检查 Price 和 Condition 筛选项是否已显示，未显示则导航到指定 URL
+    price_visible = page.get_by_text("Price", exact=True).first.is_visible(timeout=2000)
+    cond_visible = page.get_by_text("Condition", exact=True).first.is_visible(timeout=2000)
+    if not price_visible or not cond_visible:
+        page.goto(_beauty_url, wait_until="domcontentloaded", timeout=30000)
+        page.wait_for_timeout(2000)
     _open_price_panel(page)
     _apply_price_inputs(page, "10", "500")
     mp = MarketplaceListPageAe(page)

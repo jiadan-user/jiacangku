@@ -132,6 +132,10 @@ class TestThirdPartyLogin:
     def test_facebook_login_button_exists_and_clickable(self, preloaded_page):
         login_page = LoginPage(preloaded_page)
         with allure.step("打开登录弹窗"):
+            # TC049 点击 Google 后可能触发新标签页开关，引发 React 重渲染导致 DOM 脱离；
+            # 导航到干净首页确保登录按钮是稳定的新 DOM 节点
+            preloaded_page.goto(BASE_URL, wait_until="load", timeout=20000)
+            preloaded_page.wait_for_timeout(500)
             login_page.click_login_register_button()
         with allure.step("查找 Facebook 登录按钮/图标"):
             dialog = preloaded_page.locator('[role="dialog"]').first
@@ -211,29 +215,34 @@ class TestThirdPartyLogin:
     @pytest.mark.P2
     def test_third_party_login_buttons_overview(self, preloaded_page):
         login_page = LoginPage(preloaded_page)
+        with allure.step("导航到首页，确保页面状态干净"):
+            # 前序 Apple/Google OAuth 测试可能留下 context 级别的状态，
+            # 用 wait_until="load" 彻底等待 JS 挂载完毕，再点击登录
+            preloaded_page.goto(BASE_URL, wait_until="load", timeout=20000)
+            preloaded_page.wait_for_timeout(500)
         with allure.step("打开登录弹窗"):
             login_page.click_login_register_button()
         dialog = preloaded_page.locator('[role="dialog"]').first
         available_providers = []
-        
-        # 检查各个第三方登录
+
+        # 检查各个第三方登录；timeout 放宽到 5000ms 避免并发时资源加载慢导致误判
         providers = {
             "Google": 'button:has-text("Google"), [aria-label*="Google" i], img[alt*="Google" i]',
             "Facebook": 'button:has-text("Facebook"), [aria-label*="Facebook" i], img[alt*="Facebook" i]',
             "Apple": 'button:has-text("Apple"), [aria-label*="Apple" i], img[alt*="Apple" i]'
         }
-        
+
         for provider, selector in providers.items():
             button = dialog.locator(selector).first
-            if button.is_visible(timeout=1000):
+            if button.is_visible(timeout=5000):
                 available_providers.append(provider)
                 logger.info(f"✅ {provider} 登录可用")
             else:
                 logger.info(f"❌ {provider} 登录不可用")
-        
+
         result = f"可用的第三方登录方式: {', '.join(available_providers) if available_providers else '无'}"
         allure.attach(result, name="第三方登录统计")
-        
+
         # 至少应该有一种第三方登录方式
         assert len(available_providers) > 0, "未找到任何第三方登录按钮"
 
