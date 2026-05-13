@@ -1516,7 +1516,7 @@ def test_tc059_seller_pays_postage(page: Page, logged_in_post_page: MarketplaceP
     post_page.click_browse_to_find_category()
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
 
     post_page.input_title("iPhone 13 Pro Max")
     post_page.input_description("Excellent condition iPhone for sale.")
@@ -1553,7 +1553,7 @@ def test_tc060_buyer_pays_postage(page: Page, logged_in_post_page: MarketplacePo
     post_page.click_browse_to_find_category()
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
 
     post_page.input_title("iPhone 14")
     post_page.input_description("Great phone for sale.")
@@ -1584,7 +1584,7 @@ def test_tc061_no_delivery_required(page: Page, logged_in_post_page: Marketplace
     post_page.click_browse_to_find_category()
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
 
     post_page.input_title("Samsung Galaxy")
     post_page.input_description("Good condition phone.")
@@ -1615,7 +1615,7 @@ def test_tc062_arrange_pickup_toggle(page: Page, logged_in_post_page: Marketplac
     post_page.click_browse_to_find_category()
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
 
     post_page.input_title("iPhone 12")
     post_page.input_description("Well maintained phone.")
@@ -1661,7 +1661,7 @@ def test_tc063_delivery_options_empty_validation(page: Page, logged_in_post_page
     post_page.click_browse_to_find_category()
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
 
     post_page.input_title("iPad Pro Delivery Test")
     post_page.input_description("Brand new tablet in perfect condition.")
@@ -1732,7 +1732,7 @@ def test_tc055_select_all_details(page: Page, logged_in_post_page: MarketplacePo
     post_page.click_browse_to_find_category()
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     
     # 选择Details选项
     post_page.select_condition_excellent()
@@ -1775,7 +1775,7 @@ def test_tc056_details_empty_submit(page: Page, logged_in_post_page: Marketplace
     post_page.click_browse_to_find_category()
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     
     # 不选择Details，直接填写必填项
     post_page.select_delivery_no_delivery()
@@ -1805,7 +1805,7 @@ def test_tc057_details_reselect(page: Page, logged_in_post_page: MarketplacePost
     post_page.click_browse_to_find_category()
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     
     # 第一次选择Excellent
     post_page.select_condition_excellent()
@@ -1847,7 +1847,7 @@ def test_tc058_storage_1tb_boundary(page: Page, logged_in_post_page: Marketplace
     post_page.click_browse_to_find_category()
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     
     # 选择1TB Storage
     # post_page.select_storage_1tb()  # Mobiles & Accessories 无此字段
@@ -1921,7 +1921,7 @@ def test_tc065_search_and_select_location(page: Page, logged_in_post_page: Marke
     post_page.click_more_categories()
     post_page.click_browse_to_find_category()
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     # 搜索并选择位置（使用新POM方法，JS绕过pointer interception）
     post_page.search_location("Abu Dhabi Mall")
     logger.info("✓ 已选择位置: Abu Dhabi Mall")
@@ -2041,7 +2041,7 @@ def test_tc019_title_with_emoji(page: Page, logged_in_post_page: MarketplacePost
     post_page.click_browse_to_find_category()
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     
     post_page.select_delivery_seller_pays()
     post_page.input_price("500")
@@ -2080,7 +2080,7 @@ def test_tc020_title_one_character(page: Page, logged_in_post_page: MarketplaceP
     post_page.click_browse_to_find_category()
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     
     post_page.select_delivery_no_delivery()
     post_page.input_price("100")
@@ -2123,7 +2123,7 @@ def test_tc021_title_200_chars_boundary(page: Page, logged_in_post_page: Marketp
     post_page.click_browse_to_find_category()
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     
     post_page.select_delivery_buyer_pays()
     post_page.input_price("300")
@@ -2178,7 +2178,7 @@ def test_tc023_title_only_spaces(page: Page, logged_in_post_page: MarketplacePos
     post_page.click_browse_to_find_category()
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     
     post_page.select_delivery_no_delivery()
     post_page.input_price("200")
@@ -2231,7 +2231,7 @@ def test_tc024_title_with_html_xss(page: Page, logged_in_post_page: MarketplaceP
     post_page.click_browse_to_find_category()
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     
     post_page.select_delivery_seller_pays()
     post_page.input_price("150")
@@ -2261,7 +2261,7 @@ def test_tc025_title_empty_validation(page: Page, logged_in_post_page: Marketpla
     post_page.click_browse_to_find_category()
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     
     post_page.select_delivery_no_delivery()
     post_page.input_price("100")
@@ -2403,7 +2403,7 @@ def test_tc026_description_12_chars_min(page: Page, logged_in_post_page: Marketp
     post_page.click_browse_to_find_category()
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     # Apple 手机类目需 Condition/Storage，否则提交无法进成功页
     _fill_apple_phone_details_and_price(post_page, "100")
     post_page.select_delivery_no_delivery()
@@ -2490,7 +2490,7 @@ def test_tc028_description_empty_validation(page: Page, logged_in_post_page: Mar
     post_page.click_browse_to_find_category()
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     
     post_page.select_delivery_buyer_pays()
     post_page.input_price("150")
@@ -2528,7 +2528,7 @@ def test_tc029_description_only_spaces(page: Page, logged_in_post_page: Marketpl
     post_page.click_browse_to_find_category()
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     
     post_page.select_delivery_no_delivery()
     post_page.input_price("180")
@@ -2566,7 +2566,7 @@ def test_tc030_description_only_newlines(page: Page, logged_in_post_page: Market
     post_page.click_browse_to_find_category()
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     
     post_page.select_delivery_seller_pays()
     post_page.input_price("200")
@@ -3370,7 +3370,7 @@ def test_tc092_clear_error_on_focus(page: Page, logged_in_post_page: Marketplace
     post_page.click_browse_to_find_category()
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     
     post_page.select_delivery_no_delivery()
     post_page.input_price("100")
@@ -3507,7 +3507,7 @@ def test_tc099_chrome_compatibility(page: Page, logged_in_post_page: Marketplace
     post_page.click_browse_to_find_category()
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     
     post_page.select_delivery_seller_pays()
     post_page.input_price("300")
@@ -3537,7 +3537,7 @@ def test_tc085_session_expired_submit(page: Page, logged_in_post_page: Marketpla
     post_page.click_browse_to_find_category()
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     
     post_page.select_delivery_no_delivery()
     post_page.input_price("200")
@@ -3755,7 +3755,7 @@ def test_tc046_price_normal_integer(page: Page, logged_in_post_page: Marketplace
     post_page.click_more_categories()
     post_page.click_browse_to_find_category()
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     _fill_apple_phone_details_and_price(post_page, "99")
     post_page.select_delivery_no_delivery()
     assert page.locator("#amount").input_value() == "99"
@@ -3776,7 +3776,7 @@ def test_tc047_price_decimal(page: Page, logged_in_post_page: MarketplacePostPag
     post_page.click_more_categories()
     post_page.click_browse_to_find_category()
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     _fill_apple_phone_details_and_price(post_page, "99.50")
     post_page.select_delivery_no_delivery()
     post_page.click_post_button()
@@ -3796,7 +3796,7 @@ def test_tc048_price_zero(page: Page, logged_in_post_page: MarketplacePostPage, 
     post_page.click_more_categories()
     post_page.click_browse_to_find_category()
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     _fill_apple_phone_details_and_price(post_page, "0")
     post_page.select_delivery_no_delivery()
     post_page.click_post_button()
@@ -4455,7 +4455,7 @@ def test_tc088_submit_network_timeout(page: Page, logged_in_post_page: Marketpla
     post_page.click_more_categories()
     post_page.click_browse_to_find_category()
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     _fill_apple_phone_details_and_price(post_page, "130")
     post_page.select_delivery_no_delivery()
 
@@ -4484,7 +4484,7 @@ def test_tc089_server_5xx_on_submit(page: Page, logged_in_post_page: Marketplace
     post_page.click_more_categories()
     post_page.click_browse_to_find_category()
     post_page.select_category_electronics_mobiles_accessories()
-    wait_post_interaction_settled(page, 1000)
+    wait_post_interaction_settled(page, 3000)
     _fill_apple_phone_details_and_price(post_page, "140")
     post_page.select_delivery_no_delivery()
 

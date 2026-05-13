@@ -2381,9 +2381,9 @@ class MarketplacePostPage(BasePage):
     # 线上文案可能从 postage 改为 shipping 等，故同一选项使用多候选串 + radio/label 兜底。
 
     def _wait_delivery_section_visible(self, timeout_ms: int = 28000) -> bool:
-        """类目等表单就绪后，显式等待 Delivery / Shipping 区块出现在主线（与 TC063 检测一致）。
+        """类目等表单就绪后，显式等待 Delivery / Shipping 区块出现在主线。
         
-        返回：True 如果 Delivery 区域出现，False 如果超时（某些类目如 Mobiles & Accessories 可能不显示配送选项）
+        返回：True 如果 Delivery 区域出现，False 如果超时（某些类目可能不需要配送选项）
         """
         try:
             self.page.wait_for_function(
@@ -2443,6 +2443,15 @@ class MarketplacePostPage(BasePage):
             candidate_texts: 候选文案列表
             optional: 如果为 True，当前类目没有配送选项时只警告不抛异常
         """
+        # 先滚动到页面底部，确保配送选项区域被加载
+        try:
+            self.page.evaluate("() => window.scrollTo(0, document.body.scrollHeight)")
+            self.page.wait_for_timeout(1000)
+            self.page.evaluate("() => window.scrollTo(0, document.body.scrollHeight / 2)")
+            self.page.wait_for_timeout(800)
+        except Exception as e:
+            self.logger.warning(f"滚动页面触发配送选项加载时出错: {e}")
+        
         delivery_visible = self._wait_delivery_section_visible()
         if not delivery_visible:
             if optional:
@@ -2501,23 +2510,35 @@ class MarketplacePostPage(BasePage):
         assert last_err is not None
         raise last_err
 
-    def select_delivery_seller_pays(self):
-        """选择Seller pays for postage"""
+    def select_delivery_seller_pays(self, optional: bool = False):
+        """选择Seller pays for postage
+        
+        参数：
+            optional: 如果为 True，当前类目没有配送选项时只警告不抛异常
+        """
         try:
             self._click_delivery_option_paragraph(
                 [
                     "Seller pays for postage",
                     "Seller pays for shipping",
                     "Seller pays shipping",
-                ]
+                ],
+                optional=optional
             )
             self.logger.info("✓ 已选择 Seller pays（postage/shipping）")
         except Exception as e:
+            if optional:
+                self.logger.warning(f"选择Seller pays失败（optional=True，继续）: {e}")
+                return
             self.logger.error(f"选择Seller pays失败: {e}")
             raise
     
-    def select_delivery_buyer_pays(self):
-        """选择Buyer pays for postage"""
+    def select_delivery_buyer_pays(self, optional: bool = False):
+        """选择Buyer pays for postage
+        
+        参数：
+            optional: 如果为 True，当前类目没有配送选项时只警告不抛异常
+        """
         try:
             self._click_delivery_option_paragraph(
                 [
@@ -2526,25 +2547,37 @@ class MarketplacePostPage(BasePage):
                     "Buyer pays shipping",
                     "Buyer covers postage",
                     "Paid by buyer",
-                ]
+                ],
+                optional=optional
             )
             self.logger.info("✓ 已选择 Buyer pays（postage/shipping）")
         except Exception as e:
+            if optional:
+                self.logger.warning(f"选择Buyer pays失败（optional=True，继续）: {e}")
+                return
             self.logger.error(f"选择Buyer pays失败: {e}")
             raise
     
-    def select_delivery_no_delivery(self):
-        """选择No delivery required"""
+    def select_delivery_no_delivery(self, optional: bool = False):
+        """选择No delivery required
+        
+        参数：
+            optional: 如果为 True，当前类目没有配送选项时只警告不抛异常
+        """
         try:
             self._click_delivery_option_paragraph(
                 [
                     "No delivery required",
                     "No shipping required",
                     "No delivery",
-                ]
+                ],
+                optional=optional
             )
             self.logger.info("✓ 已选择 No delivery / no shipping")
         except Exception as e:
+            if optional:
+                self.logger.warning(f"选择No delivery失败（optional=True，继续）: {e}")
+                return
             self.logger.error(f"选择No delivery失败: {e}")
             raise
     

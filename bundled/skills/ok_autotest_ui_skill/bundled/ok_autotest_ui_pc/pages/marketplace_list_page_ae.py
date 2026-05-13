@@ -691,10 +691,11 @@ class MarketplaceListPageAe(BasePage):
                 lambda: self.page.locator('button:has([class*="filter-icon"])').first,
             ]
             
-            for locator_func in locators:
+            for idx, locator_func in enumerate(locators, 1):
                 try:
                     filter_btn = locator_func()
                     if filter_btn.is_visible(timeout=2000):
+                        self.logger.info(f"找到筛选按钮 (策略 {idx})")
                         break
                 except Exception:
                     continue
@@ -702,8 +703,23 @@ class MarketplaceListPageAe(BasePage):
             if filter_btn is None:
                 raise Exception("无法定位筛选器按钮（尝试了多种选择器）")
             
+            self.logger.info("点击筛选按钮")
             filter_btn.click()
-            self.page.wait_for_timeout(1000)
+            
+            # 等待筛选面板完全展开和渲染
+            self.page.wait_for_timeout(1500)
+            
+            # 验证筛选面板是否真正打开：检查面板内的关键元素
+            try:
+                # 尝试找到筛选面板内的常见元素（如 Apply/Confirm 按钮）
+                panel_check = self.page.get_by_role('button', name='Apply').first
+                if panel_check.is_visible(timeout=3000):
+                    self.logger.info("✓ 筛选面板已完全打开")
+                else:
+                    self.logger.warning("筛选面板可能未完全加载")
+            except Exception:
+                self.logger.debug("无法验证筛选面板状态（可能页面结构不同）")
+                
         except Exception as e:
             self.logger.error(f"打开筛选器面板失败: {e}")
             raise
@@ -732,34 +748,180 @@ class MarketplaceListPageAe(BasePage):
     
     def select_category_filter(self, category_name):
         """
-        选择分类筛选
-        
+        选择分类筛选（支持三级联动下拉菜单）
+
         Args:
             category_name: 分类名称（如 "Electronics"）
         """
         try:
+            # 步骤0: 等待筛选面板完全加载
+            self.page.wait_for_timeout(1500)
+            self.logger.info(f"开始选择分类筛选: {category_name}")
+            
+            # 步骤1: 尝试找到并点击分类下拉菜单的触发器
+            # 可能的触发器: "Category", "All Categories", "All Classifieds" 等
+            dropdown_triggers = [
+                lambda: self.page.get_by_text("Category", exact=True).first,
+                lambda: self.page.get_by_text("All Categories").first,
+                lambda: self.page.get_by_text("All Classifieds").first,
+                lambda: self.page.locator('[class*="category"][class*="dropdown"]').first,
+                lambda: self.page.locator('[class*="Category"]').filter(has_text="All").first,
+                lambda: self.page.locator('[class*="ThirdLinkageDropdown"]').first,
+                lambda: self.page.locator('[class*="dropdown"][class*="trigger"]').filter(has_text="Category").first,
+            ]
+            
+            dropdown_opened = False
+            for idx, trigger_func in enumerate(dropdown_triggers, 1):
+                try:
+                    trigger = trigger_func()
+                    if trigger.is_visible(timeout=2000):
+                        self.logger.info(f"找到分类下拉菜单触发器 (策略 {idx})")
+                        trigger.click()
+                        self.page.wait_for_timeout(1200)
+                        
+                        # 验证下拉菜单是否真正打开：检查目标选项是否变为可见
+                        category_option_check = self.page.get_by_text(category_name, exact=True).first
+                        try:
+                            if category_option_check.is_visible(timeout=2000):
+                                self.logger.info(f"✓ 下拉菜单已打开，'{category_name}' 选项可见")
+                                dropdown_opened = True
+                                break
+                        except:
+                            self.logger.debug(f"触发器 {idx} 点击后，'{category_name}' 仍不可见，尝试下一个策略")
+                            continue
+                except Exception as e:
+                    self.logger.debug(f"触发器策略 {idx} 失败: {e}")
+                    continue
+            
+            if not dropdown_opened:
+                self.logger.warning("未找到明确的下拉菜单触发器，尝试直接定位分类选项")
+                # 尝试通过 hover 打开下拉菜单
+                try:
+                    self.logger.info("尝试 hover 方式打开下拉菜单")
+                    hover_target = self.page.locator('[class*="Category"], [class*="category"]').first
+                    if hover_target.is_visible(timeout=2000):
+                        hover_target.hover()
+                        self.page.wait_for_timeout(800)
+                except Exception as hover_err:
+                    self.logger.debug(f"hover 尝试失败: {hover_err}")
+            
+            # 步骤2: 定位分类选项
             category_option = self.page.get_by_text(category_name, exact=True).first
-            category_option.click()
+            
+            # 步骤3: 确保元素可见并可交互
+            try:
+                # 尝试滚动到元素位置
+                category_option.scroll_into_view_if_needed(timeout=3000)
+                self.page.wait_for_timeout(500)
+            except Exception as e:
+                self.logger.debug(f"滚动到元素失败: {e}")
+            
+            # 步骤4: 等待元素可见并点击
+            try:
+                self.logger.info(f"等待 '{category_name}' 元素可见...")
+                category_option.wait_for(state="visible", timeout=5000)
+                self.logger.info(f"'{category_name}' 元素已可见，准备点击")
+                category_option.click(timeout=5000)
+                self.logger.info(f"✓ 成功点击 '{category_name}'")
+            except Exception as click_err:
+                self.logger.warning(f"常规点击失败: {click_err}")
+                
+                # 记录调试信息
+                try:
+                    all_electronics = self.page.get_by_text(category_name, exact=True).all()
+                    self.logger.info(f"页面中找到 {len(all_electronics)} 个 '{category_name}' 元素")
+                    for idx, elem in enumerate(all_electronics):
+                        is_vis = elem.is_visible()
+                        self.logger.info(f"  元素 {idx}: visible={is_vis}")
+                except:
+                    pass
+                
+                # 备用方案：使用 force=True 强制点击
+                self.logger.warning("尝试强制点击")
+                category_option.click(force=True, timeout=5000)
+            
             self.page.wait_for_timeout(500)
+            self.logger.info(f"✓ 选择分类完成: {category_name}")
+            
         except Exception as e:
             self.logger.error(f"选择分类筛选失败: {e}")
+            
+            # 截图帮助调试
+            try:
+                screenshot_path = f"debug_category_filter_error_{int(time.time())}.png"
+                self.page.screenshot(path=screenshot_path, full_page=True)
+                self.logger.info(f"已保存调试截图: {screenshot_path}")
+            except:
+                pass
+            
+            # 记录当前页面状态
+            try:
+                self.logger.error(f"当前 URL: {self.page.url}")
+                self.logger.error(f"页面标题: {self.page.title()}")
+                
+                # 记录筛选面板状态
+                filter_panel = self.page.locator('[class*="filter"], [class*="Filter"]')
+                if filter_panel.count() > 0:
+                    self.logger.error(f"找到 {filter_panel.count()} 个筛选相关元素")
+            except:
+                pass
+            
             raise
     
     def apply_filter(self):
         """
         应用筛选条件（点击确认按钮）
+        
+        注意：某些筛选类型（如分类筛选）点击后会直接跳转，不需要 Apply 按钮。
+        此方法会智能检测是否需要点击 Apply。
         """
         try:
-            apply_btn = self.page.get_by_role('button', name='Apply').first
-            if not apply_btn.is_visible(timeout=2000):
-                # 备选文本
-                apply_btn = self.page.locator('button:has-text("确认"), button:has-text("Confirm")').first
+            # 首先检查筛选面板是否还在（某些筛选会直接跳转关闭面板）
+            self.page.wait_for_timeout(800)
             
+            # 尝试查找 Apply 按钮
+            apply_btn = None
+            try:
+                apply_btn = self.page.get_by_role('button', name='Apply').first
+                if not apply_btn.is_visible(timeout=2000):
+                    apply_btn = None
+            except:
+                pass
+            
+            if apply_btn is None:
+                try:
+                    apply_btn = self.page.locator('button:has-text("确认"), button:has-text("Confirm")').first
+                    if not apply_btn.is_visible(timeout=2000):
+                        apply_btn = None
+                except:
+                    pass
+            
+            if apply_btn is None:
+                # 没有找到 Apply 按钮，检查是否是因为筛选已经自动应用
+                self.logger.info("未找到 Apply 按钮，筛选可能已自动应用（如分类筛选会直接跳转）")
+                # 检查当前 URL 是否已经改变
+                current_url = self.page.url
+                if "cate-electronics" in current_url or "cate-" in current_url or "/city-" in current_url:
+                    self.logger.info(f"✓ 筛选已自动应用，当前 URL: {current_url}")
+                    return
+                else:
+                    self.logger.warning("Apply 按钮不存在，且无法确认筛选是否已应用")
+                    return
+            
+            # 找到了 Apply 按钮，点击它
+            self.logger.info("找到 Apply 按钮，准备点击")
             apply_btn.click()
             self.page.wait_for_load_state("domcontentloaded", timeout=10000)
             self.page.wait_for_timeout(1000)
+            self.logger.info("✓ 成功点击 Apply 按钮")
+            
         except Exception as e:
             self.logger.error(f"应用筛选失败: {e}")
+            # 记录当前状态帮助调试
+            try:
+                self.logger.error(f"当前 URL: {self.page.url}")
+            except:
+                pass
             raise
     
     def clear_all_filters(self):

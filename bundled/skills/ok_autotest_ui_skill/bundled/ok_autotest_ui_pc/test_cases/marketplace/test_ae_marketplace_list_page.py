@@ -502,7 +502,11 @@ def test_tc009_price_range_filter(marketplace_list_session, config):
 @allure.severity(allure.severity_level.NORMAL)
 @allure.description("验证同时应用多个筛选条件后，列表展示符合所有条件的商品")
 def test_tc010_multiple_filters_combination(marketplace_list_session, config):
-    """TC010: 多条件组合筛选"""
+    """TC010: 多条件组合筛选
+    
+    注意：实际交互中，点击分类会立即跳转到分类页面。
+    因此测试流程为：先选分类（跳转），再在分类页添加价格筛选。
+    """
     page = marketplace_list_session
 
     # ========== Arrange ==========
@@ -520,28 +524,38 @@ def test_tc010_multiple_filters_combination(marketplace_list_session, config):
         wait_list_or_dom_stability(page, 15000)
 
     # ========== Act ==========
-    with allure.step("步骤1：打开筛选器"):
+    with allure.step("步骤1：打开筛选器并选择分类"):
         marketplace_page.open_filter_panel()
         logger.info("✓ 打开筛选器")
-
-    with allure.step(f"步骤2：选择分类 '{category_name}'"):
+        
         marketplace_page.select_category_filter(category_name)
         logger.info(f"✓ 选择分类: {category_name}")
+        
+        # 等待页面跳转到分类页面
+        wait_dom_content_loaded(page, 12000)
+        logger.info(f"✓ 已跳转到分类页面: {page.url}")
+
+    with allure.step("步骤2：在分类页再次打开筛选器"):
+        marketplace_page.open_filter_panel()
+        wait_short_ui_tick(page)
+        logger.info("✓ 在分类页打开筛选器")
 
     with allure.step(f"步骤3：输入价格区间 {min_price}-{max_price}"):
         marketplace_page.fill_price_range_inputs(min_price, max_price)
         logger.info(f"✓ 输入价格区间: {min_price}-{max_price}")
 
-    with allure.step("步骤4：应用筛选"):
+    with allure.step("步骤4：应用价格筛选"):
         marketplace_page.apply_filter()
         logger.info("✓ 应用筛选完成")
 
     # ========== Assert ==========
-    with allure.step("验证：URL包含多个筛选参数"):
+    with allure.step("验证：URL包含分类和价格参数"):
         wait_list_or_dom_stability(page, 20000)
         current_url = page.url
         # URL应该同时包含分类和价格参数
         assert "electronics" in current_url.lower(), f"URL未包含分类参数: {current_url}"
+        assert "lowestPrice" in current_url or "highestPrice" in current_url, \
+            f"URL未包含价格参数: {current_url}"
         logger.info(f"✓ URL包含组合筛选参数: {current_url}")
 
     with allure.step("验证：筛选标签显示"):
