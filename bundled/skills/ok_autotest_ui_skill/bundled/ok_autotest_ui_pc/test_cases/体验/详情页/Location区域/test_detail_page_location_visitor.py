@@ -66,8 +66,10 @@ class TestDetailPageLocationVisitor:
         with allure.step("Location 卡片容器"):
             card = loc.location_card
             expect(card).to_be_visible()
+            card.scroll_into_view_if_needed()
+            page.wait_for_timeout(500)
             box = card.bounding_box()
-            assert box is not None
+            assert box is not None, "Location 卡片边界框获取失败,元素可能未完全渲染"
             assert 580 <= box["width"] <= 760, f"卡片宽度异常: {box['width']}"
             assert 180 <= box["height"] <= 320, f"卡片高度异常: {box['height']}"
 

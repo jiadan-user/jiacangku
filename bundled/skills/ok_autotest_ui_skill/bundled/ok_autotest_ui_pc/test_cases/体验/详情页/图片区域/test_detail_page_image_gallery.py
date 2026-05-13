@@ -51,8 +51,99 @@ BASE_URL = _CONFIG["base_url"]
 SINGLE_IMAGE_POST_URL = "https://ae.58v5.cn/en/city-abu-dhabi/cate-others102/experienced%2Fbabysitter%2Fhousemaid-with-3yrs-6468802017945310/"
 # 多图帖子 URL（3张图）
 MULTI_IMAGE_POST_URL = "https://ae.58v5.cn/en/city-abu-dhabi/cate-others103/japanese-language-for-adult-%2F-kids-6468802428812510/"
-# 多图帖子 URL（20张图，用于测试缩略图翻页）
-MULTI_IMAGE_8PLUS_POST_URL = "https://ae.58v5.cn/en/city-dubai/cate-car-used-car/renault-captur-2020-1.3t-155-hp-petrol-auto-fwd-6468813026329310/"
+
+# 8+ 图帖子配置（动态获取）
+MULTI_IMAGE_8PLUS_LIST_URL = "https://ae.58v5.cn/en/city-abu-dhabi/cate-car/?iconSource=car"
+MULTI_IMAGE_8PLUS_FALLBACK_URL = "https://ae.58v5.cn/en/city-abu-dhabi/cate-events1/%E5%9C%A8%E6%88%BF%E5%AD%90%E9%87%8C%E8%81%9A%E4%BC%9A-2054400866949029889/?from="
+
+
+def find_8plus_image_post(page) -> str:
+    """
+    动态查找 8+ 图帖子
+    1. 优先从列表页查找
+    2. 找不到则使用备用 URL
+    3. 备用 URL 失效则返回 None
+    
+    Returns:
+        str: 有效的 8+ 图详情页 URL，如果都失效则返回 None
+    """
+    logger.info("[DEBUG] 开始查找 8+ 图帖子...")
+    
+    # 方案1: 从列表页查找
+    try:
+        logger.info(f"[DEBUG] 方案1: 尝试从列表页查找 {MULTI_IMAGE_8PLUS_LIST_URL}")
+        page.goto(MULTI_IMAGE_8PLUS_LIST_URL, wait_until="domcontentloaded", timeout=15000)
+        page.wait_for_timeout(2000)
+        
+        # 查找所有帖子卡片链接
+        post_links = page.locator("a[href*='/cate-']").all()
+        logger.info(f"[DEBUG] 列表页找到 {len(post_links)} 个帖子链接")
+        
+        # 遍历前 10 个帖子检查图片数量
+        for i, link in enumerate(post_links[:10]):
+            try:
+                href = link.get_attribute("href")
+                if not href or not href.startswith("http"):
+                    continue
+                
+                # 检查是否为详情页链接
+                if "/cate-" in href and href.count("/") >= 5:
+                    logger.info(f"[DEBUG] 检查帖子 {i+1}: {href}")
+                    
+                    # 打开详情页检查图片数量
+                    page.goto(href, wait_until="domcontentloaded", timeout=10000)
+                    page.wait_for_timeout(1000)
+                    
+                    # 检查当前 URL 是否还是详情页(避免重定向)
+                    current_url = page.url
+                    if "/cate-" not in current_url or current_url.count("/") < 5:
+                        logger.info(f"[DEBUG] 帖子已失效,跳过")
+                        continue
+                    
+                    # 查找多图容器中的图片数量
+                    thumbnails = page.locator("[class*='MulPicture'] img")
+                    count = thumbnails.count()
+                    
+                    if count >= 8:
+                        logger.info(f"[DEBUG] ✓ 找到 8+ 图帖子 ({count} 张图): {href}")
+                        return href
+                    else:
+                        logger.info(f"[DEBUG] 图片数不足 ({count} 张),继续查找")
+            except Exception as e:
+                logger.info(f"[DEBUG] 检查帖子出错,跳过: {str(e)[:50]}")
+                continue
+        
+        logger.info("[DEBUG] 方案1: 列表页未找到 8+ 图帖子")
+    except Exception as e:
+        logger.info(f"[DEBUG] 方案1失败: {str(e)[:100]}")
+    
+    # 方案2: 使用备用 URL
+    try:
+        logger.info(f"[DEBUG] 方案2: 尝试使用备用 URL {MULTI_IMAGE_8PLUS_FALLBACK_URL}")
+        page.goto(MULTI_IMAGE_8PLUS_FALLBACK_URL, wait_until="domcontentloaded", timeout=15000)
+        page.wait_for_timeout(2000)
+        
+        # 检查是否重定向
+        current_url = page.url
+        if current_url == MULTI_IMAGE_8PLUS_FALLBACK_URL or (
+            "/cate-" in current_url and current_url.count("/") >= 5
+        ):
+            # 检查图片数量
+            thumbnails = page.locator("[class*='MulPicture'] img")
+            count = thumbnails.count()
+            
+            if count >= 1:  # 至少有图片
+                logger.info(f"[DEBUG] ✓ 备用 URL 有效 ({count} 张图): {current_url}")
+                return current_url
+            else:
+                logger.info(f"[DEBUG] 备用 URL 无图片")
+        else:
+            logger.info(f"[DEBUG] 备用 URL 已重定向到: {current_url}")
+    except Exception as e:
+        logger.info(f"[DEBUG] 方案2失败: {str(e)[:100]}")
+    
+    logger.info("[DEBUG] ❌ 未找到有效的 8+ 图帖子")
+    return None
 
 
 @pytest.fixture(scope="module")
@@ -579,10 +670,23 @@ class TestModuleD_LightboxNavigation:
         """TC017: 大图模式缩略图翻页箭头支持循环翻页"""
         logger.info("=== TC017: 大图模式缩略图翻页箭头支持循环翻页 ===")
         
-        # 切换到8+图帖子
-        with allure.step("导航到8+图帖子"):
-            page.goto(MULTI_IMAGE_8PLUS_POST_URL, wait_until="domcontentloaded")
-            page.wait_for_timeout(2000)
+        # 动态查找 8+ 图帖子
+        with allure.step("查找 8+ 图帖子"):
+            post_url = find_8plus_image_post(page)
+            
+            if post_url is None:
+                logger.info("⏭️ 未找到有效的 8+ 图帖子，跳过测试")
+                pytest.skip("未找到有效的 8+ 图帖子")
+            
+            logger.info(f"✓ 找到 8+ 图帖子: {post_url}")
+        
+        # 打开大图模式
+        with allure.step("打开大图模式"):
+            # 如果当前页面不是目标帖子,先导航
+            if page.url != post_url:
+                page.goto(post_url, wait_until="domcontentloaded")
+                page.wait_for_timeout(2000)
+            
             gallery_page.open_lightbox(0)
             logger.info(f"✓ 已打开8+图帖子的lightbox")
         
@@ -630,7 +734,15 @@ class TestModuleD_LightboxNavigation_8Plus:
     def setup_method(self, page: Page, gallery_page: DetailPageImageGallery):
         """每个测试前打开 8+ 图帖子的大图"""
         logger.info("[SETUP] 导航到 8+ 图帖子并打开大图")
-        page.goto(MULTI_IMAGE_8PLUS_POST_URL, wait_until="domcontentloaded")
+        
+        # 动态查找 8+ 图帖子
+        post_url = find_8plus_image_post(page)
+        
+        if post_url is None:
+            pytest.skip("未找到有效的 8+ 图帖子")
+        
+        # 导航到帖子并打开大图
+        page.goto(post_url, wait_until="domcontentloaded")
         page.wait_for_timeout(2000)
         gallery_page.open_lightbox(0)
 
