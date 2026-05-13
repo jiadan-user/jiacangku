@@ -66,6 +66,34 @@ class TestKycIdentificationWebqa:
 
     # ==================== 前置：Session + 登录（首个用例执行）====================
 
+    def _reset_account_if_verifying(self, page, config):
+        """检查账号是否在 Verifying 状态，如果是则重置"""
+        try:
+            if page.get_by_text("Verifying").is_visible(timeout=2000):
+                logger.warning("⚠️ 检测到账号处于 Verifying 状态，执行重置...")
+                script_path = PROJECT_ROOT / "test_cases" / "kyc" / "standalone_suspend_account.py"
+                user_id = config.get("user_id", "796559612064208640")
+                
+                result = subprocess.run(
+                    [sys.executable, str(script_path), "--user-id", user_id],
+                    capture_output=True,
+                    text=True,
+                    timeout=30,
+                    cwd=str(PROJECT_ROOT),
+                )
+                
+                if result.returncode == 0:
+                    logger.info("✓ 账号状态已重置为 SUSPENDED")
+                    page.reload(timeout=30000)
+                    page.wait_for_timeout(2000)
+                    return True
+                else:
+                    logger.warning(f"重置脚本返回 {result.returncode}: {result.stderr}")
+                    return False
+        except Exception as e:
+            logger.debug(f"检查/重置账号状态异常: {e}")
+            return False
+
     def _ensure_logged_in(self, page, config):
         """确保已登录，失败则执行登录并保存 Session"""
         base_url = config["base_url"]
@@ -93,6 +121,8 @@ class TestKycIdentificationWebqa:
                 try:
                     if page.get_by_text("liwenfeng01").is_visible(timeout=3000):
                         logger.info("✓ Session 有效，已登录")
+                        # 检查并重置 Verifying 状态
+                        self._reset_account_if_verifying(page, config)
                         return session_manager
                 except Exception:
                     pass
@@ -116,6 +146,9 @@ class TestKycIdentificationWebqa:
                     page.wait_for_timeout(3000)
                     if session_manager.save_session():
                         logger.info("✓ Session 已保存")
+                    
+                    # 登录后检查并重置 Verifying 状态
+                    self._reset_account_if_verifying(page, config)
 
         return session_manager
 
@@ -193,10 +226,16 @@ class TestKycIdentificationWebqa:
 
         with allure.step("确保在引导页（必要时 Retry）"):
             page.goto(config["base_url"], timeout=30000)
-            page.wait_for_timeout(1500)
-            if page.get_by_role("button", name="Retry").is_visible(timeout=2000):
-                kyc_page.click_retry_button()
-                page.wait_for_timeout(1000)
+            page.wait_for_load_state("domcontentloaded", timeout=10000)
+            page.wait_for_timeout(2000)
+            
+            try:
+                if page.get_by_role("button", name="Retry").is_visible(timeout=2000):
+                    kyc_page.click_retry_button()
+                    page.wait_for_timeout(3000)
+                    page.wait_for_load_state("domcontentloaded", timeout=10000)
+            except Exception:
+                pass
 
         with allure.step("验证引导页并点击 Begin"):
             assert page.get_by_text("Start Identity Verification").is_visible(
@@ -204,28 +243,26 @@ class TestKycIdentificationWebqa:
             ), "未显示引导页"
             kyc_page.click_begin_button()
             page.wait_for_timeout(3000)
+            page.wait_for_load_state("domcontentloaded", timeout=10000)
 
         with allure.step("验证进入上传页"):
-            page.wait_for_load_state("domcontentloaded", timeout=10000)
+            page.wait_for_timeout(2000)
             
             upload_heading = page.get_by_text("Upload Document")
             upload_heading.wait_for(state="visible", timeout=10000)
             assert upload_heading.is_visible(), "未进入上传页"
             
-            page.wait_for_timeout(3000)
+            page.wait_for_timeout(2000)
             
-            # 按钮文案可能是 "Upload" 或 "Choose File"，优先尝试 Upload
-            upload_btn = page.get_by_role("button", name="Upload")
-            choose_file_btn = page.get_by_role("button", name="Choose File")
-            
+            # 按钮文案可能是 "Upload" 或 "Choose File"
             btn_found = False
             try:
-                upload_btn.wait_for(state="visible", timeout=5000)
+                page.get_by_role("button", name="Upload").wait_for(state="visible", timeout=5000)
                 btn_found = True
                 logger.info("✓ 找到 Upload 按钮")
             except Exception:
                 try:
-                    choose_file_btn.wait_for(state="visible", timeout=5000)
+                    page.get_by_role("button", name="Choose File").wait_for(state="visible", timeout=5000)
                     btn_found = True
                     logger.info("✓ 找到 Choose File 按钮")
                 except Exception as e:
@@ -235,7 +272,13 @@ class TestKycIdentificationWebqa:
                     
                     try:
                         all_buttons = page.get_by_role("button").all()
-                        button_texts = [btn.inner_text() for btn in all_buttons[:10]]
+                        button_texts = []
+                        for btn in all_buttons[:10]:
+                            try:
+                                if btn.is_visible(timeout=500):
+                                    button_texts.append(btn.inner_text())
+                            except Exception:
+                                pass
                         logger.error(f"页面上的按钮: {button_texts}")
                     except Exception:
                         pass
@@ -281,38 +324,104 @@ class TestKycIdentificationWebqa:
 
     def _go_to_upload_page(self, page, config, kyc_page):
         """进入上传页（引导页则 Begin），确保上传按钮可见"""
-        page.goto(config["base_url"], timeout=30000)
-        page.wait_for_load_state("domcontentloaded", timeout=10000)
-        page.wait_for_timeout(2000)
-        
-        # 多次尝试机制，处理页面状态不确定的情况
         max_retries = 3
+        
         for attempt in range(max_retries):
             try:
-                # 检查并处理 Retry 按钮
-                if page.get_by_role("button", name="Retry").is_visible(timeout=2000):
-                    kyc_page.click_retry_button()
-                    page.wait_for_timeout(3000)
-                    page.wait_for_load_state("domcontentloaded", timeout=10000)
+                logger.info(f"开始第 {attempt + 1}/{max_retries} 次尝试进入上传页")
                 
-                # 检查并处理 Begin 按钮
-                if page.get_by_role("button", name="Begin").is_visible(timeout=2000):
-                    kyc_page.click_begin_button()
-                    page.wait_for_timeout(3000)
-                    page.wait_for_load_state("domcontentloaded", timeout=10000)
-                
-                # 等待并确认到达上传页
+                # 每次尝试都重新导航
+                page.goto(config["base_url"], timeout=30000)
+                page.wait_for_load_state("domcontentloaded", timeout=10000)
                 page.wait_for_timeout(2000)
                 
+                # 检查并处理 Retry 按钮
+                try:
+                    if page.get_by_role("button", name="Retry").is_visible(timeout=2000):
+                        logger.info("检测到 Retry 按钮，点击进入引导页")
+                        kyc_page.click_retry_button()
+                        page.wait_for_timeout(3000)
+                        page.wait_for_load_state("domcontentloaded", timeout=10000)
+                except Exception:
+                    pass
+                
+                # 检查并处理 Begin 按钮
+                try:
+                    if page.get_by_role("button", name="Begin").is_visible(timeout=2000):
+                        logger.info("检测到 Begin 按钮，点击进入上传页")
+                        kyc_page.click_begin_button()
+                        page.wait_for_timeout(3000)
+                        page.wait_for_load_state("domcontentloaded", timeout=10000)
+                        page.wait_for_timeout(2000)
+                except Exception:
+                    pass
+                
+                # 检查页面状态：可能在 Verifying 或其他状态
+                try:
+                    if page.get_by_text("Verifying").is_visible(timeout=1000):
+                        logger.warning("⚠️ 页面显示 Verifying 状态，账号已提交认证，需要重置状态")
+                        
+                        # 自动执行重置脚本
+                        if attempt < max_retries - 1:
+                            logger.info("正在执行重置脚本...")
+                            script_path = PROJECT_ROOT / "test_cases" / "kyc" / "standalone_suspend_account.py"
+                            user_id = config.get("user_id", "796559612064208640")
+                            
+                            try:
+                                result = subprocess.run(
+                                    [sys.executable, str(script_path), "--user-id", user_id],
+                                    capture_output=True,
+                                    text=True,
+                                    timeout=30,
+                                    cwd=str(PROJECT_ROOT),
+                                )
+                                
+                                if result.returncode == 0:
+                                    logger.info("✓ 账号状态已重置为 SUSPENDED，将重试进入上传页")
+                                    page.wait_for_timeout(2000)
+                                    continue
+                                else:
+                                    logger.warning(f"重置脚本返回非零: {result.returncode}")
+                                    logger.warning(f"stderr: {result.stderr}")
+                                    logger.warning(f"stdout: {result.stdout}")
+                                    # 即使重置失败也继续重试，可能是首次使用账号
+                                    continue
+                            except subprocess.TimeoutExpired:
+                                logger.error("重置脚本执行超时（30s）")
+                                continue
+                            except Exception as e:
+                                logger.error(f"执行重置脚本异常: {e}")
+                                continue
+                        else:
+                            logger.error("已到最后一次尝试，但账号仍在 Verifying 状态")
+                except Exception:
+                    pass
+                
                 # 尝试找到 Upload Document 标题
+                upload_doc_found = False
                 try:
                     page.get_by_text("Upload Document").wait_for(state="visible", timeout=10000)
                     logger.info("✓ 找到 Upload Document 标题")
-                except Exception:
-                    logger.warning(f"未找到 Upload Document 标题（尝试 {attempt + 1}/{max_retries}）")
+                    upload_doc_found = True
+                except Exception as e:
+                    logger.warning(f"未找到 Upload Document 标题（尝试 {attempt + 1}/{max_retries}）: {e}")
                 
-                # 按钮文案可能是 "Upload" 或 "Choose File"
+                # 如果没有找到标题，检查是否已经在表单页或其他页面
+                if not upload_doc_found:
+                    try:
+                        if page.get_by_role("dialog").filter(has_text="Identity Verification").is_visible(timeout=2000):
+                            logger.info("已经在 Identity Verification 表单弹窗中")
+                            return
+                    except Exception:
+                        pass
+                    
+                    if attempt < max_retries - 1:
+                        continue
+                
+                # 按钮文案可能是 "Upload" 或 "Choose File"，使用更宽松的检测策略
                 btn_found = False
+                
+                # 策略1: 通过 role=button 精确匹配
                 try:
                     page.get_by_role("button", name="Upload").wait_for(state="visible", timeout=5000)
                     btn_found = True
@@ -322,39 +431,70 @@ class TestKycIdentificationWebqa:
                         page.get_by_role("button", name="Choose File").wait_for(state="visible", timeout=5000)
                         btn_found = True
                         logger.info("✓ 找到 Choose File 按钮")
-                    except Exception as e:
-                        if attempt == max_retries - 1:
-                            logger.error(f"等待上传按钮失败（尝试 {attempt + 1}/{max_retries}）: {e}")
-                            page.screenshot(path="reports/screenshots/debug_go_to_upload_page.png", full_page=True, timeout=60000)
-                            logger.error(f"当前 URL: {page.url}")
-                            
-                            # 记录页面上所有按钮
-                            try:
-                                all_buttons = page.get_by_role("button").all()
-                                button_texts = [btn.inner_text() if btn.is_visible() else f"[隐藏]{btn.get_attribute('name') or ''}" for btn in all_buttons[:10]]
-                                logger.error(f"页面上的按钮: {button_texts}")
-                            except Exception:
-                                pass
-                            
-                            raise AssertionError(f"未找到 Upload 或 Choose File 按钮（已重试 {max_retries} 次）")
-                        else:
-                            # 不是最后一次尝试，重新导航页面
-                            logger.warning(f"未找到上传按钮，第 {attempt + 1} 次尝试失败，重新导航页面...")
-                            page.goto(config["base_url"], timeout=30000)
-                            page.wait_for_load_state("domcontentloaded", timeout=10000)
-                            page.wait_for_timeout(2000)
-                            continue
+                    except Exception:
+                        # 策略2: 通过文件输入框是否存在来判断
+                        try:
+                            file_input = page.locator('input[type="file"]').first
+                            if file_input.count() > 0:
+                                logger.info("✓ 找到文件输入框，判定为上传页")
+                                btn_found = True
+                        except Exception as e:
+                            logger.warning(f"未找到上传按钮或文件输入框（尝试 {attempt + 1}/{max_retries}）: {e}")
                 
                 if btn_found:
                     logger.info(f"✓ 成功到达上传页（尝试 {attempt + 1}/{max_retries}）")
                     return
+                
+                # 如果是最后一次尝试，收集详细诊断信息并抛出异常
+                if attempt == max_retries - 1:
+                    logger.error(f"最后一次尝试失败，收集诊断信息")
+                    page.screenshot(path="reports/screenshots/debug_go_to_upload_page.png", full_page=True, timeout=60000)
+                    logger.error(f"当前 URL: {page.url}")
+                    logger.error(f"页面标题: {page.title()}")
                     
+                    # 记录页面状态关键字
+                    page_text = page.inner_text("body")
+                    if "Verifying" in page_text:
+                        logger.error("⚠️ 页面显示 Verifying - 账号可能已提交 KYC")
+                    if "Verification Failed" in page_text:
+                        logger.error("⚠️ 页面显示 Verification Failed - 账号处于失败状态")
+                    if "Start Identity Verification" in page_text:
+                        logger.error("⚠️ 页面仍在引导页 - Begin 按钮可能未生效")
+                    
+                    # 记录页面上所有按钮
+                    try:
+                        all_buttons = page.get_by_role("button").all()
+                        button_texts = []
+                        for btn in all_buttons[:10]:
+                            try:
+                                if btn.is_visible(timeout=500):
+                                    button_texts.append(btn.inner_text())
+                                else:
+                                    name_attr = btn.get_attribute('name') or ''
+                                    button_texts.append(f"[隐藏]{name_attr}")
+                            except Exception:
+                                pass
+                        logger.error(f"页面上的按钮: {button_texts}")
+                    except Exception as e:
+                        logger.error(f"无法获取按钮列表: {e}")
+                    
+                    # 记录页面中是否有文件上传输入框
+                    try:
+                        file_inputs = page.locator('input[type="file"]').count()
+                        logger.error(f"页面上的文件输入框数量: {file_inputs}")
+                    except Exception as e:
+                        logger.error(f"无法检查文件输入框: {e}")
+                    
+                    raise AssertionError(f"未找到 Upload 或 Choose File 按钮（已重试 {max_retries} 次）")
+                
+            except AssertionError:
+                raise
             except Exception as e:
                 if attempt == max_retries - 1:
                     logger.error(f"_go_to_upload_page 失败（尝试 {attempt + 1}/{max_retries}）: {e}")
                     raise
                 else:
-                    logger.warning(f"_go_to_upload_page 第 {attempt + 1} 次尝试异常，重试中: {e}")
+                    logger.warning(f"_go_to_upload_page 第 {attempt + 1} 次尝试异常，将重试: {e}")
                     page.wait_for_timeout(2000)
 
     # ==================== 用例 4：ESC 关闭弹窗 ====================
