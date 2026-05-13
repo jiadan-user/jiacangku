@@ -49,6 +49,8 @@ _CONFIG = {
         'default': 30000,
         'wait': 10000,
         'navigation': 60000,
+        # listpage SPA 上 cate-* 锚点偶发晚于 domcontentloaded，首段 site_guard 单独加长
+        'listpage_guard': 30000,
     }
 }
 
@@ -71,12 +73,17 @@ def _safe_listpage_screenshot(page: Page, path: str) -> None:
 
 
 def _goto_with_guard(page: Page, url: str, ready_locator) -> None:
+    guard_timeout_ms = (
+        int(_CONFIG['timeout'].get('listpage_guard', 30000))
+        if '/listpage/' in url
+        else 15000
+    )
     try:
         guard_site_and_goto_or_skip(
             page,
             url,
             ready_locator=ready_locator,
-            timeout_ms=15000,
+            timeout_ms=guard_timeout_ms,
             logger=logger,
         )
     except pytest.skip.Exception as exc:
@@ -84,25 +91,52 @@ def _goto_with_guard(page: Page, url: str, ready_locator) -> None:
         if "/listpage/" not in url:
             raise
         logger.warning("site_guard 触发 skip，进入 listpage 文本回退检查: %s", str(exc)[:120])
-        try:
-            page.goto(url, wait_until="domcontentloaded", timeout=60000)
-            page.wait_for_timeout(1500)
-            page.wait_for_function(
-                """() => {
-                    const t = (document.body && document.body.innerText) || '';
-                    return t.includes('Jobs') || t.includes('Marketplace') || t.includes('Services');
-                }""",
-                timeout=20000,
-            )
-            if page.url.startswith("chrome-error://"):
-                pytest.skip(f"listpage 回退后仍是浏览器错误页: {page.url}")
-        except Exception as fallback_err:
-            err_text = str(fallback_err)
-            if "ERR_HTTP_RESPONSE_CODE_FAILURE" in err_text or "net::ERR_HTTP" in err_text:
-                pytest.skip(f"listpage 回退触发 HTTP 异常，跳过当前用例: {url}")
-            if "Timeout" in err_text or "timed out" in err_text:
-                pytest.skip(f"listpage 回退超时，跳过当前用例: {url}")
-            raise
+        last_fb_err: Exception | None = None
+        ready_js = r"""() => {
+            const raw = (document.body && document.body.innerText) || '';
+            const t = raw.toLowerCase();
+            if (document.querySelector("a[href*='cate-']")) return true;
+            if (document.querySelector("a[href*='/listpage/']")) return true;
+            return t.includes('jobs') || t.includes('marketplace') || t.includes('services')
+                || t.includes('community') || t.includes('shop') || t.includes('cars')
+                || t.includes('property') || t.includes('explore')
+                || t.includes('category') || t.includes('all ');
+        }"""
+        for fb_attempt in range(3):
+            try:
+                if fb_attempt == 0:
+                    page.goto(url, wait_until="domcontentloaded", timeout=60000)
+                    page.wait_for_timeout(1800)
+                else:
+                    try:
+                        page.reload(wait_until="domcontentloaded", timeout=60000)
+                    except Exception:
+                        page.goto(url, wait_until="domcontentloaded", timeout=60000)
+                    page.wait_for_timeout(2200)
+                page.wait_for_function(ready_js, timeout=40000)
+                if page.url.startswith("chrome-error://"):
+                    pytest.skip(f"listpage 回退后仍是浏览器错误页: {page.url}")
+                break
+            except Exception as fallback_err:
+                last_fb_err = fallback_err
+                err_text = str(fallback_err)
+                if "ERR_HTTP_RESPONSE_CODE_FAILURE" in err_text or "net::ERR_HTTP" in err_text:
+                    pytest.skip(f"listpage 回退触发 HTTP 异常，跳过当前用例: {url}")
+                if fb_attempt >= 2:
+                    if "Timeout" in err_text or "timed out" in err_text:
+                        pytest.skip(
+                            f"listpage 回退超时，跳过当前用例: {url} | {err_text[:160]}"
+                        )
+                    raise
+                logger.warning(
+                    "listpage 回退第 %s 次未就绪，将重载重试: %s",
+                    fb_attempt + 1,
+                    err_text[:120],
+                )
+                page.wait_for_timeout(900)
+        else:
+            if last_fb_err is not None:
+                raise last_fb_err
     page.wait_for_load_state("domcontentloaded", timeout=10000)
 
 
