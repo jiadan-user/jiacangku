@@ -368,17 +368,19 @@
 ### TC015: 切换子类后 URL、标题与筛选项同步
 
 #### 📋 前置条件
-- 在 Marketplace 列表
+- 在 Marketplace 列表页（`https://ae.58v5.cn/en/city-abu-dhabi/cate-marketplace/?iconSource=marketplace`）
 
 #### 🎬 执行步骤
-1. 点击第三个筛选项，即类别筛选项，鼠标hover在Marketplace大类
-2. 鼠标hover Electronics，右侧展示子类
-3. 点击选择Computers & Tablets，对应类别被选中
-4. 对比筛选行与 Tag：`Category:` 是否更新。
+1. 点击筛选行中的 **Marketplace** 分类筛选项，弹出分类选择面板
+2. 面板打开后，在左侧列表中找到 **Electronics** 并点击
+3. 等待页面跳转至 Electronics 分类列表页
+4. 验证 URL 中包含 `electronics`，列表页正常加载
 
 #### ✅ 预期结果
-- 类目切换后筛选项与 Tag 同步更新；不出现 Marketplace 大类与叶子类目不匹配。
-- 筛选结果更新
+- 点击 Marketplace 筛选项后，分类面板（含 All / Marketplace / Jobs 等 Tab）正常弹出
+- 面板左列中 Electronics 链接可见且可点击
+- 点击后 URL 切换为包含 `electronics` 的分类页地址
+- Electronics 列表页正常展示商品卡片（数量 ≥ 0）
 
 #### 📊 用例属性
 - **优先级**: P0
@@ -604,7 +606,7 @@
 ### TC026: Condition 多选（在 Filter 内或展开后出现）
 
 #### 📋 前置条件
-- 请求URL：https://ae.58v5.cn/en/city-abu-dhabi/cate-books/ 进入对应页面，此页面会展示Condition筛选项。
+- 请求URL：https://ae.58v5.cn/en/city-abu-dhabi/cate-beauty-products/ 进入对应页面，此页面会展示Condition筛选项。
 
 #### 🎬 执行步骤
 1. 最后一个筛选项是Condition，在 Condition 中勾选多项。  
@@ -624,7 +626,7 @@
 ### TC027: Price + Condition 组合
 
 #### 📋 前置条件
-- 当前线上Price、Condition筛选项
+- 当前页面已显示 Price、Condition 筛选项；若筛选项未显示，则访问 https://ae.58v5.cn/en/city-abu-dhabi/cate-beauty-products/ 进入可展示上述筛选项的页面。
 
 #### 🎬 执行步骤
 1. 依次设置 Price、Condition。  

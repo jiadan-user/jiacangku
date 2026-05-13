@@ -122,7 +122,13 @@ class LoginPage(BasePage):
         try:
             entry = self._guest_login_entry_locator()
             entry.wait_for(state="visible", timeout=timeout)
-            entry.scroll_into_view_if_needed(timeout=5000)
+            # scroll_into_view_if_needed 在 React 重渲染时可能遇到 DOM 脱离，
+            # 失败后重新查询一次入口元素再继续，不中断整个流程
+            try:
+                entry.scroll_into_view_if_needed(timeout=5000)
+            except Exception:
+                entry = self._guest_login_entry_locator()
+                entry.wait_for(state="visible", timeout=min(10000, timeout))
             entry.click(timeout=min(15000, timeout))
             self.page.wait_for_timeout(500)
             self._wait_for_login_modal_visible(timeout=min(20000, timeout))
