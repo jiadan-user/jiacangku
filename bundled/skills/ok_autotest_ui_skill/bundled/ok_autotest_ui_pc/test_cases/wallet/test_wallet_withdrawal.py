@@ -24,8 +24,136 @@ from utils.logger import setup_logger
 logger = setup_logger()
 
 # ============================================
-# 强制关闭登录对话框工具函数
+# 工具函数
 # ============================================
+
+def _open_withdraw_dialog_robust(page, timeout=10000):
+    """健壮的提现对话框打开方法 - 使用多种策略确保打开
+    
+    Args:
+        page: Playwright page对象
+        timeout: 总超时时间（毫秒）
+        
+    Returns:
+        tuple: (success: bool, method: str, error: str or None)
+        - success: 是否成功打开对话框
+        - method: 成功的方法名称
+        - error: 失败时的错误信息
+    """
+    set_amount_locator = page.locator('text=Set Amount').first
+    withdraw_button = page.get_by_role('button', name='Withdraw').first
+    
+    # 检查是否已经打开
+    try:
+        if set_amount_locator.is_visible(timeout=1000):
+            logger.info("✓ 提现对话框已经打开")
+            return (True, "already_open", None)
+    except Exception:
+        pass
+    
+    # 策略1: 标准 Playwright click
+    try:
+        logger.info("🔄 尝试策略1: 标准click方法...")
+        page.wait_for_load_state('networkidle', timeout=5000)
+        withdraw_button.click(timeout=5000)
+        
+        # 等待对话框出现
+        if _wait_for_dialog_with_polling(page, set_amount_locator, timeout=5000):
+            logger.info("✓ 策略1成功：标准click")
+            return (True, "standard_click", None)
+    except Exception as e:
+        logger.warning(f"⚠️ 策略1失败: {e}")
+    
+    # 策略2: Force click (忽略元素遮挡)
+    try:
+        logger.info("🔄 尝试策略2: Force click...")
+        withdraw_button.click(force=True, timeout=5000)
+        
+        if _wait_for_dialog_with_polling(page, set_amount_locator, timeout=3000):
+            logger.info("✓ 策略2成功：Force click")
+            return (True, "force_click", None)
+    except Exception as e:
+        logger.warning(f"⚠️ 策略2失败: {e}")
+    
+    # 策略3: JavaScript click
+    try:
+        logger.info("🔄 尝试策略3: JavaScript click...")
+        page.evaluate('''
+            const button = document.querySelector('button:has-text("Withdraw")');
+            if (button) button.click();
+        ''')
+        
+        if _wait_for_dialog_with_polling(page, set_amount_locator, timeout=3000):
+            logger.info("✓ 策略3成功：JavaScript click")
+            return (True, "javascript_click", None)
+    except Exception as e:
+        logger.warning(f"⚠️ 策略3失败: {e}")
+    
+    # 策略4: Dispatch click event
+    try:
+        logger.info("🔄 尝试策略4: Dispatch click event...")
+        withdraw_button.dispatch_event('click')
+        
+        if _wait_for_dialog_with_polling(page, set_amount_locator, timeout=3000):
+            logger.info("✓ 策略4成功：Dispatch click")
+            return (True, "dispatch_click", None)
+    except Exception as e:
+        logger.warning(f"⚠️ 策略4失败: {e}")
+    
+    # 策略5: 坐标点击
+    try:
+        logger.info("🔄 尝试策略5: 坐标点击...")
+        box = withdraw_button.bounding_box()
+        if box:
+            page.mouse.click(box['x'] + box['width']/2, box['y'] + box['height']/2)
+            
+            if _wait_for_dialog_with_polling(page, set_amount_locator, timeout=3000):
+                logger.info("✓ 策略5成功：坐标点击")
+                return (True, "coordinate_click", None)
+    except Exception as e:
+        logger.warning(f"⚠️ 策略5失败: {e}")
+    
+    # 所有策略都失败
+    error_msg = "所有5种点击策略都失败"
+    logger.error(f"❌ {error_msg}")
+    return (False, None, error_msg)
+
+
+def _wait_for_dialog_with_polling(page, dialog_indicator, timeout=5000, check_interval=300):
+    """轮询等待对话框出现
+    
+    Args:
+        page: Playwright page对象
+        dialog_indicator: 对话框的标识locator
+        timeout: 总超时时间（毫秒）
+        check_interval: 检查间隔（毫秒）
+        
+    Returns:
+        bool: 对话框是否成功打开
+    """
+    elapsed = 0
+    while elapsed < timeout:
+        page.wait_for_timeout(check_interval)
+        elapsed += check_interval
+        
+        try:
+            if dialog_indicator.is_visible(timeout=100):
+                return True
+        except Exception:
+            pass
+        
+        # 检查是否有阻塞提示
+        try:
+            blocking_alert = page.locator('text=/Withdrawal in progress/i')
+            if blocking_alert.is_visible(timeout=100):
+                logger.warning("⚠️ 检测到提现阻塞")
+                return False
+        except Exception:
+            pass
+    
+    return False
+
+
 def _force_close_login_dialog(page, max_attempts=5):
     """强制关闭登录对话框 - 使用多种策略确保关闭
     
@@ -2579,25 +2707,23 @@ class TestWithdrawFormDisplay:
         # 等待页面稳定
         page.wait_for_timeout(1000)
         
-        # 步骤1: 检查提现dialog是否已经打开（setup可能已经打开了）
-        logger.info("📋 步骤1: 检查提现dialog状态...")
+        # 步骤1: 使用健壮的方法打开提现dialog
+        logger.info("📋 步骤1: 打开提现dialog（使用多策略方法）...")
         
-        # 使用更宽松的dialog定位（支持<dialog>和<div role="dialog">）
-        dialog_locator = page.locator('dialog, [role="dialog"]').filter(has_text='Set Amount')
         set_amount_text = page.locator('text=Set Amount').first
         
-        is_dialog_open = False
+        # 先检查dialog是否已打开
+        is_already_open = False
         try:
-            # 检查是否有"Set Amount"文本可见（提现表单的特征）
             if set_amount_text.is_visible(timeout=2000):
-                is_dialog_open = True
-                logger.info("✓ 提现dialog已打开（来自setup阶段），跳过点击操作")
-        except Exception as e:
-            logger.debug(f"检查dialog状态时出现异常: {e}")
+                is_already_open = True
+                logger.info("✓ 提现dialog已打开（来自setup阶段或之前操作）")
+        except Exception:
+            pass
         
-        # 步骤2: 如果dialog未打开，则点击Withdraw按钮打开
-        if not is_dialog_open:
-            logger.info("⚠️ 提现dialog未打开，执行点击Withdraw按钮操作...")
+        # 如果未打开，使用健壮的打开方法
+        if not is_already_open:
+            logger.info("⚠️ 提现dialog未打开，开始尝试打开...")
             
             # 先关闭可能存在的其他对话框
             try:
@@ -2606,13 +2732,13 @@ class TestWithdrawFormDisplay:
             except Exception:
                 pass
             
-            # 点击Withdraw按钮
+            # 检查Withdraw按钮是否可见和可用
             withdraw_button = page.get_by_role('button', name='Withdraw').first
             
             if not withdraw_button.is_visible(timeout=3000):
+                page.screenshot(path="debug_button_not_visible.png", timeout=60000)
                 pytest.fail("❌ Withdraw按钮不可见，无法打开提现表单")
             
-            # 检查按钮状态
             is_disabled = withdraw_button.is_disabled()
             logger.info(f"📋 Withdraw按钮状态: {'置灰' if is_disabled else '可点击'}")
             
@@ -2620,28 +2746,91 @@ class TestWithdrawFormDisplay:
                 page.screenshot(path="debug_withdraw_button_disabled.png", timeout=60000)
                 pytest.skip("⚠️ Withdraw按钮置灰，可能存在新的阻塞")
             
-            withdraw_button.click()
-            logger.info("✓ 已点击Withdraw按钮")
-            page.wait_for_timeout(3000)  # 增加等待时间
+            # 点击前截图
+            page.screenshot(path="debug_before_withdraw_click.png", timeout=60000)
+            logger.info("📸 已保存点击前截图")
             
-            # 拍摄点击后的状态
+            # 使用健壮的打开方法（自动尝试多种策略）
+            success, method, error = _open_withdraw_dialog_robust(page, timeout=10000)
+            
+            # 拍摄最终状态
             page.screenshot(path="debug_after_withdraw_click.png", timeout=60000)
+            logger.info("📸 已保存点击后截图")
             
-            # 检查是否出现阻塞提示
-            blocking_alert = page.locator('text=/Withdrawal in progress/i')
-            if blocking_alert.is_visible(timeout=1000):
-                logger.warning("⚠️ 检测到新的提现阻塞，跳过测试")
-                pytest.skip("检测到新的提现阻塞")
+            if not success:
+                # 检查是否有阻塞提示
+                blocking_alert = page.locator('text=/Withdrawal in progress/i')
+                if blocking_alert.is_visible(timeout=1000):
+                    logger.warning("⚠️ 检测到提现阻塞")
+                    page.screenshot(path="debug_withdrawal_blocked.png", timeout=60000)
+                    pytest.skip("检测到提现阻塞")
+                
+                # 详细调试信息收集
+                logger.error("=" * 80)
+                logger.error("开始收集详细调试信息...")
+                logger.error("=" * 80)
+                
+                # 1. Dialog元素检查
+                all_dialogs = page.locator('dialog, [role="dialog"]').count()
+                logger.error(f"📋 页面上dialog元素数量: {all_dialogs}")
+                
+                if all_dialogs > 0:
+                    for i in range(all_dialogs):
+                        dialog = page.locator('dialog, [role="dialog"]').nth(i)
+                        try:
+                            if dialog.is_visible(timeout=500):
+                                dialog_text = dialog.inner_text()[:300]
+                                logger.error(f"📋 可见Dialog {i} 内容: {dialog_text}")
+                        except Exception as e:
+                            logger.error(f"📋 Dialog {i} 检查失败: {e}")
+                
+                # 2. Withdraw相关元素
+                withdraw_texts = page.locator('text=/withdraw/i').count()
+                logger.error(f"📋 包含'withdraw'的元素数量: {withdraw_texts}")
+                
+                # 3. 页面内容快照
+                try:
+                    page_text = page.locator('body').inner_text()[:1500]
+                    logger.error(f"📋 页面内容预览:\n{page_text}")
+                except Exception as e:
+                    logger.error(f"📋 获取页面内容失败: {e}")
+                
+                # 4. 按钮详细状态
+                try:
+                    button_info = page.evaluate("""
+                        () => {
+                            const button = document.querySelector('button:has-text("Withdraw")');
+                            if (!button) return { found: false };
+                            
+                            const rect = button.getBoundingClientRect();
+                            const style = window.getComputedStyle(button);
+                            
+                            return {
+                                found: true,
+                                visible: style.display !== 'none' && style.visibility !== 'hidden',
+                                disabled: button.disabled,
+                                zIndex: style.zIndex,
+                                position: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+                                opacity: style.opacity,
+                                pointerEvents: style.pointerEvents
+                            };
+                        }
+                    """)
+                    logger.error(f"📋 按钮详细状态: {button_info}")
+                except Exception as e:
+                    logger.error(f"📋 获取按钮状态失败: {e}")
+                
+                # 5. 网络状态
+                try:
+                    network_state = page.evaluate("() => navigator.onLine")
+                    logger.error(f"📋 网络在线状态: {network_state}")
+                except Exception:
+                    pass
+                
+                logger.error("=" * 80)
+                pytest.fail(f"❌ 无法打开提现对话框。错误: {error}")
             
-            # 验证dialog已打开 - 检查"Set Amount"文本
-            if not set_amount_text.is_visible(timeout=3000):
-                # 尝试查找页面上的所有文本
-                page_text = page.locator('body').inner_text()[:500]
-                logger.error(f"📋 页面内容预览: {page_text}")
-                page.screenshot(path="debug_dialog_not_open.png", timeout=60000)
-                pytest.fail("❌ 点击Withdraw后dialog仍未打开（未找到Set Amount文本）")
-            
-            logger.info("✓ Dialog已成功打开")
+            logger.info(f"✓ Dialog已成功打开（使用方法: {method}）")
         
         logger.info("✅ Dialog状态确认完成，开始验证表单元素...")
         
