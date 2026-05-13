@@ -3970,6 +3970,16 @@ def _make_tiny_mp4(tmp_path: Path) -> Optional[Path]:
     out = tmp_path / "tiny_marketplace.mp4"
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg:
+        # 尝试在标准 Homebrew 路径中查找
+        homebrew_paths = [
+            "/opt/homebrew/bin/ffmpeg",  # Apple Silicon
+            "/usr/local/bin/ffmpeg",      # Intel Mac
+        ]
+        for path in homebrew_paths:
+            if Path(path).exists():
+                ffmpeg = path
+                break
+    if not ffmpeg:
         return None
     try:
         subprocess.run(
@@ -4000,10 +4010,10 @@ def _make_tiny_mp4(tmp_path: Path) -> Optional[Path]:
 def test_tc015_upload_video_file(page: Page, logged_in_post_page: MarketplacePostPage, tmp_path: Path):
     """TC015: 上传视频文件（依赖本机 ffmpeg 生成小样片）"""
     logger = setup_logger()
-    if not shutil.which("ffmpeg"):
-        raise AssertionError("TC015/TC017 需本机安装 ffmpeg（如 brew install ffmpeg）以生成样片")
     mp4 = _make_tiny_mp4(tmp_path)
-    assert mp4 is not None, "ffmpeg 生成样片失败"
+    if mp4 is None:
+        raise AssertionError("TC015 需本机安装 ffmpeg（如 brew install ffmpeg）以生成样片")
+    assert mp4.exists(), "ffmpeg 生成样片失败"
     post_page = logged_in_post_page
     page.locator("input[type=file]").set_input_files(str(mp4))
     wait_post_interaction_settled(page, 4000)
@@ -4042,10 +4052,10 @@ def test_tc017_upload_image_and_video(
 ):
     """TC017: 先图后视频（同一 input 多次 set_input_files）"""
     logger = setup_logger()
-    if not shutil.which("ffmpeg"):
-        raise AssertionError("TC017 需本机安装 ffmpeg 以生成样片")
     mp4 = _make_tiny_mp4(tmp_path)
-    assert mp4 is not None, "ffmpeg 生成样片失败"
+    if mp4 is None:
+        raise AssertionError("TC017 需本机安装 ffmpeg（如 brew install ffmpeg）以生成样片")
+    assert mp4.exists(), "ffmpeg 生成样片失败"
     post_page = logged_in_post_page
     fin = page.locator("input[type=file]")
     fin.set_input_files(test_image_path)
