@@ -292,41 +292,70 @@ def test_tc007_unnamed(page, config):
     """TC007: 清除 Cookie 后访问 jobPreference，应出现登录相关 UI"""
     page.context.clear_cookies()
     page.evaluate("try { localStorage.clear(); sessionStorage.clear(); } catch (e) {}")
-    page.goto(config["job_pref_url"], wait_until="domcontentloaded", timeout=60000)
-    page.wait_for_load_state("networkidle", timeout=10000)
-    dom_content_loaded_soft(page, 20000)
     
-    # 等待更长时间以便登录弹窗或重定向完成
-    page.wait_for_timeout(2000)
+    logger.info("已清除认证状态，准备访问 Job Preferences 页面")
+    page.goto(config["job_pref_url"], wait_until="load", timeout=60000)
+    
+    # 等待页面加载完成（使用 load 而不是 networkidle，因为登录页面可能有持续的后台请求）
+    page.wait_for_load_state("load")
+    
+    # 等待重定向或弹窗完成（给页面足够时间响应未登录状态）
+    page.wait_for_timeout(3000)
     
     url = page.url.lower()
-    # 检查多种登录相关的指示
+    logger.info(f"清除认证后当前 URL: {page.url}")
+    
+    # 先截图记录状态
+    allure.attach(page.screenshot(), name="未登录状态页面", attachment_type=allure.attachment_type.PNG)
+    
+    # 检查多种登录相关的指示器
     login_indicators = [
-        page.get_by_text("Log in", exact=False).first,
-        page.get_by_text("Sign in", exact=False).first,
-        page.get_by_text("Login", exact=False).first,
-        page.locator("button:has-text('Log in')").first,
-        page.locator("button:has-text('Sign in')").first,
+        ("text=Log in", "Log in 文本"),
+        ("text=Sign in", "Sign in 文本"),
+        ("text=Login", "Login 文本"),
+        ("button:has-text('Log in')", "Log in 按钮"),
+        ("button:has-text('Sign in')", "Sign in 按钮"),
+        ("input[type='password']", "密码输入框"),
+        ("input[type='email']", "邮箱输入框"),
+        ("input[placeholder*='email' i]", "邮箱输入框"),
+        ("input[placeholder*='password' i]", "密码输入框"),
     ]
     
     login_visible = False
-    for indicator in login_indicators:
+    matched_indicator = None
+    
+    for selector, description in login_indicators:
         try:
-            if indicator.is_visible(timeout=5000):
+            element = page.locator(selector).first
+            if element.is_visible(timeout=2000):
                 login_visible = True
+                matched_indicator = description
+                logger.info(f"✓ 检测到登录元素: {description}")
                 break
-        except:
+        except Exception as e:
+            logger.debug(f"未找到登录元素 {description}: {e}")
             continue
     
     # 验证：要么 URL 包含 login，要么页面上显示登录相关元素
     # 注意：有些环境可能允许未登录访问（弹窗提示但不强制跳转）
     if "login" not in url and not login_visible:
         # 如果既没有跳转也没有登录UI，检查是否直接显示了表单（意味着鉴权失效）
-        form_visible = page.locator("text=Job Preferences").is_visible(timeout=3000)
-        if form_visible:
-            # 这是环境问题或功能变更，标记为预期行为变更
-            import warnings
-            warnings.warn(f"未登录可直接访问 Job Preferences 页面，可能是测试环境鉴权配置问题: {page.url}")
-            return  # 允许通过，但记录警告
+        try:
+            form_visible = page.locator("text=Job Preferences").is_visible(timeout=3000)
+            if form_visible:
+                # 这是环境问题或功能变更，标记为预期行为变更
+                import warnings
+                warnings.warn(f"未登录可直接访问 Job Preferences 页面，可能是测试环境鉴权配置问题: {page.url}")
+                logger.warning("⚠️ 未登录用户可直接访问 Job Preferences，可能是测试环境鉴权配置问题")
+                return  # 允许通过，但记录警告
+        except:
+            pass
     
-    assert "login" in url or login_visible, f"未登录应触发登录流程，当前: {page.url}"
+    # 断言验证
+    if "login" in url:
+        logger.info(f"✓ URL 包含 login 关键字，已重定向到登录页面")
+    elif login_visible:
+        logger.info(f"✓ 页面显示登录元素: {matched_indicator}")
+    
+    assert "login" in url or login_visible, \
+        f"未登录应触发登录流程（URL 重定向或显示登录 UI），当前 URL: {page.url}，未检测到登录元素"

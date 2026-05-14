@@ -52,7 +52,7 @@ _CONFIG = {
     "currency": "EUR",
     "browser": {
         "type": "chromium",
-        "headless": False,
+        "headless": True,
         "viewport": {"width": 1920, "height": 1080}
     },
     "timeout": {
@@ -70,18 +70,20 @@ def setup_and_cleanup(request, page):
     每个测试用例前后的数据库清理。
 
     - 默认：用例前清空，避免脏数据；用例后再清空，隔离下一条。
-    - TC006（test_verify_resume_data_display）用例前**不清空**，依赖 TC004 写入库中的简历。
-    - TC004（test_submit_resume_set_work_to_date）用例后**不清空**，供紧随其后的 TC006 读取。
+    - TC006（test_verify_resume_data_display）用例前**不清空**，由用例内部处理前置数据清理和简历创建。
+    - TC004（test_submit_resume_set_work_to_date）用例后**不清空**，供紧随其后的 TC006 读取（如需依赖模式）。
     - 用例后回站点首页，避免停在 espub 简历域导致下一条用例 Jobs 列表卡片找不到或 Done 状态异常。
     - 与 test_es_resume_add 共用 user_id 时全目录并行会抢库：整段 fixture 置于 flock 互斥区内。
     """
     with es_resume_user_db_lock(user_id=_CONFIG["test_user_id"]):
+        # TC006 在用例内部自行处理前置数据，fixture 不再清理
         if request.node.name != "test_verify_resume_data_display":
             _cleanup_database()
             logger.info("✓ 测试前数据库清理完成")
 
         yield
 
+        # TC004 后不清空，TC006 后正常清空
         if request.node.name != "test_submit_resume_set_work_to_date":
             _cleanup_database()
             logger.info("✓ 测试后数据库清理完成")
@@ -927,15 +929,17 @@ class TestESResumeSubmit:
     def test_verify_resume_data_display(self, page, config):
         """提交后数据回显验证"""
         
-        # 依赖同文件 TC004：fixture 在 TC004 之后不清库，本用例运行前库中应有 TC004 创建的简历。
-        
         # ========== Arrange：准备测试对象 ==========
+        login_page = LoginPage(page)
         jobs_list_page = JobsListPageES(page)
+        resume_page = ResumeAddPageEs(page)
         
         site = config['site']
         role = config['role']
         account_name = config['user_name']
         base_url = config['base_url']
+        username = config['test_account']['username']
+        password = config['test_account']['password']
         
         logger.info("="*80)
         logger.info("TC006: 提交后数据回显验证")
@@ -946,12 +950,91 @@ class TestESResumeSubmit:
         session_loaded = session_manager.load_session()
         
         if not session_loaded:
-            pytest.fail("Session 未加载，需要登录状态")
+            with allure.step("执行登录"):
+                login_page.navigate_to_home_page()
+                login_page.handle_cookie_popup()
+                login_page.click_login_register_button()
+                login_page.input_email(username)
+                login_page.click_continue_button()
+                login_page.input_password(password)
+                login_page.click_login_button()
+                page.wait_for_load_state("domcontentloaded", timeout=10000)
+                session_manager.save_session()
+                logger.info("✅ 登录成功")
 
         user_id = _CONFIG["test_user_id"]
         
-        # ========== Assert：验证 TC004 在库中已创建简历记录 ==========
-        with allure.step("验证 TC004 在库中已创建简历记录"):
+        # ========== 前置数据处理：检查并清理旧简历数据 ==========
+        with allure.step("前置数据处理：检查并清理已有简历"):
+            resume_count = execute_query("SELECT COUNT(*) FROM resume WHERE user_id = %s", (user_id,))[0][0]
+            if resume_count > 0:
+                logger.info(f"检测到已有简历数据（{resume_count} 条），开始清理...")
+                _cleanup_database()
+                logger.info("✓ 旧简历数据已清理")
+            else:
+                logger.info("✓ 数据库中无旧简历数据，无需清理")
+        
+        # ========== 创建新简历供回显验证 ==========
+        with allure.step("创建新简历以供回显验证"):
+            logger.info("开始创建测试简历...")
+            
+            # 进入简历添加页面
+            with allure.step("进入简历添加页面"):
+                jobs_list_page.navigate_to_jobs_list()
+                jobs_list_page.click_first_job_card()
+                dom_content_loaded_soft(page, 20000)
+                jobs_list_page.click_sidebar_resume()
+                page.wait_for_load_state("domcontentloaded", timeout=15000)
+                dom_content_loaded_soft(page, 20000)
+                assert "resume/add" in page.url, "未进入简历添加页"
+                logger.info("✓ 已进入简历添加页")
+            
+            # 填写 Step1 Personal Information
+            with allure.step("填写 Step1 Personal Information"):
+                resume_page.input_first_name("DataDisplay")
+                resume_page.input_last_name("Test")
+                email_value = resume_page.get_email_value()
+                assert email_value == username, f"Email预填不正确，期望: {username}, 实际: {email_value}"
+                location_value = resume_page.get_current_location_value()
+                assert "Spain" in location_value, f"Current Location预填不正确，实际: {location_value}"
+                resume_page.click_continue()
+                dom_content_loaded_soft(page, 20000)
+                logger.info("✓ Step1 完成")
+            
+            # 填写 Step2 Work Experience
+            with allure.step("填写 Step2 Work Experience"):
+                resume_page.select_job_function(
+                    "Information & Communication Technology",
+                    "Testing & Quality Assurance"
+                )
+                resume_page.select_work_from_date("2021", "03")
+                resume_page.uncheck_currently_work_here()
+                dom_content_loaded_soft(page, 20000)
+                resume_page.select_work_to_date("2024", "12")
+                logger.info("✓ Work Experience 填写完成")
+            
+            # 填写 Step2 Education Experience
+            with allure.step("填写 Step2 Education Experience"):
+                resume_page.select_education_level("Bachelor's Degree")
+                resume_page.select_education_from_date("2017", "09")
+                resume_page.select_education_to_date("2021", "06")
+                logger.info("✓ Education Experience 填写完成")
+            
+            # 提交简历
+            with allure.step("提交简历"):
+                assert resume_page.is_done_button_enabled(), "Done 按钮应可点击"
+                resume_page.click_done()
+                dom_content_loaded_soft(page, 20000)
+                logger.info("✓ 点击 Done 按钮")
+            
+            # 验证提交成功
+            with allure.step("验证简历提交成功"):
+                current_url = page.url
+                assert "resume/add" not in current_url, f"提交失败，仍停留在简历添加页: {current_url}"
+                logger.info(f"✅ 简历提交成功！页面已跳转: {current_url}")
+        
+        # ========== 验证数据库简历已创建 ==========
+        with allure.step("验证数据库简历记录已创建"):
             last_rc, last_we = 0, 0
             for _ in range(15):
                 rc = execute_query("SELECT COUNT(*) FROM resume WHERE user_id = %s", (user_id,))
@@ -963,11 +1046,9 @@ class TestESResumeSubmit:
                 if last_rc >= 1 and last_we >= 1:
                     break
                 time.sleep(0.35)
-            assert last_rc >= 1, (
-                f"库中应存在简历记录（TC004 应已创建），resume_count={last_rc}"
-            )
-            assert last_we >= 1, f"库中应存在工作经历记录（TC004 应已创建），work_exp_count={last_we}"
-            logger.info("✓ 数据库简历与工作履历记录存在（来自 TC004）")
+            assert last_rc >= 1, f"库中应存在简历记录，resume_count={last_rc}"
+            assert last_we >= 1, f"库中应存在工作经历记录，work_exp_count={last_we}"
+            logger.info("✓ 数据库简历与工作履历记录已创建成功")
         
         # ========== Act：进入简历查看页面 ==========
         with allure.step("访问招聘列表页"):

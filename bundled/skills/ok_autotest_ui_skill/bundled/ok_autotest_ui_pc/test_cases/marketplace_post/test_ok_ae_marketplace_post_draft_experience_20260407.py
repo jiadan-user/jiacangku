@@ -967,6 +967,109 @@ def _dismiss_leave_dialog_keep_form(page: Page) -> None:
     wait_post_interaction_settled(page, 500)
 
 
+def _goto_with_retry(page: Page, url: str, max_retries: int = 3, wait_until: str = "domcontentloaded", timeout: int = 30000):
+    """
+    通用的带重试机制的页面导航函数，处理网络状态变更等临时性错误。
+    
+    Args:
+        page: Playwright Page 对象
+        url: 目标 URL
+        max_retries: 最大重试次数（默认 3）
+        wait_until: 等待状态（默认 "domcontentloaded"）
+        timeout: 超时时间（毫秒，默认 30000）
+    
+    Returns:
+        Response | None: 成功时返回 Response 对象
+    """
+    last_error = None
+    for attempt in range(max_retries):
+        try:
+            if attempt > 0:
+                # 重试前等待网络状态稳定
+                wait_time = 1500 + (attempt * 500)  # 递增等待：1.5s, 2s, 2.5s
+                page.wait_for_timeout(wait_time)
+                
+                try:
+                    page.wait_for_load_state("networkidle", timeout=5000)
+                except Exception:
+                    pass
+            
+            resp = page.goto(url, wait_until=wait_until, timeout=timeout)
+            if attempt > 0:
+                logger.info(f"页面导航在第 {attempt + 1} 次尝试后成功: {url}")
+            return resp
+            
+        except Exception as e:
+            last_error = e
+            err_msg = str(e)
+            
+            # 对网络相关错误进行重试
+            is_network_error = any(keyword in err_msg for keyword in [
+                "ERR_NETWORK_CHANGED", "net::ERR_", "NS_ERROR", "TimeoutError"
+            ])
+            
+            if is_network_error and attempt < max_retries - 1:
+                logger.warning(
+                    f"页面导航遇到网络错误（尝试 {attempt + 1}/{max_retries}）: {err_msg[:120]}"
+                )
+                continue
+            
+            # 非网络错误或已达最大重试次数，直接抛出
+            if attempt >= max_retries - 1:
+                logger.error(f"页面导航在 {max_retries} 次尝试后仍然失败: {url}")
+            raise
+    
+    raise last_error if last_error else Exception(f"导航失败: {url}")
+
+
+def _goto_language_path_with_retry(page: Page, url: str, max_retries: int = 5):
+    """
+    带重试机制的语言路径导航，处理 ERR_NETWORK_CHANGED 等网络状态变更错误。
+    
+    语言路径切换（如 /en/ -> /ar/）可能触发服务端 Cookie 设置或 CDN 路由变化，
+    导致浏览器检测到网络状态变更而中断导航。此函数通过重试机制增强稳定性。
+    
+    Returns:
+        Response | None: 成功时返回 Response 对象，失败时抛出异常
+    """
+    last_error = None
+    for attempt in range(max_retries):
+        try:
+            # 等待网络空闲后再跳转，减少状态冲突
+            if attempt > 0:
+                # 重试前增加更长等待时间，确保网络状态完全稳定
+                wait_time = 2000 + (attempt * 1000)  # 递增等待：2s, 3s, 4s, 5s, 6s
+                logger.info(f"等待 {wait_time}ms 后进行第 {attempt + 1} 次重试...")
+                page.wait_for_timeout(wait_time)
+                
+                # 尝试等待网络空闲
+                try:
+                    page.wait_for_load_state("networkidle", timeout=8000)
+                except Exception:
+                    pass  # networkidle 超时不影响重试
+            
+            resp = page.goto(url, wait_until="domcontentloaded", timeout=30000)
+            if attempt > 0:
+                logger.info(f"语言路径导航在第 {attempt + 1} 次尝试后成功")
+            return resp  # 成功返回
+            
+        except Exception as e:
+            last_error = e
+            err_msg = str(e)
+            # 仅对网络状态变更错误重试
+            if any(keyword in err_msg for keyword in ["ERR_NETWORK_CHANGED", "net::ERR_"]) and attempt < max_retries - 1:
+                logger.warning(
+                    f"语言路径导航遇到网络状态变更错误（尝试 {attempt + 1}/{max_retries}）: {err_msg[:150]}"
+                )
+                continue
+            # 非网络错误或已达最大重试次数，直接抛出
+            logger.error(f"语言路径导航在 {max_retries} 次尝试后仍然失败: {err_msg}")
+            raise
+    
+    # 理论上不会到这里，但为了类型安全
+    raise last_error if last_error else Exception("导航失败")
+
+
 # ---------- Fixtures ----------
 
 
@@ -1504,7 +1607,12 @@ def test_tc022_load_draft_fills_form(
     loc_draft_entry(page).wait_for(state="visible", timeout=10_000)
     _open_draft_box(page)
     _click_draft_list_row(page, t, timeout=12_000)
-    page.wait_for_url("**/publish?id=*", timeout=20_000)
+    # 与 TC023 一致：无头下 #title 回填常晚于弹层关闭，需等 URL+交互稳定后再 to_have_value
+    page.wait_for_url("**/publish?id=*", timeout=20_000, wait_until="domcontentloaded")
+    try:
+        page.wait_for_load_state("domcontentloaded", timeout=15_000)
+    except Exception:
+        pass
     wait_post_interaction_settled(page, 2000)
     expect(page.locator("#title")).to_have_value(t, timeout=15_000)
     assert page.locator("#content").input_value() == d
@@ -2135,7 +2243,7 @@ def test_tc050_close_tab_no_app_modal(page: Page, logged_in_post_page: Marketpla
     """TC050：未主动离开前不应出现业务侧 Discard/存草稿 Modal。原生 beforeunload 在 headless 易阻塞，此处只关页不跑 unload。"""
     p2 = page.context.new_page()
     try:
-        p2.goto(_CONFIG["publish_url"], wait_until="domcontentloaded", timeout=30000)
+        _goto_with_retry(p2, _CONFIG["publish_url"])
         wait_post_interaction_settled(p2, 2000)
         p2.locator("#title").fill("TC050")
         p2.locator("#content").fill("dirty tab close")
@@ -2295,7 +2403,7 @@ def test_tc057_second_tab_sees_new_draft_count(page: Page, logged_in_post_page: 
     uid = str(int(time.time() * 1000) % 1_000_000)
     p2 = page.context.new_page()
     try:
-        p2.goto(_CONFIG["publish_url"], wait_until="domcontentloaded", timeout=30000)
+        _goto_with_retry(p2, _CONFIG["publish_url"])
         wait_post_interaction_settled(p2, 1500)
         n_before = _draft_count_from_entry(p2)
         _clear_title_and_content(page)
@@ -2341,7 +2449,7 @@ def test_tc059_english_copy_present(page: Page, logged_in_post_page: Marketplace
 def test_tc060_arabic_publish_path_loads(page: Page, logged_in_post_page: MarketplacePostPage):
     """TC060：/ar/ 发布页可打开（RTL 由页面布局承担）。"""
     ar_url = _CONFIG["publish_url"].replace("/en/", "/ar/")
-    resp = page.goto(ar_url, wait_until="domcontentloaded", timeout=30000)
+    resp = _goto_language_path_with_retry(page, ar_url)
     if resp is not None and resp.status >= 400:
         logger.warning("TC060: /ar/ 未部署 HTTP %s，本环境不强制", resp.status)
         return
@@ -2353,7 +2461,7 @@ def test_tc060_arabic_publish_path_loads(page: Page, logged_in_post_page: Market
 def test_tc061_traditional_chinese_path_if_exists(page: Page, logged_in_post_page: MarketplacePostPage):
     """TC061：zh-TW 路径可探测。"""
     url = _CONFIG["publish_url"].replace("/en/", "/zh-TW/")
-    resp = page.goto(url, wait_until="domcontentloaded", timeout=30000)
+    resp = _goto_language_path_with_retry(page, url)
     if resp is not None and resp.status >= 400:
         logger.warning("TC061: zh-TW 未部署 HTTP %s，本环境不强制", resp.status)
         return
@@ -2365,7 +2473,7 @@ def test_tc061_traditional_chinese_path_if_exists(page: Page, logged_in_post_pag
 def test_tc062_spanish_path_if_exists(page: Page, logged_in_post_page: MarketplacePostPage):
     """TC062：es 路径可探测。"""
     url = _CONFIG["publish_url"].replace("/en/", "/es/")
-    resp = page.goto(url, wait_until="domcontentloaded", timeout=30000)
+    resp = _goto_language_path_with_retry(page, url)
     if resp is not None and resp.status >= 400:
         logger.warning("TC062: es 未部署 HTTP %s，本环境不强制", resp.status)
         return
@@ -2377,7 +2485,7 @@ def test_tc062_spanish_path_if_exists(page: Page, logged_in_post_page: Marketpla
 def test_tc063_portuguese_path_if_exists(page: Page, logged_in_post_page: MarketplacePostPage):
     """TC063：pt 路径可探测。"""
     url = _CONFIG["publish_url"].replace("/en/", "/pt/")
-    resp = page.goto(url, wait_until="domcontentloaded", timeout=30000)
+    resp = _goto_language_path_with_retry(page, url)
     if resp is not None and resp.status >= 400:
         logger.warning("TC063: pt 未部署 HTTP %s，本环境不强制", resp.status)
         return

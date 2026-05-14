@@ -376,6 +376,12 @@ def test_tc001_full_publish_apple_phone(page: Page, logged_in_post_page: Marketp
     # Step 6: 填写Price
     post_page.input_price("1800")
     
+    # 滚动页面以确保配送选项区域被渲染
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight)")
+    wait_post_interaction_settled(page, 2000)
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight / 2)")
+    wait_post_interaction_settled(page, 1000)
+    
     # Step 7: 选择Delivery Option
     post_page.select_delivery_seller_pays()
     
@@ -1311,6 +1317,14 @@ def test_price_field_validation(
         post_page.click_more_categories()
         post_page.click_browse_to_find_category()
         post_page.select_category_electronics_mobiles_accessories()
+        wait_post_interaction_settled(page, 1000)
+        
+        # 滚动页面以确保配送选项区域被渲染
+        page.evaluate("() => window.scrollTo(0, document.body.scrollHeight)")
+        wait_post_interaction_settled(page, 2000)
+        page.evaluate("() => window.scrollTo(0, document.body.scrollHeight / 2)")
+        wait_post_interaction_settled(page, 1000)
+        
         # 选择Delivery: Free Delivery
         post_page.select_delivery_no_delivery()
         wait_post_interaction_settled(page, 500)
@@ -1524,6 +1538,12 @@ def test_tc059_seller_pays_postage(page: Page, logged_in_post_page: MarketplaceP
 
     _fill_apple_phone_details_and_price(post_page, "500")
 
+    # 滚动页面以确保配送选项区域被渲染
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight)")
+    wait_post_interaction_settled(page, 2000)
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight / 2)")
+    wait_post_interaction_settled(page, 1000)
+
     # 选择Delivery Option: Seller pays
     post_page.select_delivery_seller_pays()
     logger.info("✓ 已选择Seller pays for postage")
@@ -1560,6 +1580,12 @@ def test_tc060_buyer_pays_postage(page: Page, logged_in_post_page: MarketplacePo
     wait_post_interaction_settled(page, 2000)
 
     _fill_apple_phone_details_and_price(post_page, "450")
+
+    # 滚动页面以确保配送选项区域被渲染
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight)")
+    wait_post_interaction_settled(page, 2000)
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight / 2)")
+    wait_post_interaction_settled(page, 1000)
 
     # 选择Buyer pays
     post_page.select_delivery_buyer_pays()
@@ -1622,6 +1648,12 @@ def test_tc062_arrange_pickup_toggle(page: Page, logged_in_post_page: Marketplac
     wait_post_interaction_settled(page, 2000)
 
     _fill_apple_phone_details_and_price(post_page, "550")
+
+    # 滚动页面以确保配送选项区域被渲染
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight)")
+    wait_post_interaction_settled(page, 2000)
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight / 2)")
+    wait_post_interaction_settled(page, 1000)
 
     # 选择Seller pays
     post_page.select_delivery_seller_pays()
@@ -1746,6 +1778,12 @@ def test_tc055_select_all_details(page: Page, logged_in_post_page: MarketplacePo
     
     # post_page.select_storage_128gb()  # Mobiles & Accessories 无此字段
     # logger.info("✓ 已选择Storage: 128 GB")
+    
+    # 滚动页面以确保配送选项区域被渲染
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight)")
+    wait_post_interaction_settled(page, 2000)
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight / 2)")
+    wait_post_interaction_settled(page, 1000)
     
     # 选择Delivery和Price
     post_page.select_delivery_seller_pays()
@@ -2043,6 +2081,12 @@ def test_tc019_title_with_emoji(page: Page, logged_in_post_page: MarketplacePost
     post_page.select_category_electronics_mobiles_accessories()
     wait_post_interaction_settled(page, 3000)
     
+    # 滚动页面以确保配送选项区域被渲染
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight)")
+    wait_post_interaction_settled(page, 2000)
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight / 2)")
+    wait_post_interaction_settled(page, 1000)
+    
     post_page.select_delivery_seller_pays()
     post_page.input_price("500")
     
@@ -2124,6 +2168,12 @@ def test_tc021_title_200_chars_boundary(page: Page, logged_in_post_page: Marketp
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
     wait_post_interaction_settled(page, 3000)
+    
+    # 滚动页面以确保配送选项区域被渲染
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight)")
+    wait_post_interaction_settled(page, 2000)
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight / 2)")
+    wait_post_interaction_settled(page, 1000)
     
     post_page.select_delivery_buyer_pays()
     post_page.input_price("300")
@@ -2232,6 +2282,12 @@ def test_tc024_title_with_html_xss(page: Page, logged_in_post_page: MarketplaceP
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
     wait_post_interaction_settled(page, 3000)
+    
+    # 滚动页面以确保配送选项区域被渲染
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight)")
+    wait_post_interaction_settled(page, 2000)
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight / 2)")
+    wait_post_interaction_settled(page, 1000)
     
     post_page.select_delivery_seller_pays()
     post_page.input_price("150")
@@ -2452,6 +2508,12 @@ def test_tc027_description_11_chars_below_min(page: Page, logged_in_post_page: M
     
     wait_post_interaction_settled(page, 1000)
     
+    # 滚动页面以确保配送选项区域被渲染
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight)")
+    wait_post_interaction_settled(page, 2000)
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight / 2)")
+    wait_post_interaction_settled(page, 1000)
+    
     post_page.select_delivery_seller_pays()
     post_page.input_price("120")
     
@@ -2491,6 +2553,12 @@ def test_tc028_description_empty_validation(page: Page, logged_in_post_page: Mar
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
     wait_post_interaction_settled(page, 3000)
+    
+    # 滚动页面以确保配送选项区域被渲染
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight)")
+    wait_post_interaction_settled(page, 2000)
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight / 2)")
+    wait_post_interaction_settled(page, 1000)
     
     post_page.select_delivery_buyer_pays()
     post_page.input_price("150")
@@ -2567,6 +2635,12 @@ def test_tc030_description_only_newlines(page: Page, logged_in_post_page: Market
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
     wait_post_interaction_settled(page, 3000)
+    
+    # 滚动页面以确保配送选项区域被渲染
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight)")
+    wait_post_interaction_settled(page, 2000)
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight / 2)")
+    wait_post_interaction_settled(page, 1000)
     
     post_page.select_delivery_seller_pays()
     post_page.input_price("200")
@@ -2853,8 +2927,9 @@ def test_tc037_ai_generate_without_title(page: Page, logged_in_post_page: Market
     post_page = logged_in_post_page
     logger = setup_logger()
     
-    test_image = _DEFAULT_TEST_IMAGE
-    post_page.upload_single_image(test_image)
+    # 注释掉上传图片的步骤，因为上传图片后即使Title为空也会生成内容
+    # test_image = _DEFAULT_TEST_IMAGE
+    # post_page.upload_single_image(test_image)
     
     # 不填写Title，直接点击Write with AI
     write_ai_btn = page.get_by_text("Write with AI")
@@ -3508,6 +3583,12 @@ def test_tc099_chrome_compatibility(page: Page, logged_in_post_page: Marketplace
     wait_post_interaction_settled(page, 1000)
     post_page.select_category_electronics_mobiles_accessories()
     wait_post_interaction_settled(page, 3000)
+    
+    # 滚动页面以确保配送选项区域被渲染
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight)")
+    wait_post_interaction_settled(page, 2000)
+    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight / 2)")
+    wait_post_interaction_settled(page, 1000)
     
     post_page.select_delivery_seller_pays()
     post_page.input_price("300")
