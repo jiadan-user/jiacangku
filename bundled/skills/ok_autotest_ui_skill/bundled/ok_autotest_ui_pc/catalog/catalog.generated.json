@@ -1,8 +1,8 @@
 {
   "generated_at": "2026-05-13T07:20:01Z",
   "root_dir": "/Users/vickymo/cursor-workspace/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc",
-  "case_count": 2262,
-  "governed_case_count": 2065,
+  "case_count": 2261,
+  "governed_case_count": 2064,
   "cases": [
     {
       "nodeid": "test_cases/SEO/AE/test_settings_new_messages.py::test_tc001_access_settings_new_messages",
@@ -10705,39 +10705,6 @@
       "baseline_set": null,
       "risk_level": null,
       "owner": null,
-      "governed": true,
-      "skill_excluded": false
-    },
-    {
-      "nodeid": "test_cases/explore/test_explore_cars_page_load_tc001.py::test_tc001_direct_access_cars_page_title_and_elements_should_display_correctly",
-      "file_path": "test_cases/explore/test_explore_cars_page_load_tc001.py",
-      "test_name": "test_tc001_direct_access_cars_page_title_and_elements_should_display_correctly",
-      "case_id": "case_id_explore_cars_page_load_tc001",
-      "priority": "p0",
-      "site": "ae",
-      "markers": [
-        "ae",
-        "allure_description",
-        "case_id_explore_cars_page_load_tc001",
-        "explore",
-        "p0",
-        "smoke"
-      ],
-      "allure_feature": "OK - 探索列表页",
-      "allure_story": "页面初始加载与导航 - 正向场景",
-      "allure_title": "直接访问 Cars 探索列表页，页面标题和核心元素应正确展示",
-      "severity": "critical",
-      "module_id": "explore",
-      "feature_id": "explore_",
-      "aliases": [
-        "cars",
-        "explore",
-        "explore_",
-        "post_explore"
-      ],
-      "baseline_set": null,
-      "risk_level": null,
-      "owner": "qa-ui",
       "governed": true,
       "skill_excluded": false
     },
