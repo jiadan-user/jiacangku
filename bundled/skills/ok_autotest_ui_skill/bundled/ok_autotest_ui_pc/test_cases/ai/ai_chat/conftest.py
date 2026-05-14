@@ -1,7 +1,6 @@
 # test_cases/ai/ai_chat/conftest.py
 """
 AI Chat 测试专用配置
-- 失败自动重试 3 次（间隔 2 秒）
 - 失败自动截图并附加到 Allure 报告
 """
 import os
@@ -22,22 +21,6 @@ def _resolve_headless(headless: bool) -> bool:
     return headless
 
 logger = setup_logger()
-
-
-# ========== 失败重试（3次）==========
-
-def pytest_collection_modifyitems(items):
-    """为 ai/ai_chat 目录下的所有测试用例自动添加失败重试（3次，间隔2秒）。
-    排除含 module 级 page fixture 的文件（RERUN 会重建 module fixture，
-    触发 anyio event loop 冲突导致 Playwright Sync API 报错）。
-    """
-    # 含 module 级自定义 page fixture 的文件不加 flaky，避免 RERUN 触发 asyncio 冲突
-    _exclude_files = {"test_ai_chat_job.py"}
-    for item in items:
-        if "ai/ai_chat" in str(item.fspath):
-            if item.fspath.basename not in _exclude_files:
-                item.add_marker(pytest.mark.flaky(reruns=3, reruns_delay=2))
-
 
 
 # ========== Fixtures ==========
