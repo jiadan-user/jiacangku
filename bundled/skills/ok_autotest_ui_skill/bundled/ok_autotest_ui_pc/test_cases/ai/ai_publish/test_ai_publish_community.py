@@ -698,15 +698,18 @@ def setup_community_page(page, config):
         session_loaded = session_manager.load_session()
         if session_loaded:
             logger.info("✓ 成功加载已保存的 Session")
-            page.reload()
-            page.wait_for_load_state("domcontentloaded", timeout=10000)
-            page.wait_for_timeout(2000)
-            is_logged_in = login_page.is_login_button_text_changed(timeout=2000)
-            if is_logged_in:
-                logger.info("✓ Session 有效，已登录状态")
-                logger.info("✅ 跳过登录步骤！")
-            else:
-                logger.info("⚠️ Session 已过期，需要重新登录")
+            try:
+                page.reload(wait_until="domcontentloaded", timeout=30000)
+                page.wait_for_timeout(2000)
+                is_logged_in = login_page.is_login_button_text_changed(timeout=2000)
+                if is_logged_in:
+                    logger.info("✓ Session 有效，已登录状态")
+                    logger.info("✅ 跳过登录步骤！")
+                else:
+                    logger.info("⚠️ Session 已过期，需要重新登录")
+                    session_loaded = False
+            except Exception as e:
+                logger.warning(f"⚠️ Session 重载失败: {e}，重新执行登录")
                 session_loaded = False
         else:
             logger.info("⚠️ 未找到已保存的 Session，需要执行登录")
