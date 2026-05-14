@@ -117,7 +117,7 @@ _CONFIG = {
         "navigation": 60000 if os.getenv("CI") else 30000
     },
     "ci_mode": os.getenv("CI", "false").lower() in ("true", "1", "yes"),
-    "test_images_path": "/Users/vickymo/Pictures/公共配置图片/车图"
+    "test_images_path": str(Path(__file__).parent.parent.parent / "test_data" / "car_images")
 }
 
 
@@ -1547,7 +1547,7 @@ def test_p0_26_submit_all_required_fields(page, config):
     
     with allure.step("步骤6: 上传外观照片"):
         import glob
-        image_dir = config.get("image_dir", "/Users/vickymo/Pictures/公共配置图片/车图")
+        image_dir = config.get("test_images_path")
         image_files = glob.glob(f"{image_dir}/*.jpg") + glob.glob(f"{image_dir}/*.jpeg")
         
         if not image_files:
