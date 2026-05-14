@@ -1032,14 +1032,29 @@ class TestSettingsProfile:
     @pytest.mark.case_id_tc_pro_011
     @allure.severity(allure.severity_level.MINOR)
     def test_save_without_changes(self, page, config):
+        def _wait_for_profile_data(timeout=15000):
+            """等待 Profile 表单数据由 API 回填完成（#username 有非空值）"""
+            try:
+                page.wait_for_function(
+                    "() => { const el = document.querySelector('#username'); return el && el.value.length > 0; }",
+                    timeout=timeout,
+                )
+            except Exception:
+                # username 可能本身为空，不强制失败，后续断言自然处理
+                pass
+
         with allure.step("前置：导航到 Profile 页面"):
             page.goto(PROFILE_URL, wait_until="domcontentloaded", timeout=60000)
             page.wait_for_load_state("load", timeout=30000)
+            # wait_for_load_state("load") 仅等待 HTML/CSS/JS 资源，
+            # React 异步 API 回填表单字段需额外等待
+            _wait_for_profile_data()
 
         with allure.step("记录当前所有字段值"):
             orig_name = page.locator("#username").input_value()
             orig_first = page.locator("#firstName").input_value()
             orig_last = page.locator("#lastName").input_value()
+            logger.info(f"原始字段值: username={orig_name}, firstName={orig_first}, lastName={orig_last}")
 
         with allure.step("直接点击 Save（不修改任何字段）"):
             save_btn = page.get_by_role("button", name="Save")
@@ -1053,6 +1068,8 @@ class TestSettingsProfile:
         with allure.step("验证所有字段值无变化"):
             page.goto(PROFILE_URL, wait_until="domcontentloaded", timeout=60000)
             page.wait_for_load_state("load", timeout=30000)
+            # 重新导航后同样等待 API 回填，再做比对
+            _wait_for_profile_data()
             assert page.locator("#username").input_value() == orig_name
             assert page.locator("#firstName").input_value() == orig_first
             assert page.locator("#lastName").input_value() == orig_last
