@@ -19,10 +19,6 @@ directories:
     module_id: chat_ai
     aliases: [chat_ai, chat-ai, chat]
     owner: qa-ui
-  test_cases/explore/:
-    module_id: explore
-    aliases: [explore, post_explore]
-    owner: qa-ui
   test_cases/kyc/:
     module_id: kyc
     aliases: [kyc]
