@@ -444,9 +444,10 @@ class TestJobDetailSendMessage:
     @pytest.mark.case_id_ai_chat_ae_job_detail_send_01
     @pytest.mark.smoke
     @pytest.mark.p0
-    @pytest.mark.ai
+    @pytest.mark.aidfr
     @pytest.mark.ai_chat
     @pytest.mark.ae
+    @pytest.mark.long_tail
     @allure.feature("OK")
     @allure.story("Jobs详情页会话 - 发送消息")
     @allure.title("从 Jobs 详情页点击 Contact 进入会话页并发送文本消息应成功")
@@ -523,6 +524,7 @@ class TestJobDetailSendMessage:
     @pytest.mark.ai
     @pytest.mark.ai_chat
     @pytest.mark.ae
+    @pytest.mark.long_tail
     @allure.feature("OK")
     @allure.story("Jobs详情页会话 - 发送消息")
     @allure.title("在会话页上传简历文件应成功显示并触发 AI Auto Reply")
@@ -592,6 +594,7 @@ class TestJobDetailSendMessage:
     @pytest.mark.ai
     @pytest.mark.ai_chat
     @pytest.mark.ae
+    @pytest.mark.long_tail
     @allure.feature("OK")
     @allure.story("Jobs详情页会话 - 发送消息")
     @allure.title("在会话页上传形象照片应成功显示并触发 AI Auto Reply")
@@ -661,6 +664,7 @@ class TestJobDetailSendMessage:
     @pytest.mark.ai
     @pytest.mark.ai_chat
     @pytest.mark.ae
+    @pytest.mark.long_tail
     @allure.feature("OK")
     @allure.story("Jobs详情页会话 - 发送消息")
     @allure.title("在会话页上传护照图片应成功显示并触发 AI Auto Reply")
