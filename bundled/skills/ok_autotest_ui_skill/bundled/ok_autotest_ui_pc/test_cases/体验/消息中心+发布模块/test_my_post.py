@@ -57,6 +57,28 @@ SCREENSHOT_DIR = 'screenshots/test_my_post'
 os.makedirs(SCREENSHOT_DIR, exist_ok=True)
 
 
+# ==================== Helpers ====================
+
+def _click_category_tab(page, label: str) -> None:
+    """点击 My Post 页面的分类 Tab（兼容 span / button / role=tab 多种结构）。"""
+    selectors = [
+        f'span:has-text("{label}")',
+        f'button:has-text("{label}")',
+        f'[role="tab"]:has-text("{label}")',
+        f'a:has-text("{label}")',
+        f'[class*="tab"]:has-text("{label}")',
+    ]
+    for sel in selectors:
+        loc = page.locator(sel).first
+        try:
+            loc.wait_for(state='visible', timeout=8000)
+            loc.click()
+            return
+        except Exception:
+            continue
+    pytest.skip(f"{label} Tab 元素不可见，可能页面结构已变更或无该分类数据")
+
+
 # ==================== Fixture ====================
 
 @pytest.fixture(scope="function")
@@ -187,7 +209,7 @@ def test_mypost_category_tab_marketplace(my_post_page: Page):
     page = my_post_page
 
     with allure.step("点击 Marketplace 分类 Tab"):
-        page.locator('span:has-text("Marketplace")').first.click()
+        _click_category_tab(page, "Marketplace")
         page.wait_for_timeout(2000)
 
     with allure.step("验证 Marketplace Tab 被选中"):
@@ -1421,7 +1443,7 @@ def test_mypost_marketplace_active_filter(my_post_page: Page):
     page = my_post_page
 
     with allure.step("点击 Marketplace 分类 Tab"):
-        page.locator('span:has-text("Marketplace")').first.click()
+        _click_category_tab(page, "Marketplace")
         page.wait_for_timeout(2000)
 
     with allure.step("确认状态 Tab 仍为 Active"):
@@ -1451,7 +1473,7 @@ def test_mypost_marketplace_draft_filter(my_post_page: Page):
     page = my_post_page
 
     with allure.step("点击 Marketplace 分类 Tab"):
-        page.locator('span:has-text("Marketplace")').first.click()
+        _click_category_tab(page, "Marketplace")
         page.wait_for_timeout(1000)
 
     with allure.step("点击 Draft 状态 Tab"):

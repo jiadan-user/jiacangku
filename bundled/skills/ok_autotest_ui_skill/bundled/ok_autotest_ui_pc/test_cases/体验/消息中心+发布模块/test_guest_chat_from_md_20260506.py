@@ -49,6 +49,37 @@ def _safe_text(page: Page) -> str:
         return ""
 
 
+def _public_shell_text(page: Page) -> str:
+    """首页顶栏常为独立区域，合并 body + header 文案，避免仅 body 为空导致误判。"""
+    try:
+        return (
+            page.evaluate(
+                """() => {
+                    var b = (document.body && document.body.innerText) || '';
+                    var sel = 'header, [class*="Header"], [class*="TopBar"], [class*="top-bar"], nav[role="navigation"]';
+                    var parts = [b];
+                    document.querySelectorAll(sel).forEach(function (h) {
+                        var t = (h.innerText || '').trim();
+                        if (t) parts.push(t);
+                    });
+                    return parts.join('\\n').trim();
+                }"""
+            )
+            or ""
+        )
+    except Exception:
+        return _safe_text(page)
+
+
+def _guest_entry_visible_locator(page: Page):
+    """未登录常见入口：链接或按钮（文案随版本变化）。"""
+    return page.get_by_role("link", name=re.compile(r"log\s*in|register|sign\s*in|sign\s*up", re.I)).first
+
+
+def _guest_entry_visible_button(page: Page):
+    return page.get_by_role("button", name=re.compile(r"^login$|^log\s*in$|sign\s*in", re.I)).first
+
+
 def _is_error_page(page: Page) -> bool:
     body = _safe_text(page)
     lowered = body.lower()
@@ -170,6 +201,10 @@ def _clear_guest_state(page: Page):
                 pass
     if not reloaded:
         _retry_goto(page, _CONFIG["base_url"], attempts=3)
+    try:
+        page.wait_for_load_state("domcontentloaded", timeout=45000)
+    except Exception:
+        pass
     page.wait_for_timeout(1200)
 
 
@@ -340,8 +375,37 @@ def guest_chat_page(page: Page):
 @allure.title("TC001: 前置清理后处于免登录状态")
 def test_tc001_guest_state(page: Page):
     _clear_guest_state(page)
-    body = _safe_text(page)
-    assert re.search(r"log in|register", body, re.I), "清理后未识别到免登录入口文案"
+    pat = re.compile(
+        r"log\s*in|register|sign\s*in|sign\s*up|join\s*now|get\s*started|continue\s*as\s*guest",
+        re.I,
+    )
+    ok = False
+    deadline = time.time() + 28.0
+    while time.time() < deadline:
+        blob = _public_shell_text(page)
+        if pat.search(blob or ""):
+            ok = True
+            break
+        lk = _guest_entry_visible_locator(page)
+        try:
+            if lk.count() > 0 and lk.is_visible(timeout=1200):
+                ok = True
+                break
+        except Exception:
+            pass
+        bt = _guest_entry_visible_button(page)
+        try:
+            if bt.count() > 0 and bt.is_visible(timeout=800):
+                ok = True
+                break
+        except Exception:
+            pass
+        page.wait_for_timeout(600)
+    preview = (_public_shell_text(page) or "")[:400]
+    assert ok, (
+        "清理后未识别到免登录入口文案（已轮询 body+header 与 Log in/Register/Sign in 链接）；"
+        f"url={page.url!r} preview={preview!r}"
+    )
 
 
 @pytest.mark.guest_chat
