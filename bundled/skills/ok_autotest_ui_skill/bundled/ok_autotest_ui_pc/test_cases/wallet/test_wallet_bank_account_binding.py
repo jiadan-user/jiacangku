@@ -838,19 +838,21 @@ def _close_blocking_dialogs(page):
         return False
 
 
-def _safe_click_with_blank_check(page, element, element_name="元素"):
+def _safe_click_with_blank_check(page, element, element_name="元素", skip_dialog_check=False):
     """安全点击元素并检测白屏
     
     Args:
         page: Playwright page 对象
         element: 要点击的元素
         element_name: 元素名称（用于日志）
+        skip_dialog_check: 是否跳过对话框检查（当已经在外层检查过时）
     """
     from test_cases.wallet.test_wallet_withdrawal import _wait_out_transient_blank
 
     try:
-        # 先关闭可能阻塞的对话框
-        _close_blocking_dialogs(page)
+        # 先关闭可能阻塞的对话框（如果外层未处理）
+        if not skip_dialog_check:
+            _close_blocking_dialogs(page)
         
         # 不使用 no_wait_after：否则导航未完成时易读到短暂 about:blank
         element.click(timeout=8000, force=True)
@@ -878,12 +880,29 @@ def _click_bank_account_more_menu(page):
     # 先检测是否已经在白屏
     _check_and_recover_from_blank_page(page, _CONFIG['base_url'])
     
+    # 智能关闭阻塞对话框：排除dropdown/tooltip类型的伪对话框
+    try:
+        dialogs = page.locator('[role="dialog"][aria-modal="true"]')
+        if dialogs.count() > 0:
+            for i in range(dialogs.count()):
+                dialog = dialogs.nth(i)
+                # 检查是否是真正的模态对话框（有标题或主体内容）
+                has_content = dialog.locator('h1, h2, h3, [role="heading"], .modal-title, .dialog-title').count() > 0
+                if has_content:
+                    logger.info(f"检测到真正的模态对话框，尝试关闭...")
+                    _close_blocking_dialogs(page)
+                    break
+                else:
+                    logger.debug(f"检测到dialog元素但非真正的模态框，跳过关闭")
+    except Exception as e:
+        logger.debug(f"对话框检测异常（非致命）: {e}")
+    
     try:
         # 策略1: 尝试通过Bank Account区域中的图片定位
         bank_section = page.locator('text="Bank Account"').locator('..').locator('..')
         more_button = bank_section.get_by_role('img').last
         
-        if _safe_click_with_blank_check(page, more_button, "三点菜单（策略1）"):
+        if _safe_click_with_blank_check(page, more_button, "三点菜单（策略1）", skip_dialog_check=True):
             logger.info("✓ 已点击三点菜单（策略1：Bank Account区域定位）")
             page.wait_for_timeout(300)
             return True
@@ -898,7 +917,7 @@ def _click_bank_account_more_menu(page):
             account_text = page.locator('text=/\\*{12}\\d{4}/')  # 匹配 ************7854
             more_button = account_text.locator('..').get_by_role('img').last
             
-            if _safe_click_with_blank_check(page, more_button, "三点菜单（策略2）"):
+            if _safe_click_with_blank_check(page, more_button, "三点菜单（策略2）", skip_dialog_check=True):
                 logger.info("✓ 已点击三点菜单（策略2：账号文本附近定位）")
                 page.wait_for_timeout(300)
                 return True
@@ -912,7 +931,7 @@ def _click_bank_account_more_menu(page):
                 # 策略3: 使用原有的nth(4)方式作为后备
                 more_button = page.get_by_role('img').nth(4)
                 
-                if _safe_click_with_blank_check(page, more_button, "三点菜单（策略3）"):
+                if _safe_click_with_blank_check(page, more_button, "三点菜单（策略3）", skip_dialog_check=True):
                     logger.info("✓ 已点击三点菜单（策略3：nth(4)定位）")
                     page.wait_for_timeout(300)
                     return True
