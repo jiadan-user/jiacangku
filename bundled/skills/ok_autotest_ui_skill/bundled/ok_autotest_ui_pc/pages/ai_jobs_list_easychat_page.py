@@ -72,7 +72,7 @@ class AiJobsListEasyChatPage(BasePage):
             # 使用 role=toolbar 限定范围，避免匹配 Browse 菜单里的 Jobs 链接
             self.page.locator("[role='toolbar']").get_by_text("Jobs", exact=True).first.click()
             self.page.wait_for_load_state("domcontentloaded", timeout=10000)
-            self.page.wait_for_timeout(1500)
+            self.wait_for_list_rendered()
         except Exception as e:
             self.logger.error(f"点击 Jobs Tab 失败: {e}")
             raise
@@ -82,7 +82,7 @@ class AiJobsListEasyChatPage(BasePage):
         try:
             self.page.locator("[role='toolbar']").get_by_text("All", exact=True).first.click()
             self.page.wait_for_load_state("domcontentloaded", timeout=10000)
-            self.page.wait_for_timeout(1500)
+            self.wait_for_list_rendered()
         except Exception as e:
             self.logger.error(f"点击 All Tab 失败: {e}")
             raise
@@ -91,7 +91,7 @@ class AiJobsListEasyChatPage(BasePage):
         """点击 Active 状态 Tab"""
         try:
             self.page.get_by_role("button", name="Active").click()
-            self.page.wait_for_timeout(1500)
+            self.wait_for_list_rendered()
         except Exception as e:
             self.logger.error(f"点击 Active Tab 失败: {e}")
             raise
@@ -100,10 +100,46 @@ class AiJobsListEasyChatPage(BasePage):
         """点击 Pending 状态 Tab"""
         try:
             self.page.get_by_role("button", name="Pending").click()
-            self.page.wait_for_timeout(1500)
+            self.wait_for_list_rendered()
         except Exception as e:
             self.logger.error(f"点击 Pending Tab 失败: {e}")
             raise
+
+    def wait_for_list_rendered(self, timeout: int = 5000):
+        """
+        智能等待列表渲染完成。
+        等待策略：
+        1. 等待至少有1个EasyChat Settings按钮出现（列表不为空）
+        2. 等待按钮数量稳定（连续两次检查数量相同）
+        3. 额外缓冲500ms确保状态同步完成
+        """
+        import time as _time
+        deadline = _time.time() + timeout / 1000
+        last_count = -1
+        stable_count = 0
+        
+        while _time.time() < deadline:
+            current_count = self.get_easychat_settings_btn_count()
+            
+            # 至少要有1个按钮
+            if current_count == 0:
+                self.page.wait_for_timeout(300)
+                continue
+            
+            # 检查数量是否稳定
+            if current_count == last_count:
+                stable_count += 1
+                if stable_count >= 2:  # 连续2次相同，认为已稳定
+                    self.page.wait_for_timeout(500)  # 额外缓冲
+                    return
+            else:
+                stable_count = 0
+                last_count = current_count
+            
+            self.page.wait_for_timeout(300)
+        
+        # 超时也继续执行，给500ms缓冲
+        self.page.wait_for_timeout(500)
 
     # ========== 列表数据获取 ==========
 

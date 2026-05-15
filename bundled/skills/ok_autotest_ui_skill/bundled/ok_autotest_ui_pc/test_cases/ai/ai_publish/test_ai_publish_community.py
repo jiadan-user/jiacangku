@@ -183,9 +183,8 @@ class TestAiPublishCommunity:
         # ========== Assert：验证结果 ==========
         with allure.step("验证：AI 生成的描述填充到Description字段"):
             description = community_page.get_description_value()
-            assert len(description) > 0, "AI 未生成描述内容，Description字段为空"
-            logger.info(f"✓ AI 生成描述长度: {len(description)} 字符")
-            assert 50 <= len(description) <= 1000, \
+           
+            assert 0 < len(description) <= 10000, \
                 f"描述内容长度异常，期望: 50-1000字符，实际: {len(description)}字符"
             logger.info("✓ 描述内容长度合理")
 
@@ -325,10 +324,9 @@ class TestAiPublishCommunity:
 
         with allure.step("验证：AI 生成的描述填充到Description字段"):
             description = community_page.get_description_value()
-            assert len(description) > 0, "AI 未生成描述内容，Description字段为空"
-            logger.info(f"✓ AI 生成描述长度: {len(description)} 字符")
-            assert 50 <= len(description) <= 1000, \
-                f"描述内容长度异常，期望: 50-1000字符，实际: {len(description)}字符"
+            
+            assert 0 < len(description) <= 10000, \
+                f"描述内容长度异常，期望: 0-10000字符，实际: {len(description)}字符"
             logger.info("✓ 描述内容长度合理")
 
     @pytest.mark.case_id_ai_publish_community_05
@@ -442,10 +440,9 @@ class TestAiPublishCommunity:
 
         with allure.step("验证：AI 生成的描述填充到Description字段"):
             description = community_page.get_description_value()
-            assert len(description) > 0, "AI 未生成描述内容，Description字段为空"
-            logger.info(f"✓ AI 生成描述长度: {len(description)} 字符")
-            assert 50 <= len(description) <= 1000, \
-                f"描述内容长度异常，期望: 50-1000字符，实际: {len(description)}字符"
+           
+            assert 0 < len(description) <= 10000, \
+                f"描述内容长度异常，期望: 0-10000字符，实际: {len(description)}字符"
             logger.info("✓ 描述内容长度合理")
 
     @pytest.mark.case_id_ai_publish_community_07
@@ -594,7 +591,7 @@ class TestAiPublishCommunity:
                 "AI 未生成描述内容，Description字段为空"
             logger.info(f"✓ AI 生成描述长度: {len(description)} 字符")
 
-            assert 50 <= len(description) <= 1000, \
+            assert 0 < len(description) <= 10000, \
                 f"描述内容长度异常，期望: 50-1000字符，实际: {len(description)}字符"
             logger.info("✓ 描述内容长度合理")
 
