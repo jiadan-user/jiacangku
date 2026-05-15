@@ -364,16 +364,40 @@ class HomeSearchPage(BasePage):
 
     # ========== 导航与 URL 验证 ==========
 
-    def navigate_to_home(self, base_url):
-        """导航到首页（使用官方推荐的元素级等待策略）"""
-        try:
-            # 官方推荐：使用 domcontentloaded + 增加超时 + 元素级等待
-            self.page.goto(base_url, timeout=60000, wait_until="domcontentloaded")
-            # 等待搜索框或页面关键元素加载完成
-            self.page.locator(self.SEARCH_INPUT).or_(self.page.locator(self.SEARCH_BUTTON)).first.wait_for(state="visible", timeout=10000)
-        except Exception as e:
-            self.logger.error(f"导航到首页失败: {e}")
-            raise
+    def navigate_to_home(self, base_url, max_retries=2):
+        """导航到首页（含 ERR_NETWORK_CHANGED 重试机制）
+
+        全量并发执行时网络接口偶发切换会触发 net::ERR_NETWORK_CHANGED，
+        该错误属于瞬时网络波动，等待 1.5s 后重试通常能恢复。
+        """
+        last_error = None
+        for attempt in range(max_retries + 1):
+            try:
+                self.page.goto(base_url, timeout=60000, wait_until="domcontentloaded")
+                self.page.locator(self.SEARCH_INPUT).or_(
+                    self.page.locator(self.SEARCH_BUTTON)
+                ).first.wait_for(state="visible", timeout=10000)
+                return
+            except Exception as e:
+                last_error = e
+                err_str = str(e)
+                # ERR_NETWORK_CHANGED / ERR_INTERNET_DISCONNECTED 属于瞬时网络波动，重试可恢复
+                is_transient = any(
+                    kw in err_str
+                    for kw in ("ERR_NETWORK_CHANGED", "ERR_INTERNET_DISCONNECTED",
+                               "ERR_CONNECTION_RESET", "ERR_CONNECTION_ABORTED")
+                )
+                if is_transient and attempt < max_retries:
+                    self.logger.warning(
+                        f"导航到首页遇到瞬时网络波动 (attempt {attempt + 1}/{max_retries + 1})，"
+                        f"1.5s 后重试: {err_str[:120]}"
+                    )
+                    self.page.wait_for_timeout(1500)
+                    continue
+                self.logger.error(f"导航到首页失败: {e}")
+                raise
+        self.logger.error(f"导航到首页重试耗尽: {last_error}")
+        raise last_error
 
     def get_current_url(self):
         """获取当前 URL"""

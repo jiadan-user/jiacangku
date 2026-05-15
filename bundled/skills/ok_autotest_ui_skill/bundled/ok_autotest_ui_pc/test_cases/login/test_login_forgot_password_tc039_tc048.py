@@ -63,8 +63,10 @@ def ensure_logged_out_before_test(preloaded_page):
     try:
         preloaded_page.context.clear_cookies()
         preloaded_page.evaluate("() => { localStorage.clear(); sessionStorage.clear(); }")
-        # 等待 load 事件确保 JS 完整挂载，否则登录按钮点击不触发弹窗
-        preloaded_page.goto(BASE_URL, wait_until="load", timeout=20000)
+        # domcontentloaded 比 load 快 3-8s，配合短暂等待足以保证 JS 事件监听挂载；
+        # 全量并发时 load 事件频繁超时（20s 耗尽），改用 domcontentloaded 减少 fixture 开销
+        preloaded_page.goto(BASE_URL, wait_until="domcontentloaded", timeout=20000)
+        preloaded_page.wait_for_timeout(400)
     except Exception:
         pass
 
@@ -462,6 +464,11 @@ class TestLoginForgotPassword:
         login_page = LoginPage(preloaded_page)
         with allure.step("进入验证码输入页"):
             login_page.click_login_register_button()
+            # 并发执行时 React 弹窗打开后 input 可能仍在渲染，显式等待后再 fill，
+            # 避免 fill() 的隐式等待（15s）在网络繁忙时不足
+            preloaded_page.get_by_role(
+                "textbox", name="Email or phone number"
+            ).wait_for(state="visible", timeout=20000)
             login_page.input_email(TEST_EMAIL)
             login_page.click_continue_button()
             

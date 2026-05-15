@@ -555,13 +555,15 @@ class TestSettingsProfile:
             file_input = page.locator('input[type="file"]')
             if file_input.count() > 0:
                 file_input.set_input_files(img_path)
-                page.wait_for_timeout(2000)
+                # 等待头像预览出现，确认图片已加载到前端
+                page.wait_for_timeout(3000)
+                logger.info("头像文件已选择，等待前端加载完成")
             else:
                 logger.warning("未找到 input[type=file]，尝试点击 Choose File")
                 page.get_by_role("button", name="Choose File").click()
                 page.wait_for_timeout(1000)
 
-        with allure.step("Step 2：修改所有文本字段"):
+        with allure.step("Step 3：修改所有文本字段"):
             ts = int(time.time())
             new_name = "OKerAE_test" if orig_name == "OKerAE_cnbucqx" else "OKerAE_cnbucqx"
             new_first = f"Auto_{ts}"
@@ -569,22 +571,37 @@ class TestSettingsProfile:
             new_phone = "501234571" if orig_phone == "501234570" else "501234570"
 
             page.locator("#username").fill(new_name)
+            page.wait_for_timeout(200)
             page.locator("#firstName").fill(new_first)
+            page.wait_for_timeout(200)
             page.locator("#lastName").fill(new_last)
+            page.wait_for_timeout(200)
             page.get_by_role("textbox", name="Phone Number").fill(new_phone)
+            page.wait_for_timeout(500)
+            logger.info(f"所有字段已填写: name={new_name}, first={new_first}, last={new_last}, phone={new_phone}")
 
-        with allure.step("点击 Save 并等待保存完成"):
+        with allure.step("Step 4：点击 Save 并等待保存完成"):
+            # 点击 Save 按钮
             page.get_by_role("button", name="Save").click()
-            page.wait_for_timeout(3000)
+            logger.info("已点击 Save 按钮")
+            
+            # 等待保存操作完成（包括头像上传和字段更新）
+            page.wait_for_timeout(5000)
+            
+            # 检测保存成功提示
             try:
-                page.wait_for_selector('text=/saved|success/i', timeout=3000)
+                page.wait_for_selector('text=/saved|success/i', timeout=5000)
                 logger.info("检测到保存成功提示")
             except Exception:
-                logger.info("未检测到保存成功提示，继续验证")
+                logger.warning("未检测到保存成功提示文本")
+            
+            # 额外等待，确保后端数据库写入完成
+            page.wait_for_timeout(3000)
+            logger.info("保存操作已完成，等待后端持久化")
 
-        with allure.step("Step 3：刷新页面后通过导航进入 Profile 页面验证持久化"):
+        with allure.step("Step 5：刷新页面后验证数据持久化"):
             # 刷新当前页面
-            page.reload(wait_until="domcontentloaded", timeout=30000)
+            page.reload(wait_until="load", timeout=30000)
             page.wait_for_timeout(2000)
             logger.info("已刷新页面")
             
@@ -605,8 +622,21 @@ class TestSettingsProfile:
                 page.wait_for_timeout(2000)
                 _navigate_to_settings(page, target_tab="Profile")
                 page.wait_for_timeout(2000)
+            
+            # 等待 Profile 页面数据加载完成（使用 page.wait_for_function 等待字段有非空值）
+            try:
+                page.wait_for_function(
+                    "() => { const el = document.querySelector('#username'); return el && el.value.length > 0; }",
+                    timeout=10000
+                )
+                logger.info("Profile 数据已加载完成")
+            except Exception:
+                logger.warning("等待 Profile 数据加载超时，继续验证")
+            
+            # 额外等待确保数据稳定
+            page.wait_for_timeout(1000)
 
-        with allure.step("验证所有修改的字段值已保存"):
+        with allure.step("Step 6：验证所有修改的字段值已保存"):
             saved_name = page.locator("#username").input_value()
             saved_first = page.locator("#firstName").input_value()
             saved_last = page.locator("#lastName").input_value()
@@ -623,13 +653,13 @@ class TestSettingsProfile:
             assert saved_phone == new_phone, f"Phone 未保存。期望={new_phone!r}, 实际={saved_phone!r}"
             logger.info("✓ 所有文本字段验证通过")
 
-        with allure.step("Step 4：后置恢复所有字段"):
+        with allure.step("Step 7：后置恢复所有字段"):
             page.locator("#username").fill(orig_name)
             page.locator("#firstName").fill(orig_first)
             page.locator("#lastName").fill(orig_last)
             page.get_by_role("textbox", name="Phone Number").fill(orig_phone)
             page.get_by_role("button", name="Save").click()
-            page.wait_for_timeout(3000)
+            page.wait_for_timeout(5000)
             logger.info("后置恢复完成")
 
     # ------------------------------------------------------------------

@@ -554,20 +554,25 @@ def test_search_keyword_with_space_url_encoding(page, config):
 
     with allure.step("步骤1：导航到首页"):
         search_page.navigate_to_home(base_url)
+        # domcontentloaded 仅保证 HTML 解析完成，React hydration 可能尚未完成；
+        # 等待 load 状态确保 React 事件绑定就绪，否则 fill/click 不会触发 onChange/onSubmit
+        page.wait_for_load_state("load", timeout=15000)
         logger.info("✓ 已打开首页")
 
     with allure.step(f"步骤2：输入含空格关键词'{keyword}'"):
-        page.evaluate("() => { const el = document.querySelector('#custom-input'); if(el) el.focus(); }")
-        page.keyboard.type(keyword)
-        page.wait_for_timeout(500)
+        # fill_search_input_slowly 使用 press_sequentially(delay=100ms) 逐键触发 React onChange；
+        # fill() 直接写入 DOM 值但不一定能触发 React 受控 input 的 state 更新
+        search_page.fill_search_input_slowly(keyword)
         logger.info(f"✓ 已输入 '{keyword}'")
 
     with allure.step("步骤3：点击 Search 按钮"):
-        page.evaluate("() => document.querySelector('.TopBarMiddleContent_searchButton__3UG6i')?.click()")
+        search_page.click_search_button()
         logger.info("✓ 已点击 Search 按钮")
 
-    with allure.step("步骤4：等待跳转到搜索结果页"):
+    with allure.step("步骤4：等待跳转到搜索结果页（含关键词参数）"):
+        # 先等 /cate/ 路径出现，再额外等 1s 让 URL 附加完整的 keyword 参数
         page.wait_for_url("**/cate/**", timeout=10000)
+        page.wait_for_timeout(1000)
         final_url = page.url
         logger.info(f"✓ 跳转后 URL: {final_url}")
 
