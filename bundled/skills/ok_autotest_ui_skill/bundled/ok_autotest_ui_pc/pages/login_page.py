@@ -25,9 +25,22 @@ class LoginPage(BasePage):
         try:
             url = base_url or self.base_url or "https://us.58v5.cn"
             self.page.goto(url, wait_until="domcontentloaded", timeout=60000)
-            self.page.wait_for_load_state("load")
+            # 并发执行时第三方脚本/广告资源可能超过 30s 未完成，导致 load 事件迟迟不触发，
+            # 进而阻塞 module-scoped page fixture 的 setup，整个模块所有用例全部 ERROR。
+            # 改为：给 load 60s 机会，超时后降级到等待页面核心元素可见，不再 raise。
             try:
-                self.page.wait_for_load_state("networkidle", timeout=20000)
+                self.page.wait_for_load_state("load", timeout=60000)
+            except Exception:
+                # load 超时：页面 HTML/JS 已就绪（domcontentloaded 已完成），
+                # 等待搜索框或首页标志性元素出现，确认页面可交互
+                try:
+                    self.page.locator("input[type='text']").first.wait_for(
+                        state="visible", timeout=10000
+                    )
+                except Exception:
+                    pass
+            try:
+                self.page.wait_for_load_state("networkidle", timeout=15000)
             except Exception:
                 pass
         except Exception as e:
