@@ -121,6 +121,15 @@ def _goto_with_guard(page: Page, url: str, ready_locator) -> None:
                 last_fb_err = fallback_err
                 err_text = str(fallback_err)
                 if "ERR_HTTP_RESPONSE_CODE_FAILURE" in err_text or "net::ERR_HTTP" in err_text:
+                    # 站点 5xx 瞬时，等待恢复后再给最后一次机会
+                    if fb_attempt < 2:
+                        logger.warning(
+                            "listpage HTTP 异常（尝试 %s），等待 8s 后重试: %s",
+                            fb_attempt + 1,
+                            err_text[:120],
+                        )
+                        page.wait_for_timeout(8000)
+                        continue
                     pytest.skip(f"listpage 回退触发 HTTP 异常，跳过当前用例: {url}")
                 if fb_attempt >= 2:
                     if "Timeout" in err_text or "timed out" in err_text:
