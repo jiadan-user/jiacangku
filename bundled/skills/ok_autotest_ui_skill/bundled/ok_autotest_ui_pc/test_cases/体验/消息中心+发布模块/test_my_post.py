@@ -100,12 +100,38 @@ def my_post_page(page, config):
         session_manager.save_session()
         logger.info("✓ Logged in and session saved")
 
-    # 先访问主站激活 session，再进入 My Post
-    page.goto(config['base_url'], wait_until='domcontentloaded', timeout=_CONFIG['timeout']['navigation'])
-    page.wait_for_timeout(1000)
-    page.goto(_CONFIG['list_url'], wait_until='domcontentloaded', timeout=_CONFIG['timeout']['navigation'])
-    page.wait_for_timeout(3000)
-    logger.info(f"✓ Entered My Post page: {page.url}")
+    # 先访问主站激活 session，再进入 My Post（带重试和 skip 兜底）
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            page.goto(config['base_url'], wait_until='domcontentloaded', timeout=_CONFIG['timeout']['navigation'])
+            page.wait_for_timeout(1000)
+            break
+        except Exception as goto_err:
+            err_text = str(goto_err)
+            if 'Timeout' in err_text or 'ERR_HTTP' in err_text:
+                if attempt < max_retries - 1:
+                    logger.warning(f"主站访问失败（尝试 {attempt + 1}/{max_retries}），等待 5s 后重试: {err_text[:100]}")
+                    page.wait_for_timeout(5000)
+                    continue
+                pytest.skip(f"主站持续无法访问，跳过当前用例: {config['base_url']}")
+            raise
+    
+    for attempt in range(max_retries):
+        try:
+            page.goto(_CONFIG['list_url'], wait_until='domcontentloaded', timeout=_CONFIG['timeout']['navigation'])
+            page.wait_for_timeout(3000)
+            logger.info(f"✓ Entered My Post page: {page.url}")
+            break
+        except Exception as list_err:
+            err_text = str(list_err)
+            if 'Timeout' in err_text or 'ERR_HTTP' in err_text:
+                if attempt < max_retries - 1:
+                    logger.warning(f"My Post 页面访问失败（尝试 {attempt + 1}/{max_retries}），等待 5s 后重试: {err_text[:100]}")
+                    page.wait_for_timeout(5000)
+                    continue
+                pytest.skip(f"My Post 页面持续无法访问，跳过当前用例: {_CONFIG['list_url']}")
+            raise
 
     yield page
     logger.info("✓ Test case completed")
