@@ -270,6 +270,23 @@ def _compact_phase_report_for_publish(value: Any) -> dict[str, Any]:
     return compact
 
 
+def _compact_case_result_items(items: list[dict[str, Any]], limit: int) -> list[dict[str, Any]]:
+    keep_keys = {
+        "nodeid",
+        "outcome",
+        "initial_outcome",
+        "rerun_outcome",
+        "rerun_attempted",
+        "rerun_phase",
+        "reason",
+    }
+    return [
+        {key: item[key] for key in keep_keys if key in item}
+        for item in items[:limit]
+        if isinstance(item, dict)
+    ]
+
+
 def _compact_ok_ui_summary_for_publish(summary: dict[str, Any]) -> dict[str, Any]:
     summary = _strip_loopback_report_urls(summary)
     keep_keys = {
@@ -289,10 +306,16 @@ def _compact_ok_ui_summary_for_publish(summary: dict[str, Any]) -> dict[str, Any
         "case_timeout_seconds",
         "idle_timeout_seconds",
         "phase_timeout_seconds",
+        "failed_reruns_configured",
+        "failed_rerun_attempted",
+        "failed_rerun_input_count",
+        "failed_rerun_resolved_count",
+        "failed_rerun_still_failed_count",
         "pytest_timeout_available",
         "run_status",
         "block_reason",
         "pytest_exit_code",
+        "effective_junit_path",
         "execution_target_mode",
         "pytest_target_count",
         "prerequisite_attempted",
@@ -320,12 +343,35 @@ def _compact_ok_ui_summary_for_publish(summary: dict[str, Any]) -> dict[str, Any
     case_results = summary.get("case_results")
     if isinstance(case_results, list):
         compact["case_results_total"] = len(case_results)
-        compact["failed_case_results_sample"] = [
+        failed_items = [
             item for item in case_results if isinstance(item, dict) and item.get("outcome") == "failed"
-        ][:50]
-        compact["skipped_case_results_sample"] = [
+        ]
+        skipped_items = [
             item for item in case_results if isinstance(item, dict) and item.get("outcome") == "skipped"
-        ][:20]
+        ]
+        recovered_items = [
+            item
+            for item in case_results
+            if (
+                isinstance(item, dict)
+                and item.get("rerun_attempted")
+                and item.get("initial_outcome") in {"failed", "error"}
+                and item.get("rerun_outcome") in {"passed", "xpassed"}
+            )
+        ]
+        still_failed_items = [
+            item
+            for item in case_results
+            if (
+                isinstance(item, dict)
+                and item.get("rerun_attempted")
+                and item.get("rerun_outcome") in {"failed", "error"}
+            )
+        ]
+        compact["failed_case_results_sample"] = _compact_case_result_items(failed_items, 20)
+        compact["skipped_case_results_sample"] = _compact_case_result_items(skipped_items, 20)
+        compact["rerun_recovered_case_results_sample"] = _compact_case_result_items(recovered_items, 20)
+        compact["rerun_still_failed_case_results_sample"] = _compact_case_result_items(still_failed_items, 20)
     phase_reports = summary.get("phase_reports")
     if isinstance(phase_reports, list):
         compact["phase_reports"] = [_compact_phase_report_for_publish(item) for item in phase_reports]
@@ -344,6 +390,10 @@ def _standalone_ok_ui_report(ok_ui_run_id: str, summary: dict[str, Any], coverag
         f"- 通过：{summary.get('passed_cases', 0)}",
         f"- 失败：{summary.get('failed_cases', 0)}",
         f"- 跳过：{summary.get('skipped_cases', 0)}",
+        f"- 失败重跑：配置 {summary.get('failed_reruns_configured', 0)} 次，"
+        f"实际重跑 {summary.get('failed_rerun_input_count', 0)} 条，"
+        f"恢复 {summary.get('failed_rerun_resolved_count', 0)} 条，"
+        f"仍失败 {summary.get('failed_rerun_still_failed_count', 0)} 条",
         f"- 线程数：{summary.get('resolved_workers') or 1}",
     ]
     if coverage:

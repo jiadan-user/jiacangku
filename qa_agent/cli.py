@@ -138,6 +138,7 @@ def build_parser() -> argparse.ArgumentParser:
     dashboard_ok_ui_run.add_argument("--case-timeout", type=int, help="单条用例超时秒数，默认由 OK UI runner 决定；0 表示关闭")
     dashboard_ok_ui_run.add_argument("--idle-timeout", type=int, help="pytest 阶段无输出/无产物进展超时秒数，默认由 OK UI runner 决定；0 表示关闭")
     dashboard_ok_ui_run.add_argument("--phase-timeout", type=int, help="pytest 阶段总时长硬上限秒数，默认关闭")
+    dashboard_ok_ui_run.add_argument("--failed-reruns", type=int, help="失败用例二次执行次数，默认由 OK UI runner 决定；0 表示关闭")
     dashboard_ok_ui_run.add_argument("--outer-timeout", type=int, default=0, help="qa-agent 外层最终兜底超时秒数，默认关闭")
     dashboard_ok_ui_run.add_argument("--url", help="ui_test_management 地址，默认 http://10.192.35.53:8001，可用 QA_AGENT_DASHBOARD_URL 覆盖")
     dashboard_ok_ui_run.add_argument("--api-key", help="发布 API Key，默认读取 QA_AGENT_DASHBOARD_API_KEY")
@@ -232,6 +233,7 @@ def _build_ok_ui_run_command(config, args) -> list[str]:
         ("case_timeout", "--case-timeout"),
         ("idle_timeout", "--idle-timeout"),
         ("phase_timeout", "--phase-timeout"),
+        ("failed_reruns", "--failed-reruns"),
     ):
         _add_optional_cli_arg(command, flag, getattr(args, attr, None))
     return command

@@ -29,6 +29,7 @@ class CliOkUiRunTests(unittest.TestCase):
             "case_timeout": 300,
             "idle_timeout": 900,
             "phase_timeout": 0,
+            "failed_reruns": 1,
         }
         values.update(overrides)
         return SimpleNamespace(**values)
@@ -45,6 +46,8 @@ class CliOkUiRunTests(unittest.TestCase):
         self.assertIn("900", command)
         self.assertIn("--phase-timeout", command)
         self.assertIn("0", command)
+        self.assertIn("--failed-reruns", command)
+        self.assertIn("1", command)
 
     def test_outer_timeout_returns_without_run_id_for_publish_skip(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

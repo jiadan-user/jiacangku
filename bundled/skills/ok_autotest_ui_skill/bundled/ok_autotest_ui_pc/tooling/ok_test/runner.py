@@ -86,6 +86,11 @@ def _build_summary(run_id: str, args: argparse.Namespace, selected_cases: list[C
         "skipped_cases": 0,
         "phase_reports": [],
         "prerequisite_selector_texts": [],
+        "failed_reruns_configured": _failed_reruns(args),
+        "failed_rerun_attempted": False,
+        "failed_rerun_input_count": 0,
+        "failed_rerun_resolved_count": 0,
+        "failed_rerun_still_failed_count": 0,
     }
 
 
@@ -380,6 +385,10 @@ def _phase_timeout(args: argparse.Namespace) -> int:
     return _timeout_value(args, "phase_timeout", "OK_TEST_PHASE_TIMEOUT", 0)
 
 
+def _failed_reruns(args: argparse.Namespace) -> int:
+    return _timeout_value(args, "failed_reruns", "OK_TEST_FAILED_RERUNS", 1)
+
+
 def _build_pytest_args(
     targets: list[str],
     junit_path: Path,
@@ -641,6 +650,109 @@ def _result_counts(case_results: list[dict[str, Any]]) -> dict[str, int]:
         "skipped": sum(1 for outcome in outcomes if outcome == "skipped"),
         "not_run": sum(1 for outcome in outcomes if outcome == "not_run"),
     }
+
+
+def _failed_case_nodeids(case_results: list[dict[str, Any]]) -> list[str]:
+    return [
+        str(item.get("nodeid"))
+        for item in case_results
+        if item.get("nodeid") and item.get("outcome") in FAILED_OUTCOMES
+    ]
+
+
+def _cases_for_nodeids(cases: list[CatalogCase], nodeids: list[str]) -> list[CatalogCase]:
+    wanted = set(nodeids)
+    return [case for case in cases if case.nodeid in wanted]
+
+
+def _merge_failed_rerun_results(
+    initial_results: list[dict[str, Any]],
+    rerun_results: list[dict[str, Any]],
+    *,
+    rerun_phase: str = "target_rerun_failed",
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    rerun_by_nodeid = {
+        str(item.get("nodeid")): item
+        for item in rerun_results
+        if item.get("nodeid")
+    }
+    merged_results: list[dict[str, Any]] = []
+    resolved_count = 0
+    still_failed_count = 0
+
+    for initial in initial_results:
+        nodeid = str(initial.get("nodeid", ""))
+        rerun = rerun_by_nodeid.get(nodeid)
+        if not rerun:
+            merged_results.append(dict(initial))
+            continue
+
+        initial_outcome = initial.get("outcome")
+        rerun_outcome = rerun.get("outcome")
+        merged = dict(initial)
+        merged.update(
+            {
+                "outcome": rerun_outcome,
+                "duration": rerun.get("duration", initial.get("duration", 0.0)),
+                "reason": rerun.get("reason"),
+                "initial_outcome": initial_outcome,
+                "initial_reason": initial.get("reason"),
+                "rerun_outcome": rerun_outcome,
+                "rerun_attempted": True,
+                "rerun_phase": rerun_phase,
+            }
+        )
+        if initial_outcome in FAILED_OUTCOMES and rerun_outcome in PASSED_OUTCOMES:
+            resolved_count += 1
+        if rerun_outcome in FAILED_OUTCOMES:
+            still_failed_count += 1
+        merged_results.append(merged)
+
+    return merged_results, {
+        "failed_rerun_attempted": bool(rerun_by_nodeid),
+        "failed_rerun_input_count": len(rerun_by_nodeid),
+        "failed_rerun_resolved_count": resolved_count,
+        "failed_rerun_still_failed_count": still_failed_count,
+    }
+
+
+def _write_effective_junit(run_dir: Path, case_results: list[dict[str, Any]]) -> Path:
+    junit_path = run_dir / "junit_effective.xml"
+    counts = _result_counts(case_results)
+    suite = ET.Element(
+        "testsuite",
+        {
+            "name": "ok-ui-effective",
+            "tests": str(len(case_results)),
+            "failures": str(sum(1 for item in case_results if item.get("outcome") == "failed")),
+            "errors": str(sum(1 for item in case_results if item.get("outcome") == "error")),
+            "skipped": str(counts["skipped"] + counts["not_run"]),
+            "time": f"{sum(float(item.get('duration') or 0) for item in case_results):.3f}",
+        },
+    )
+    for item in case_results:
+        nodeid = str(item.get("nodeid") or "")
+        file_path, _, test_name = nodeid.partition("::")
+        testcase = ET.SubElement(
+            suite,
+            "testcase",
+            {
+                "nodeid": nodeid,
+                "classname": Path(file_path).with_suffix("").as_posix().replace("/", "."),
+                "name": test_name or nodeid,
+                "time": f"{float(item.get('duration') or 0):.3f}",
+            },
+        )
+        outcome = item.get("outcome")
+        reason = str(item.get("reason") or outcome or "")
+        if outcome == "failed":
+            ET.SubElement(testcase, "failure", {"message": reason}).text = reason
+        elif outcome == "error":
+            ET.SubElement(testcase, "error", {"message": reason}).text = reason
+        elif outcome in {"skipped", "not_run"}:
+            ET.SubElement(testcase, "skipped", {"message": reason}).text = reason
+    ET.ElementTree(suite).write(junit_path, encoding="utf-8", xml_declaration=True)
+    return junit_path
 
 
 def _selector_text(selector: dict[str, Any]) -> str:
@@ -990,6 +1102,7 @@ def handle_run(args: argparse.Namespace) -> int:
     case_timeout = _case_timeout(args)
     idle_timeout = _idle_timeout(args)
     phase_timeout = _phase_timeout(args)
+    failed_reruns = _failed_reruns(args)
     has_pytest_timeout = _pytest_timeout_available()
 
     save_json(run_dir / "selection.json", {"cases": [case.to_dict() for case in selected_cases]})
@@ -1017,6 +1130,7 @@ def handle_run(args: argparse.Namespace) -> int:
         summary["case_timeout_seconds"] = case_timeout
         summary["idle_timeout_seconds"] = idle_timeout
         summary["phase_timeout_seconds"] = phase_timeout
+        summary["failed_reruns_configured"] = failed_reruns
         summary["pytest_timeout_available"] = has_pytest_timeout
         summary["execution_target_mode"] = target_initial_mode
         summary["pytest_target_count"] = len(target_initial_targets)
@@ -1044,6 +1158,7 @@ def handle_run(args: argparse.Namespace) -> int:
         print(f"case_timeout_seconds={summary['case_timeout_seconds']}")
         print(f"idle_timeout_seconds={summary['idle_timeout_seconds']}")
         print(f"phase_timeout_seconds={summary['phase_timeout_seconds']}")
+        print(f"failed_reruns_configured={summary['failed_reruns_configured']}")
         print(f"pytest_timeout_available={str(summary['pytest_timeout_available']).lower()}")
         print(f"pytest={pytest_display}")
         _print_selected_cases(selected_cases)
@@ -1118,6 +1233,36 @@ def handle_run(args: argparse.Namespace) -> int:
         prerequisite_counts = _result_counts([])
 
     final_results = final_phase["case_results"]
+    rerun_phase: dict[str, Any] | None = None
+    rerun_stats = {
+        "failed_rerun_attempted": False,
+        "failed_rerun_input_count": 0,
+        "failed_rerun_resolved_count": 0,
+        "failed_rerun_still_failed_count": 0,
+    }
+    if block_reason is None and failed_reruns > 0:
+        failed_nodeids = _failed_case_nodeids(final_results)
+        failed_cases = _cases_for_nodeids(selected_cases, failed_nodeids)
+        if failed_cases:
+            rerun_phase = _run_phase(
+                "target_rerun_failed",
+                failed_cases,
+                catalog,
+                SelectionCriteria(nodeid="target_rerun_failed"),
+                run_dir,
+                allure_dir,
+                pytest_cmd,
+                workers=resolved_workers,
+                case_timeout=case_timeout,
+                idle_timeout=idle_timeout,
+                phase_timeout=phase_timeout,
+                pytest_timeout_available=has_pytest_timeout,
+            )
+            if rerun_phase.get("block_reason"):
+                block_reason = rerun_phase["block_reason"]
+            else:
+                final_results, rerun_stats = _merge_failed_rerun_results(final_results, rerun_phase["case_results"])
+
     final_counts = _result_counts(final_results)
     if block_reason is None and final_counts["executed"] == 0:
         if prerequisite_attempted:
@@ -1131,11 +1276,16 @@ def handle_run(args: argparse.Namespace) -> int:
     summary["case_timeout_seconds"] = case_timeout
     summary["idle_timeout_seconds"] = idle_timeout
     summary["phase_timeout_seconds"] = phase_timeout
+    summary["failed_reruns_configured"] = failed_reruns
     summary["pytest_timeout_available"] = has_pytest_timeout
     summary["execution_target_mode"] = target_initial_mode
     summary["pytest_target_count"] = len(target_initial_targets)
     summary["parallel_granularity"] = "file" if resolved_workers > 1 else "serial"
-    summary["pytest_exit_code"] = final_phase["pytest_exit_code"]
+    summary["pytest_exit_code"] = (
+        rerun_phase["pytest_exit_code"]
+        if rerun_phase
+        else final_phase["pytest_exit_code"]
+    )
     summary["scope_case_nodeids"] = [case.nodeid for case in scoped_cases]
     summary["recommended_case_nodeids"] = [case.nodeid for case in recommended_cases]
     summary["baseline_case_nodeids"] = [case.nodeid for case in baseline_cases]
@@ -1147,16 +1297,23 @@ def handle_run(args: argparse.Namespace) -> int:
     summary["passed_cases"] = final_counts["passed"]
     summary["failed_cases"] = final_counts["failed"]
     summary["skipped_cases"] = final_counts["skipped"]
+    summary.update(rerun_stats)
     summary["block_reason"] = block_reason
     summary["run_status"] = _determine_run_status(final_counts, block_reason)
-    summary["phase_reports"] = [initial_phase] + ([prerequisite_phase] if prerequisite_phase else []) + ([final_phase] if final_phase is not initial_phase else [])
+    effective_junit_path = _write_effective_junit(run_dir, final_results) if rerun_phase else Path(final_phase["junit_path"])
+    summary["effective_junit_path"] = str(effective_junit_path)
+    summary["phase_reports"] = (
+        [initial_phase]
+        + ([prerequisite_phase] if prerequisite_phase else [])
+        + ([final_phase] if final_phase is not initial_phase else [])
+        + ([rerun_phase] if rerun_phase else [])
+    )
 
     save_json(run_dir / "coverage_input.json", summary)
     save_json(run_dir / "decision_input.json", summary)
     save_json(run_dir / "summary.json", summary)
 
-    latest_junit_path = Path(final_phase["junit_path"])
-    _sync_latest_report_assets(run_id, latest_junit_path, allure_dir)
+    _sync_latest_report_assets(run_id, effective_junit_path, allure_dir)
     coverage_result = compute_coverage(summary)
     decision_result = evaluate_decision(summary)
     save_json(run_dir / "coverage_report.json", coverage_result)
@@ -1185,6 +1342,11 @@ def handle_run(args: argparse.Namespace) -> int:
     print(f"case_timeout_seconds={summary['case_timeout_seconds']}")
     print(f"idle_timeout_seconds={summary['idle_timeout_seconds']}")
     print(f"phase_timeout_seconds={summary['phase_timeout_seconds']}")
+    print(f"failed_reruns_configured={summary['failed_reruns_configured']}")
+    print(f"failed_rerun_attempted={str(summary['failed_rerun_attempted']).lower()}")
+    print(f"failed_rerun_input_count={summary['failed_rerun_input_count']}")
+    print(f"failed_rerun_resolved_count={summary['failed_rerun_resolved_count']}")
+    print(f"failed_rerun_still_failed_count={summary['failed_rerun_still_failed_count']}")
     print(f"pytest_timeout_available={str(summary['pytest_timeout_available']).lower()}")
     print(f"artifact_retention={summary['artifact_retention']}")
     if summary.get("lean_cleanup", {}).get("enabled"):

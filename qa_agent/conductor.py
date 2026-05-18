@@ -2205,6 +2205,7 @@ class QAConductor:
                     "- execution_tasks 中 selected_count=0 的子任务只写入 dry-run 预览和 warning，不进入真实执行",
                     "- 若 selector 计划中的 catalog_status.stale=true，请先刷新 catalog 并审计标识，再继续 dry-run",
                     "- 先 dry-run 预览，等用户确认后再真实执行",
+                    "- 真实执行默认由 OK UI runner 对 failed/error 用例自动重跑 1 次；报告需展示初跑失败与重跑恢复统计",
                     "- 若 selector_plan 缺少必要信息，再退回 module-map.md 做补充",
                     "- complete 当前阶段时必须回传 dry-run 预览、真实回归报告、上线建议",
                 ]

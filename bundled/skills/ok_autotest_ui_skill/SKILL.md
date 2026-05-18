@@ -84,6 +84,7 @@ brew install allure
 | `--case-timeout` | 否 | 单条 pytest 用例超时秒数，默认 `300`，`0` 表示关闭；依赖 `pytest-timeout`，缺失时自动降级到 runner watchdog | `--case-timeout 300` |
 | `--idle-timeout` | 否 | pytest 阶段无 stdout/stderr 或 Allure 产物进展的超时秒数，默认 `900`，`0` 表示关闭 | `--idle-timeout 900` |
 | `--phase-timeout` | 否 | pytest 阶段总时长硬上限秒数，默认 `0` 关闭 | `--phase-timeout 3600` |
+| `--failed-reruns` | 否 | 目标用例完整执行后，对 `failed/error` 用例自动重跑次数，默认 `1`，`0` 表示关闭 | `--failed-reruns 1` |
 | `--artifact-retention` | 否 | 产物保留策略，`lean` 仅在真实执行通过后清理重复中间件，失败/阻塞不清理 | `--artifact-retention lean` |
 
 ### `ops catalog-build`

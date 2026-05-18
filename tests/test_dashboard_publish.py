@@ -100,14 +100,35 @@ class DashboardPublishConfigTest(unittest.TestCase):
                 "passed_cases": 1465,
                 "failed_cases": 653,
                 "skipped_cases": 168,
+                "failed_reruns_configured": 1,
+                "failed_rerun_attempted": True,
+                "failed_rerun_input_count": 700,
+                "failed_rerun_resolved_count": 47,
+                "failed_rerun_still_failed_count": 653,
                 "requested_workers": "6",
                 "resolved_workers": 4,
                 "selected_modules": ["zhaopin"],
                 "selection": {"path": "test_cases/"},
                 "selected_nodeids": [f"test_cases/demo/test_{idx}.py::test_case" for idx in range(2286)],
                 "case_results": [
-                    {"nodeid": f"test_cases/demo/test_{idx}.py::test_case", "outcome": "failed"}
+                    {
+                        "nodeid": f"test_cases/demo/test_{idx}.py::test_case",
+                        "outcome": "failed",
+                        "initial_outcome": "failed",
+                        "rerun_outcome": "failed",
+                        "rerun_attempted": True,
+                    }
                     for idx in range(653)
+                ]
+                + [
+                    {
+                        "nodeid": f"test_cases/demo/recovered_{idx}.py::test_case",
+                        "outcome": "passed",
+                        "initial_outcome": "failed",
+                        "rerun_outcome": "passed",
+                        "rerun_attempted": True,
+                    }
+                    for idx in range(47)
                 ],
                 "phase_reports": [
                     {
@@ -132,7 +153,11 @@ class DashboardPublishConfigTest(unittest.TestCase):
         self.assertNotIn("case_results", compact)
         self.assertEqual(compact["selected_nodeids_sample"]["total"], 2286)
         self.assertEqual(len(compact["selected_nodeids_sample"]["items"]), 50)
-        self.assertEqual(compact["case_results_total"], 653)
+        self.assertEqual(compact["case_results_total"], 700)
+        self.assertEqual(compact["failed_rerun_input_count"], 700)
+        self.assertEqual(compact["failed_rerun_resolved_count"], 47)
+        self.assertEqual(len(compact["rerun_recovered_case_results_sample"]), 20)
+        self.assertEqual(len(compact["rerun_still_failed_case_results_sample"]), 20)
         self.assertEqual(compact["phase_reports"][0]["case_results_total"], 653)
         self.assertLess(len(json.dumps(compact)), 20000)
 
