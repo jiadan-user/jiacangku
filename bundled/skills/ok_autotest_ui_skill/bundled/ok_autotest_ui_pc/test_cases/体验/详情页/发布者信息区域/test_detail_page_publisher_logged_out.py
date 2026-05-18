@@ -71,6 +71,9 @@ class TestDetailPagePublisherLoggedOut:
         with allure.step("导航到详情页"):
             pub.goto_detail(config["detail_url"])
             login_page.handle_cookie_popup()
+            # 等待页面完全稳定,避免DOM元素在hydration时被替换
+            page.wait_for_load_state("domcontentloaded")
+            page.wait_for_timeout(1500)
             logger.info("✓ 已导航到详情页")
 
         with allure.step("在详情页上登录"):

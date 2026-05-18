@@ -137,6 +137,13 @@ def test_tc018_click_page_number_two(page, config):
     with allure.step("步骤1：确保在第1页"):
         fav.navigate_to_favorites_list(config["base_url"])
         login_page.handle_cookie_popup()
+        
+        # 如果弹出登录框(session失效),重新登录
+        email_box = page.get_by_role("textbox", name="Email or phone number")
+        if email_box.is_visible(timeout=2000):
+            logger.info("检测到登录框,session已失效,触发重新登录")
+            fav.ensure_logged_in_favorites(login_page, config)
+        
         fav.wait_for_listing_cards(minimum=1, timeout=20000)
         fav.scroll_to_pagination()
         while not fav.pager_prev_is_disabled():
