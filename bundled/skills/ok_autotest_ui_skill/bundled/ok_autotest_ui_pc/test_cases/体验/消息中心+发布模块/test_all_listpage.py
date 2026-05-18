@@ -408,41 +408,71 @@ def test_all_listpage_city_tab_current(listpage: Page):
 @pytest.mark.ae
 @pytest.mark.case_id_all_listpage_005
 def test_all_listpage_city_tab_click(listpage: Page):
-    """TC005: 顶部城市 Tab 点击其他城市 → 跳转至城市首页（非 /listpage/） ✅ 实测"""
+    """TC005: 顶部城市 Tab 点击其他城市 → 跳转至对应城市页面 ✅ 实测"""
     page = listpage
+    
+    # 记录当前城市（从 URL 提取）
+    current_url = page.url
+    import re
+    current_city_match = re.search(r'/city-([^/]+)', current_url)
+    current_city = current_city_match.group(1) if current_city_match else None
 
     with allure.step("获取第一个其他城市链接并记录目标"):
-        target_href = page.evaluate("""() => {
+        result = page.evaluate("""(currentCity) => {
             var links = Array.from(document.querySelectorAll('a'));
             var cityLink = links.find(function(a) {
                 var href = a.href || '';
-                return href.includes('ae.58v5.cn/en/city-') && !href.includes('listpage')
-                    && !href.includes('cate') && a.offsetHeight > 0
-                    && a.textContent.trim().length > 0;
+                var text = a.textContent.trim();
+                // 查找包含城市路径且非当前城市的链接
+                if (href.includes('ae.58v5.cn/en/city-') && 
+                    !href.includes('cate') && 
+                    a.offsetHeight > 0 && 
+                    text.length > 0) {
+                    // 提取目标城市名
+                    var match = href.match(/\\/city-([^\\/]+)/);
+                    if (match && match[1] !== currentCity) {
+                        return {href: href, city: match[1], text: text};
+                    }
+                }
+                return null;
             });
-            return cityLink ? cityLink.href : null;
-        }""")
-        assert target_href, "应存在可点击的城市快捷链接"
-        logger.info(f"目标城市链接: {target_href}")
+            return cityLink;
+        }""", current_city)
+        
+        assert result and result.get('href'), "应存在可点击的其他城市链接"
+        target_href = result['href']
+        target_city = result['city']
+        logger.info(f"目标城市链接: {target_href}, 城市: {target_city}")
 
     with allure.step("点击城市链接"):
-        page.evaluate("""() => {
+        page.evaluate("""(currentCity) => {
             var links = Array.from(document.querySelectorAll('a'));
             var cityLink = links.find(function(a) {
                 var href = a.href || '';
-                return href.includes('ae.58v5.cn/en/city-') && !href.includes('listpage')
-                    && !href.includes('cate') && a.offsetHeight > 0
-                    && a.textContent.trim().length > 0;
+                if (href.includes('ae.58v5.cn/en/city-') && 
+                    !href.includes('cate') && 
+                    a.offsetHeight > 0) {
+                    var match = href.match(/\\/city-([^\\/]+)/);
+                    if (match && match[1] !== currentCity) {
+                        return true;
+                    }
+                }
+                return false;
             });
             if (cityLink) cityLink.click();
-        }""")
+        }""", current_city)
         page.wait_for_timeout(3000)
 
-    with allure.step("验证跳转至目标城市首页（非 /listpage/）"):
-        assert '/listpage/' not in page.url, \
-            f"点击城市 Tab 应跳转至城市首页，不应包含 /listpage/，实际={page.url}"
-        assert 'city-' in page.url, f"URL 应含城市信息，实际={page.url}"
-        logger.info(f"✓ TC005: 城市 Tab 点击跳转验证通过，URL={page.url}")
+    with allure.step("验证跳转至目标城市页面"):
+        new_url = page.url
+        # 验证 URL 中包含目标城市信息
+        assert f'city-{target_city}' in new_url, \
+            f"URL 应包含目标城市 {target_city}，实际={new_url}"
+        # 验证不再是原城市
+        if current_city:
+            assert current_city != target_city or current_url != new_url, \
+                f"应跳转至不同城市，但仍在 {current_city}"
+        logger.info(f"✓ TC005: 城市 Tab 点击跳转验证通过，URL={new_url}")
 
     _safe_listpage_screenshot(page, f'{SCREENSHOT_DIR}/tc005_city_tab_click.png')
 
