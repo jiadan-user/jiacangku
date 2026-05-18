@@ -1,10 +1,11 @@
 # AE Marketplace 订单流转测试用例
 
 > **生成时间**: 2026-03-12  
+> **最近同步**: 2026-05-18（同步最新脚本：API前置数据、TC007更新、TC008跳过状态）  
 > **探测方式**: Playwright MCP 真实浏览器实测  
 > **测试范围**: AE Marketplace 完整订单流转（买家 + 卖家双端）  
 > **总用例数**: 51 条（TC001–TC051）+ 1 条后置操作（Teardown）  
-> **可自动化**: 51 条（100%）
+> **可自动化**: 51 条（100%）；TC008 当前跳过（@skip）
 
 ---
 
@@ -69,7 +70,8 @@
 
 #### 📋 前置条件
 - 买家已登录（AEOKer_cui123）
-- 进入商品详情页，已点击"Buy Now"按钮，当前处于 Checkout 页面（URL 含 createOrder）
+- `setup_ads_data` fixture 已自动完成：登录API刷新 Cookie + 创建 5 个测试帖子，帖子ID存入 `ads` 列表
+- 用 `ads` 中的帖子ID搜索商品，点击"Buy Now"按钮，当前处于 Checkout 页面（URL 含 createOrder）
 
 #### 🎬 执行步骤
 1. 进入商品详情页，点击"Buy Now"按钮
@@ -94,7 +96,7 @@
 ### TC002：Checkout - 价格展示正确性
 
 #### 📋 前置条件
-- 买家已登录，处于 Checkout 页面
+- 买家已登录，通过 `ads` 帖子ID搜索进入 Checkout 页面
 - 商品为"Seller Pays Postage"（免运费商品），标价 AED 3500
 
 #### 🎬 执行步骤
@@ -114,10 +116,10 @@
 
 ---
 
-### TC003（负向）：Checkout - 收货地址字段校验
+### TC003（负向）：Checkout - 地址字段必填校验
 
 #### 📋 前置条件
-- 买家已登录，处于 Checkout 页面
+- 买家已登录，通过 `ads` 帖子ID搜索进入 Checkout 页面
 - 已打开 Shipping 地址编辑弹窗
 
 #### 🎬 执行步骤
@@ -144,7 +146,7 @@
 ### TC004：Checkout - Shipping 地址弹窗完整流程
 
 #### 📋 前置条件
-- 买家已登录，处于 Checkout 页面
+- 买家已登录，通过 `ads` 帖子ID搜索进入 Checkout 页面
 - 已设置过收货地址
 
 #### 🎬 执行步骤
@@ -170,10 +172,10 @@
 
 ---
 
-### TC005：Checkout - 点击 Pay 唤起支付弹窗（不支付）
+### TC005：Checkout - Pay 按钮唤起支付弹窗
 
 #### 📋 前置条件
-- 买家已登录，处于 Checkout 页面
+- 买家已登录，通过 `ads` 帖子ID搜索进入 Checkout 页面
 - 已正确填写收货地址
 
 #### 🎬 执行步骤
@@ -200,6 +202,7 @@
 
 #### 📋 前置条件
 - 买家已登录
+- `ads` 列表中存在帖子ID；脚本在搜索并点击"Buy Now"时，若商品已被他人占用（返回"Someone placed a bid"提示），该条件自动满足
 - 目标商品已有其他买家下单但未完成支付（占用中）
 
 #### 🎬 执行步骤
@@ -218,24 +221,37 @@
 
 ---
 
-### TC007：Checkout - 银行卡支付成功 → 订单状态 Payment received
+### TC007：主站搜帖子ID → 点列表卡片 → Buy Now → 银行卡支付成功
 
 #### 📋 前置条件
-- 买家已登录，处于 Checkout 页面
-- 已正确填写收货地址
-- 测试银行卡可用（CVC=123）
+- 买家已登录
+- `setup_ads_data` fixture 已自动完成：登录API刷新 Cookie + 创建 5 个测试帖子，帖子ID存入 `ads` 列表
+- 用 `ads` 列表中的帖子ID作为搜索词，在主站首页搜索，搜索结果仅返回该 1 个商品卡片
+- 该商品可正常点击"Buy Now"进入 Checkout 页面
+- 已正确填写收货地址；测试银行卡可用（CVC=123）
 
 #### 🎬 执行步骤
-1. 点击"Pay"按钮，等待 Airwallex 支付弹窗（iframe）出现
-2. 在 iframe 中输入测试银行卡信息（CVC=123）
-3. 点击支付确认按钮完成支付
-4. 等待页面跳转至订单详情页（URL 含 /pay/order）
-5. 验证订单状态
+1. `setup_ads_data` fixture 自动执行（模块级，仅执行一次）：调用登录API刷新 Cookie，再批量调用发帖API创建 5 个帖子，将帖子ID存入 `ads` 列表
+2. 从 `ads` 列表顺序取一个帖子ID作为搜索词
+3. 进入首页，在顶栏搜索框输入帖子ID，点击搜索
+4. 等待搜索结果列表出现（预期仅返回 1 个商品卡片）
+5. 点击该商品卡片进入详情页
+6. 找到"Buy Now"按钮并点击，进入 Checkout 页面
+7. 在 Checkout 页面点击"Pay"按钮，等待 Airwallex 支付弹窗（iframe）出现
+8. 在 iframe 中输入测试银行卡 CVC=123，点击支付确认按钮完成支付
+9. 等待页面跳转至订单详情页（URL 含 /pay/order）
+10. 验证订单状态
 
 #### ✅ 预期结果
+- 搜索帖子ID后返回且仅返回 1 个商品卡片 ✅ 实测
+- 商品详情页"Buy Now"按钮可见且可点击 ✅ 实测
 - 支付弹窗正常显示，可输入银行卡信息 ✅ 实测
 - 支付完成后自动跳转至订单详情页 ✅ 实测
-- 订单状态显示"Payment received"或"Paid"或"Unshipped" ✅ 实测
+- 订单状态显示"Payment received"或"Paid"或"Unshipped"或"Ready to ship" ✅ 实测
+
+#### 📝 备注
+- 若当前帖子ID对应商品无"Buy Now"按钮，或点击后弹出"Someone placed a bid"提示，脚本自动切换下一个 ads 帖子ID重试（最多 5 次）
+- 若 5 个帖子ID全部不可用，则降级为使用关键词"iphone pays postage aitest"搜索，并遍历前 10 个商品卡片
 
 #### 📊 用例属性
 - **优先级**: P0
@@ -245,6 +261,8 @@
 ---
 
 ### TC008：Checkout - 谷歌支付成功 → 订单状态 Payment received
+
+> ⏭ **当前状态：已跳过（`@pytest.mark.skip`）** — 等待测试环境 Google Pay 支持就绪后恢复
 
 #### 📋 前置条件
 - 买家已登录，处于 Checkout 页面
@@ -1395,11 +1413,28 @@
 |------|------|
 | 买家账号 | cuidemin@58.com / TOUfangqa123 |
 | 卖家账号 | wangyongli@58.com / Qwer1234 |
-| 测试商品 | 搜索"iPhone pays postage aitest"→ 选择"Buy Now"可用的商品 |
+| 测试商品（API创建） | 每次运行由 `setup_ads_data` fixture 自动通过 API 创建 5 个测试帖子，无需手动准备 |
+| 测试商品（降级关键词） | "iphone pays postage aitest"（ads 全部失败时使用） |
 | 物流单号 | PROBE-TEST-YYYYMMDD |
 | 物流公司 | DHL |
 | 收货地址 | AutoTest Buyer, 123 Test Street, Abu Dhabi, Dubai, UAE, +971 0501234567 |
 | 测试银行卡 | Airwallex 测试卡，CVC=123 |
+
+### API 前置数据策略（TC001-TC007 商品搜索前置）
+
+脚本采用 **API 自动创建帖子** 作为 Buy Now 商品的来源，由 `setup_ads_data` fixture 在模块启动时自动完成，无需人工干预：
+
+**执行流程（每次运行仅执行一次）：**
+
+1. **登录API** — 调用 `POST /auth/login/v2`，提取响应中的 `tk100002` / `uid100002` / `JSESSIONID` 刷新会话 Cookie
+2. **批量创建帖子** — 调用 `POST /easypost/api/posts/publish` 共 5 次，每次生成唯一标题，将返回的 `data.infoId`（帖子ID）存入 `ads` 列表
+3. **顺序消费** — 每个需要 Buy Now 商品的用例从 `ads` 中顺序取一个帖子ID作为搜索词
+4. **搜索行为** — 用帖子ID搜索仅返回 1 个商品卡片，无需遍历多个商品；若该商品不可用（无 Buy Now / 有 bid 错误），自动切换下一个帖子ID
+5. **降级策略** — 若 `ads` 全部不可用或创建失败，降级为关键词"iphone pays postage aitest"，并遍历前 10 个商品卡片
+
+**接口地址：**
+- 登录接口：`https://aepub.58v5.cn/auth/login/v2`
+- 发帖接口：`https://aepub.58v5.cn/easypost/api/posts/publish`
 
 ### 数据使用策略（TC009 及之后）
 
@@ -1441,10 +1476,11 @@
 
 ---
 
-*文档最后更新：2026-03-18*  
+*文档最后更新：2026-05-18*  
 *基于 Playwright MCP 真实浏览器探索，所有"✅ 实测"标注均为真实行为观测*  
 *2026-03-15 变更：搜索词由"Pays Postage"改为"iPhone pays postage"；TC008 及之后统一采用 Tab 数据优先策略*  
 *2026-03-26 变更：脚本与 `_CONFIG.marketplace_search_keyword` 同步，搜索词统一为"iPhone pays postage aitest"（含 TC006 等依赖列表搜索的用例）*  
 *2026-03-16 变更：TC051 验证点由"卖家 Completed (Payment in progress)"改为"买家 Cancel 和 Cancelled (Refund completed) 状态展示"；角色由卖家改为买家；增加两个独立验证点及降级处理*  
 *2026-03-17 变更：总用例数由 50 更新为 51（TC001–TC051）；新增 Teardown 后置操作章节（卖家 Re-listing 3 条 Expired 帖子）；TC007 备注补充重试机制、"Something went wrong" 处理逻辑及 Google 登录 URL 判断策略；统计表 P0 由 29 更新为 31，P1 由 21 更新为 20*  
-*2026-03-18 变更：TC050（商品 Buyer paid but incomplete 错误提示）移动至 TC005 后，重编号为 TC006；原 TC006–TC049 依次顺排为 TC007–TC050；TC051 保持不变；数据引用 TC010→TC011、TC032→TC033*
+*2026-03-18 变更：TC050（商品 Buyer paid but incomplete 错误提示）移动至 TC005 后，重编号为 TC006；原 TC006–TC049 依次顺排为 TC007–TC050；TC051 保持不变；数据引用 TC010→TC011、TC032→TC033*  
+*2026-05-18 变更：同步最新脚本。1）TC007 标题由"Checkout - 银行卡支付成功"改为"主站搜帖子ID → 点列表卡片 → Buy Now → 银行卡支付成功"，前置条件和执行步骤同步更新；2）TC003 标题对齐脚本（"地址字段必填校验"）；3）TC005 标题对齐脚本（"Pay 按钮唤起支付弹窗"）；4）TC008 标注当前 `@pytest.mark.skip` 跳过状态；5）TC001–TC006 前置条件补充 setup_ads_data fixture 说明；6）测试数据准备章节新增 API 前置数据策略（登录API刷新Cookie + 批量创建5个帖子 + 帖子ID搜索 + 降级关键词策略）*
