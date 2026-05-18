@@ -121,16 +121,43 @@ def _goto_with_guard(page: Page, url: str, ready_locator) -> None:
                 last_fb_err = fallback_err
                 err_text = str(fallback_err)
                 if "ERR_HTTP_RESPONSE_CODE_FAILURE" in err_text or "net::ERR_HTTP" in err_text:
-                    # 站点 5xx 瞬时，等待恢复后再给最后一次机会
+                    # 站点 5xx 瞬时，增强恢复机制：递增等待时间并检查站点状态
                     if fb_attempt < 2:
+                        wait_time = 8000 + (fb_attempt * 5000)  # 8s, 13s
                         logger.warning(
-                            "listpage HTTP 异常（尝试 %s），等待 8s 后重试: %s",
+                            "listpage HTTP 异常（尝试 %s/%s），等待 %sms 后重试: %s",
                             fb_attempt + 1,
+                            3,
+                            wait_time,
                             err_text[:120],
                         )
-                        page.wait_for_timeout(8000)
+                        page.wait_for_timeout(wait_time)
+                        
+                        # 尝试访问首页检查站点是否恢复
+                        try:
+                            test_response = page.goto(_CONFIG['base_url'], wait_until="commit", timeout=10000)
+                            if test_response and test_response.ok:
+                                logger.info("✓ 站点首页恢复正常,继续重试listpage")
+                            page.wait_for_timeout(2000)
+                        except Exception as test_err:
+                            logger.warning(f"⚠ 站点首页测试失败: {str(test_err)[:80]}")
+                        
                         continue
-                    pytest.skip(f"listpage 回退触发 HTTP 异常，跳过当前用例: {url}")
+                    
+                    # 最后一次尝试前再等待一次
+                    logger.warning("⚠ 最后一次机会,再等待15秒检查站点恢复")
+                    page.wait_for_timeout(15000)
+                    
+                    # 最后尝试直接访问listpage
+                    try:
+                        final_response = page.goto(url, wait_until="domcontentloaded", timeout=60000)
+                        page.wait_for_timeout(3000)
+                        page.wait_for_function(ready_js, timeout=30000)
+                        logger.info("✓ 最后尝试成功,站点已恢复")
+                        break
+                    except Exception as final_err:
+                        logger.error(f"✗ 最后尝试仍失败: {str(final_err)[:100]}")
+                        pytest.skip(f"listpage 持续HTTP异常(已重试{fb_attempt+1}次+站点恢复检测)，跳过当前用例: {url}")
                 if fb_attempt >= 2:
                     if "Timeout" in err_text or "timed out" in err_text:
                         pytest.skip(
@@ -420,7 +447,8 @@ def test_all_listpage_city_tab_click(listpage: Page):
     with allure.step("获取第一个其他城市链接并记录目标"):
         result = page.evaluate("""(currentCity) => {
             var links = Array.from(document.querySelectorAll('a'));
-            var cityLink = links.find(function(a) {
+            for (var i = 0; i < links.length; i++) {
+                var a = links[i];
                 var href = a.href || '';
                 var text = a.textContent.trim();
                 // 查找包含城市路径且非当前城市的链接
@@ -434,12 +462,11 @@ def test_all_listpage_city_tab_click(listpage: Page):
                         return {href: href, city: match[1], text: text};
                     }
                 }
-                return null;
-            });
-            return cityLink;
+            }
+            return null;
         }""", current_city)
         
-        assert result and result.get('href'), "应存在可点击的其他城市链接"
+        assert result and isinstance(result, dict) and result.get('href'), "应存在可点击的其他城市链接"
         target_href = result['href']
         target_city = result['city']
         logger.info(f"目标城市链接: {target_href}, 城市: {target_city}")
