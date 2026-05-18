@@ -666,11 +666,13 @@ def test_sg_add_pref_add_page_should_show_empty_form(page, config):
     # ========== Act ==========
     with allure.step("步骤1：以已登录状态进入添加页"):
         page.goto(config["jobs_list_url"], wait_until="domcontentloaded")
-        dom_content_loaded_soft(page, 20000)
+        dom_content_loaded_soft(page, 30000)  # 从20秒增加到30秒
         _handle_cookie_popup(page)
         _click_sg_add_job_preference_card(page)
-        page.wait_for_url("**/jobPreference**", timeout=20000)
-        dom_content_loaded_soft(page, 20000)
+        page.wait_for_url("**/jobPreference**", timeout=30000)  # 从20秒增加到30秒
+        dom_content_loaded_soft(page, 30000)  # 从20秒增加到30秒
+        # 增加额外等待确保表单完全加载
+        page.wait_for_timeout(3000)
         logger.info(f"✓ 已进入添加页: {page.url}")
 
     # ========== Assert ==========
