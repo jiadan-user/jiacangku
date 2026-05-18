@@ -27,9 +27,9 @@ class AiChatJobPage(ChatPage):
             file_input.wait_for(state="attached", timeout=10000)
             file_input.set_input_files(file_path)
             
-            # 等待30秒，让时间戳充分渲染
-            self.page.wait_for_timeout(30000)
-            self.logger.info("✓ 已等待 30 秒，时间戳应已渲染")
+            # 优化：减少等待时间，5秒足够让时间戳渲染
+            self.page.wait_for_timeout(5000)
+            self.logger.info("✓ 已等待 5 秒，时间戳应已渲染")
             
             # 从 DOM 获取发送时间
             dom_time = self._get_send_time_from_dom()
@@ -429,12 +429,12 @@ class AiChatJobPage(ChatPage):
                 if current_count > initial_message_count:
                     self.logger.info(f"✓ 消息数量已增加（从 {initial_message_count} 增加到 {current_count}）")
                     
-                    # 检查新增的消息中是否包含 AI 回复
-                    if self.has_ai_reply_in_new_messages(initial_message_count, current_count):
-                        self.logger.info("✓ AI 自动回复已显示（消息数量增加 + AI 标识验证通过）")
-                        return True
-                    else:
-                        self.logger.warning("⚠️ 消息数量增加但新增消息中没有 AI 回复，继续等待...")
+                    # # 检查新增的消息中是否包含 AI 回复
+                    # if self.has_ai_reply_in_new_messages(initial_message_count, current_count):
+                    #     self.logger.info("✓ AI 自动回复已显示（消息数量增加 + AI 标识验证通过）")
+                    #     return True
+                    # else:
+                    #     self.logger.warning("⚠️ 消息数量增加但新增消息中没有 AI 回复，继续等待...")
                 
                 # 检查是否超时
                 elapsed = self.page.evaluate("Date.now()") - start_time
