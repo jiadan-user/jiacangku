@@ -152,10 +152,34 @@ class PropertyMapPage(BasePage):
         self.page.wait_for_timeout(2000)
 
     def is_map_view_active(self) -> bool:
-        """判断当前是否处于地图模式"""
+        """判断当前是否处于地图模式（优先检查 DOM 状态，降级到 URL 参数）"""
         try:
+            # 方式1：检查 Map 按钮是否有 active class
+            try:
+                map_btn = self.page.locator(self.MAP_BUTTON)
+                # 检查按钮的 class 属性是否包含 active 标记
+                class_attr = map_btn.get_attribute("class", timeout=3000)
+                if class_attr and "active" in class_attr.lower():
+                    return True
+            except Exception:
+                pass
+            
+            # 方式2：检查 URL 是否含 view=map（降级方案）
             url = self.page.url
-            return "view=map" in url
+            if "view=map" in url:
+                return True
+            
+            # 方式3：检查是否存在地图容器元素
+            try:
+                map_container = self.page.locator("[class*='mapContainer'], [id*='map']").first
+                if map_container.is_visible(timeout=2000):
+                    # 如果地图容器可见但没有 view=map 参数，仍认为是地图模式
+                    # 这种情况说明前端实现改变了，不再使用 URL 参数
+                    return True
+            except Exception:
+                pass
+            
+            return False
         except Exception as e:
             self.logger.error(f"判断地图模式失败: {e}")
             return False
