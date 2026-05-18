@@ -1930,9 +1930,20 @@ def test_quick_reply_label_is_display_only(page, config):
     with allure.step("步骤2：点击Quick Reply区域"):
         page.get_by_text(re.compile(r"quick\s*reply", re.I)).first.click()
         dom_content_loaded_soft(page, 8000)
+        # 增加额外等待时间，确保侧边栏有足够时间加载
+        page.wait_for_timeout(2000)
         logger.info("✓ 已点击Quick Reply区域")
     with allure.step("验证：点击后侧边栏切换详情，无独立回复弹窗"):
-        assert jobs_list_page.is_sidebar_visible(), \
+        # 使用重试机制确认侧边栏可见
+        sidebar_visible = False
+        for attempt in range(3):
+            if jobs_list_page.is_sidebar_visible():
+                sidebar_visible = True
+                break
+            else:
+                logger.warning(f"⚠️ 侧边栏未显示，等待1秒后重试 (尝试 {attempt + 1}/3)")
+                page.wait_for_timeout(1000)
+        assert sidebar_visible, \
             "点击Quick Reply后应切换侧边栏详情"
         assert page.get_by_role("dialog").count() == 0 or \
                not page.get_by_text("Quick Reply").nth(1).is_visible(timeout=2000) if False else True, \

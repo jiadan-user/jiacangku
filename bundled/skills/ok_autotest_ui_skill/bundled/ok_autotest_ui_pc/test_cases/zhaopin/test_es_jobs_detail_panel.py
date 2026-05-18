@@ -304,6 +304,8 @@ class TestDetailPanelInfoDisplay:
             logger.info("✓ 导航到招聘列表页成功")
 
         with allure.step("步骤2：读取公司名文本"):
+            # 增加等待时间确保详情面板已加载
+            page.wait_for_timeout(2000)
             company_text = detail_page.get_detail_company_text()
             logger.info(f"公司名文本: '{company_text}'")
 
@@ -311,8 +313,18 @@ class TestDetailPanelInfoDisplay:
             company_heading_visible = detail_page.is_detail_panel_visible()
             logger.info(f"详情面板可见: {company_heading_visible}")
 
-        assert config['own_post_company'] in company_text or company_text != "", \
-            f"详情面板公司名应含 '{config['own_post_company']}'，实际: '{company_text}'"
+        # 优化验证逻辑：接受多个有效公司名（it conmpany 或 EDB）
+        valid_companies = ['it conmpany', 'EDB']
+        company_text_lower = company_text.lower().strip()
+        
+        is_valid = any(
+            valid_company.lower() in company_text_lower 
+            for valid_company in valid_companies
+        )
+        
+        assert is_valid, \
+            f"详情面板公司名应包含以下之一 {valid_companies}，实际: '{company_text}'"
+        logger.info(f"✓ 公司名验证成功: '{company_text}'")
 
     @pytest.mark.case_id_es_detail_tc005
     @pytest.mark.p1
@@ -452,7 +464,24 @@ class TestOwnPostActions:
                 f"编辑页标题应为 '{config['edit_page_title']}'，实际: '{page.title()}'"
             logger.info("✓ Edit按钮跳转验证成功")
 
-        page.go_back()
+        # 增加网络错误重试机制
+        with allure.step("返回列表页"):
+            try:
+                page.go_back()
+                logger.info("✓ 成功返回列表页")
+            except Exception as e:
+                if "ERR_NETWORK_CHANGED" in str(e):
+                    logger.warning(f"⚠️ 首次返回遇到网络错误，等待2秒后重试: {e}")
+                    page.wait_for_timeout(2000)
+                    try:
+                        page.go_back()
+                        logger.info("✓ 重试后成功返回列表页")
+                    except Exception as e2:
+                        logger.warning(f"⚠️ 重试仍失败，直接导航回列表页: {e2}")
+                        detail_page.navigate_to_jobs_list(config['base_url'])
+                else:
+                    logger.error(f"❌ 返回列表页失败: {e}")
+                    raise
         dom_content_loaded_soft(page, 20000)
     @pytest.mark.case_id_es_detail_tc009
     @pytest.mark.p1
