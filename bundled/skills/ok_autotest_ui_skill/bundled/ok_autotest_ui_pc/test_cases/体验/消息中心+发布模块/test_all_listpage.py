@@ -461,9 +461,15 @@ def test_all_listpage_city_tab_click(listpage: Page):
             });
             if (cityLink) cityLink.click();
         }""", current_city)
-        page.wait_for_timeout(3000)
+        
+        # 等待导航完成：URL 变化或页面加载完成
+        try:
+            page.wait_for_url(lambda url: f'city-{target_city}' in url, timeout=8000)
+        except Exception:
+            page.wait_for_load_state('domcontentloaded', timeout=5000)
+        page.wait_for_timeout(2000)
 
-    with allure.step("验证跳转至目标城市页面"):
+    with allure.step("验证跳转至目标城市页面（首页优先，listpage 兼容）"):
         new_url = page.url
         # 验证 URL 中包含目标城市信息
         assert f'city-{target_city}' in new_url, \
@@ -472,7 +478,11 @@ def test_all_listpage_city_tab_click(listpage: Page):
         if current_city:
             assert current_city != target_city or current_url != new_url, \
                 f"应跳转至不同城市，但仍在 {current_city}"
-        logger.info(f"✓ TC005: 城市 Tab 点击跳转验证通过，URL={new_url}")
+        
+        # 记录跳转结果类型（首页或 listpage）
+        is_homepage = '/listpage/' not in new_url
+        page_type = "城市首页" if is_homepage else "城市 listpage"
+        logger.info(f"✓ TC005: 城市 Tab 点击跳转验证通过，跳转至 {page_type}，URL={new_url}")
 
     _safe_listpage_screenshot(page, f'{SCREENSHOT_DIR}/tc005_city_tab_click.png')
 
