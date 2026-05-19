@@ -502,8 +502,27 @@ def _draft_count_from_entry(page: Page) -> int | None:
 
 
 def _goto_publish_with_back_stack(page: Page, base_url: str) -> None:
-    page.goto(base_url.rstrip("/") + "/en/city-abu-dhabi/", wait_until="domcontentloaded", timeout=30000)
-    wait_post_interaction_settled(page, 800)
+    """建立 history 栈以支持后退测试。优先尝试城市页，失败后使用首页作为 fallback。"""
+    fallback_urls = [
+        base_url.rstrip("/") + "/en/city-abu-dhabi/",
+        base_url.rstrip("/") + "/en/",
+        base_url.rstrip("/") + "/"
+    ]
+    
+    success = False
+    for i, url in enumerate(fallback_urls):
+        try:
+            logger.debug(f"尝试导航到 history 栈前置页 ({i+1}/{len(fallback_urls)}): {url}")
+            page.goto(url, wait_until="domcontentloaded", timeout=15000)
+            wait_post_interaction_settled(page, 800)
+            success = True
+            logger.info(f"✓ history 栈前置页加载成功: {url}")
+            break
+        except Exception as e:
+            logger.warning(f"导航到 {url} 失败: {e}")
+            if i == len(fallback_urls) - 1:
+                logger.error("所有 fallback URL 均失败，直接进入发布页（无 history 栈）")
+    
     page.goto(_CONFIG["publish_url"], wait_until="domcontentloaded", timeout=30000)
     wait_post_interaction_settled(page, 800)
 
