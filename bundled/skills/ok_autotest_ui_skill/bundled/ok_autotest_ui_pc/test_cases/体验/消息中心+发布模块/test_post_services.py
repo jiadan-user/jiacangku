@@ -857,6 +857,7 @@ def _wait_description_after_undo(
         page.wait_for_timeout(500)  # 增加到500ms
         last = _read_publish_description(page)
         cur = (last or "").strip()
+        cur_raw = last or ""  # 保留原始内容(包括空白字符)
         
         elapsed = int((time.time() - t0) * 1000)
         
@@ -869,11 +870,11 @@ def _wait_description_after_undo(
         except Exception:
             pass
         
-        logger.debug(f"[{elapsed}ms] 读取内容长度={len(cur)}, 稳定计数={stable_count}, Undo按钮存在={not undo_button_disappeared}")
+        logger.debug(f"[{elapsed}ms] 读取内容长度={len(cur_raw)}(raw)/{len(cur)}(stripped), 稳定计数={stable_count}, Undo按钮存在={not undo_button_disappeared}")
         
-        # 记录非空内容
-        if cur:
-            last_non_empty = cur
+        # 记录非空内容(注意:这里也要用原始内容,因为可能是空格)
+        if cur_raw:
+            last_non_empty = cur_raw
         
         # 检查是否从润色结果变为空值(这是Undo的中间状态)
         if not seen_empty_after_polished and stable_text == polished_n and not cur:
@@ -893,12 +894,12 @@ def _wait_description_after_undo(
         # 如果Undo按钮已消失,说明已恢复到初始状态
         if undo_button_disappeared:
             if stable_count >= 2:  # 按钮消失后内容稳定2次(1秒)即可返回
-                if cur:
-                    logger.info(f"✓ Undo按钮消失且内容稳定,返回当前内容: 长度={len(cur)}")
-                    return last
+                if cur_raw:  # 使用原始内容(可能包含空格)
+                    logger.info(f"✓ Undo按钮消失且内容稳定,返回当前内容: 长度={len(cur_raw)}, 仅空白={cur_raw.strip()==''}")
+                    return cur_raw  # 返回原始内容,保留空格
                 elif last_non_empty:
                     # 按钮消失了,但当前读取为空,返回最后一次非空内容
-                    logger.info(f"✓ Undo按钮消失,返回最后非空内容: 长度={len(last_non_empty)}")
+                    logger.info(f"✓ Undo按钮消失,返回最后非空内容: 长度={len(last_non_empty)}, 仅空白={last_non_empty.strip()==''}")
                     return last_non_empty
                 elif not had_text_before_polish:
                     # Polish前就没有文本,现在按钮消失且内容为空是合理的
@@ -908,9 +909,9 @@ def _wait_description_after_undo(
         # 如果内容稳定3次(1.5秒)且与润色结果不同,返回
         if stable_count >= 3 and cur != polished_n:
             if had_text_before_polish:
-                if cur:
-                    logger.info(f"✓ Undo后内容稳定: 长度={len(cur)}, 内容前40字符={cur[:40]}")
-                    return last
+                if cur_raw:  # 使用原始内容
+                    logger.info(f"✓ Undo后内容稳定: 长度={len(cur_raw)}, 内容前40字符={cur_raw[:40]}, 仅空白={cur_raw.strip()==''}")
+                    return cur_raw  # 返回原始内容,保留空格
                 elif seen_empty_after_polished and last_non_empty:
                     # 曾经看到过润色结果变空,然后又看到过非空内容,现在又变空了
                     # 可能是UI闪烁,返回最后一次非空内容
@@ -927,11 +928,11 @@ def _wait_description_after_undo(
             continue
         
         # 如果Polish前有文本,现在读到非空内容(且不是润色结果)
-        if had_text_before_polish and cur and cur != polished_n:
+        if had_text_before_polish and cur_raw and cur != polished_n:
             # 等待至少2次稳定(1秒)
             if stable_count >= 2:
-                logger.info(f"✓ Undo后读到稳定的非空内容: 长度={len(cur)}")
-                return last
+                logger.info(f"✓ Undo后读到稳定的非空内容: 长度={len(cur_raw)}, 仅空白={cur_raw.strip()==''}")
+                return cur_raw  # 返回原始内容
     
     # 超时处理
     logger.warning(f"⚠ Undo等待超时({timeout_ms}ms)")
@@ -949,8 +950,9 @@ def _wait_description_after_undo(
     for extra_try in range(5):
         page.wait_for_timeout(1000)
         final = _read_publish_description(page)
-        final_stripped = (final or "").strip()
-        logger.warning(f"⚠ 超时后第{extra_try+1}次额外读取: 长度={len(final_stripped)}")
+        final_raw = final or ""
+        final_stripped = final_raw.strip()
+        logger.warning(f"⚠ 超时后第{extra_try+1}次额外读取: 长度={len(final_raw)}(raw)/{len(final_stripped)}(stripped), 仅空白={len(final_raw)>0 and final_stripped==''}")
         
         # 检查Undo按钮是否在额外读取期间消失
         try:
@@ -961,31 +963,32 @@ def _wait_description_after_undo(
         except Exception:
             pass
         
-        if final_stripped and final_stripped != polished_n:
-            logger.info(f"✓ 超时后额外读取成功获得内容")
-            return final
+        # 返回非空内容(包括仅空白字符)
+        if final_raw and final_stripped != polished_n:
+            logger.info(f"✓ 超时后额外读取成功获得内容(包括空白): 长度={len(final_raw)}")
+            return final_raw  # 返回原始内容,包括空格
         
-        # 如果Undo按钮消失了,接受当前内容(即使为空)
+        # 如果Undo按钮消失了,接受当前内容(即使为空或仅空白)
         if undo_button_disappeared:
-            if final_stripped:
-                logger.info(f"✓ Undo按钮已消失,返回当前内容: 长度={len(final_stripped)}")
-                return final
+            if final_raw:
+                logger.info(f"✓ Undo按钮已消失,返回当前内容: 长度={len(final_raw)}, 仅空白={final_stripped==''}")
+                return final_raw  # 返回原始内容
             elif last_non_empty:
-                logger.info(f"✓ Undo按钮已消失,返回历史非空内容: 长度={len(last_non_empty)}")
+                logger.info(f"✓ Undo按钮已消失,返回历史非空内容: 长度={len(last_non_empty)}, 仅空白={last_non_empty.strip()==''}")
                 return last_non_empty
         
         if not had_text_before_polish:
             # Polish前无文本,空值是合理的
             return final or ""
     
-    # 所有尝试后仍为空,返回最后一次非空内容(如果有)
-    if had_text_before_polish and last_non_empty and last_non_empty != polished_n:
-        logger.warning(f"⚠ 最终返回过程中见到的最后非空内容: 长度={len(last_non_empty)}")
+    # 所有尝试后仍为空,返回最后一次非空内容(如果有,包括仅空白)
+    if had_text_before_polish and last_non_empty and last_non_empty.strip() != polished_n:
+        logger.warning(f"⚠ 最终返回过程中见到的最后非空内容: 长度={len(last_non_empty)}, 仅空白={last_non_empty.strip()==''}")
         return last_non_empty
     
     final = _read_publish_description(page)
-    logger.error(f"✗ Undo等待完全失败,最终内容长度={len(final or '')}")
-    return final
+    logger.error(f"✗ Undo等待完全失败,最终内容长度={len(final or '')}, 仅空白={(final or '').strip()=='' and len(final or '')>0}")
+    return final or ""
 
 
 def _upload_image(page: Page):
@@ -2249,7 +2252,7 @@ def test_undo_after_polish(publish_page: Page):
         _fill_content(page, original_desc)
         page.wait_for_timeout(500)
         
-        logger.info(f"原始描述: {original_desc}")
+        logger.info(f"原始描述: '{original_desc}' (长度={len(original_desc)}, 是否仅空白={original_desc.strip() == ''})")
         _click_ai_button(page, "Polish with AI")
         desc_polished = _wait_ai_result(page, min_len=20, timeout_ms=40000)
         logger.info(f"Polish后描述: {desc_polished[:100] if desc_polished else '(空)'}")
@@ -2268,12 +2271,16 @@ def test_undo_after_polish(publish_page: Page):
         _screenshot(page, f'{SCREENSHOT_DIR}/tc009_just_after_undo.png')
 
     with allure.step("验证恢复原始文本"):
-        had_text_before_polish = bool(original_desc.strip())
+        # 区分"真正的空"和"仅包含空白字符"
+        original_has_content = bool(original_desc.strip())  # 有非空白字符
+        original_is_whitespace_only = (len(original_desc) > 0 and not original_desc.strip())  # 仅空白字符
+        
         desc_after_undo = _wait_description_after_undo(
-            page, desc_polished, had_text_before_polish, timeout_ms=20000  # 增加到20秒
+            page, desc_polished, original_has_content, timeout_ms=20000  # 增加到20秒
         )
         
-        logger.info(f"Undo后描述: {desc_after_undo[:100] if desc_after_undo else '(空)'}")
+        # 详细日志
+        logger.info(f"Undo后描述: '{desc_after_undo[:100] if desc_after_undo else '(空)'}' (长度={len(desc_after_undo or '')}, 是否仅空白={(desc_after_undo or '').strip() == '' and len(desc_after_undo or '') > 0})")
         
         # Undo等待完成后截图
         _screenshot(page, f'{SCREENSHOT_DIR}/tc009_after_undo_wait.png')
@@ -2286,9 +2293,21 @@ def test_undo_after_polish(publish_page: Page):
         except Exception:
             pass
         
-        # Polish 前若描述为空，Undo 回到「初始空态」是合理行为，不强制非空
-        if had_text_before_polish:
-            if not (desc_after_undo or "").strip():
+        # 验证逻辑需要考虑原始文本是否仅为空白字符
+        if original_is_whitespace_only:
+            # 原始文本仅包含空白字符(如空格),Undo后应该返回空白字符或空字符串
+            logger.info(f"✓ 原始文本仅包含空白字符(长度={len(original_desc)}),Undo后内容='{desc_after_undo}'(长度={len(desc_after_undo or '')})")
+            # 验证: 要么返回相同的空白,要么返回空字符串
+            if desc_after_undo == original_desc:
+                logger.info(f"✓✓ Undo完美恢复空白字符")
+            elif not desc_after_undo or desc_after_undo.strip() == '':
+                logger.info(f"✓ Undo后为空或空白,对于原始空白字符可接受")
+            else:
+                logger.warning(f"⚠ 原始为空白字符,Undo后变成其他内容: '{desc_after_undo[:50]}'")
+            # 这种情况下不抛异常,因为不同实现对空白字符的处理可能不同
+        elif original_has_content:
+            # 原始文本有实质内容(非空白),Undo后必须有内容
+            if not desc_after_undo or not desc_after_undo.strip():
                 # 如果Undo按钮已消失,说明已恢复到初始版本,接受空值(可能是contenteditable清空了)
                 if not undo_button_exists:
                     logger.warning("⚠ Undo按钮已消失,虽然读取为空但可能已恢复初始状态")
