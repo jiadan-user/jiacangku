@@ -662,15 +662,36 @@ def _wait_ai_result(
 
 
 def _wait_ai_toolbar(page: Page, timeout_ms: int = 28000) -> None:
-    """AI 生成后 Shuffle/Undo 可能晚于 #content 更新，额外等待工具条出现。"""
+    """AI 生成后 Shuffle/Undo 可能晚于 #content 更新，额外等待工具条出现。
+    增强：先等待AI工作状态消失，再等待工具栏按钮出现。"""
     elapsed = 0
     step = 500
+    
+    # 第一阶段：等待AI工作状态消失
+    ai_working_cleared = False
     while elapsed <= timeout_ms:
         body = _safe_body_text(page)
+        
+        # 检查AI是否还在工作
+        ai_is_working = 'AI is working on it' in body or 'AI is working' in body
+        if ai_is_working:
+            if not ai_working_cleared and elapsed > 0:
+                logger.info(f"等待AI工作完成... ({elapsed}ms)")
+            page.wait_for_timeout(step)
+            elapsed += step
+            continue
+        else:
+            if not ai_working_cleared and elapsed > 0:
+                logger.info(f"✓ AI工作已完成，等待工具栏按钮出现")
+            ai_working_cleared = True
+        
+        # 第二阶段：AI已完成，检查工具栏按钮
         has_shuffle = "Shuffle" in body or page.locator('button:has-text("Shuffle")').count() > 0
         has_undo = "Undo" in body or page.locator('button:has-text("Undo")').count() > 0
         if has_shuffle and has_undo:
+            logger.info(f"✓ AI工具栏按钮已就绪(Shuffle + Undo)")
             return
+        
         page.wait_for_timeout(step)
         elapsed += step
     try:
@@ -686,7 +707,28 @@ def _wait_ai_toolbar(page: Page, timeout_ms: int = 28000) -> None:
 
 
 def _click_ai_button(page: Page, preferred_text: str):
-    """点击 AI 按钮，若预期按钮不可见则按当前状态回退点击。"""
+    """点击 AI 按钮，若预期按钮不可见则按当前状态回退点击。
+    增强：检测'AI is working on it'状态，自动等待AI完成。"""
+    
+    # 先检查是否在AI生成中
+    max_wait_ai = 60000  # 最多等待60秒
+    elapsed = 0
+    while elapsed < max_wait_ai:
+        body_text = _safe_body_text(page)
+        if 'AI is working on it' in body_text or 'AI is working' in body_text:
+            if elapsed == 0:
+                logger.info(f"检测到AI正在工作中，等待AI完成后再点击{preferred_text}按钮")
+            page.wait_for_timeout(2000)
+            elapsed += 2000
+            continue
+        else:
+            if elapsed > 0:
+                logger.info(f"✓ AI工作完成(等待{elapsed}ms)，继续点击按钮")
+            break
+    
+    if elapsed >= max_wait_ai:
+        logger.warning(f"⚠ AI工作状态持续{max_wait_ai}ms未结束，尝试继续点击")
+    
     scope = _ai_toolbar_scope(page)
     candidates = []
     if preferred_text:
