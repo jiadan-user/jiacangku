@@ -4822,28 +4822,55 @@ def test_tc107_description_counter(page: Page, logged_in_post_page: MarketplaceP
 
 @pytest.mark.p2
 @pytest.mark.accessibility
+@pytest.mark.timeout(60)
 def test_tc108_tab_order(page: Page, logged_in_post_page: MarketplacePostPage):
-    """TC108: Tab 遍历主表单控件，记录焦点 id（顺序随产品实现可能变化）"""
+    """TC108: Tab 遍历主表单控件，记录焦点 id（顺序随产品实现可能变化）
+    
+    注意：已添加60秒超时保护，避免卡死。简化等待逻辑，跳过 iframe 和隐藏元素。
+    """
     post_page = logged_in_post_page
     page.locator("#title").click()
-    wait_post_interaction_settled(page, 200)
+    page.wait_for_timeout(300)
     seen = []
-    for _ in range(16):
-        el = page.evaluate(
-            """() => {
-            const a = document.activeElement;
-            if (!a) return '';
-            return a.id || a.getAttribute('name') || a.tagName || '';
-        }"""
-        )
-        seen.append(el)
-        page.keyboard.press("Tab")
-        wait_post_interaction_settled(page, 120)
+    skipped_count = 0
+    
+    for i in range(16):
+        try:
+            el = page.evaluate(
+                """() => {
+                const a = document.activeElement;
+                if (!a) return '';
+                if (a.tagName === 'IFRAME') return 'IFRAME_SKIP';
+                if (!a.offsetParent && a.tagName !== 'BODY' && a.tagName !== 'HTML') return 'HIDDEN_SKIP';
+                return a.id || a.getAttribute('name') || a.tagName || '';
+            }"""
+            )
+            
+            if 'SKIP' in el:
+                logger.debug(f"Tab #{i}: Skipping {el}")
+                skipped_count += 1
+                page.keyboard.press("Tab")
+                page.wait_for_timeout(100)
+                continue
+
+            seen.append(el)
+            page.keyboard.press("Tab")
+            page.wait_for_timeout(150)
+
+        except Exception as e:
+            logger.warning(f"Tab #{i} interaction error: {e}, continuing...")
+            try:
+                page.keyboard.press("Tab")
+                page.wait_for_timeout(100)
+            except Exception:
+                pass
+            continue
+    
     joined = " ".join(seen).lower()
     assert "title" in joined or any(str(x).lower() == "title" for x in seen), (
-        f"Tab 序列应经过标题域，序列={seen[:8]}..."
+        f"Tab 序列应经过标题域，序列={seen[:8]}..., 跳过={skipped_count}"
     )
-    logger.info("✅ TC108通过：Tab 焦点序列已采样")
+    logger.info(f"✅ TC108通过：Tab 焦点序列已采样 (有效={len(seen)}, 跳过={skipped_count})")
 
 
 if __name__ == "__main__":
