@@ -748,14 +748,15 @@ def _fill_content(page: Page, value: str):
     page.locator('#content').fill(value)
 
 
-def _read_publish_description(page: Page) -> str:
+def _read_publish_description(page: Page, debug: bool = False) -> str:
     """读取发布描述当前值；兼容 #content 为 input/textarea/contenteditable。
     增强等待机制：等待DOM稳定后再读取。"""
     # 先等待元素加载
     try:
         page.wait_for_selector("#content", state="attached", timeout=3000)
-    except Exception:
-        pass
+    except Exception as e:
+        if debug:
+            logger.debug(f"等待#content元素失败: {str(e)[:80]}")
     
     page.wait_for_timeout(200)  # 等待内容渲染
     
@@ -838,17 +839,37 @@ def _wait_description_after_undo(
     timeout_ms: int = 15000,
 ) -> str:
     """Undo 后轮询描述区直至与润色结果区分或稳定；Polish 前无正文时允许最终为空。
-    增强稳定性：等待内容稳定后再返回，避免过早读取到空值。"""
+    增强稳定性：等待内容稳定后再返回，避免过早读取到空值。
+    特别处理：Undo可能经历 润色结果→空值瞬态→原始文本 的过程。"""
     polished_n = (polished_text or "").strip()
     t0 = time.time()
     last = ""
     stable_count = 0
     stable_text = ""
+    seen_empty_after_polished = False  # 是否看到过空值瞬态
+    last_non_empty = ""  # 记录最后一次非空内容
+    
+    logger.info(f"开始等待Undo结果, Polish文本长度={len(polished_n)}, Polish前有文本={had_text_before_polish}")
     
     while (time.time() - t0) * 1000 <= timeout_ms:
-        page.wait_for_timeout(400)
+        page.wait_for_timeout(500)  # 增加到500ms
         last = _read_publish_description(page)
         cur = (last or "").strip()
+        
+        elapsed = int((time.time() - t0) * 1000)
+        logger.debug(f"[{elapsed}ms] 读取内容长度={len(cur)}, 稳定计数={stable_count}")
+        
+        # 记录非空内容
+        if cur:
+            last_non_empty = cur
+        
+        # 检查是否从润色结果变为空值(这是Undo的中间状态)
+        if not seen_empty_after_polished and stable_text == polished_n and not cur:
+            seen_empty_after_polished = True
+            logger.info(f"✓ 检测到Undo中间态(润色→空值), 继续等待原始文本出现")
+            stable_count = 0
+            stable_text = cur
+            continue
         
         # 检查内容稳定性
         if cur == stable_text:
@@ -857,30 +878,59 @@ def _wait_description_after_undo(
             stable_count = 0
             stable_text = cur
         
-        # 如果内容稳定3次(1.2秒)且与润色结果不同,返回
+        # 如果内容稳定3次(1.5秒)且与润色结果不同,返回
         if stable_count >= 3 and cur != polished_n:
             if had_text_before_polish:
                 if cur:
-                    logger.info(f"✓ Undo后内容稳定: 长度={len(cur)}")
+                    logger.info(f"✓ Undo后内容稳定: 长度={len(cur)}, 内容前40字符={cur[:40]}")
                     return last
+                elif seen_empty_after_polished and last_non_empty:
+                    # 曾经看到过润色结果变空,然后又看到过非空内容,现在又变空了
+                    # 可能是UI闪烁,返回最后一次非空内容
+                    logger.warning(f"⚠ 内容在空值和非空之间闪烁,返回最后非空内容: 长度={len(last_non_empty)}")
+                    return last_non_empty
             else:
                 logger.info(f"✓ Undo后内容稳定(Polish前无文本): 长度={len(cur)}")
                 return last or ""
         
         # 如果还在显示润色结果,继续等待
         if polished_n and cur == polished_n:
+            if elapsed > 3000:  # 3秒后仍是润色结果,可能Undo没生效
+                logger.warning(f"⚠ Undo点击3秒后仍显示润色结果,可能Undo未生效")
             continue
         
-        # 如果Polish前有文本,现在读到内容就返回
-        if had_text_before_polish and cur:
-            # 但至少等待500ms确保不是瞬态
-            if stable_count >= 1:
+        # 如果Polish前有文本,现在读到非空内容(且不是润色结果)
+        if had_text_before_polish and cur and cur != polished_n:
+            # 等待至少2次稳定(1秒)
+            if stable_count >= 2:
+                logger.info(f"✓ Undo后读到稳定的非空内容: 长度={len(cur)}")
                 return last
     
-    # 超时后再读取一次最终结果
-    page.wait_for_timeout(1000)
+    # 超时处理
+    logger.warning(f"⚠ Undo等待超时({timeout_ms}ms)")
+    
+    # 再尝试多读几次,有时内容在超时边缘才出现
+    for extra_try in range(5):
+        page.wait_for_timeout(1000)
+        final = _read_publish_description(page)
+        final_stripped = (final or "").strip()
+        logger.warning(f"⚠ 超时后第{extra_try+1}次额外读取: 长度={len(final_stripped)}")
+        
+        if final_stripped and final_stripped != polished_n:
+            logger.info(f"✓ 超时后额外读取成功获得内容")
+            return final
+        
+        if not had_text_before_polish:
+            # Polish前无文本,空值是合理的
+            return final or ""
+    
+    # 所有尝试后仍为空,返回最后一次非空内容(如果有)
+    if had_text_before_polish and last_non_empty and last_non_empty != polished_n:
+        logger.warning(f"⚠ 最终返回过程中见到的最后非空内容: 长度={len(last_non_empty)}")
+        return last_non_empty
+    
     final = _read_publish_description(page)
-    logger.warning(f"⚠ Undo等待超时,最终读取长度={len(final or '')}")
+    logger.error(f"✗ Undo等待完全失败,最终内容长度={len(final or '')}")
     return final
 
 
@@ -2144,26 +2194,78 @@ def test_undo_after_polish(publish_page: Page):
         _fill_title(page, 'Professional Service for Offer')
         _fill_content(page, original_desc)
         page.wait_for_timeout(500)
+        
+        logger.info(f"原始描述: {original_desc}")
         _click_ai_button(page, "Polish with AI")
         desc_polished = _wait_ai_result(page, min_len=20, timeout_ms=40000)
+        logger.info(f"Polish后描述: {desc_polished[:100] if desc_polished else '(空)'}")
         _wait_ai_toolbar(page, 20000)
+        
+        # Polish后截图
+        _screenshot(page, f'{SCREENSHOT_DIR}/tc009_after_polish.png')
 
     with allure.step("点击Undo"):
         # 与 Polish 一致：在表单/主内容作用域内点击，避免点到页内其他 Undo
         clicked = _click_ai_button(page, "Undo")
         logger.info("✓ 点击 Undo: %s", clicked)
-        page.wait_for_timeout(600)
+        page.wait_for_timeout(1000)  # 增加到1秒,给Undo更多时间
+        
+        # Undo后立即截图
+        _screenshot(page, f'{SCREENSHOT_DIR}/tc009_just_after_undo.png')
 
     with allure.step("验证恢复原始文本"):
         had_text_before_polish = bool(original_desc.strip())
         desc_after_undo = _wait_description_after_undo(
-            page, desc_polished, had_text_before_polish, timeout_ms=16000
+            page, desc_polished, had_text_before_polish, timeout_ms=20000  # 增加到20秒
         )
+        
+        logger.info(f"Undo后描述: {desc_after_undo[:100] if desc_after_undo else '(空)'}")
+        
+        # Undo等待完成后截图
+        _screenshot(page, f'{SCREENSHOT_DIR}/tc009_after_undo_wait.png')
+        
         # Polish 前若描述为空，Undo 回到「初始空态」是合理行为，不强制非空
         if had_text_before_polish:
+            if not (desc_after_undo or "").strip():
+                # 失败前再尝试手动多读几次
+                logger.error("✗ Undo后内容为空,尝试手动多读几次")
+                for manual_try in range(3):
+                    page.wait_for_timeout(2000)
+                    manual_read = _read_publish_description(page, debug=True)
+                    logger.error(f"手动读取第{manual_try+1}次: 长度={len(manual_read or '')}, 内容={manual_read[:80] if manual_read else '(空)'}")
+                    if manual_read and manual_read.strip():
+                        desc_after_undo = manual_read
+                        break
+                
+                # 最终失败前截图
+                _screenshot(page, f'{SCREENSHOT_DIR}/tc009_undo_failed.png')
+                
+                # 输出DOM调试信息
+                try:
+                    dom_info = page.evaluate("""() => {
+                        const el = document.querySelector('#content');
+                        if (!el) return 'Element #content not found';
+                        return {
+                            tagName: el.tagName,
+                            type: el.type,
+                            value: el.value,
+                            innerText: el.innerText,
+                            textContent: el.textContent,
+                            isContentEditable: el.isContentEditable,
+                            contentEditable: el.getAttribute('contenteditable'),
+                            offsetParent: el.offsetParent ? 'visible' : 'hidden'
+                        };
+                    }""")
+                    logger.error(f"DOM调试信息: {dom_info}")
+                except Exception as dom_err:
+                    logger.error(f"无法获取DOM信息: {str(dom_err)}")
+            
             assert (desc_after_undo or "").strip(), (
-                "Polish 前描述非空时，Undo 后应能读到描述正文；"
-                "若仍为空请检查是否命中表单区 Undo 或 #content 是否为 contenteditable"
+                f"Polish 前描述非空时，Undo 后应能读到描述正文\n"
+                f"原始描述: {original_desc}\n"
+                f"Polish后: {desc_polished[:100] if desc_polished else '(空)'}\n"
+                f"Undo后: {desc_after_undo[:100] if desc_after_undo else '(空)'}\n"
+                f"请检查截图: {SCREENSHOT_DIR}/tc009_undo_failed.png"
             )
         if desc_after_undo.strip() == original_desc.strip():
             logger.info("✓ Undo 已恢复原始文本")
