@@ -99,6 +99,19 @@ class FavoritesPage(BasePage):
             return sm
         except TimeoutError:
             pass
+        
+        # 检测是否弹出登录框(说明session已失效)
+        email_box = self.page.get_by_role("textbox", name="Email or phone number")
+        if email_box.is_visible(timeout=2000):
+            # session失效,关闭登录框准备重新登录
+            try:
+                close_btn = self.page.locator("button[aria-label='Close'], button:has-text('×')").first
+                if close_btn.is_visible(timeout=1000):
+                    close_btn.click()
+                    self.page.wait_for_timeout(500)
+            except Exception:
+                pass
+        
         self.reset_to_guest()
         self.navigate_to_favorites_list(config["base_url"])
         login_page.handle_cookie_popup()
