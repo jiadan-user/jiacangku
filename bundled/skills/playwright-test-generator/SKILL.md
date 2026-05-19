@@ -113,6 +113,9 @@ description: 从 Markdown 测试用例文档生成 Playwright Python 测试脚�
 - 如果报错，自我诊断并修复（限 3 次）；修复成功后记录此次排坑经验。
 - 3 轮后仍失败：输出 `script_blocker_report.md`，在 `playwright_case_outcomes.json` 中标记 `script_blocked`，并停止当前脚本批次。QA Agent 会阻塞在阶段2B，不进入影响分析。
 - 本批次彻底通过后，再进入下一批次的阶段2B。
+- 阶段2B必须同步记录最多 3 轮转换统计：每条 outcome 的 `details.attempts` 写入每轮 `round`、`collect_only_passed`、`pytest_passed`、`failure_reason` / `fix_summary`（如有）；成功用例写入 `details.first_success_round`。
+- 第 2/3 轮只重试上一轮未成功的用例，不重复统计已成功用例。如果第 1 轮全部生成并自测通过，只记录第 1 轮。
+- 转换成功率只作为统计信息，不作为 QA Agent 阶段2B门禁或额外阻塞条件。
 
 阶段2B结束时必须落盘 `playwright_case_outcomes.json`。对每条阶段2A `recording_passed` 的用例，最终必须是：
 - `script_generated`：必须附带 `script_path`，并证明 `collect_only_passed=true`、`pytest_passed=true`

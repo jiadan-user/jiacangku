@@ -92,6 +92,20 @@ class OkTestRunnerTests(unittest.TestCase):
         self.assertIn("--timeout-method", args)
         self.assertIn("thread", args)
 
+    def test_idle_timeout_default_scales_with_selected_count(self) -> None:
+        args = self._args(idle_timeout=None)
+
+        self.assertEqual(runner._idle_timeout(args, 99), 900)
+        self.assertEqual(runner._idle_timeout(args, 100), 1800)
+        self.assertEqual(runner._idle_timeout(args, 800), 1800)
+        self.assertEqual(runner._idle_timeout(args, 1999), 1800)
+        self.assertEqual(runner._idle_timeout(args, 2000), 2400)
+
+    def test_idle_timeout_explicit_value_overrides_scaled_default(self) -> None:
+        args = self._args(idle_timeout=600)
+
+        self.assertEqual(runner._idle_timeout(args, 2000), 600)
+
     def test_pytest_args_skip_case_timeout_when_plugin_missing(self) -> None:
         args = runner._build_pytest_args(
             ["test_cases/zhaopin/test_demo.py"],

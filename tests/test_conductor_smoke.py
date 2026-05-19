@@ -23,6 +23,7 @@ from qa_agent.models import (
     LegacyUpdateTaskStatus,
     Phase,
     PhaseStatus,
+    PlaywrightCaseOutcome,
     RunState,
     RunStatus,
     ValidationResult,
@@ -618,8 +619,13 @@ class ConductorSmokeTests(unittest.TestCase):
         state = self._confirm_stage2_recording(conductor, state)
         self.assertEqual(state.current_phase, Phase.IMPACT_VERIFICATION.value)
         self.assertIn("generated_scripts_manifest", state.artifacts)
+        self.assertIn("stage2b_conversion_metrics", state.artifacts)
         self.assertEqual(read_json(state.artifacts["generated_scripts_manifest"], default=None), [])
         self.assertEqual(read_json(state.artifacts["playwright_case_outcomes"], default=None), [])
+        metrics = read_json(state.artifacts["stage2b_conversion_metrics"], default={})
+        self.assertEqual(metrics["eligible_count"], 0)
+        self.assertIsNone(metrics["success_rate"])
+        self.assertEqual(metrics["round_count"], 0)
         self.assertEqual(impact_executor.calls, 1)
 
     def test_stage2b_blocks_when_script_generation_not_closed(self) -> None:
@@ -644,7 +650,74 @@ class ConductorSmokeTests(unittest.TestCase):
         self.assertEqual(state.current_phase, Phase.IMPACT_VERIFICATION.value)
         self.assertEqual(state.status, RunStatus.BLOCKED.value)
         self.assertIn("generated_scripts_manifest", state.artifacts)
+        self.assertIn("stage2b_conversion_metrics", state.artifacts)
+        metrics = read_json(state.artifacts["stage2b_conversion_metrics"], default={})
+        self.assertEqual(metrics["eligible_count"], 1)
+        self.assertEqual(metrics["converted_count"], 1)
+        self.assertEqual(metrics["success_rate"], 1.0)
+        self.assertIsNone(metrics["round_count"])
         self.assertEqual(impact_executor.calls, 1)
+
+    def test_stage2b_conversion_metrics_records_one_round_success(self) -> None:
+        conductor = self._make_conductor()
+        outcomes = [
+            PlaywrightCaseOutcome(
+                tc_id=f"TC{idx:03d}",
+                outcome="script_generated",
+                script_path=f"/tmp/test_{idx}.py",
+                collect_only_passed=True,
+                pytest_passed=True,
+                details={
+                    "first_success_round": 1,
+                    "attempts": [{"round": 1, "collect_only_passed": True, "pytest_passed": True}],
+                },
+            )
+            for idx in range(1, 11)
+        ]
+
+        metrics = conductor._build_stage2b_conversion_metrics([f"TC{idx:03d}" for idx in range(1, 11)], outcomes)
+
+        self.assertEqual(metrics["converted_count"], 10)
+        self.assertEqual(metrics["success_rate"], 1.0)
+        self.assertEqual(metrics["round_count"], 1)
+        self.assertEqual(metrics["rounds"][0]["attempted_count"], 10)
+        self.assertEqual(metrics["rounds"][0]["cumulative_success_rate"], 1.0)
+
+    def test_stage2b_conversion_metrics_records_cumulative_second_round_success(self) -> None:
+        conductor = self._make_conductor()
+        outcomes = []
+        for idx in range(1, 11):
+            if idx <= 6:
+                attempts = [{"round": 1, "collect_only_passed": True, "pytest_passed": True}]
+                first_success_round = 1
+            else:
+                attempts = [
+                    {"round": 1, "collect_only_passed": True, "pytest_passed": False, "failure_reason": "pytest failed"},
+                    {"round": 2, "collect_only_passed": True, "pytest_passed": True, "fix_summary": "fixed assertion"},
+                ]
+                first_success_round = 2
+            outcomes.append(
+                PlaywrightCaseOutcome(
+                    tc_id=f"TC{idx:03d}",
+                    outcome="script_generated",
+                    script_path=f"/tmp/test_{idx}.py",
+                    collect_only_passed=True,
+                    pytest_passed=True,
+                    details={"first_success_round": first_success_round, "attempts": attempts},
+                )
+            )
+
+        metrics = conductor._build_stage2b_conversion_metrics([f"TC{idx:03d}" for idx in range(1, 11)], outcomes)
+
+        self.assertEqual(metrics["converted_count"], 10)
+        self.assertEqual(metrics["success_rate"], 1.0)
+        self.assertEqual(metrics["round_count"], 2)
+        self.assertEqual(metrics["rounds"][0]["attempted_count"], 10)
+        self.assertEqual(metrics["rounds"][0]["new_success_count"], 6)
+        self.assertEqual(metrics["rounds"][0]["cumulative_success_rate"], 0.6)
+        self.assertEqual(metrics["rounds"][1]["attempted_count"], 4)
+        self.assertEqual(metrics["rounds"][1]["new_success_count"], 4)
+        self.assertEqual(metrics["rounds"][1]["cumulative_success_rate"], 1.0)
 
     def test_complete_impact_verification_without_tasks_reaches_ok_ui(self) -> None:
         impact_executor = FakeImpactVerificationExecutor(self._passed_verification_outcome())

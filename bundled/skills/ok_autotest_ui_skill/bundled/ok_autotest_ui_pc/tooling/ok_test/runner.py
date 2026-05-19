@@ -377,8 +377,16 @@ def _case_timeout(args: argparse.Namespace) -> int:
     return _timeout_value(args, "case_timeout", "OK_TEST_CASE_TIMEOUT", 300)
 
 
-def _idle_timeout(args: argparse.Namespace) -> int:
-    return _timeout_value(args, "idle_timeout", "OK_TEST_IDLE_TIMEOUT", 900)
+def _default_idle_timeout(selected_count: int) -> int:
+    if selected_count >= 2000:
+        return 2400
+    if selected_count >= 100:
+        return 1800
+    return 900
+
+
+def _idle_timeout(args: argparse.Namespace, selected_count: int) -> int:
+    return _timeout_value(args, "idle_timeout", "OK_TEST_IDLE_TIMEOUT", _default_idle_timeout(selected_count))
 
 
 def _phase_timeout(args: argparse.Namespace) -> int:
@@ -1100,7 +1108,7 @@ def handle_run(args: argparse.Namespace) -> int:
     pytest_cmd, pytest_display = resolve_pytest_command()
     allure_dir = ensure_dir(run_dir / "allure-results")
     case_timeout = _case_timeout(args)
-    idle_timeout = _idle_timeout(args)
+    idle_timeout = _idle_timeout(args, len(selected_cases))
     phase_timeout = _phase_timeout(args)
     failed_reruns = _failed_reruns(args)
     has_pytest_timeout = _pytest_timeout_available()

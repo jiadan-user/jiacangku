@@ -34,7 +34,7 @@ def build_parser() -> argparse.ArgumentParser:
     run_parser.add_argument("--workers", help="并发 worker 数，支持 1、正整数或 auto；默认 1")
     run_parser.add_argument("--max-workers", type=int, help="auto/N 的安全上限，默认 4")
     run_parser.add_argument("--case-timeout", type=int, help="单条用例超时秒数，默认 300；0 表示关闭")
-    run_parser.add_argument("--idle-timeout", type=int, help="pytest 阶段无输出/无产物进展超时秒数，默认 900；0 表示关闭")
+    run_parser.add_argument("--idle-timeout", type=int, help="pytest 阶段无输出/无产物进展超时秒数，默认按选中用例数动态取 900/1800/2400；0 表示关闭")
     run_parser.add_argument("--phase-timeout", type=int, help="pytest 阶段总时长硬上限秒数，默认关闭")
     run_parser.add_argument("--failed-reruns", type=int, help="失败用例二次执行次数，默认 1；0 表示关闭")
     run_parser.add_argument(

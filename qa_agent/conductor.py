@@ -886,6 +886,7 @@ class QAConductor:
                 write_json(generated_manifest_path, [])
                 state.artifacts["playwright_case_outcomes"] = str(case_outcomes_path)
                 state.artifacts["generated_scripts_manifest"] = str(generated_manifest_path)
+                metrics_path = self._write_stage2b_conversion_metrics(state, [], [])
                 self._store_gate_result(
                     state,
                     "phase2_gate_result",
@@ -897,6 +898,7 @@ class QAConductor:
                             "playwright_recording_outcomes": state.artifacts.get("playwright_recording_outcomes", ""),
                             "playwright_case_outcomes": str(case_outcomes_path),
                             "generated_scripts_manifest": str(generated_manifest_path),
+                            "stage2b_conversion_metrics": str(metrics_path),
                             "recording_passed_count": 0,
                         },
                     ),
@@ -1385,6 +1387,10 @@ class QAConductor:
                 + ", ".join(unexpected_cases)
             )
 
+        metrics_path = ""
+        if outcome_payload or not automatable_cases:
+            metrics_path = str(self._write_stage2b_conversion_metrics(state, automatable_cases, outcomes))
+
         if not reasons:
             generated_manifest_path = self.store.artifact_path(state.run_id, "generated_scripts_manifest.json")
             write_json(generated_manifest_path, sorted(set(generated_scripts)))
@@ -1403,10 +1409,136 @@ class QAConductor:
             details={
                 "text_case_manifest": state.artifacts.get("text_case_manifest", ""),
                 "playwright_case_outcomes": outcomes_path,
+                "stage2b_conversion_metrics": metrics_path,
                 "automatable_case_count": len(automatable_cases),
                 "generated_script_count": len(set(generated_scripts)),
             },
         )
+
+    def _write_stage2b_conversion_metrics(
+        self,
+        state: RunState,
+        eligible_case_ids: list[str],
+        outcomes: list[PlaywrightCaseOutcome],
+    ) -> Path:
+        existing_path = state.artifacts.get("stage2b_conversion_metrics", "")
+        if existing_path and read_json(existing_path, default=None):
+            return Path(existing_path)
+
+        metrics_path = self.store.artifact_path(state.run_id, "stage2b_conversion_metrics.json")
+        write_json(metrics_path, self._build_stage2b_conversion_metrics(eligible_case_ids, outcomes))
+        state.artifacts["stage2b_conversion_metrics"] = str(metrics_path)
+        return metrics_path
+
+    def _build_stage2b_conversion_metrics(
+        self,
+        eligible_case_ids: list[str],
+        outcomes: list[PlaywrightCaseOutcome],
+    ) -> dict[str, Any]:
+        eligible_case_ids = list(dict.fromkeys(eligible_case_ids))
+        eligible_count = len(eligible_case_ids)
+        outcomes_by_tc = {outcome.tc_id: outcome for outcome in outcomes}
+        converted_count = 0
+        blocked_count = 0
+        cases: list[dict[str, Any]] = []
+        first_success_round_by_tc: dict[str, int] = {}
+        attempted_by_round: dict[int, set[str]] = {}
+        saw_attempt_records = False
+
+        for tc_id in eligible_case_ids:
+            outcome = outcomes_by_tc.get(tc_id)
+            if not outcome:
+                blocked_count += 1
+                cases.append({"tc_id": tc_id, "outcome": "missing", "converted": False, "first_success_round": None})
+                continue
+
+            converted = (
+                outcome.outcome == PlaywrightOutcomeType.SCRIPT_GENERATED.value
+                and bool(outcome.collect_only_passed)
+                and bool(outcome.pytest_passed)
+            )
+            if converted:
+                converted_count += 1
+            else:
+                blocked_count += 1
+
+            details = outcome.details if isinstance(outcome.details, dict) else {}
+            attempts = details.get("attempts")
+            if isinstance(attempts, list):
+                for attempt in attempts:
+                    if not isinstance(attempt, dict):
+                        continue
+                    round_index = self._coerce_stage2b_round(attempt.get("round") or attempt.get("attempt_round"))
+                    if not round_index:
+                        continue
+                    saw_attempt_records = True
+                    attempted_by_round.setdefault(round_index, set()).add(tc_id)
+                    if (
+                        tc_id not in first_success_round_by_tc
+                        and bool(attempt.get("collect_only_passed"))
+                        and bool(attempt.get("pytest_passed"))
+                    ):
+                        first_success_round_by_tc[tc_id] = round_index
+
+            explicit_success_round = self._coerce_stage2b_round(
+                details.get("first_success_round") or details.get("success_round") or details.get("converted_round")
+            )
+            if converted and explicit_success_round and tc_id not in first_success_round_by_tc:
+                first_success_round_by_tc[tc_id] = explicit_success_round
+
+            cases.append(
+                {
+                    "tc_id": tc_id,
+                    "outcome": outcome.outcome,
+                    "converted": converted,
+                    "first_success_round": first_success_round_by_tc.get(tc_id),
+                    "script_path": outcome.script_path,
+                    "script_blocker_report_path": outcome.script_blocker_report_path,
+                }
+            )
+
+        rounds: list[dict[str, Any]] = []
+        if first_success_round_by_tc or attempted_by_round:
+            max_round = min(3, max(set(first_success_round_by_tc.values()) | set(attempted_by_round)))
+            cumulative_success_count = 0
+            for round_index in range(1, max_round + 1):
+                new_success_count = sum(1 for value in first_success_round_by_tc.values() if value == round_index)
+                if saw_attempt_records:
+                    attempted_count = len(attempted_by_round.get(round_index, set()))
+                else:
+                    attempted_count = max(eligible_count - cumulative_success_count, 0)
+                cumulative_success_count += new_success_count
+                rounds.append(
+                    {
+                        "round": round_index,
+                        "attempted_count": attempted_count,
+                        "new_success_count": new_success_count,
+                        "cumulative_success_count": cumulative_success_count,
+                        "cumulative_success_rate": (
+                            cumulative_success_count / eligible_count if eligible_count else None
+                        ),
+                    }
+                )
+
+        return {
+            "eligible_count": eligible_count,
+            "converted_count": converted_count,
+            "blocked_count": blocked_count,
+            "success_rate": converted_count / eligible_count if eligible_count else None,
+            "round_count": len(rounds) if rounds else (0 if eligible_count == 0 else None),
+            "rounds": rounds,
+            "cases": cases,
+            "status": "skipped_no_recording_passed_cases" if eligible_count == 0 else "measured",
+        }
+
+    def _coerce_stage2b_round(self, value: Any) -> int | None:
+        try:
+            round_index = int(value)
+        except (TypeError, ValueError):
+            return None
+        if 1 <= round_index <= 3:
+            return round_index
+        return None
 
     def _validate_phase3_outputs(self, state: RunState) -> PhaseGateResult:
         reasons: list[str] = []
@@ -1997,6 +2129,7 @@ class QAConductor:
             "playwright_recording_report",
             "playwright_bug_report",
             "playwright_case_outcomes",
+            "stage2b_conversion_metrics",
             "impact_candidates",
             "change_attribution_report",
             "legacy_update_gate",
@@ -2146,6 +2279,9 @@ class QAConductor:
                     "- replay 通过后再整理成 OK UI 规范脚本，补齐 _CONFIG、pytest.mark、allure、fixture/POM 复用",
                     "- 每批最多 5 条，当前批次 collect-only 和 pytest 都通过后再进入下一批",
                     "- 3 轮仍失败时输出 script_blocker_report.md，并在 playwright_case_outcomes.json 中标记 script_blocked；QA Agent 会阻塞在当前阶段",
+                    "- 同步记录最多 3 轮转换统计：每轮只重试上一轮未成功的用例；在每条 outcome.details.attempts 中写入 round、collect_only_passed、pytest_passed、failure_reason/fix_summary（如有）",
+                    "- 如果某条用例成功，写入 outcome.details.first_success_round；如果第 1 轮全部成功，只记录第 1 轮",
+                    "- 转换成功率只作为统计信息，不作为阶段2B门禁或额外阻塞条件",
                     "- complete 当前阶段时必须回传 playwright_case_outcomes.json",
                     "- 每条 recording_passed 用例必须最终为 script_generated，并附带 script_path、collect_only_passed=true、pytest_passed=true",
                 ]
