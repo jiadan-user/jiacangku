@@ -25,7 +25,7 @@ _CONFIG = {
     "site_name": "美国站 (US OK.com)",
     "role": "visitor",
     "user_name": "visitor_us",
-    "base_url": "https://us.58v5.cn/en/city-washington1/cate/",
+    "base_url": "https://us.58v5.cn/en/city-washington1/cate-services/?iconSource=services",
     "locale": "en-US",
     "currency": "USD",
     "browser": {
