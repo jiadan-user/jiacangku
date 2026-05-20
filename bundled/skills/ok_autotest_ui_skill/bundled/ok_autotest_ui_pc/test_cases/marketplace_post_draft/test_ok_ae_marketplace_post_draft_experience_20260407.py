@@ -63,7 +63,7 @@ _CONFIG = {
     "currency": "AED",
     "browser": {
         "type": "chromium",
-        "headless": False,
+        "headless": os.environ.get("HEADLESS", "true").lower() in ("true", "1", "yes"),
         "viewport": {"width": 1920, "height": 1080},
     },
     "timeout": {
