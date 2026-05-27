@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="bda9abfa-4a16-41e1-9a34-58106dca8917" name="更改" comment="优化catalog中case条数缓存">
+      <change beforePath="$PROJECT_DIR$/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/catalog/catalog.generated.json" beforeDir="false" afterPath="$PROJECT_DIR$/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc/catalog/catalog.generated.json" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="3CnKZH1oVfAvWcONpECrDVf0Qrj" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "last_opened_file_path": "/Users/a58/Desktop/qa-agent",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "模块",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="应用程序级" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="默认任务">
+      <changelist id="bda9abfa-4a16-41e1-9a34-58106dca8917" name="更改" comment="" />
+      <created>1777015951730</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1777015951730</updated>
+      <workItem from="1777015952988" duration="384000" />
+      <workItem from="1777017078759" duration="8955000" />
+      <workItem from="1778125849167" duration="4775000" />
+      <workItem from="1778296675082" duration="5569000" />
+      <workItem from="1778741028643" duration="624000" />
+      <workItem from="1778742109159" duration="1337000" />
+    </task>
+    <task id="LOCAL-00001" summary="车列表知识库">
+      <option name="closed" value="true" />
+      <created>1777275296778</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1777275296779</updated>
+    </task>
+    <task id="LOCAL-00002" summary="车列表测试用例文档条数与UI脚本同步">
+      <option name="closed" value="true" />
+      <created>1777278893921</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1777278893922</updated>
+    </task>
+    <task id="LOCAL-00003" summary="车列表知识库图谱更新">
+      <option name="closed" value="true" />
+      <created>1777346586113</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1777346586113</updated>
+    </task>
+    <task id="LOCAL-00004" summary="车列表知识库图谱更新2.0">
+      <option name="closed" value="true" />
+      <created>1777348329146</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1777348329146</updated>
+    </task>
+    <task id="LOCAL-00005" summary="车列表知识库图谱更新3.0">
+      <option name="closed" value="true" />
+      <created>1777351047148</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1777351047148</updated>
+    </task>
+    <task id="LOCAL-00006" summary="车列表知识库图谱更新2.0回滚">
+      <option name="closed" value="true" />
+      <created>1777351298838</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1777351298839</updated>
+    </task>
+    <task id="LOCAL-00007" summary="车列表知识库图谱更新3.0">
+      <option name="closed" value="true" />
+      <created>1777357698126</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1777357698126</updated>
+    </task>
+    <task id="LOCAL-00008" summary="车列表品牌筛选页增加等待时长">
+      <option name="closed" value="true" />
+      <created>1778133933427</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1778133933428</updated>
+    </task>
+    <task id="LOCAL-00009" summary="车列表超时优化">
+      <option name="closed" value="true" />
+      <created>1778147100769</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1778147100769</updated>
+    </task>
+    <task id="LOCAL-00010" summary="车列表SMC属性变更case优化">
+      <option name="closed" value="true" />
+      <created>1778486740937</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1778486740938</updated>
+    </task>
+    <task id="LOCAL-00011" summary="车列表SMC属性变更case优化">
+      <option name="closed" value="true" />
+      <created>1778488682443</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1778488682443</updated>
+    </task>
+    <task id="LOCAL-00012" summary="车列表case优化，删除explore">
+      <option name="closed" value="true" />
+      <created>1778742193263</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1778742193263</updated>
+    </task>
+    <task id="LOCAL-00013" summary="优化catalog中case条数缓存">
+      <option name="closed" value="true" />
+      <created>1778743111070</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1778743111070</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="车列表知识库" />
+    <MESSAGE value="车列表测试用例文档条数与UI脚本同步" />
+    <MESSAGE value="车列表知识库图谱更新" />
+    <MESSAGE value="车列表知识库图谱更新2.0" />
+    <MESSAGE value="车列表知识库图谱更新2.0回滚" />
+    <MESSAGE value="车列表知识库图谱更新3.0" />
+    <MESSAGE value="车列表品牌筛选页增加等待时长" />
+    <MESSAGE value="车列表超时优化" />
+    <MESSAGE value="车列表SMC属性变更case优化" />
+    <MESSAGE value="车列表case优化，删除explore" />
+    <MESSAGE value="优化catalog中case条数缓存" />
+    <option name="LAST_COMMIT_MESSAGE" value="优化catalog中case条数缓存" />
+  </component>
+</project>

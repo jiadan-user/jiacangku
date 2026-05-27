@@ -1,3 +1,0 @@
-# pytest --junit-xml 汇总的 testsuite @time（秒），与控制台「passed in XXXs」一致
-WALL_SECONDS=1370.04
-SOURCE=junit_xml_testsuite_time_attribute

@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-05-13T07:20:01Z",
-  "root_dir": "/Users/vickymo/cursor-workspace/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc",
-  "case_count": 2261,
-  "governed_case_count": 2064,
+  "generated_at": "2026-05-19T11:26:05Z",
+  "root_dir": "/Users/a58/Desktop/qa-agent/bundled/skills/ok_autotest_ui_skill/bundled/ok_autotest_ui_pc",
+  "case_count": 2258,
+  "governed_case_count": 2061,
   "cases": [
     {
       "nodeid": "test_cases/SEO/AE/test_settings_new_messages.py::test_tc001_access_settings_new_messages",
@@ -2069,6 +2069,7 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_ae_job_detail_send_01",
+        "long_tail",
         "p0",
         "smoke"
       ],
@@ -2106,6 +2107,7 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_ae_job_detail_send_04",
+        "long_tail",
         "p0"
       ],
       "allure_feature": "OK",
@@ -2142,6 +2144,7 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_ae_job_detail_send_03",
+        "long_tail",
         "p0"
       ],
       "allure_feature": "OK",
@@ -2178,6 +2181,7 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_ae_job_detail_send_02",
+        "long_tail",
         "p0"
       ],
       "allure_feature": "OK",
@@ -2214,7 +2218,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_jobs_list_switch_17",
-        "flaky",
         "p0",
         "usefixtures"
       ],
@@ -2252,7 +2255,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_jobs_list_switch_20",
-        "flaky",
         "p2",
         "usefixtures"
       ],
@@ -2290,7 +2292,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_jobs_list_switch_19",
-        "flaky",
         "p2",
         "usefixtures"
       ],
@@ -2328,7 +2329,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_jobs_list_switch_18",
-        "flaky",
         "p1",
         "usefixtures"
       ],
@@ -2366,7 +2366,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_jobs_list_switch_15",
-        "flaky",
         "p0",
         "usefixtures"
       ],
@@ -2403,7 +2402,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_jobs_list_switch_14",
-        "flaky",
         "p1",
         "ui",
         "usefixtures"
@@ -2441,7 +2439,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_jobs_list_switch_12",
-        "flaky",
         "p1",
         "ui",
         "usefixtures"
@@ -2479,7 +2476,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_jobs_list_switch_11",
-        "flaky",
         "p1",
         "ui",
         "usefixtures"
@@ -2518,7 +2514,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_jobs_list_switch_08",
-        "flaky",
         "p1",
         "usefixtures"
       ],
@@ -2556,7 +2551,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_jobs_list_switch_07",
-        "flaky",
         "p1",
         "usefixtures"
       ],
@@ -2594,7 +2588,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_jobs_list_switch_06",
-        "flaky",
         "p1",
         "usefixtures"
       ],
@@ -2631,7 +2624,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_jobs_list_switch_09",
-        "flaky",
         "p1",
         "ui",
         "usefixtures"
@@ -2670,7 +2662,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_jobs_list_switch_10",
-        "flaky",
         "p1",
         "usefixtures"
       ],
@@ -2708,7 +2699,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_jobs_list_switch_13",
-        "flaky",
         "p2",
         "usefixtures"
       ],
@@ -2746,7 +2736,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_jobs_list_switch_01",
-        "flaky",
         "p0",
         "smoke",
         "usefixtures"
@@ -2785,7 +2774,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_jobs_list_switch_03",
-        "flaky",
         "p0",
         "smoke",
         "usefixtures"
@@ -2824,7 +2812,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_jobs_list_switch_02",
-        "flaky",
         "p0",
         "smoke",
         "usefixtures"
@@ -2863,7 +2850,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_jobs_list_switch_04",
-        "flaky",
         "p0",
         "usefixtures"
       ],
@@ -2901,7 +2887,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_success_switch_03",
-        "flaky",
         "p0",
         "usefixtures"
       ],
@@ -2939,7 +2924,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_success_switch_04",
-        "flaky",
         "p0",
         "usefixtures"
       ],
@@ -2978,7 +2962,6 @@
         "ai_chat_job",
         "allure_description",
         "case_id_ai_chat_success_switch_01",
-        "flaky",
         "p0",
         "smoke",
         "usefixtures"
@@ -3017,7 +3000,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_success_switch_02",
-        "flaky",
         "p0",
         "smoke",
         "usefixtures"
@@ -3055,7 +3037,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_success_switch_08",
-        "flaky",
         "p1",
         "ui",
         "usefixtures"
@@ -3093,7 +3074,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_success_switch_06",
-        "flaky",
         "p1",
         "usefixtures"
       ],
@@ -3130,7 +3110,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_success_switch_10",
-        "flaky",
         "p1",
         "ui",
         "usefixtures"
@@ -3169,7 +3148,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_success_switch_05",
-        "flaky",
         "p1",
         "usefixtures"
       ],
@@ -3206,7 +3184,6 @@
         "ai_chat",
         "allure_description",
         "case_id_ai_chat_success_switch_09",
-        "flaky",
         "p1",
         "ui",
         "usefixtures"
@@ -21916,7 +21893,8 @@
       "site": "ae",
       "markers": [
         "accessibility",
-        "p2"
+        "p2",
+        "timeout"
       ],
       "allure_feature": null,
       "allure_story": null,
@@ -21937,8 +21915,8 @@
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc001_draft_entry_hidden_after_description_input",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc001_draft_entry_hidden_after_description_input",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc001_draft_entry_hidden_after_description_input",
       "case_id": null,
       "priority": null,
@@ -21950,23 +21928,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc002_draft_entry_visible_with_drafts_empty_form",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc002_draft_entry_visible_with_drafts_empty_form",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc002_draft_entry_visible_with_drafts_empty_form",
       "case_id": null,
       "priority": null,
@@ -21978,23 +21954,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc003_draft_count_matches_list",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc003_draft_count_matches_list",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc003_draft_count_matches_list",
       "case_id": null,
       "priority": null,
@@ -22006,23 +21980,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc004_drafts_scoped_by_category",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc004_drafts_scoped_by_category",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc004_drafts_scoped_by_category",
       "case_id": null,
       "priority": null,
@@ -22034,23 +22006,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc005_localstorage_ai_history_draft_entry",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc005_localstorage_ai_history_draft_entry",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc005_localstorage_ai_history_draft_entry",
       "case_id": null,
       "priority": null,
@@ -22062,23 +22032,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc006_rapid_click_draft_entry_single_dialog",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc006_rapid_click_draft_entry_single_dialog",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc006_rapid_click_draft_entry_single_dialog",
       "case_id": null,
       "priority": null,
@@ -22090,23 +22058,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc007_click_draft_opens_box",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc007_click_draft_opens_box",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc007_click_draft_opens_box",
       "case_id": null,
       "priority": null,
@@ -22118,23 +22084,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc008_close_draft_box_with_close_button",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc008_close_draft_box_with_close_button",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc008_close_draft_box_with_close_button",
       "case_id": null,
       "priority": null,
@@ -22146,23 +22110,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc009_close_without_selecting_draft_no_fill",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc009_close_without_selecting_draft_no_fill",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc009_close_without_selecting_draft_no_fill",
       "case_id": null,
       "priority": null,
@@ -22174,23 +22136,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc010_reopen_draft_box_after_close",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc010_reopen_draft_box_after_close",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc010_reopen_draft_box_after_close",
       "case_id": null,
       "priority": null,
@@ -22202,23 +22162,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc011_esc_closes_draft_box",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc011_esc_closes_draft_box",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc011_esc_closes_draft_box",
       "case_id": null,
       "priority": null,
@@ -22230,23 +22188,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc012_click_outside_dialog_closes",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc012_click_outside_dialog_closes",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc012_click_outside_dialog_closes",
       "case_id": null,
       "priority": null,
@@ -22258,23 +22214,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc013_open_close_three_cycles",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc013_open_close_three_cycles",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc013_open_close_three_cycles",
       "case_id": null,
       "priority": null,
@@ -22286,23 +22240,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc014_close_and_immediate_reopen",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc014_close_and_immediate_reopen",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc014_close_and_immediate_reopen",
       "case_id": null,
       "priority": null,
@@ -22314,23 +22266,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc015_close_x_vs_load_draft_url",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc015_close_x_vs_load_draft_url",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc015_close_x_vs_load_draft_url",
       "case_id": null,
       "priority": null,
@@ -22342,23 +22292,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc016_list_shows_title_and_save_time",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc016_list_shows_title_and_save_time",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc016_list_shows_title_and_save_time",
       "case_id": null,
       "priority": null,
@@ -22370,23 +22318,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc017_draft_list_newest_on_top",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc017_draft_list_newest_on_top",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc017_draft_list_newest_on_top",
       "case_id": null,
       "priority": null,
@@ -22398,23 +22344,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc018_draft_list_scroll_shows_oldest_row",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc018_draft_list_scroll_shows_oldest_row",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc018_draft_list_scroll_shows_oldest_row",
       "case_id": null,
       "priority": null,
@@ -22426,23 +22370,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc019_empty_draft_box_copy",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc019_empty_draft_box_copy",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc019_empty_draft_box_copy",
       "case_id": null,
       "priority": null,
@@ -22454,23 +22396,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc020_draft_box_open_under_two_seconds",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc020_draft_box_open_under_two_seconds",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc020_draft_box_open_under_two_seconds",
       "case_id": null,
       "priority": null,
@@ -22482,23 +22422,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc021_draft_row_thumbnail_image_vs_text_only",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc021_draft_row_thumbnail_image_vs_text_only",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc021_draft_row_thumbnail_image_vs_text_only",
       "case_id": null,
       "priority": null,
@@ -22510,23 +22448,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc022_load_draft_fills_form",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc022_load_draft_fills_form",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc022_load_draft_fills_form",
       "case_id": null,
       "priority": null,
@@ -22538,23 +22474,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc023_dialog_closes_after_pick_draft",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc023_dialog_closes_after_pick_draft",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc023_dialog_closes_after_pick_draft",
       "case_id": null,
       "priority": null,
@@ -22566,23 +22500,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc024_switch_between_two_drafts",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc024_switch_between_two_drafts",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc024_switch_between_two_drafts",
       "case_id": null,
       "priority": null,
@@ -22594,23 +22526,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc025_after_load_no_draft_entry",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc025_after_load_no_draft_entry",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc025_after_load_no_draft_entry",
       "case_id": null,
       "priority": null,
@@ -22622,23 +22552,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc026_edit_loaded_draft_save_same_id",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc026_edit_loaded_draft_save_same_id",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc026_edit_loaded_draft_save_same_id",
       "case_id": null,
       "priority": null,
@@ -22650,23 +22578,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc027_delete_one_draft_decrements_counter",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc027_delete_one_draft_decrements_counter",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc027_delete_one_draft_decrements_counter",
       "case_id": null,
       "priority": null,
@@ -22678,23 +22604,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc028_delete_keeps_draft_box_open",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc028_delete_keeps_draft_box_open",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc028_delete_keeps_draft_box_open",
       "case_id": null,
       "priority": null,
@@ -22706,23 +22630,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc029_delete_cancel_keeps_row",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc029_delete_cancel_keeps_row",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc029_delete_cancel_keeps_row",
       "case_id": null,
       "priority": null,
@@ -22734,23 +22656,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc030_last_draft_deleted_hides_entry",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc030_last_draft_deleted_hides_entry",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc030_last_draft_deleted_hides_entry",
       "case_id": null,
       "priority": null,
@@ -22762,23 +22682,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc031_three_sequential_deletes",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc031_three_sequential_deletes",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc031_three_sequential_deletes",
       "case_id": null,
       "priority": null,
@@ -22790,23 +22708,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc032_delete_b_keeps_a",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc032_delete_b_keeps_a",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc032_delete_b_keeps_a",
       "case_id": null,
       "priority": null,
@@ -22818,23 +22734,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc033_delete_offline_then_online",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc033_delete_offline_then_online",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc033_delete_offline_then_online",
       "case_id": null,
       "priority": null,
@@ -22846,23 +22760,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc034_delete_only_target",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc034_delete_only_target",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc034_delete_only_target",
       "case_id": null,
       "priority": null,
@@ -22874,23 +22786,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc035_load_draft_then_publish",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc035_load_draft_then_publish",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc035_load_draft_then_publish",
       "case_id": null,
       "priority": null,
@@ -22902,23 +22812,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc036_save_loaded_draft_same_id",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc036_save_loaded_draft_same_id",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc036_save_loaded_draft_same_id",
       "case_id": null,
       "priority": null,
@@ -22930,23 +22838,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc037_first_save_toast",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc037_first_save_toast",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc037_first_save_toast",
       "case_id": null,
       "priority": null,
@@ -22958,23 +22864,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc038_stay_on_publish_no_id_draft_saved_button",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc038_stay_on_publish_no_id_draft_saved_button",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc038_stay_on_publish_no_id_draft_saved_button",
       "case_id": null,
       "priority": null,
@@ -22986,23 +22890,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc039_after_toast_dismiss_still_draft_saved",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc039_after_toast_dismiss_still_draft_saved",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc039_after_toast_dismiss_still_draft_saved",
       "case_id": null,
       "priority": null,
@@ -23014,23 +22916,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc040_second_save_toast_after_edit",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc040_second_save_toast_after_edit",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc040_second_save_toast_after_edit",
       "case_id": null,
       "priority": null,
@@ -23042,23 +22942,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc041_save_then_no_extra_request_on_reclick",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc041_save_then_no_extra_request_on_reclick",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc041_save_then_no_extra_request_on_reclick",
       "case_id": null,
       "priority": null,
@@ -23070,23 +22968,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc042_edit_restores_save_the_draft",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc042_edit_restores_save_the_draft",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc042_edit_restores_save_the_draft",
       "case_id": null,
       "priority": null,
@@ -23098,23 +22994,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc043_edit_revert_content_still_allows_save",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc043_edit_revert_content_still_allows_save",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc043_edit_revert_content_still_allows_save",
       "case_id": null,
       "priority": null,
@@ -23126,23 +23020,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc044_slow_network_save_still_single_success",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc044_slow_network_save_still_single_success",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc044_slow_network_save_still_single_success",
       "case_id": null,
       "priority": null,
@@ -23154,23 +23046,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc045_rapid_triple_click_save_single_toast",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc045_rapid_triple_click_save_single_toast",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc045_rapid_triple_click_save_single_toast",
       "case_id": null,
       "priority": null,
@@ -23182,23 +23072,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc046_saved_no_edit_back_no_discard_dialog",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc046_saved_no_edit_back_no_discard_dialog",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc046_saved_no_edit_back_no_discard_dialog",
       "case_id": null,
       "priority": null,
@@ -23210,23 +23098,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc047_saved_then_edit_back_shows_leave_dialog",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc047_saved_then_edit_back_shows_leave_dialog",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc047_saved_then_edit_back_shows_leave_dialog",
       "case_id": null,
       "priority": null,
@@ -23238,23 +23124,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc048_back_reaches_non_classified_publish_hub",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc048_back_reaches_non_classified_publish_hub",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc048_back_reaches_non_classified_publish_hub",
       "case_id": null,
       "priority": null,
@@ -23266,23 +23150,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc049_close_leave_dialog_stays_on_form",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc049_close_leave_dialog_stays_on_form",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc049_close_leave_dialog_stays_on_form",
       "case_id": null,
       "priority": null,
@@ -23294,23 +23176,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc050_close_tab_no_app_modal",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc050_close_tab_no_app_modal",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc050_close_tab_no_app_modal",
       "case_id": null,
       "priority": null,
@@ -23322,23 +23202,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc051_refresh_drops_unsaved_edit",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc051_refresh_drops_unsaved_edit",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc051_refresh_drops_unsaved_edit",
       "case_id": null,
       "priority": null,
@@ -23350,23 +23228,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc052_offline_save_shows_error_then_retry_ok",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc052_offline_save_shows_error_then_retry_ok",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc052_offline_save_shows_error_then_retry_ok",
       "case_id": null,
       "priority": null,
@@ -23378,23 +23254,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc053_save_api_500_shows_feedback",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc053_save_api_500_shows_feedback",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc053_save_api_500_shows_feedback",
       "case_id": null,
       "priority": null,
@@ -23406,23 +23280,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc054_title_max_two_hundred",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc054_title_max_two_hundred",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc054_title_max_two_hundred",
       "case_id": null,
       "priority": null,
@@ -23434,23 +23306,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc055_empty_form_save_blocked",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc055_empty_form_save_blocked",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc055_empty_form_save_blocked",
       "case_id": null,
       "priority": null,
@@ -23462,23 +23332,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc056_draft_count_limit_blocked",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc056_draft_count_limit_blocked",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc056_draft_count_limit_blocked",
       "case_id": null,
       "priority": null,
@@ -23490,23 +23358,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc057_second_tab_sees_new_draft_count",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc057_second_tab_sees_new_draft_count",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc057_second_tab_sees_new_draft_count",
       "case_id": null,
       "priority": null,
@@ -23518,23 +23384,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc058_core_path_on_current_browser",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc058_core_path_on_current_browser",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc058_core_path_on_current_browser",
       "case_id": null,
       "priority": null,
@@ -23546,23 +23410,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc059_english_copy_present",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc059_english_copy_present",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc059_english_copy_present",
       "case_id": null,
       "priority": null,
@@ -23574,23 +23436,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc060_arabic_publish_path_loads",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc060_arabic_publish_path_loads",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc060_arabic_publish_path_loads",
       "case_id": null,
       "priority": null,
@@ -23602,23 +23462,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc061_traditional_chinese_path_if_exists",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc061_traditional_chinese_path_if_exists",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc061_traditional_chinese_path_if_exists",
       "case_id": null,
       "priority": null,
@@ -23630,23 +23488,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc062_spanish_path_if_exists",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc062_spanish_path_if_exists",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc062_spanish_path_if_exists",
       "case_id": null,
       "priority": null,
@@ -23658,23 +23514,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc063_portuguese_path_if_exists",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc063_portuguese_path_if_exists",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc063_portuguese_path_if_exists",
       "case_id": null,
       "priority": null,
@@ -23686,23 +23540,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc064_foreign_draft_id_no_data_leak",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc064_foreign_draft_id_no_data_leak",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc064_foreign_draft_id_no_data_leak",
       "case_id": null,
       "priority": null,
@@ -23714,23 +23566,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc065_xss_title_and_content_stored_as_text",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc065_xss_title_and_content_stored_as_text",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc065_xss_title_and_content_stored_as_text",
       "case_id": null,
       "priority": null,
@@ -23742,23 +23592,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc066_xss_extra_vectors",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc066_xss_extra_vectors",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc066_xss_extra_vectors",
       "case_id": null,
       "priority": null,
@@ -23770,23 +23618,21 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
     {
-      "nodeid": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc067_end_to_end_draft_flow",
-      "file_path": "test_cases/marketplace_post/test_ok_ae_marketplace_post_draft_experience_20260407.py",
+      "nodeid": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py::test_tc067_end_to_end_draft_flow",
+      "file_path": "test_cases/marketplace_post_draft/test_ok_ae_marketplace_post_draft_experience_20260407.py",
       "test_name": "test_tc067_end_to_end_draft_flow",
       "case_id": null,
       "priority": null,
@@ -23798,17 +23644,15 @@
       "allure_story": null,
       "allure_title": null,
       "severity": null,
-      "module_id": "marketplace_post",
-      "feature_id": "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
+      "module_id": "marketplace_post_draft",
+      "feature_id": "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407",
       "aliases": [
-        "marketplace",
-        "marketplace_post",
-        "marketplace_post_ok_ae_marketplace_post_draft_experience_20260407",
-        "post"
+        "marketplace_post_draft",
+        "marketplace_post_draft_ok_ae_marketplace_post_draft_experience_20260407"
       ],
       "baseline_set": null,
       "risk_level": null,
-      "owner": "qa-ui",
+      "owner": null,
       "governed": false,
       "skill_excluded": false
     },
@@ -44643,103 +44487,6 @@
       "baseline_set": "car_publish_core",
       "risk_level": "high",
       "owner": "qa-ui",
-      "governed": true,
-      "skill_excluded": false
-    },
-    {
-      "nodeid": "test_cases/test_job_basics.py::test_job_basics_back_from_job_details_data_retained",
-      "file_path": "test_cases/test_job_basics.py",
-      "test_name": "test_job_basics_back_from_job_details_data_retained",
-      "case_id": "case_id_job_basics_002",
-      "priority": "p0",
-      "site": "us",
-      "markers": [
-        "allure_description",
-        "case_id_job_basics_002",
-        "job_publish",
-        "p0",
-        "smoke",
-        "us"
-      ],
-      "allure_feature": "OK",
-      "allure_story": "Job Basics 页面 - 核心流程（正向）",
-      "allure_title": "从第二步点击 Back 返回第一步，数据保留",
-      "severity": "critical",
-      "module_id": "publish_job",
-      "feature_id": "publish_job_job_basics",
-      "aliases": [
-        "back",
-        "job_basics",
-        "publish_job",
-        "publish_job_job_basics"
-      ],
-      "baseline_set": null,
-      "risk_level": null,
-      "owner": null,
-      "governed": true,
-      "skill_excluded": false
-    },
-    {
-      "nodeid": "test_cases/test_job_basics.py::test_job_basics_select_workplace_type_remote_should_success",
-      "file_path": "test_cases/test_job_basics.py",
-      "test_name": "test_job_basics_select_workplace_type_remote_should_success",
-      "case_id": "case_id_job_basics_003",
-      "priority": "p1",
-      "site": "us",
-      "markers": [
-        "allure_description",
-        "case_id_job_basics_003",
-        "job_publish",
-        "p1",
-        "us"
-      ],
-      "allure_feature": "OK",
-      "allure_story": "Job Basics 页面 - 核心流程（正向）",
-      "allure_title": "选择 Workplace Type 为 Remote 应该成功",
-      "severity": "normal",
-      "module_id": "publish_job",
-      "feature_id": "publish_job_job_basics",
-      "aliases": [
-        "job_basics",
-        "publish_job",
-        "publish_job_job_basics",
-        "workplace_type_remote"
-      ],
-      "baseline_set": null,
-      "risk_level": null,
-      "owner": null,
-      "governed": true,
-      "skill_excluded": false
-    },
-    {
-      "nodeid": "test_cases/test_job_basics.py::test_job_basics_submit_all_required_fields_should_success",
-      "file_path": "test_cases/test_job_basics.py",
-      "test_name": "test_job_basics_submit_all_required_fields_should_success",
-      "case_id": "case_id_job_basics_001",
-      "priority": "p0",
-      "site": "us",
-      "markers": [
-        "allure_description",
-        "case_id_job_basics_001",
-        "job_publish",
-        "p0",
-        "smoke",
-        "us"
-      ],
-      "allure_feature": "OK",
-      "allure_story": "Job Basics 页面 - 核心流程（正向）",
-      "allure_title": "正常填写所有必填项并提交到下一步应该成功",
-      "severity": "critical",
-      "module_id": "publish_job",
-      "feature_id": "publish_job_job_basics",
-      "aliases": [
-        "job_basics",
-        "publish_job",
-        "publish_job_job_basics"
-      ],
-      "baseline_set": null,
-      "risk_level": null,
-      "owner": null,
       "governed": true,
       "skill_excluded": false
     },

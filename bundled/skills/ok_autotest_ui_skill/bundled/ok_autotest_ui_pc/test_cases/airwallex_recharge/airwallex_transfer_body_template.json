@@ -1,8 +1,0 @@
-{
-  "amount": "20.01",
-  "currency": "USD",
-  "destination": "YOUR_PAYMENT_ACCOUNT_ID",
-  "reason": "travel",
-  "reference": "PMT_REFERENCE",
-  "request_id": "CURRENT_TIMESTAMP"
-}
